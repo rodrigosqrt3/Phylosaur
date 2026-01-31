@@ -850,7 +850,7 @@
       treeContainer.innerHTML = '<div class="loading">Loading phylogenetic database...</div>';
       
       try {
-        const response = await fetch('dinozooa_db.json');
+        const response = await fetch('./dinozooa_db.json');
         database = await response.json();
         
         startNewGame();
@@ -1748,4 +1748,5 @@
     loadDatabase();
   </script>
 </body>
+
 </html>
