@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dinozooa - Enhanced Phylogenetic Edition</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #2d2318;
+      background-image: 
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
+      min-height: 100vh;
+      padding: 20px;
+      color: #f8f6f3;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 25px 20px;
+      background: #1a1410;
+      border: 3px solid #4a3829;
+      border-radius: 2px;
+      box-shadow: 
+        inset 0 2px 4px rgba(0,0,0,0.5),
+        inset 0 -2px 4px rgba(255,255,255,0.1),
+        0 4px 8px rgba(0,0,0,0.6);
+    }
+
+    h1 {
+      font-size: 3.8em;
+      margin-bottom: 10px;
+      color: #d4b87e;
+      font-weight: 400;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      text-shadow: 
+        2px 2px 0px #1a1410,
+        3px 3px 6px rgba(0,0,0,0.8),
+        0 0 30px rgba(201, 169, 110, 0.2);
+      font-variant: small-caps;
+    }
+
+    .subtitle {
+      font-size: 1.1em;
+      color: #a68a5a;
+      font-style: italic;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .game-card {
+      background: #2a1f16;
+      border: 3px solid #4a3829;
+      border-radius: 2px;
+      padding: 40px;
+      box-shadow: 
+        inset 0 2px 6px rgba(0,0,0,0.6),
+        inset 0 -1px 0 rgba(255,255,255,0.05),
+        0 8px 24px rgba(0,0,0,0.7);
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+
+    .input-section {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    #dino-input {
+      flex: 1;
+      padding: 14px 18px;
+      font-size: 16px;
+      font-family: 'Georgia', serif;
+      border: 2px solid #3d2f1f;
+      border-radius: 1px;
+      outline: none;
+      transition: all 0.2s;
+      background: #1a1410;
+      color: #f8f6f3;
+      box-shadow: 
+        inset 0 2px 4px rgba(0,0,0,0.6),
+        inset 0 -1px 0 rgba(255,255,255,0.05);
+    }
+
+    #dino-input:focus {
+      border-color: #8b7355;
+      background: #2a1f16;
+      box-shadow: 
+        inset 0 2px 4px rgba(0,0,0,0.6),
+        inset 0 -1px 0 rgba(255,255,255,0.05),
+        0 0 0 2px rgba(139, 115, 85, 0.3);
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Georgia', serif;
+      border: 2px solid;
+      border-radius: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      position: relative;
+    }
+
+    .btn-guess {
+      background: linear-gradient(180deg, #c9a96e 0%, #a68a5a 100%);
+      color: #1a1410;
+      border-color: #8b7355;
+      font-weight: 700;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        inset 0 -1px 0 rgba(0,0,0,0.3),
+        0 2px 4px rgba(0,0,0,0.4);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .btn-guess:hover:not(:disabled) {
+      background: linear-gradient(180deg, #d4b87e 0%, #b89a6a 100%);
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        inset 0 -1px 0 rgba(0,0,0,0.2),
+        0 3px 6px rgba(0,0,0,0.5);
+    }
+    
+    .btn-guess:active:not(:disabled) {
+      box-shadow: 
+        inset 0 2px 4px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(0,0,0,0.3);
+      transform: translateY(1px);
+    }
+
+    .btn-hint {
+      background: linear-gradient(180deg, #3d2f1f 0%, #2a1f16 100%);
+      color: #c9a96e;
+      border-color: #5d4a36;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.3),
+        0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    .btn-hint:hover:not(:disabled) {
+      background: linear-gradient(180deg, #4a3829 0%, #3d2f1f 100%);
+      border-color: #8b7355;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -1px 0 rgba(0,0,0,0.2),
+        0 3px 6px rgba(0,0,0,0.5);
+    }
+
+    .btn-new-game {
+      background: linear-gradient(180deg, #3d4a2f 0%, #2d3a1f 100%);
+      color: #d4e5c9;
+      border-color: #4a5d36;
+      width: 100%;
+      margin-top: 20px;
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -1px 0 rgba(0,0,0,0.3),
+        0 3px 6px rgba(0,0,0,0.5);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .btn-new-game:hover {
+      background: linear-gradient(180deg, #4a5d36 0%, #3d4a2f 100%);
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        inset 0 -1px 0 rgba(0,0,0,0.2),
+        0 4px 8px rgba(0,0,0,0.6);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 140px;
+      background: #2a1f16;
+      border: 2px solid #5d4a36;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .suggestion-item {
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid #3d2f1f;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      color: #f8f6f3;
+    }
+
+    .suggestion-item:hover {
+      background: #3d2f1f;
+      color: #c9a96e;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat {
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(180deg, #3d2f1f 0%, #2a1f16 100%);
+      border: 2px solid #4a3829;
+      border-radius: 1px;
+      transition: all 0.2s;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        inset 0 -2px 4px rgba(0,0,0,0.4),
+        0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .stat:hover {
+      border-color: #5d4a36;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -2px 4px rgba(0,0,0,0.3),
+        0 3px 8px rgba(0,0,0,0.6);
+    }
+
+    .stat-value {
+      font-size: 2.5em;
+      font-weight: 400;
+      color: #d4b87e;
+      font-family: 'Georgia', serif;
+      text-shadow: 
+        0 1px 0 #1a1410,
+        0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .stat-label {
+      font-size: 0.85em;
+      color: #a68a5a;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 300;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    #tree-container {
+      background: #1a1410;
+      border: 3px solid #3d2f1f;
+      border-radius: 1px;
+      padding: 30px;
+      min-height: 500px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      position: relative;
+      box-shadow: 
+        inset 0 3px 8px rgba(0,0,0,0.7),
+        inset 0 -1px 0 rgba(255,255,255,0.03),
+        0 2px 6px rgba(0,0,0,0.5);
+    }
+    
+    #tree-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,.05) 10px, rgba(0,0,0,.05) 11px),
+        repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(0,0,0,.05) 10px, rgba(0,0,0,.05) 11px);
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    #tree-svg {
+      width: 100%;
+      min-height: 500px;
+    }
+
+    .tree-node-group {
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tree-node-group:hover rect {
+      fill: #a6623d;
+      stroke: #d4a574;
+      stroke-width: 3;
+      filter: drop-shadow(0 0 12px rgba(201, 169, 110, 0.6));
+    }
+    
+    .tree-node-group:hover text {
+      fill: #f4e4c1;
+    }
+
+    .tree-node-group:hover .tree-node-circle {
+      stroke-width: 4;
+      filter: drop-shadow(0 0 8px rgba(139, 115, 85, 0.4));
+    }
+
+    .tree-line {
+      stroke: #8b7355;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      transition: all 0.3s;
+    }
+
+    .tree-line-revealed {
+      stroke: #c9a96e;
+      stroke-width: 3;
+    }
+
+    .tree-line-guess {
+      stroke: #8b6f47;
+      stroke-width: 2;
+      stroke-dasharray: 5,5;
+    }
+
+    .tree-line-hint {
+      stroke: #a68a5a;
+      stroke-width: 2;
+      stroke-dasharray: 3,3;
+    }
+
+    .tree-line-divergence {
+      stroke: #8b7355;
+      stroke-width: 2.5;
+      opacity: 0.7;
+    }
+
+    .tree-node-circle {
+      fill: #2a1f16;
+      stroke: #8b7355;
+      stroke-width: 2;
+      transition: all 0.3s;
+    }
+
+    .tree-node-circle-revealed {
+      fill: #c9a96e;
+      stroke: #f4e4c1;
+      stroke-width: 3;
+    }
+
+    .tree-node-circle-guess {
+      fill: #8b6f47;
+      stroke: #a68a5a;
+      opacity: 0.8;
+    }
+
+    .tree-node-circle-hint {
+      fill: #a68a5a;
+      stroke: #c9a96e;
+      opacity: 0.7;
+    }
+
+    .tree-node-circle-ancestor {
+      fill: #2a1f16;
+      stroke: #c9a96e;
+      stroke-width: 2.5;
+    }
+
+    .tree-node-label {
+      font-family: 'Georgia', serif;
+      font-size: 14px;
+      fill: #f4e4c1;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+    }
+
+    .tree-node-label-revealed {
+      fill: #2d5016;
+      font-weight: 600;
+    }
+
+    .tree-node-label-guess {
+      fill: #8b4513;
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .tree-node-label-hint {
+      fill: #8b7355;
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .tree-node-label-ancestor {
+      fill: #2d5016;
+      font-weight: 500;
+    }
+
+    .rank-label {
+      font-family: 'Georgia', serif;
+      font-size: 11px;
+      fill: #6b5d52;
+      text-anchor: middle;
+      font-style: italic;
+      pointer-events: none;
+    }
+
+    .depth-indicator {
+      font-family: 'Georgia', serif;
+      font-size: 10px;
+      fill: #999;
+      text-anchor: end;
+      font-weight: 300;
+    }
+
+    .clade-highlight {
+      fill: #2d5016;
+      opacity: 0.05;
+      stroke: #2d5016;
+      stroke-width: 1;
+      stroke-dasharray: 2,2;
+      pointer-events: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #8b7355;
+      padding: 60px 20px;
+      font-style: italic;
+      font-size: 1.1em;
+    }
+
+    .victory {
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, #3d3027 0%, #2c2318 100%);
+      color: #f8f6f3;
+      animation: celebrate 0.6s ease-out;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    @keyframes celebrate {
+      0% { transform: scale(0.9) rotate(-2deg); opacity: 0; }
+      50% { transform: scale(1.05) rotate(1deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .victory h2 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .victory-dino {
+      font-size: 2em;
+      margin: 25px 0;
+      font-style: italic;
+      color: #c8e6c9;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #c9a96e;
+      font-size: 1.1em;
+      font-style: italic;
+    }
+
+    .clade-info {
+      margin-top: 30px;
+      padding: 30px;
+      background: linear-gradient(135deg, rgba(61, 47, 31, 0.5) 0%, rgba(42, 31, 22, 0.7) 100%);
+      border: 2px solid #5d4a36;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+
+    .clade-info h3 {
+      color: #f4e4c1;
+      margin-bottom: 20px;
+      font-size: 1.4em;
+      font-weight: 400;
+      font-style: italic;
+      border-bottom: 2px solid #5d4a36;
+      padding-bottom: 12px;
+    }
+
+    .clade-content {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .clade-image {
+      max-width: 220px;
+      border: 2px solid #5d4a36;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    .clade-text {
+      flex: 1;
+      font-size: 1em;
+      line-height: 1.8;
+      color: #f8f6f3;
+    }
+
+    .clade-link {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 10px 24px;
+      background: #3d3027;
+      color: #f8f6f3;
+      text-decoration: none;
+      transition: all 0.3s;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      border-radius: 4px;
+      border: 2px solid #3d3027;
+    }
+
+    .clade-link:hover {
+      background: #2c2318;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .phylo-path {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(61, 47, 31, 0.4);
+      border-left: 4px solid #c9a96e;
+      border-radius: 4px;
+    }
+
+    .phylo-path h4 {
+      color: #f4e4c1;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+      font-weight: 500;
+    }
+
+    .phylo-step {
+      padding: 8px 0;
+      border-bottom: 1px solid #5d4a36;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .phylo-step:last-child {
+      border-bottom: none;
+    }
+
+    .phylo-step-name {
+      font-style: italic;
+      color: #f8f6f3;
+      font-size: 0.95em;
+    }
+
+    .phylo-step-rank {
+      font-size: 0.85em;
+      color: #c9a96e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .guess-history {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(61, 47, 31, 0.5);
+      border: 2px solid #5d4a36;
+      border-radius: 8px;
+    }
+
+    .guess-history h3 {
+      color: #f4e4c1;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+      font-weight: 400;
+    }
+
+    .guess-item {
+      padding: 10px 15px;
+      margin: 8px 0;
+      background: rgba(42, 31, 22, 0.6);
+      border-left: 4px solid #8b6f47;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .guess-item-hint {
+      border-left-color: #a68a5a;
+      opacity: 0.8;
+    }
+
+    .guess-name {
+      font-style: italic;
+      color: #f8f6f3;
+    }
+
+    .guess-match {
+      font-weight: 500;
+      color: #c9a96e;
+    }
+
+    .tree-legend {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(61, 47, 31, 0.6);
+      border: 2px solid #5d4a36;
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9em;
+      color: #f8f6f3;
+    }
+
+    .legend-symbol {
+      width: 30px;
+      height: 20px;
+      border-radius: 3px;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .legend-symbol-revealed {
+      background: #4a7c59;
+      border-color: #5a9c6b;
+    }
+
+    .legend-symbol-guess {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #8b6f47;
+    }
+
+    .legend-symbol-hint {
+      background: rgba(166, 138, 90, 0.3);
+      border-color: #a68a5a;
+    }
+
+    .legend-symbol-ancestor {
+      background: #8b4726;
+      border-color: #a6623d;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2em; }
+      .game-card { padding: 20px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .clade-content { flex-direction: column; }
+      .clade-image { max-width: 100%; }
+      .input-section { flex-wrap: wrap; }
+      .btn-hint { width: 100%; }
+    }
+
+    @keyframes fadeIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(15px) scale(0.95); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+      }
+    }
+
+    @keyframes branchGrow {
+      from { 
+        stroke-dashoffset: 1000;
+        opacity: 0;
+      }
+      to { 
+        stroke-dashoffset: 0;
+        opacity: 1;
+      }
+    }
+    
+    @keyframes nodeAppear {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .new-node {
+      animation: nodeAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .new-line {
+      stroke-dasharray: 1000;
+      animation: branchGrow 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      pointer-events: none;
+      z-index: 10000;
+      max-width: 300px;
+      line-height: 1.6;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+    }
+
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid rgba(0, 0, 0, 0.9);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Dinozooa</h1>
+      <p class="subtitle">An evolutionary phylogenetic exploration game</p>
+    </header>
+
+    <div class="game-card">
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value" id="attempts">0</div>
+          <div class="stat-label">Attempts</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="hints">3</div>
+          <div class="stat-label">Hints</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="best-match">0</div>
+          <div class="stat-label">Deepest Node</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="clades-revealed">0</div>
+          <div class="stat-label">Clades Revealed</div>
+        </div>
+      </div>
+
+      <div class="input-section">
+        <input 
+          type="text" 
+          id="dino-input" 
+          placeholder="Type the dinosaur name..." 
+          autocomplete="off"
+        />
+        <button class="btn-guess" onclick="makeGuess()">Submit</button>
+        <button class="btn-hint" onclick="useHint()">Hint</button>
+        <div id="suggestions"></div>
+      </div>
+
+      <div id="tree-container">
+        <div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your guesses.</div>
+      </div>
+
+      <div id="clade-info"></div>
+      <div id="guess-history"></div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    let database = [];
+    let targetDino = null;
+    let guesses = [];
+    let hintsRemaining = 3;
+    let gameWon = false;
+    let guessedNames = new Set();
+    let revealedClades = new Set();
+    let taxonomicRanks = [
+      'Kingdom', 'Phylum', 'Class', 'Superorder', 'Order', 'Suborder', 
+      'Infraorder', 'Superfamily', 'Family', 'Subfamily', 'Genus', 'Species'
+    ];
+
+    async function loadDatabase() {
+      const treeContainer = document.getElementById('tree-container');
+      treeContainer.innerHTML = '<div class="loading">Loading phylogenetic database...</div>';
+      
+      try {
+        const response = await fetch('dinozooa_db.json');
+        database = await response.json();
+        
+        startNewGame();
+        
+        treeContainer.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your guesses.</div>';
+      } catch (error) {
+        treeContainer.innerHTML = '<div class="empty-state" style="color: #c62828;">Error loading phylogenetic data. Ensure mesozooa_db.json is accessible.</div>';
+        console.error('Database loading error:', error);
+      }
+    }
+
+    function startNewGame() {
+      targetDino = database[Math.floor(Math.random() * database.length)];
+      guesses = [];
+      hintsRemaining = 3;
+      gameWon = false;
+      guessedNames = new Set();
+      revealedClades = new Set();
+      
+      document.getElementById('attempts').textContent = '0';
+      document.getElementById('hints').textContent = '3';
+      document.getElementById('best-match').textContent = '0';
+      document.getElementById('clades-revealed').textContent = '0';
+      document.getElementById('tree-container').innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your guesses.</div>';
+      document.getElementById('clade-info').innerHTML = '';
+      document.getElementById('guess-history').innerHTML = '';
+      document.getElementById('dino-input').value = '';
+      document.getElementById('dino-input').disabled = false;
+      document.querySelector('.btn-guess').disabled = false;
+      document.querySelector('.btn-hint').disabled = false;
+      
+      console.log('Mystery taxon:', targetDino.nome);
+      console.log('Complete lineage:', targetDino.linhagem);
+    }
+
+    function calculateProximity(guess, target) {
+      let matches = 0;
+      const minLength = Math.min(guess.linhagem.length, target.linhagem.length);
+      
+      for (let i = 0; i < minLength; i++) {
+        if (guess.linhagem[i] === target.linhagem[i]) {
+          matches++;
+          revealedClades.add(guess.linhagem[i]);
+        } else {
+          break;
+        }
+      }
+      
+      return {
+        matches: matches,
+        percentage: Math.round((matches / target.linhagem.length) * 100),
+        lastCommonClade: matches > 0 ? guess.linhagem[matches - 1] : null,
+        divergenceDepth: matches
+      };
+    }
+
+    function makeGuess() {
+      if (gameWon) return;
+      
+      const input = document.getElementById('dino-input');
+      const guessName = input.value.trim();
+      
+      if (!guessName) {
+        alert('Enter a taxon name!');
+        return;
+      }
+
+      const guessDino = database.find(d => 
+        d.nome.toLowerCase() === guessName.toLowerCase()
+      );
+
+      if (!guessDino) {
+        alert('Taxon not found in database! Use autocomplete suggestions.');
+        return;
+      }
+
+      if (guessedNames.has(guessDino.nome.toLowerCase())) {
+        alert('You already tried this one, but you can guess it again if you want!');
+      }
+
+      guessedNames.add(guessDino.nome.toLowerCase());
+
+      const proximity = calculateProximity(guessDino, targetDino);
+      
+      guesses.push({
+        dino: guessDino,
+        proximity: proximity,
+        isHint: false
+      });
+
+      document.getElementById('attempts').textContent = guesses.length;
+      
+      const bestMatch = Math.max(...guesses.map(g => g.proximity.matches));
+      document.getElementById('best-match').textContent = bestMatch;
+      document.getElementById('clades-revealed').textContent = revealedClades.size;
+
+      if (guessDino.nome === targetDino.nome) {
+        gameWon = true;
+        showVictory();
+      } else {
+        renderEnhancedTree();
+        updateCladeInfo();
+        updateGuessHistory();
+      }
+
+      input.value = '';
+      document.getElementById('suggestions').style.display = 'none';
+    }
+
+    function findDinosauriaIndex(lineage) {
+      return lineage.findIndex(clade => clade === 'Dinosauria');
+    }
+    
+    function findMRCA(lineage1, lineage2) {
+      const minLen = Math.min(lineage1.length, lineage2.length);
+      let mrcaIndex = -1;
+      
+      for (let i = 0; i < minLen; i++) {
+        if (lineage1[i] === lineage2[i]) {
+          mrcaIndex = i;
+        } else {
+          break;
+        }
+      }
+      
+      if (mrcaIndex >= 0) {
+        return {
+          clade: lineage1[mrcaIndex],
+          index: mrcaIndex
+        };
+      }
+      return null;
+    }
+    
+    function renderEnhancedTree() {
+      const container = document.getElementById('tree-container');
+      
+      if (guesses.length === 0) {
+        container.innerHTML = '<div class="empty-state">Make a guess to begin revealing the phylogenetic tree structure.</div>';
+        return;
+      }
+      
+      const nodeWidth = 140;
+      const nodeHeight = 40;
+      const verticalSpacing = 140;
+      const horizontalSpacing = 220;
+      
+      const targetLineage = targetDino.linhagem;
+      
+      // Build tree structure
+      const nodes = new Map();
+      const leaves = [];
+      
+      const dinoIndex = findDinosauriaIndex(targetLineage);
+      nodes.set('Dinosauria', {
+        depth: 0,
+        children: [],
+        type: 'root',
+        lineageIndex: dinoIndex
+      });
+      
+      // Process each guess - only add MRCA nodes, leaves come later
+      guesses.forEach(guess => {
+        const guessLineage = guess.dino.linhagem;
+        const mrcaWithTarget = findMRCA(guessLineage, targetLineage);
+        
+        if (mrcaWithTarget) {
+          const mrcaClade = mrcaWithTarget.clade;
+          
+          if (mrcaClade !== 'Dinosauria' && !nodes.has(mrcaClade)) {
+            // Find closest existing ancestor in target lineage
+            let parentClade = 'Dinosauria';
+            for (let i = mrcaWithTarget.index - 1; i >= dinoIndex; i--) {
+              if (nodes.has(targetLineage[i])) {
+                parentClade = targetLineage[i];
+                break;
+              }
+            }
+            
+            nodes.set(mrcaClade, {
+              depth: 0, // will be recalculated
+              children: [],
+              type: 'mrca',
+              lineageIndex: mrcaWithTarget.index
+            });
+            
+            // RE-PARENT: any existing children of parentClade that belong UNDER mrcaClade
+            // (i.e. they appear later in the target lineage than mrcaClade) must move
+            const toMove = [];
+            nodes.get(parentClade).children.forEach(existingChild => {
+              const existingIdx = nodes.get(existingChild).lineageIndex;
+              // If this existing child's lineageIndex is deeper than mrcaClade,
+              // AND it actually appears in the target lineage after mrcaClade,
+              // it should be under mrcaClade, not parentClade
+              if (existingIdx > mrcaWithTarget.index && targetLineage.includes(existingChild)) {
+                toMove.push(existingChild);
+              }
+            });
+            
+            toMove.forEach(child => {
+              // Remove from old parent
+              const oldParentChildren = nodes.get(parentClade).children;
+              const idx = oldParentChildren.indexOf(child);
+              if (idx !== -1) oldParentChildren.splice(idx, 1);
+              // Add to new parent (mrcaClade)
+              nodes.get(mrcaClade).children.push(child);
+            });
+            
+            // Add mrcaClade as child of parentClade
+            if (!nodes.get(parentClade).children.includes(mrcaClade)) {
+              nodes.get(parentClade).children.push(mrcaClade);
+            }
+          }
+        }
+      });
+      
+      // Now process MRCAs between different guesses
+      const guessData = guesses.map(g => ({
+        lineage: g.dino.linhagem,
+        name: g.dino.nome,
+        isHint: g.isHint
+      }));
+      
+      if (guessData.length >= 2) {
+        for (let i = 0; i < guessData.length; i++) {
+          for (let j = i + 1; j < guessData.length; j++) {
+            const guess1 = guessData[i];
+            const guess2 = guessData[j];
+            
+            const mrcaBetweenGuesses = findMRCA(guess1.lineage, guess2.lineage);
+            
+            if (mrcaBetweenGuesses && mrcaBetweenGuesses.clade !== 'Dinosauria') {
+              const mrcaClade = mrcaBetweenGuesses.clade;
+              
+              if (!nodes.has(mrcaClade)) {
+                let parentClade = 'Dinosauria';
+                for (let k = mrcaBetweenGuesses.index - 1; k >= dinoIndex; k--) {
+                  const candidateClade = guess1.lineage[k];
+                  if (nodes.has(candidateClade)) {
+                    parentClade = candidateClade;
+                    break;
+                  }
+                }
+                
+                nodes.set(mrcaClade, {
+                  depth: 0,
+                  children: [],
+                  type: 'mrca',
+                  lineageIndex: mrcaBetweenGuesses.index
+                });
+                
+                // RE-PARENT here too
+                const toMove = [];
+                nodes.get(parentClade).children.forEach(existingChild => {
+                  const existingIdx = nodes.get(existingChild).lineageIndex;
+                  if (existingIdx > mrcaBetweenGuesses.index && guess1.lineage.includes(existingChild)) {
+                    toMove.push(existingChild);
+                  }
+                });
+                
+                toMove.forEach(child => {
+                  const oldParentChildren = nodes.get(parentClade).children;
+                  const idx = oldParentChildren.indexOf(child);
+                  if (idx !== -1) oldParentChildren.splice(idx, 1);
+                  nodes.get(mrcaClade).children.push(child);
+                });
+                
+                if (!nodes.get(parentClade).children.includes(mrcaClade)) {
+                  nodes.get(parentClade).children.push(mrcaClade);
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Recalculate depths from root via BFS
+      function recalcDepths(clade, depth) {
+        nodes.get(clade).depth = depth;
+        nodes.get(clade).children.forEach(child => recalcDepths(child, depth + 1));
+      }
+      recalcDepths('Dinosauria', 0);
+      
+      // NOW add leaves - each guess attaches to its MRCA with target
+      guesses.forEach(guess => {
+        const guessLineage = guess.dino.linhagem;
+        const mrcaWithTarget = findMRCA(guessLineage, targetLineage);
+        
+        if (mrcaWithTarget) {
+          leaves.push({
+            name: guess.dino.nome,
+            parentNode: mrcaWithTarget.clade,
+            isTarget: false,
+            isHint: guess.isHint,
+            lineage: guessLineage
+          });
+        }
+      });
+      
+      // Add mystery animal to deepest revealed node
+      const deepestNode = Array.from(nodes.keys())
+        .filter(clade => targetLineage.includes(clade))
+        .sort((a, b) => nodes.get(b).depth - nodes.get(a).depth)[0];
+      
+      leaves.push({
+        name: '?',
+        parentNode: deepestNode,
+        isTarget: true,
+        isHint: false,
+        lineage: targetLineage
+      });
+      
+      // Calculate node positions using proper tree layout
+      const nodePositions = new Map();
+      const centerX = 800;
+      const startY = 60;
+      
+      // Count total leaf slots in a subtree (each leaf = 1 slot, recursively)
+      function countSlots(clade) {
+        const nodeData = nodes.get(clade);
+        if (!nodeData) return 1;
+        
+        // Direct leaves on this node each take 1 slot
+        const directLeaves = leaves.filter(l => l.parentNode === clade).length;
+        
+        // Each internal child contributes its own subtree slots
+        let childSlots = 0;
+        nodeData.children.forEach(child => {
+          childSlots += countSlots(child);
+        });
+        
+        // If this node has no children and no leaves, it still takes 1 slot (for ?)
+        return Math.max(1, directLeaves + childSlots);
+      }
+      
+      // Position everything recursively - internal children AND leaves together
+      function positionNode(clade, leftBound, rightBound, depth) {
+        const nodeData = nodes.get(clade);
+        if (!nodeData) return;
+        
+        const y = startY + depth * dynamicVerticalSpacing;
+        
+        // Build list of ALL children at next level: internal nodes + direct leaves, in order
+        // Internal children first (by lineageIndex), then leaves
+        const internalChildren = nodeData.children.slice().sort((a, b) => {
+          return nodes.get(a).lineageIndex - nodes.get(b).lineageIndex;
+        });
+        const directLeaves = leaves.filter(l => l.parentNode === clade);
+        
+        // Each internal child gets slots proportional to its subtree
+        // Each leaf gets exactly 1 slot
+        const slots = [];
+        internalChildren.forEach(child => {
+          slots.push({ type: 'node', name: child, slotCount: countSlots(child) });
+        });
+        directLeaves.forEach(leaf => {
+          slots.push({ type: 'leaf', name: leaf.name, slotCount: 1, leaf: leaf });
+        });
+        
+        const totalSlots = slots.reduce((sum, s) => sum + s.slotCount, 0);
+        const totalWidth = rightBound - leftBound;
+        
+        // Position this node centered over its children
+        // (we set it now, then it's correct because children fill leftBound..rightBound)
+        const x = leftBound + totalWidth / 2;
+        nodePositions.set(clade, { x, y });
+        
+        // Now distribute horizontal space among all slots
+        let currentLeft = leftBound;
+        slots.forEach(slot => {
+          const slotWidth = (slot.slotCount / totalSlots) * totalWidth;
+          const slotCenter = currentLeft + slotWidth / 2;
+          
+          if (slot.type === 'node') {
+            positionNode(slot.name, currentLeft, currentLeft + slotWidth, depth + 1);
+          } else {
+            // Position leaf directly
+            leafPositions.set(slot.name, {
+              x: slotCenter,
+              y: startY + (depth + 1) * dynamicVerticalSpacing,
+              ...slot.leaf
+            });
+          }
+          
+          currentLeft += slotWidth;
+        });
+      }
+      
+      // Position leaves map (filled by positionNode)
+      const leafPositions = new Map();
+      
+      // DYNAMIC SPACING: scale based on number of leaf slots so tree fits container
+      const containerWidth = container.clientWidth || 1400;
+      const totalSlots = countSlots('Dinosauria');
+      // Base spacing per slot, but shrink it if we have many slots
+      // Minimum 120px per slot so nodes don't overlap, max 220px
+      const dynamicHorizontalSpacing = Math.max(120, Math.min(220, (containerWidth - 100) / totalSlots));
+      
+      // Also scale vertical spacing slightly with depth to keep proportions
+      const maxDepth = (function getMaxDepth(clade, d) {
+        const nd = nodes.get(clade);
+        if (!nd || nd.children.length === 0) return d;
+        return Math.max(...nd.children.map(c => getMaxDepth(c, d + 1)));
+      })('Dinosauria', 0);
+      // Add 1 for the leaf level
+      const totalDepthLevels = maxDepth + 2;
+      const dynamicVerticalSpacing = Math.max(100, Math.min(140, (containerWidth * 0.7) / totalDepthLevels));
+      
+      // Start positioning from root
+      const totalWidth = totalSlots * dynamicHorizontalSpacing;
+      const treeLeft = centerX - totalWidth / 2;
+      const treeRight = centerX + totalWidth / 2;
+      positionNode('Dinosauria', treeLeft, treeRight, 0);
+      
+      // Calculate SVG dimensions
+      const allXPositions = [
+        ...Array.from(leafPositions.values()).map(p => p.x),
+        ...Array.from(nodePositions.values()).map(p => p.x)
+      ];
+      const allYPositions = [
+        ...Array.from(leafPositions.values()).map(p => p.y),
+        ...Array.from(nodePositions.values()).map(p => p.y)
+      ];
+      
+      const minX = Math.min(...allXPositions);
+      const maxX = Math.max(...allXPositions);
+      const maxY = Math.max(...allYPositions);
+      
+      const padding = 200;
+      const svgWidth = Math.max(1400, maxX - minX + padding * 2);
+      const svgHeight = maxY + padding;
+      
+      const offsetX = Math.max(0, padding - minX);
+      if (offsetX > 0) {
+        nodePositions.forEach((pos, clade) => {
+          pos.x += offsetX;
+        });
+        leafPositions.forEach((pos, name) => {
+          pos.x += offsetX;
+        });
+      }
+      
+      // Create SVG
+      let svg = document.getElementById('tree-svg');
+      if (!svg) {
+        container.innerHTML = `<svg id="tree-svg" width="${svgWidth}" height="${svgHeight}"></svg>`;
+        svg = document.getElementById('tree-svg');
+      } else {
+        svg.setAttribute('width', svgWidth);
+        svg.setAttribute('height', svgHeight);
+      }
+      
+      svg.innerHTML = '';
+      
+      // Draw edges between internal nodes with curves
+      nodes.forEach((data, clade) => {
+        const pos = nodePositions.get(clade);
+        
+        data.children.forEach(childClade => {
+          const childPos = nodePositions.get(childClade);
+          if (childPos) {
+            const x1 = pos.x;
+            const y1 = pos.y + nodeHeight/2;
+            const x2 = childPos.x;
+            const y2 = childPos.y - nodeHeight/2;
+            
+            const midY = (y1 + y2) / 2;
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const pathData = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+            path.setAttribute('d', pathData);
+            path.setAttribute('class', 'tree-line tree-line-revealed new-line');
+            path.setAttribute('stroke', '#c9a96e');
+            path.setAttribute('stroke-width', '3');
+            path.setAttribute('fill', 'none');
+            svg.appendChild(path);
+          }
+        });
+      });
+      
+      // Draw internal nodes
+      nodes.forEach((data, clade) => {
+        const pos = nodePositions.get(clade);
+        
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('class', 'tree-node-group new-node');
+        group.style.cursor = 'pointer';
+        group.onclick = () => showCladeInfo(clade);
+        
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', pos.x - nodeWidth/2);
+        rect.setAttribute('y', pos.y - nodeHeight/2);
+        rect.setAttribute('width', nodeWidth);
+        rect.setAttribute('height', nodeHeight);
+        rect.setAttribute('rx', '6');
+        rect.setAttribute('fill', '#8b4726');
+        rect.setAttribute('stroke', '#a6623d');
+        rect.setAttribute('stroke-width', '2.5');
+        group.appendChild(rect);
+        
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', pos.x);
+        label.setAttribute('y', pos.y);
+        label.setAttribute('class', 'tree-node-label tree-node-label-ancestor');
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('dominant-baseline', 'middle');
+        label.setAttribute('font-size', '13px');
+        label.setAttribute('font-weight', '600');
+        label.textContent = clade;
+        group.appendChild(label);
+        
+        svg.appendChild(group);
+      });
+      
+      // Draw edges to leaves
+      leafPositions.forEach((leaf, name) => {
+        const parentPos = nodePositions.get(leaf.parentNode);
+        if (!parentPos) return;
+        
+        const x1 = parentPos.x;
+        const y1 = parentPos.y + nodeHeight/2;
+        const x2 = leaf.x;
+        const y2 = leaf.y - nodeHeight/2;
+        
+        const midY = (y1 + y2) / 2;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const pathData = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+        path.setAttribute('d', pathData);
+        path.setAttribute('class', leaf.isTarget ? 'tree-line tree-line-revealed new-line' : (leaf.isHint ? 'tree-line tree-line-hint new-line' : 'tree-line tree-line-guess new-line'));
+        path.setAttribute('stroke-width', leaf.isTarget ? '3' : '2');
+        path.setAttribute('fill', 'none');
+        svg.appendChild(path);
+      });
+      
+      // Draw leaves
+      leafPositions.forEach((leaf, name) => {
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('class', 'new-node');
+        
+        if (!leaf.isTarget) {
+          group.style.cursor = 'pointer';
+          group.onclick = () => showCladeInfo(name);
+        }
+        
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', leaf.x - nodeWidth/2);
+        rect.setAttribute('y', leaf.y - nodeHeight/2);
+        rect.setAttribute('width', nodeWidth);
+        rect.setAttribute('height', nodeHeight);
+        rect.setAttribute('rx', '6');
+        
+        if (leaf.isTarget) {
+          rect.setAttribute('fill', '#4a7c59');
+          rect.setAttribute('stroke', '#5a9c6b');
+          rect.setAttribute('stroke-width', '3');
+        } else if (leaf.isHint) {
+          rect.setAttribute('fill', 'rgba(166, 138, 90, 0.3)');
+          rect.setAttribute('stroke', '#a68a5a');
+          rect.setAttribute('stroke-width', '2');
+          rect.setAttribute('stroke-dasharray', '3,3');
+        } else {
+          rect.setAttribute('fill', 'rgba(255, 255, 255, 0.1)');
+          rect.setAttribute('stroke', '#8b6f47');
+          rect.setAttribute('stroke-width', '2');
+          rect.setAttribute('stroke-dasharray', '5,5');
+        }
+        group.appendChild(rect);
+        
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', leaf.x);
+        label.setAttribute('y', leaf.y);
+        label.setAttribute('class', leaf.isTarget ? 'tree-node-label tree-node-label-revealed' : (leaf.isHint ? 'tree-node-label tree-node-label-hint' : 'tree-node-label tree-node-label-guess'));
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('dominant-baseline', 'middle');
+        label.setAttribute('font-size', leaf.isTarget ? '18px' : '13px');
+        label.setAttribute('font-weight', leaf.isTarget ? '700' : '500');
+        label.setAttribute('font-style', leaf.isTarget ? 'normal' : 'italic');
+        label.textContent = name;
+        group.appendChild(label);
+        
+        svg.appendChild(group);
+      });
+      
+      addTreeLegend(container);
+    }
+
+    function addTreeLegend(container) {
+      const existing = container.querySelector('.tree-legend');
+      if (existing) return;
+      
+      const legend = document.createElement('div');
+      legend.className = 'tree-legend';
+      legend.innerHTML = `
+        <div class="legend-item">
+          <div class="legend-symbol legend-symbol-revealed"></div>
+          <span>Mystery lineage (revealed path)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol legend-symbol-ancestor"></div>
+          <span>Common ancestor node</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol legend-symbol-guess"></div>
+          <span>Your guess</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol legend-symbol-hint"></div>
+          <span>Hint (reveals clade)</span>
+        </div>
+      `;
+      
+      container.appendChild(legend);
+    }
+
+    function showVictory() {
+      document.getElementById('dino-input').disabled = true;
+      document.querySelector('.btn-guess').disabled = true;
+      document.querySelector('.btn-hint').disabled = true;
+      
+      const container = document.getElementById('tree-container');
+      
+      const victoryDiv = document.createElement('div');
+      victoryDiv.className = 'victory';
+      victoryDiv.innerHTML = `
+        <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
+        <div class="victory-dino">${targetDino.nome}</div>
+        <p style="font-size: 1.1em; margin-top: 15px; color: #c9a96e;">Successfully identified in ${guesses.length} taxonomic queries</p>
+        <p style="font-size: 0.95em; margin-top: 12px; color: #8b7355;">${revealedClades.size} clades revealed through phylogenetic analysis</p>
+        <button class="btn-new-game" onclick="startNewGame()">Initialize New Classification</button>
+      `;
+      container.insertBefore(victoryDiv, container.firstChild);
+    }
+
+    function useHint() {
+      if (hintsRemaining <= 0) {
+        alert('No hints remaining!');
+        return;
+      }
+
+      if (gameWon) return;
+
+      const maxRevealed = Math.max(...guesses.map(g => g.proximity.matches), 0);
+      
+      if (maxRevealed >= targetDino.linhagem.length) {
+        alert('Complete lineage already revealed!');
+        return;
+      }
+
+      hintsRemaining--;
+      document.getElementById('hints').textContent = hintsRemaining;
+
+      const revealClade = targetDino.linhagem[maxRevealed];
+      const revealRank = taxonomicRanks[Math.min(maxRevealed, taxonomicRanks.length - 1)];
+      alert(`Hint: The next clade is "${revealClade}" (${revealRank})`);
+
+      revealedClades.add(revealClade);
+
+      guesses.push({
+        dino: { nome: `[HINT: ${revealClade}]`, linhagem: targetDino.linhagem.slice(0, maxRevealed + 1) },
+        proximity: { 
+          matches: maxRevealed + 1, 
+          percentage: Math.round(((maxRevealed + 1) / targetDino.linhagem.length) * 100),
+          lastCommonClade: revealClade,
+          divergenceDepth: maxRevealed + 1
+        },
+        isHint: true
+      });
+
+      document.getElementById('attempts').textContent = guesses.length;
+      const bestMatch = Math.max(...guesses.map(g => g.proximity.matches));
+      document.getElementById('best-match').textContent = bestMatch;
+      document.getElementById('clades-revealed').textContent = revealedClades.size;
+      
+      renderEnhancedTree();
+      updateCladeInfo();
+      updateGuessHistory();
+    }
+
+    function updateGuessHistory() {
+      const historyDiv = document.getElementById('guess-history');
+      
+      if (guesses.length === 0) {
+        historyDiv.innerHTML = '';
+        return;
+      }
+      
+      let html = '<div class="guess-history"><h3>Exploration History</h3>';
+      
+      guesses.slice().reverse().forEach((guess, idx) => {
+        const isHint = guess.isHint;
+        const divergenceInfo = guess.proximity.lastCommonClade ? 
+          ` → Last common: ${guess.proximity.lastCommonClade}` : '';
+        
+        html += `
+          <div class="guess-item ${isHint ? 'guess-item-hint' : ''}">
+            <span class="guess-name">${guess.dino.nome}${divergenceInfo}</span>
+            <span class="guess-match">${guess.proximity.matches}/${targetDino.linhagem.length} nodes (${guess.proximity.percentage}%)</span>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      historyDiv.innerHTML = html;
+    }
+
+    async function fetchWikipediaInfo(cladeName) {
+      try {
+        const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cladeName)}&format=json&origin=*`;
+        const searchResponse = await fetch(searchUrl);
+        const searchData = await searchResponse.json();
+
+        if (!searchData.query.search.length) {
+          return null;
+        }
+
+        const pageTitle = searchData.query.search[0].title;
+        const pageUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`;
+
+        const extractUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages|extracts&format=json&pithumbsize=300&exintro=1&explaintext=1&origin=*`;
+        const extractResponse = await fetch(extractUrl);
+        const extractData = await extractResponse.json();
+
+        const pages = extractData.query.pages;
+        const pageId = Object.keys(pages)[0];
+        const page = pages[pageId];
+        const thumbnail = page.thumbnail?.source || null;
+        const extract = page.extract || null;
+
+        return {
+          title: pageTitle,
+          url: pageUrl,
+          image: thumbnail,
+          description: extract
+        };
+      } catch (error) {
+        console.error('Wikipedia fetch error:', error);
+        return null;
+      }
+    }
+
+    async function showCladeInfo(cladeName) {
+      const infoDiv = document.getElementById('clade-info');
+      infoDiv.innerHTML = '<div class="clade-info"><div class="loading">Retrieving phylogenetic information for ' + cladeName + '...</div></div>';
+
+      const wikiInfo = await fetchWikipediaInfo(cladeName);
+
+      if (!wikiInfo) {
+        infoDiv.innerHTML = `
+          <div class="clade-info">
+            <h3>Clade: ${cladeName}</h3>
+            <p style="color: #999; font-style: italic;">No encyclopedia entry found for this clade.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <div class="clade-info">
+          <h3>Clade: ${cladeName}</h3>
+          <div class="clade-content">
+      `;
+
+      if (wikiInfo.image) {
+        html += `<img src="${wikiInfo.image}" alt="${wikiInfo.title}" class="clade-image" />`;
+      }
+
+      html += `
+            <div class="clade-text">
+              ${wikiInfo.description ? `<p>${wikiInfo.description}</p>` : '<p style="color: #999; font-style: italic;">Description unavailable.</p>'}
+              <a href="${wikiInfo.url}" target="_blank" class="clade-link">View Encyclopedia Entry</a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      infoDiv.innerHTML = html;
+    }
+
+    async function updateCladeInfo() {
+      const infoDiv = document.getElementById('clade-info');
+
+      if (guesses.length === 0) {
+        infoDiv.innerHTML = '';
+        return;
+      }
+
+      const bestGuess = guesses.reduce((best, current) => 
+        current.proximity.matches > best.proximity.matches ? current : best
+      );
+
+      const lastCommonClade = bestGuess.proximity.lastCommonClade;
+
+      if (!lastCommonClade) {
+        infoDiv.innerHTML = '';
+        return;
+      }
+
+      infoDiv.innerHTML = '<div class="clade-info"><div class="loading">Retrieving phylogenetic information for ' + lastCommonClade + '...</div></div>';
+
+      const wikiInfo = await fetchWikipediaInfo(lastCommonClade);
+
+      if (!wikiInfo) {
+        infoDiv.innerHTML = `
+          <div class="clade-info">
+            <h3>Most Recent Common Ancestor: ${lastCommonClade}</h3>
+            <p style="color: #999; font-style: italic;">No encyclopedia entry found for this clade.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <div class="clade-info">
+          <h3>Most Recent Common Ancestor: ${lastCommonClade}</h3>
+          <div class="clade-content">
+      `;
+
+      if (wikiInfo.image) {
+        html += `<img src="${wikiInfo.image}" alt="${wikiInfo.title}" class="clade-image" />`;
+      }
+
+      html += `
+            <div class="clade-text">
+              ${wikiInfo.description ? `<p>${wikiInfo.description}</p>` : '<p style="color: #999; font-style: italic;">Description unavailable.</p>'}
+              <a href="${wikiInfo.url}" target="_blank" class="clade-link">View Encyclopedia Entry</a>
+            </div>
+          </div>
+      `;
+
+      html += `
+          <div class="phylo-path">
+            <h4>Revealed Phylogenetic Path to Mystery Taxon:</h4>
+      `;
+
+      for (let i = 0; i < bestGuess.proximity.matches; i++) {
+        const cladeName = targetDino.linhagem[i];
+        html += `
+            <div class="phylo-step">
+              <span class="phylo-step-name">${cladeName}</span>
+            </div>
+        `;
+      }
+
+      html += `
+          </div>
+        </div>
+      `;
+
+      infoDiv.innerHTML = html;
+    }
+
+    // Autocomplete functionality
+    const input = document.getElementById('dino-input');
+    const suggestionsDiv = document.getElementById('suggestions');
+
+    input.addEventListener('input', function() {
+      const text = this.value.toLowerCase().trim();
+
+      if (text.length < 2) {
+        suggestionsDiv.style.display = 'none';
+        return;
+      }
+
+      const matches = database
+        .filter(d => d.nome.toLowerCase().includes(text) && !guessedNames.has(d.nome.toLowerCase()))
+        .slice(0, 8);
+
+      if (matches.length === 0) {
+        suggestionsDiv.style.display = 'none';
+        return;
+      }
+
+      suggestionsDiv.innerHTML = matches
+        .map(d => `<div class="suggestion-item" onclick="selectSuggestion('${d.nome}')">${d.nome}</div>`)
+        .join('');
+
+      suggestionsDiv.style.display = 'block';
+    });
+
+    function selectSuggestion(name) {
+      input.value = name;
+      suggestionsDiv.style.display = 'none';
+      input.focus();
+    }
+
+    input.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') makeGuess();
+    });
+
+    document.addEventListener('click', function(e) {
+      if (e.target !== input) {
+        suggestionsDiv.style.display = 'none';
+      }
+    });
+
+    loadDatabase();
+  </script>
+</body>
+</html>
