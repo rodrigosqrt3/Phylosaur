@@ -1,0 +1,2875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plylosaur</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #2d2318;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(139, 115, 85, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(201, 169, 110, 0.1) 0%, transparent 50%),
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
+      min-height: 100vh;
+      padding: 20px;
+      color: #f8f6f3;
+      transition: all 0.3s ease;
+    }
+
+    /* LIGHT MODE STYLES */
+    body.light-mode {
+      background: #e8dcc8;
+      background-image: 
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px);
+      color: #2d2318;
+    }
+
+    body.light-mode .game-card,
+    body.light-mode header {
+      background: #f5f0e8;
+      border-color: #c9a96e;
+      box-shadow: 
+        inset 0 2px 6px rgba(0,0,0,0.1),
+        0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    body.light-mode #tree-container {
+      background: #faf8f5;
+      border-color: #c9a96e;
+      box-shadow: 
+        inset 0 3px 8px rgba(0,0,0,0.15),
+        0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    body.light-mode .stat {
+      background: linear-gradient(180deg, #f5f0e8 0%, #e8dcc8 100%);
+      border-color: #c9a96e;
+    }
+
+    body.light-mode h1 {
+      color: #8b6f47;
+      text-shadow: 
+        1px 1px 0px #f5f0e8,
+        2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    body.light-mode .subtitle,
+    body.light-mode .stat-label {
+      color: #6b5340;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+    }
+
+    body.light-mode .stat-value {
+      color: #7a5c2e;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    body.light-mode #dino-input {
+      background: white;
+      border-color: #c9a96e;
+      color: #2d2318;
+    }
+    
+    body.light-mode #dino-input::placeholder {
+      color: #8b7355;
+    }
+
+    body.light-mode .empty-state,
+    body.light-mode .loading {
+      color: #6b5340;
+    }
+
+    body.light-mode .tree-node-label-ancestor {
+      fill: #fff;
+    }
+    
+    body.light-mode .tree-node-label {
+      fill: #2d2318;
+    }
+    
+    body.light-mode .tree-node-label-guess {
+      fill: #4a2c10;
+    }
+    
+    body.light-mode .tree-node-label-hint {
+      fill: #5a4a30;
+    }
+
+    body.light-mode .clade-info,
+    body.light-mode .guess-history,
+    body.light-mode .phylo-path {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: #c9a96e;
+    }
+
+    body.light-mode .clade-info h3,
+    body.light-mode .guess-history h3,
+    body.light-mode .phylo-path h4 {
+      color: #5a3e1b;
+      border-color: #c9a96e;
+    }
+
+    body.light-mode .suggestion-item {
+      background: white;
+      border-color: #e8dcc8;
+      color: #2d2318;
+    }
+
+    body.light-mode .suggestion-item:hover {
+      background: #f5f0e8;
+      color: #5a3e1b;
+    }
+
+    body.light-mode .victory {
+      background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%);
+      color: #2d2318;
+    }
+
+    body.light-mode .victory h2 {
+      color: #5a3e1b;
+    }
+
+    body.light-mode .victory-dino {
+      color: #2d6b3f;
+    }
+
+    body.light-mode .victory p {
+      color: #5a3e1b !important;
+    }
+
+    body.light-mode .clade-text p {
+      color: #2d2318;
+    }
+
+    body.light-mode .clade-link {
+      background: #8b6f47;
+      color: #fff;
+      border-color: #8b6f47;
+    }
+
+    body.light-mode .clade-link:hover {
+      background: #6b5340;
+    }
+
+    body.light-mode .guess-name {
+      color: #2d2318;
+    }
+
+    body.light-mode .guess-match {
+      color: #6b4e2a;
+    }
+
+    body.light-mode .guess-item {
+      background: rgba(255, 255, 255, 0.5);
+      border-left-color: #8b6f47;
+    }
+
+    body.light-mode .phylo-step-name {
+      color: #2d2318;
+    }
+
+    body.light-mode .phylo-step-rank {
+      color: #6b4e2a;
+    }
+
+    body.light-mode .phylo-step {
+      border-bottom-color: #c9a96e;
+    }
+
+    body.light-mode .legend-item {
+      color: #2d2318;
+    }
+
+    body.light-mode .tree-legend {
+      background: rgba(255, 255, 255, 0.5);
+      border-color: #c9a96e;
+    }
+
+    body.light-mode .btn-hint {
+      background: linear-gradient(180deg, #e8dcc8 0%, #d4c4a0 100%);
+      color: #5a3e1b;
+      border-color: #c9a96e;
+    }
+
+    body.light-mode .btn-hint:hover:not(:disabled) {
+      background: linear-gradient(180deg, #d4c4a0 0%, #c4b080 100%);
+      border-color: #8b6f47;
+    }
+
+    body.light-mode .btn-new-game {
+      background: linear-gradient(180deg, #5a8a4a 0%, #3d6b2f 100%);
+      color: #fff;
+      border-color: #4a7a3a;
+    }
+
+    body.light-mode .btn-new-game:hover {
+      background: linear-gradient(180deg, #6a9a5a 0%, #4a7a3a 100%);
+    }
+
+    body.light-mode .difficulty-btn {
+      background: linear-gradient(180deg, #f5f0e8 0%, #e8dcc8 100%);
+      color: #2d2318;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.12);
+    }
+    
+    body.light-mode .difficulty-btn:hover {
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 6px 16px rgba(0,0,0,0.18);
+    }
+    
+    body.light-mode .difficulty-very-easy  { border-color: #2d8a5a; }
+    body.light-mode .difficulty-very-easy:hover  { background: linear-gradient(180deg, #e8f5ee 0%, #d8e8dd 100%); }
+    body.light-mode .difficulty-easy  { border-color: #4a9a6a; }
+    body.light-mode .difficulty-easy:hover  { background: linear-gradient(180deg, #eef5f0 0%, #dce8e0 100%); }
+    body.light-mode .difficulty-normal { border-color: #8b6f47; }
+    body.light-mode .difficulty-normal:hover { background: linear-gradient(180deg, #f5f0e0 0%, #e8dcc0 100%); }
+    body.light-mode .difficulty-hard  { border-color: #b05030; }
+    body.light-mode .difficulty-hard:hover  { background: linear-gradient(180deg, #f5ece8 0%, #e8dcd8 100%); }
+    body.light-mode .difficulty-very-hard  { border-color: #a03020; }
+    body.light-mode .difficulty-very-hard:hover  { background: linear-gradient(180deg, #f5e8e8 0%, #e8d8d8 100%); }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 35px 30px;
+      background: linear-gradient(180deg, #1f1812 0%, #1a1410 50%, #0f0a08 100%);
+      border: 3px solid #4a3829;
+      border-radius: 3px;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 3px 8px rgba(0,0,0,0.6),
+        inset 0 -2px 4px rgba(255,255,255,0.05),
+        0 6px 16px rgba(0,0,0,0.7),
+        0 2px 4px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(201, 169, 110, 0.4), transparent);
+    }
+    
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.6), transparent);
+    }
+
+    h1 {
+      font-size: 3.8em;
+      margin-bottom: 10px;
+      color: #d4b87e;
+      font-weight: 400;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      text-shadow: 
+        2px 2px 0px #1a1410,
+        3px 3px 6px rgba(0,0,0,0.8),
+        0 0 30px rgba(201, 169, 110, 0.2);
+      font-variant: small-caps;
+      transition: all 0.3s ease;
+    }
+
+    .subtitle {
+      font-size: 1.1em;
+      color: #a68a5a;
+      font-style: italic;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #theme-toggle {
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+
+    .game-card {
+      background: linear-gradient(180deg, #2c2318 0%, #2a1f16 50%, #221a12 100%);
+      border: 3px solid #4a3829;
+      border-radius: 4px;
+      padding: 40px;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 3px 10px rgba(0,0,0,0.7),
+        inset 0 -1px 0 rgba(255,255,255,0.03),
+        0 12px 32px rgba(0,0,0,0.8),
+        0 4px 8px rgba(0,0,0,0.6);
+      margin-bottom: 20px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    }
+    
+    .game-card::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      right: 3px;
+      bottom: 3px;
+      border: 1px solid rgba(0,0,0,0.3);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    .input-section {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    #dino-input {
+      flex: 1;
+      padding: 14px 18px;
+      font-size: 16px;
+      font-family: 'Georgia', serif;
+      border: 2px solid #3d2f1f;
+      border-radius: 3px;
+      outline: none;
+      transition: all 0.2s;
+      background: linear-gradient(180deg, #0f0a08 0%, #1a1410 100%);
+      color: #f8f6f3;
+      box-shadow: 
+        inset 0 3px 6px rgba(0,0,0,0.8),
+        inset 0 1px 2px rgba(0,0,0,0.6),
+        inset 0 -1px 0 rgba(255,255,255,0.03),
+        0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    #dino-input:focus {
+      border-color: #8b7355;
+      background: linear-gradient(180deg, #1a1410 0%, #2a1f16 100%);
+      box-shadow: 
+        inset 0 3px 6px rgba(0,0,0,0.7),
+        inset 0 -1px 0 rgba(255,255,255,0.05),
+        0 0 0 3px rgba(139, 115, 85, 0.25),
+        0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Georgia', serif;
+      border: 2px solid;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .btn-guess {
+      background: linear-gradient(180deg, #d4b87e 0%, #c9a96e 50%, #a68a5a 100%);
+      color: #1a1410;
+      border-color: #8b7355;
+      font-weight: 700;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        inset 0 -2px 4px rgba(0,0,0,0.2),
+        0 4px 8px rgba(0,0,0,0.4),
+        0 1px 2px rgba(0,0,0,0.3);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    }
+
+    .btn-guess:hover:not(:disabled) {
+      background: linear-gradient(180deg, #e6c896 0%, #d4b87e 50%, #b89a6a 100%);
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.5),
+        inset 0 -2px 4px rgba(0,0,0,0.15),
+        0 6px 12px rgba(0,0,0,0.5),
+        0 2px 4px rgba(0,0,0,0.3);
+      transform: translateY(-1px);
+    }
+    
+    .btn-guess:active:not(:disabled) {
+      box-shadow: 
+        inset 0 3px 6px rgba(0,0,0,0.4),
+        inset 0 1px 2px rgba(0,0,0,0.3),
+        0 1px 2px rgba(0,0,0,0.2);
+      transform: translateY(1px);
+    }
+
+    .btn-hint {
+      background: linear-gradient(180deg, #3d2f1f 0%, #2a1f16 100%);
+      color: #c9a96e;
+      border-color: #5d4a36;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.3),
+        0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    .btn-hint:hover:not(:disabled) {
+      background: linear-gradient(180deg, #4a3829 0%, #3d2f1f 100%);
+      border-color: #8b7355;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -1px 0 rgba(0,0,0,0.2),
+        0 3px 6px rgba(0,0,0,0.5);
+    }
+
+    .btn-new-game {
+      background: linear-gradient(180deg, #3d4a2f 0%, #2d3a1f 100%);
+      color: #d4e5c9;
+      border-color: #4a5d36;
+      width: 100%;
+      margin-top: 20px;
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -1px 0 rgba(0,0,0,0.3),
+        0 3px 6px rgba(0,0,0,0.5);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .btn-new-game:hover {
+      background: linear-gradient(180deg, #4a5d36 0%, #3d4a2f 100%);
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        inset 0 -1px 0 rgba(0,0,0,0.2),
+        0 4px 8px rgba(0,0,0,0.6);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 140px;
+      background: #2a1f16;
+      border: 2px solid #5d4a36;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .suggestion-item {
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid #3d2f1f;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      color: #f8f6f3;
+    }
+
+    .suggestion-item:hover {
+      background: #3d2f1f;
+      color: #c9a96e;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat {
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(180deg, #4a3829 0%, #3d2f1f 50%, #2a1f16 100%);
+      border: 2px solid #5d4a36;
+      border-radius: 3px;
+      transition: all 0.2s;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -3px 6px rgba(0,0,0,0.5),
+        0 4px 12px rgba(0,0,0,0.6),
+        0 1px 3px rgba(0,0,0,0.4);
+      position: relative;
+    }
+    
+    .stat::before {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      right: 1px;
+      height: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+      border-radius: 2px 2px 0 0;
+      pointer-events: none;
+    }
+
+    .stat:hover {
+      border-color: #6b5d52;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        inset 0 -3px 6px rgba(0,0,0,0.4),
+        0 6px 16px rgba(0,0,0,0.7),
+        0 2px 4px rgba(0,0,0,0.5);
+      transform: translateY(-1px);
+    }
+
+    .stat-value {
+      font-size: 2.5em;
+      font-weight: 400;
+      color: #d4b87e;
+      font-family: 'Georgia', serif;
+      text-shadow: 
+        0 1px 0 #1a1410,
+        0 2px 4px rgba(0,0,0,0.6);
+      transition: all 0.3s ease;
+    }
+
+    .stat-label {
+      font-size: 0.85em;
+      color: #a68a5a;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 300;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      transition: all 0.3s ease;
+    }
+
+    #tree-container {
+      background: linear-gradient(180deg, #1a1410 0%, #0f0a08 100%);
+      border: 3px solid #3d2f1f;
+      border-radius: 4px;
+      padding: 30px;
+      min-height: 500px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 
+        inset 0 4px 12px rgba(0,0,0,0.8),
+        inset 0 1px 3px rgba(0,0,0,0.6),
+        inset 0 -1px 0 rgba(255,255,255,0.02),
+        0 4px 12px rgba(0,0,0,0.6),
+        0 1px 3px rgba(0,0,0,0.4);
+      transition: all 0.3s ease;
+    }
+    
+    #tree-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,.08) 10px, rgba(0,0,0,.08) 11px),
+        repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(0,0,0,.08) 10px, rgba(0,0,0,.08) 11px);
+      pointer-events: none;
+      opacity: 0.4;
+      z-index: 0;
+    }
+    
+    #tree-container::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      right: 2px;
+      bottom: 2px;
+      border: 1px solid rgba(0,0,0,0.4);
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #tree-scroll-wrapper {
+      position: relative;
+      z-index: 1;
+      transform-origin: top center;
+      transition: transform 0.4s ease;
+      width: 100%;
+      height: 100%;
+    }
+
+    #tree-svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .tree-node-group {
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tree-node-group:hover rect {
+      fill: #a6623d;
+      stroke: #d4a574;
+      stroke-width: 3;
+      filter: drop-shadow(0 0 12px rgba(201, 169, 110, 0.6));
+    }
+    
+    .tree-node-group:hover text {
+      fill: #f4e4c1;
+    }
+
+    .tree-node-group:hover .tree-node-circle {
+      stroke-width: 4;
+      filter: drop-shadow(0 0 8px rgba(139, 115, 85, 0.4));
+    }
+
+    .tree-line {
+      stroke: #8b7355;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      transition: all 0.3s;
+    }
+
+    .tree-line-revealed {
+      stroke: #c9a96e;
+      stroke-width: 3;
+    }
+
+    .tree-line-guess {
+      stroke: #8b6f47;
+      stroke-width: 2;
+      stroke-dasharray: 5,5;
+    }
+
+    .tree-line-hint {
+      stroke: #a68a5a;
+      stroke-width: 2;
+      stroke-dasharray: 3,3;
+    }
+
+    .tree-node-circle {
+      fill: #2a1f16;
+      stroke: #8b7355;
+      stroke-width: 2;
+      transition: all 0.3s;
+    }
+
+    .tree-node-circle-revealed {
+      fill: #c9a96e;
+      stroke: #f4e4c1;
+      stroke-width: 3;
+    }
+
+    .tree-node-circle-guess {
+      fill: #8b6f47;
+      stroke: #a68a5a;
+      opacity: 0.8;
+    }
+
+    .tree-node-circle-hint {
+      fill: #a68a5a;
+      stroke: #c9a96e;
+      opacity: 0.7;
+    }
+
+    .tree-node-circle-ancestor {
+      fill: #2a1f16;
+      stroke: #c9a96e;
+      stroke-width: 2.5;
+    }
+
+    .tree-node-label {
+      font-family: 'Georgia', serif;
+      font-size: 16px;
+      fill: #f4e4c1;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node-label-revealed {
+      fill: #2d5016;
+      font-weight: 600;
+    }
+
+    .tree-node-label-guess {
+      fill: #8b4513;
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .tree-node-label-hint {
+      fill: #8b7355;
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .tree-node-label-ancestor {
+      fill: #2d5016;
+      font-weight: 500;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #8b7355;
+      padding: 60px 20px;
+      font-style: italic;
+      font-size: 1.1em;
+      transition: all 0.3s ease;
+    }
+
+    .victory {
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, #3d3027 0%, #2c2318 100%);
+      color: #f8f6f3;
+      animation: celebrate 0.6s ease-out;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+
+    /* Difficulty tier indicators */
+    .tier-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin: 0 3px;
+      border: 1px solid currentColor;
+      background: transparent;
+    }
+
+    .tier-indicator.filled {
+      background: currentColor;
+    }
+
+    .difficulty-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .difficulty-btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s ease, height 0.6s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .difficulty-btn:hover::after {
+      width: 300%;
+      height: 300%;
+    }
+
+    .difficulty-btn > div {
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat {
+      position: relative;
+    }
+
+    .stat::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, transparent, rgba(201,169,110,0.2), transparent);
+      border-radius: 3px;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .stat:hover::after {
+      animation: shimmer 2s infinite;
+    }
+
+    .difficulty-completed {
+  border-color: #5a9c6b !important;
+  box-shadow: 0 0 20px rgba(90, 156, 107, 0.3) !important;
+}
+
+body.light-mode .difficulty-completed {
+  border-color: #4a7c59 !important;
+  box-shadow: 0 0 20px rgba(74, 124, 89, 0.3) !important;
+}
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+
+    .victory h2 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .victory-dino {
+      font-size: 2em;
+      margin: 25px 0;
+      font-style: italic;
+      color: #c8e6c9;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #c9a96e;
+      font-size: 1.1em;
+      font-style: italic;
+      transition: all 0.3s ease;
+    }
+
+    .clade-info {
+      margin-top: 30px;
+      padding: 30px;
+      background: linear-gradient(135deg, rgba(61, 47, 31, 0.5) 0%, rgba(42, 31, 22, 0.7) 100%);
+      border: 2px solid #5d4a36;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+    }
+
+    .clade-info h3 {
+      color: #f4e4c1;
+      margin-bottom: 20px;
+      font-size: 1.4em;
+      font-weight: 400;
+      font-style: italic;
+      border-bottom: 2px solid #5d4a36;
+      padding-bottom: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .clade-content {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .clade-image {
+      max-width: 220px;
+      border: 2px solid #5d4a36;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    .clade-text {
+      flex: 1;
+      font-size: 1em;
+      line-height: 1.8;
+      color: #f8f6f3;
+    }
+
+    .clade-link {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 10px 24px;
+      background: #3d3027;
+      color: #f8f6f3;
+      text-decoration: none;
+      transition: all 0.3s;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      border-radius: 4px;
+      border: 2px solid #3d3027;
+    }
+
+    .clade-link:hover {
+      background: #2c2318;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .phylo-path {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(61, 47, 31, 0.4);
+      border-left: 4px solid #c9a96e;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .phylo-path h4 {
+      color: #f4e4c1;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .phylo-step {
+      padding: 8px 0;
+      border-bottom: 1px solid #5d4a36;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .phylo-step:last-child {
+      border-bottom: none;
+    }
+
+    .phylo-step-name {
+      font-style: italic;
+      color: #f8f6f3;
+      font-size: 0.95em;
+    }
+
+    .guess-history {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(61, 47, 31, 0.5);
+      border: 2px solid #5d4a36;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .guess-history h3 {
+      color: #f4e4c1;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+      font-weight: 400;
+      transition: all 0.3s ease;
+    }
+
+    .guess-item {
+      padding: 10px 15px;
+      margin: 8px 0;
+      background: rgba(42, 31, 22, 0.6);
+      border-left: 4px solid #8b6f47;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .guess-item-hint {
+      border-left-color: #a68a5a;
+      opacity: 0.8;
+    }
+
+    .guess-name {
+      font-style: italic;
+      color: #f8f6f3;
+    }
+
+    .guess-match {
+      font-weight: 500;
+      color: #c9a96e;
+    }
+
+    .tree-legend {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(61, 47, 31, 0.6);
+      border: 2px solid #5d4a36;
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9em;
+      color: #f8f6f3;
+    }
+
+    .legend-symbol {
+      width: 30px;
+      height: 20px;
+      border-radius: 3px;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .legend-symbol-revealed {
+      background: #4a7c59;
+      border-color: #5a9c6b;
+    }
+
+    .legend-symbol-guess {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #8b6f47;
+    }
+
+    .legend-symbol-hint {
+      background: rgba(166, 138, 90, 0.3);
+      border-color: #a68a5a;
+    }
+
+    .legend-symbol-ancestor {
+      background: #8b4726;
+      border-color: #a6623d;
+    }
+
+    /* Difficulty button styles */
+    .difficulty-btn {
+      background: linear-gradient(180deg, #3d2f1f 0%, #2a1f16 100%);
+      border: 2px solid #5d4a36;
+      border-radius: 8px;
+      color: #f8f6f3;
+      transition: all 0.25s;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        0 4px 12px rgba(0,0,0,0.5);
+    }
+    
+    .difficulty-btn:hover {
+      border-color: #c9a96e;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        0 6px 18px rgba(0,0,0,0.6);
+      transform: translateY(-2px);
+    }
+    
+    .difficulty-very-easy  { border-color: #3d9c6b; }
+    .difficulty-very-easy:hover  { border-color: #5abf8a; background: linear-gradient(180deg, #2f4a3a 0%, #243528 100%); }
+    .difficulty-easy  { border-color: #5a9c6b; }
+    .difficulty-easy:hover  { border-color: #7abf8a; background: linear-gradient(180deg, #2a3d2f 0%, #1f2a22 100%); }
+    .difficulty-normal { border-color: #c9a96e; }
+    .difficulty-normal:hover { border-color: #e6c896; background: linear-gradient(180deg, #3d3520 0%, #2a2416 100%); }
+    .difficulty-hard  { border-color: #c06040; }
+    .difficulty-hard:hover  { border-color: #e08060; background: linear-gradient(180deg, #3d2520 0%, #2a1a16 100%); }
+    .difficulty-very-hard  { border-color: #b04030; }
+    .difficulty-very-hard:hover  { border-color: #d05040; background: linear-gradient(180deg, #3d1f18 0%, #2a1612 100%); }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2em; }
+      .game-card { padding: 20px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .clade-content { flex-direction: column; }
+      .clade-image { max-width: 100%; }
+      .input-section { flex-wrap: wrap; }
+      .btn-hint { width: 100%; }
+    }
+
+    @keyframes fadeIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(15px) scale(0.95); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+      }
+    }
+
+    @keyframes branchGrow {
+      from { 
+        stroke-dashoffset: 1000;
+        opacity: 0;
+      }
+      to { 
+        stroke-dashoffset: 0;
+        opacity: 1;
+      }
+    }
+    
+    @keyframes nodeAppear {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .new-node {
+      animation: nodeAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .new-line {
+      stroke-dasharray: 1000;
+      animation: branchGrow 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="main-container">
+    <header>
+      <h1>Phylosaur</h1>
+      <p class="subtitle">A phylogenetic classification challenge</p>
+    </header>
+
+    <div id="app-content">
+      <!-- Filled by JavaScript -->
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════════
+    // GLOBAL STATE
+    // ═══════════════════════════════════════════════════════════════════════
+    let fullDatabase = [];
+    let database = [];
+    let targetDino = null;
+    let guesses = [];
+    let hintsRemaining = 3;
+    let gameWon = false;
+    let guessedNames = new Set();
+    let revealedClades = new Set();
+    let selectedDifficulty = null;
+
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // USER ACCOUNT SYSTEM
+    // ═══════════════════════════════════════════════════════════════════════
+    let currentUser = null;
+    let userStats = {
+      gamesPlayed: 0,
+      gamesWon: 0,
+      totalGuesses: 0,
+      bestScore: null,
+      difficultyStats: {
+        'muito_facil': { played: 0, won: 0, avgGuesses: 0 },
+        'facil': { played: 0, won: 0, avgGuesses: 0 },
+        'normal': { played: 0, won: 0, avgGuesses: 0 },
+        'dificil': { played: 0, won: 0, avgGuesses: 0 },
+        'muito_dificil': { played: 0, won: 0, avgGuesses: 0 }
+      },
+      recentGames: [],
+      achievements: []
+    };
+
+    // Difficulty mapping
+    const DIFFICULTY_MAP = {
+      'muito_facil': 'very-easy',
+      'facil': 'easy',
+      'normal': 'normal',
+      'dificil': 'hard',
+      'muito_dificil': 'very-hard'
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // USER ACCOUNT SYSTEM
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function initializeUserSystem() {
+      const saved = localStorage.getItem('phylosaur-user');
+      if (saved) {
+        const data = JSON.parse(saved);
+        currentUser = data.username;
+        userStats = data.stats;
+      }
+    }
+
+    function saveUserProgress() {
+      if (!currentUser) return;
+      
+      localStorage.setItem('phylosaur-user', JSON.stringify({
+        username: currentUser,
+        stats: userStats,
+        lastPlayed: new Date().toISOString()
+      }));
+    }
+
+    function updateStatsAfterGame(won, guessCount, difficulty) {
+      userStats.gamesPlayed++;
+      if (won) userStats.gamesWon++;
+      userStats.totalGuesses += guessCount;
+      
+      const diff = userStats.difficultyStats[difficulty];
+      diff.played++;
+      if (won) diff.won++;
+      diff.avgGuesses = ((diff.avgGuesses * (diff.played - 1)) + guessCount) / diff.played;
+      
+      if (!userStats.bestScore || guessCount < userStats.bestScore) {
+        userStats.bestScore = guessCount;
+      }
+      
+      userStats.recentGames.unshift({
+        date: new Date().toISOString(),
+        won: won,
+        guesses: guessCount,
+        difficulty: difficulty,
+        target: targetDino.nome
+      });
+      
+      if (userStats.recentGames.length > 10) {
+        userStats.recentGames.pop();
+      }
+      
+      checkAchievements(won, guessCount);
+      saveUserProgress();
+    }
+
+    function checkAchievements(won, guessCount) {
+      const achievements = [
+        { id: 'first_win', name: 'First Discovery', condition: () => userStats.gamesWon === 1 },
+        { id: 'perfect_game', name: 'Phylogenetic Prodigy', condition: () => won && guessCount <= 3 },
+        { id: 'ten_wins', name: 'Taxonomist', condition: () => userStats.gamesWon >= 10 },
+        { id: 'fifty_wins', name: 'Paleontologist', condition: () => userStats.gamesWon >= 50 },
+        { id: 'hard_win', name: 'Specialist', condition: () => won && selectedDifficulty === 'dificil' },
+        { id: 'very_hard_win', name: 'Expert', condition: () => won && selectedDifficulty === 'muito_dificil' }
+      ];
+      
+      achievements.forEach(ach => {
+        if (ach.condition() && !userStats.achievements.includes(ach.id)) {
+          userStats.achievements.push(ach.id);
+          showAchievementNotification(ach.name);
+        }
+      });
+    }
+
+    function showAchievementNotification(name) {
+      const notif = document.createElement('div');
+      notif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #3d4a2f 0%, #2d3a1f 100%);
+        color: #d4e5c9;
+        padding: 20px 30px;
+        border-radius: 8px;
+        border: 2px solid #4a5d36;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        z-index: 10000;
+        animation: slideIn 0.5s ease-out;
+        font-family: Georgia, serif;
+      `;
+      notif.innerHTML = `
+        <div style="font-size:0.9em; color:#a68a5a; margin-bottom:5px;">Achievement Unlocked!</div>
+        <div style="font-size:1.2em; font-weight:600; letter-spacing:1px;">◆ ${name}</div>
+      `;
+      document.body.appendChild(notif);
+      
+      setTimeout(() => {
+        notif.style.animation = 'slideOut 0.5s ease-in';
+        setTimeout(() => notif.remove(), 500);
+      }, 3000);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // THEME TOGGLE
+    // ═══════════════════════════════════════════════════════════════════════
+    let currentTheme = 'dark';
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.body.classList.toggle('light-mode');
+      
+      const icon = document.getElementById('theme-icon');
+      const text = document.getElementById('theme-text');
+      if (icon && text) {
+        if (currentTheme === 'light') { 
+          icon.textContent = '🌙'; 
+          text.textContent = 'Dark Mode'; 
+        } else { 
+          icon.textContent = '☀️'; 
+          text.textContent = 'Light Mode'; 
+        }
+      }
+      localStorage.setItem('plylosaur-theme', currentTheme);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // LOGIN & AUTHENTICATION
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function showLoginScreen() {
+      const appContent = document.getElementById('app-content');
+      
+      appContent.innerHTML = `
+        <div class="theme-toggle-container">
+          <button id="theme-toggle" class="btn-hint" onclick="toggleTheme()">
+            <span id="theme-icon">☀️</span> <span id="theme-text">Light Mode</span>
+          </button>
+        </div>
+
+        <div class="game-card" style="max-width:500px; margin:60px auto;">
+          <h2 style="color:#d4b87e; margin-bottom:30px; text-align:center; font-size:2em; letter-spacing:3px;">PHYLOSAUR</h2>
+          
+          <div style="margin-bottom:30px;">
+            <label style="display:block; color:#a68a5a; margin-bottom:8px; font-size:0.9em; letter-spacing:1px; text-transform:uppercase;">Username</label>
+            <input type="text" id="username-input" placeholder="Enter your classification ID" 
+              style="width:100%; padding:14px; font-size:16px; background:#1a1410; color:#f8f6f3; border:2px solid #3d2f1f; border-radius:3px; font-family:Georgia,serif;" />
+          </div>
+          
+          <button class="btn-guess" onclick="login()" style="width:100%; padding:16px; font-size:16px; margin-bottom:15px;">
+            BEGIN CLASSIFICATION
+          </button>
+          
+          <button class="btn-hint" onclick="continueAsGuest()" style="width:100%; padding:14px; font-size:14px;">
+            Continue Without Account
+          </button>
+          
+          <div style="margin-top:30px; padding:20px; background:rgba(61,47,31,0.3); border-radius:6px; border-left:3px solid #8b6f47;">
+            <div style="color:#c9a96e; font-size:0.9em; margin-bottom:8px; font-weight:600; letter-spacing:1px;">Account Benefits</div>
+            <div style="color:#8b7355; font-size:0.85em; line-height:1.6;">
+              • Track classification progress<br>
+              • Unlock achievements<br>
+              • View detailed statistics<br>
+              • Compare with other researchers
+            </div>
+          </div>
+        </div>
+      `;
+      
+      const themeToggle = document.getElementById('theme-toggle');
+      const icon = document.getElementById('theme-icon');
+      const text = document.getElementById('theme-text');
+      if (currentTheme === 'light') {
+        icon.textContent = '🌙';
+        text.textContent = 'Dark Mode';
+      }
+      
+      document.getElementById('username-input').addEventListener('keypress', e => {
+        if (e.key === 'Enter') login();
+      });
+    }
+
+    function login() {
+      const username = document.getElementById('username-input').value.trim();
+      
+      if (!username) {
+        alert('Please enter a username');
+        return;
+      }
+      
+      if (username.length < 3) {
+        alert('Username must be at least 3 characters');
+        return;
+      }
+      
+      currentUser = username;
+      
+      const existing = localStorage.getItem('phylosaur-user');
+      if (existing) {
+        const data = JSON.parse(existing);
+        if (data.username === username) {
+          userStats = data.stats;
+        }
+      }
+      
+      saveUserProgress();
+      showDifficultySelection();
+    }
+
+    function continueAsGuest() {
+      currentUser = null;
+      showDifficultySelection();
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        currentUser = null;
+        userStats = {
+          gamesPlayed: 0,
+          gamesWon: 0,
+          totalGuesses: 0,
+          bestScore: null,
+          difficultyStats: {
+            'muito_facil': { played: 0, won: 0, avgGuesses: 0 },
+            'facil': { played: 0, won: 0, avgGuesses: 0 },
+            'normal': { played: 0, won: 0, avgGuesses: 0 },
+            'dificil': { played: 0, won: 0, avgGuesses: 0 },
+            'muito_dificil': { played: 0, won: 0, avgGuesses: 0 }
+          },
+          recentGames: [],
+          achievements: []
+        };
+        showLoginScreen();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('phylosaur-theme');
+      if (savedTheme === 'light') toggleTheme();
+      
+      initializeUserSystem();
+      
+      if (currentUser) {
+        showDifficultySelection();
+      } else {
+        showLoginScreen();
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // DIFFICULTY SELECTION SCREEN
+    // ═══════════════════════════════════════════════════════════════════════
+        function showDifficultySelection() {
+        const appContent = document.getElementById('app-content');
+        
+        // Get today's completion status for each difficulty
+        const completionStatus = getDailyCompletionStatus();
+        
+        appContent.innerHTML = `
+            <div class="theme-toggle-container">
+            <button id="theme-toggle" class="btn-hint" onclick="toggleTheme()">
+                <span id="theme-icon">☀️</span> <span id="theme-text">Light Mode</span>
+            </button>
+            <button class="btn-hint" onclick="showAbout()" style="margin-left:10px;">About</button>
+            ${currentUser ? `<button class="btn-hint" onclick="showStatsDashboard()" style="margin-left:10px;">View Statistics</button>` : ''}
+            ${currentUser ? `<button class="btn-hint" onclick="logout()" style="margin-left:10px;">Logout (${currentUser})</button>` : ''}
+            </div>
+            
+            <div class="game-card" style="text-align:center;">
+            <h2 style="color:#d4b87e; margin-bottom:12px; font-size:1.8em;">Daily Phylogenetic Challenge</h2>
+            <p style="color:#a68a5a; margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
+                ${getCurrentDateFormatted()} — Select Classification Level
+            </p>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin:30px 0;">
+                ${generateDifficultyButton('muito_facil', 'LEVEL I', 'I', 'High-frequency taxa', completionStatus.muito_facil)}
+                ${generateDifficultyButton('facil', 'LEVEL II', 'II', 'Common phylogenetic groups', completionStatus.facil)}
+                ${generateDifficultyButton('normal', 'LEVEL III', 'III', 'Intermediate taxonomic diversity', completionStatus.normal)}
+                ${generateDifficultyButton('dificil', 'LEVEL IV', 'IV', 'Specialized clades', completionStatus.dificil)}
+                ${generateDifficultyButton('muito_dificil', 'LEVEL V', 'V', 'Rare taxonomic units', completionStatus.muito_dificil)}
+            </div>
+            
+            <div style="margin-top:30px; padding:20px; background:rgba(61,47,31,0.3); border-radius:6px; border-left:3px solid #8b6f47;">
+                <div style="color:#c9a96e; font-size:0.9em; line-height:1.8;">
+                Each difficulty level presents a unique specimen for today's date. All researchers worldwide receive identical classification challenges. Progress is tracked independently per difficulty level.
+                </div>
+            </div>
+            </div>
+        `;
+        
+        const themeToggle = document.getElementById('theme-toggle');
+        const icon = document.getElementById('theme-icon');
+        const text = document.getElementById('theme-text');
+        if (currentTheme === 'light') {
+            icon.textContent = '🌙';
+            text.textContent = 'Dark Mode';
+        }
+        }
+
+        function getCurrentDateFormatted() {
+  const today = new Date();
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return today.toLocaleDateString('en-US', options);
+}
+
+function getDailyCompletionStatus() {
+  if (!currentUser) {
+    return {
+      muito_facil: false,
+      facil: false,
+      normal: false,
+      dificil: false,
+      muito_dificil: false
+    };
+  }
+  
+  const today = getTodayString();
+  const saved = localStorage.getItem(`phylosaur-daily-${currentUser}-${today}`);
+  
+  if (!saved) {
+    return {
+      muito_facil: false,
+      facil: false,
+      normal: false,
+      dificil: false,
+      muito_dificil: false
+    };
+  }
+  
+  return JSON.parse(saved);
+}
+
+function getTodayString() {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
+
+function markDailyChallengeCompleted(difficulty) {
+  if (!currentUser) return;
+  
+  const today = getTodayString();
+  const status = getDailyCompletionStatus();
+  status[difficulty] = true;
+  
+  localStorage.setItem(`phylosaur-daily-${currentUser}-${today}`, JSON.stringify(status));
+}
+
+function generateDifficultyButton(difficulty, name, level, description, completed) {
+  const tierCount = {'muito_facil': 1, 'facil': 2, 'normal': 3, 'dificil': 4, 'muito_dificil': 5}[difficulty];
+  let tiers = '';
+  for (let i = 1; i <= 5; i++) {
+    tiers += `<span class="tier-indicator ${i <= tierCount ? 'filled' : ''}"></span>`;
+  }
+  
+  const statusIndicator = completed 
+    ? '<div style="position:absolute; top:10px; right:10px; width:24px; height:24px; background:#5a9c6b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:bold;">✓</div>'
+    : '';
+  
+  const borderClass = completed ? 'difficulty-completed' : '';
+  
+  return `
+    <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]} ${borderClass}" 
+            onclick="startDailyChallenge('${difficulty}')" 
+            style="padding:30px; font-size:1.2em; position:relative;">
+      ${statusIndicator}
+      <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
+        ◆ ${name}
+      </div>
+      <div style="margin:8px 0;">
+        ${tiers}
+      </div>
+      <div style="font-size:0.85em; color:#a68a5a;">Classification Level ${level}</div>
+      <div style="font-size:0.75em; color:#8b7355; font-style:italic;">${description}</div>
+    </button>
+  `;
+}
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // START GAME
+    // ═══════════════════════════════════════════════════════════════════════
+function startDailyChallenge(difficulty) {
+  selectedDifficulty = difficulty;
+  const appContent = document.getElementById('app-content');
+  
+  appContent.innerHTML = `
+    <div class="theme-toggle-container">
+    <button id="theme-toggle" class="btn-hint" onclick="toggleTheme()">
+        <span id="theme-icon">☀️</span> <span id="theme-text">Light Mode</span>
+    </button>
+    <button class="btn-hint" onclick="showAbout()" style="margin-left:10px;">About</button>
+    <button class="btn-hint" onclick="showDifficultySelection()" style="margin-left:10px;">Change Level</button>
+    ${currentUser ? `<button class="btn-hint" onclick="showStatsDashboard()" style="margin-left:10px;">Statistics</button>` : ''}
+    </div>
+
+    <div class="game-card">
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value" id="attempts">0</div>
+          <div class="stat-label">Attempts</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="hints">3</div>
+          <div class="stat-label">Hints</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="best-match">0</div>
+          <div class="stat-label">Deepest Node</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="clades-revealed">0</div>
+          <div class="stat-label">Clades Revealed</div>
+        </div>
+      </div>
+
+      <div class="input-section">
+        <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
+        <button class="btn-guess" onclick="makeGuess()">Submit</button>
+        <button class="btn-hint" onclick="useHint()">Hint</button>
+        <div id="suggestions"></div>
+      </div>
+
+      <div id="tree-container">
+        <div id="tree-scroll-wrapper">
+          <div class="empty-state">Loading classification challenge...</div>
+        </div>
+      </div>
+
+      <div id="clade-info"></div>
+      <div id="guess-history"></div>
+    </div>
+  `;
+
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    const icon = document.getElementById('theme-icon');
+    const text = document.getElementById('theme-text');
+    if (currentTheme === 'light') {
+      icon.textContent = '🌙';
+      text.textContent = 'Dark Mode';
+    }
+  }
+
+  loadDailyDatabase(difficulty);
+}
+
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // LOAD DATABASE
+async function loadDailyDatabase(difficulty) {
+  const wrapper = document.getElementById('tree-scroll-wrapper');
+  if (wrapper) wrapper.innerHTML = '<div class="loading">Loading classification database...</div>';
+  
+  try {
+    const res = await fetch('dinozooa_db.json');
+    if (!res.ok) throw new Error('Failed to load database');
+    
+    fullDatabase = await res.json();
+    
+    // Filter by selected difficulty
+    database = fullDatabase.filter(d => d.dificuldade === difficulty);
+    
+    console.log(`Loaded ${database.length} specimens for difficulty: ${difficulty}`);
+    
+    if (database.length === 0) {
+      throw new Error(`No specimens found for difficulty: ${difficulty}`);
+    }
+    
+    // Generate daily specimen using seed
+    const seed = getDailySeed(difficulty);
+    const hash = hashString(seed);
+    const index = hash % database.length;
+    
+    targetDino = database[index];
+    guesses = [];
+    hintsRemaining = 3;
+    gameWon = false;
+    guessedNames = new Set();
+    revealedClades = new Set();
+    
+    console.log('Daily specimen:', targetDino.nome, 'Seed:', seed);
+    
+    document.getElementById('attempts').textContent = '0';
+    document.getElementById('hints').textContent = '3';
+    document.getElementById('best-match').textContent = '0';
+    document.getElementById('clades-revealed').textContent = '0';
+
+    if (wrapper) {
+      wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+    }
+
+    initializeAutocomplete();
+    
+  } catch (err) {
+    console.error('Database error:', err);
+    if (wrapper) {
+      wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
+    }
+  }
+}
+    // ═══════════════════════════════════════════════════════════════════════
+    // GAME LOGIC
+    // ═══════════════════════════════════════════════════════════════════════
+    function calculateProximity(guess, target) {
+      let matches = 0;
+      const minLength = Math.min(guess.linhagem.length, target.linhagem.length);
+      
+      for (let i = 0; i < minLength; i++) {
+        if (guess.linhagem[i] === target.linhagem[i]) {
+          matches++;
+        } else {
+          break;
+        }
+      }
+      
+      return {
+        matches,
+        percentage: Math.round((matches / target.linhagem.length) * 100),
+        lastCommonClade: matches > 0 ? guess.linhagem[matches - 1] : null,
+        divergenceDepth: matches
+      };
+    }
+
+    function makeGuess() {
+      if (gameWon) return;
+      
+      const input = document.getElementById('dino-input');
+      const guessName = input.value.trim();
+      
+      if (!guessName) {
+        alert('Enter a taxon name!');
+        return;
+      }
+
+      const guessDino = database.find(d => d.nome.toLowerCase() === guessName.toLowerCase());
+      
+      if (!guessDino) {
+        alert('Taxon not found in database! Use autocomplete suggestions.');
+        return;
+      }
+
+      if (guessedNames.has(guessDino.nome.toLowerCase())) {
+        alert('You already tried this one, but you can guess it again if you want!');
+      }
+      
+      guessedNames.add(guessDino.nome.toLowerCase());
+
+      const proximity = calculateProximity(guessDino, targetDino);
+      
+      if (proximity.lastCommonClade) {
+        revealedClades.add(proximity.lastCommonClade);
+      }
+      
+      guesses.push({ 
+        dino: guessDino, 
+        proximity, 
+        isHint: false 
+      });
+
+      document.getElementById('attempts').textContent = guesses.length;
+      document.getElementById('best-match').textContent = Math.max(...guesses.map(g => g.proximity.matches));
+      document.getElementById('clades-revealed').textContent = revealedClades.size;
+
+      if (guessDino.nome === targetDino.nome) {
+        gameWon = true;
+        showVictory();
+      } else {
+        renderEnhancedTree();
+        updateCladeInfo();
+        updateGuessHistory();
+      }
+
+      input.value = '';
+      document.getElementById('suggestions').style.display = 'none';
+    }
+
+    function useHint() {
+      if (hintsRemaining <= 0) {
+        alert('No hints remaining!');
+        return;
+      }
+      
+      if (gameWon) return;
+
+      const maxRevealed = Math.max(...guesses.map(g => g.proximity.matches), 0);
+      
+      if (maxRevealed >= targetDino.linhagem.length) {
+        alert('Complete lineage already revealed!');
+        return;
+      }
+
+      hintsRemaining--;
+      document.getElementById('hints').textContent = hintsRemaining;
+
+      const revealClade = targetDino.linhagem[maxRevealed];
+      
+      alert(`Hint: The next clade is "${revealClade}"`);
+
+      revealedClades.add(revealClade);
+
+      guesses.push({
+        dino: { 
+          nome: `[HINT: ${revealClade}]`, 
+          linhagem: targetDino.linhagem.slice(0, maxRevealed + 1) 
+        },
+        proximity: { 
+          matches: maxRevealed + 1, 
+          percentage: Math.round(((maxRevealed + 1) / targetDino.linhagem.length) * 100), 
+          lastCommonClade: revealClade, 
+          divergenceDepth: maxRevealed + 1 
+        },
+        isHint: true
+      });
+
+      document.getElementById('attempts').textContent = guesses.length;
+      document.getElementById('best-match').textContent = Math.max(...guesses.map(g => g.proximity.matches));
+      document.getElementById('clades-revealed').textContent = revealedClades.size;
+      
+      renderEnhancedTree();
+      updateCladeInfo();
+      updateGuessHistory();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TREE HELPERS
+    // ═══════════════════════════════════════════════════════════════════════
+    function findDinosauriaIndex(lineage) {
+      return lineage.findIndex(c => c === 'Dinosauria');
+    }
+    
+    function findMRCA(lineage1, lineage2) {
+      const minLen = Math.min(lineage1.length, lineage2.length);
+      let mrcaIndex = -1;
+      
+      for (let i = 0; i < minLen; i++) {
+        if (lineage1[i] === lineage2[i]) {
+          mrcaIndex = i;
+        } else {
+          break;
+        }
+      }
+      
+      return mrcaIndex >= 0 ? { clade: lineage1[mrcaIndex], index: mrcaIndex } : null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TREE RENDERING
+    // ═══════════════════════════════════════════════════════════════════════
+    function renderEnhancedTree() {
+      const container = document.getElementById('tree-container');
+      const wrapper   = document.getElementById('tree-scroll-wrapper');
+      
+      if (guesses.length === 0) {
+        wrapper.innerHTML = '<div class="empty-state">Make a guess to begin revealing the phylogenetic tree structure.</div>';
+        return;
+      }
+      
+      const nodeWidth  = 160;
+      const nodeHeight = 45;
+      const targetLineage = targetDino.linhagem;
+      const dinoIndex     = findDinosauriaIndex(targetLineage);
+      
+      // STEP 1 – deepest MRCA
+      let deepestMRCA      = 'Dinosauria';
+      let deepestMRCAIndex = dinoIndex;
+      
+      const guessData = guesses.map(guess => {
+        const mrca = findMRCA(guess.dino.linhagem, targetLineage);
+        return { 
+          guess, 
+          mrcaClade: mrca ? mrca.clade : 'Dinosauria', 
+          mrcaIndex: mrca ? mrca.index : dinoIndex 
+        };
+      });
+      
+      guessData.forEach(d => {
+        if (d.mrcaIndex > deepestMRCAIndex) {
+          deepestMRCA = d.mrcaClade;
+          deepestMRCAIndex = d.mrcaIndex;
+        }
+      });
+      
+      // STEP 2 – guess-grouping clades
+      const guessGroupingClades = new Set();
+      for (let i = 0; i < guesses.length; i++) {
+        for (let j = i + 1; j < guesses.length; j++) {
+          const mrca = findMRCA(guesses[i].dino.linhagem, guesses[j].dino.linhagem);
+          if (mrca && mrca.clade !== 'Dinosauria') {
+            guessGroupingClades.add(mrca.clade);
+          }
+        }
+      }
+      
+      // STEP 3 – minimal clade set
+      const showClades = new Set(['Dinosauria']);
+      if (deepestMRCA !== 'Dinosauria') showClades.add(deepestMRCA);
+      guessGroupingClades.forEach(c => showClades.add(c));
+      
+      // STEP 4 – connect with parents
+      let changed = true;
+      while (changed) {
+        changed = false;
+        const cur = Array.from(showClades);
+        
+        for (let i = 0; i < cur.length; i++) {
+          for (let j = i + 1; j < cur.length; j++) {
+            if (cur[i] === 'Dinosauria' || cur[j] === 'Dinosauria') continue;
+            
+            let lin1 = targetLineage.includes(cur[i]) 
+              ? targetLineage 
+              : guesses.find(g => g.dino.linhagem.includes(cur[i]))?.dino.linhagem;
+            
+            let lin2 = targetLineage.includes(cur[j]) 
+              ? targetLineage 
+              : guesses.find(g => g.dino.linhagem.includes(cur[j]))?.dino.linhagem;
+            
+            if (!lin1 || !lin2) continue;
+            
+            const idx1 = lin1.indexOf(cur[i]);
+            const idx2 = lin2.indexOf(cur[j]);
+            
+            if ((lin2.includes(cur[i]) && lin2.indexOf(cur[i]) < idx2) ||
+                (lin1.includes(cur[j]) && lin1.indexOf(cur[j]) < idx1)) {
+              continue;
+            }
+            
+            const mrca = findMRCA(lin1, lin2);
+            if (mrca && mrca.clade !== 'Dinosauria' && !showClades.has(mrca.clade)) {
+              showClades.add(mrca.clade);
+              changed = true;
+            }
+          }
+        }
+      }
+      
+      // STEP 5 – build node map
+      const nodes = new Map();
+      nodes.set('Dinosauria', { 
+        depth: 0, 
+        children: [], 
+        type: 'root', 
+        lineageIndex: dinoIndex 
+      });
+      
+      const cladeList = Array.from(showClades)
+        .filter(c => c !== 'Dinosauria')
+        .sort((a, b) => {
+          let aI = -1, bI = -1;
+          
+          if (targetLineage.includes(a)) {
+            aI = targetLineage.indexOf(a);
+          } else {
+            for (const g of guesses) {
+              if (g.dino.linhagem.includes(a)) {
+                aI = g.dino.linhagem.indexOf(a);
+                break;
+              }
+            }
+          }
+          
+          if (targetLineage.includes(b)) {
+            bI = targetLineage.indexOf(b);
+          } else {
+            for (const g of guesses) {
+              if (g.dino.linhagem.includes(b)) {
+                bI = g.dino.linhagem.indexOf(b);
+                break;
+              }
+            }
+          }
+          
+          return aI - bI;
+        });
+      
+      cladeList.forEach(clade => {
+        let cladeLineage = null;
+        let cladeIndex = -1;
+        
+        if (targetLineage.includes(clade)) {
+          cladeLineage = targetLineage;
+          cladeIndex = targetLineage.indexOf(clade);
+        } else {
+          for (const g of guesses) {
+            if (g.dino.linhagem.includes(clade)) {
+              cladeLineage = g.dino.linhagem;
+              cladeIndex = g.dino.linhagem.indexOf(clade);
+              break;
+            }
+          }
+        }
+        
+        if (!cladeLineage) return;
+        
+        let parent = 'Dinosauria';
+        for (let i = cladeIndex - 1; i >= dinoIndex; i--) {
+          if (showClades.has(cladeLineage[i])) {
+            parent = cladeLineage[i];
+            break;
+          }
+        }
+        
+        if (!nodes.has(parent)) {
+          console.warn('Parent not found:', parent);
+          return;
+        }
+        
+        nodes.set(clade, { 
+          depth: 0, 
+          children: [], 
+          type: 'internal', 
+          lineageIndex: cladeIndex 
+        });
+        
+        if (!nodes.get(parent).children.includes(clade)) {
+          nodes.get(parent).children.push(clade);
+        }
+      });
+      
+      (function recalcDepths(c, d) {
+        nodes.get(c).depth = d;
+        nodes.get(c).children.forEach(ch => recalcDepths(ch, d + 1));
+      })('Dinosauria', 0);
+      
+      // STEP 6 – leaves
+      const leaves = [];
+      guesses.forEach((guess, idx) => {
+        let attachTo = 'Dinosauria';
+        for (let i = guess.dino.linhagem.length - 1; i >= 0; i--) {
+          if (showClades.has(guess.dino.linhagem[i])) {
+            attachTo = guess.dino.linhagem[i];
+            break;
+          }
+        }
+        
+        leaves.push({ 
+          name: guess.dino.nome + '__leaf_' + idx, 
+          displayName: guess.dino.nome, 
+          parentNode: attachTo, 
+          isTarget: false, 
+          isHint: guess.isHint, 
+          lineage: guess.dino.linhagem 
+        });
+      });
+      
+      // STEP 7 – mystery "?"
+      leaves.push({ 
+        name: '?__leaf_target', 
+        displayName: '?', 
+        parentNode: deepestMRCA, 
+        isTarget: true, 
+        isHint: false, 
+        lineage: targetLineage 
+      });
+      
+      // Layout
+      const nodePositions = new Map();
+      const leafPositions = new Map();
+      const startY = 60;
+      
+      function countSlots(clade) {
+        const nd = nodes.get(clade);
+        if (!nd) return 1;
+        
+        const dl = leaves.filter(l => l.parentNode === clade).length;
+        let cs = 0;
+        nd.children.forEach(ch => { cs += countSlots(ch); });
+        
+        return Math.max(1, dl + cs);
+      }
+      
+      const totalSlots = countSlots('Dinosauria');
+      const dynH = Math.max(100, 200 - Math.max(0, (totalSlots - 3) * 8));
+      const maxDepth = Math.max(...Array.from(nodes.values()).map(n => n.depth));
+      const dynV = Math.max(80, Math.floor(120 * Math.max(0.7, 1 - (totalSlots - 15) * 0.02)));
+      
+      function positionNode(clade, left, right, depth) {
+        const nd = nodes.get(clade);
+        if (!nd) return;
+        
+        const y = startY + depth * dynV;
+        const intChildren = nd.children.slice().sort((a, b) => 
+          nodes.get(a).lineageIndex - nodes.get(b).lineageIndex
+        );
+        const dirLeaves = leaves.filter(l => l.parentNode === clade);
+        
+        const slots = [];
+        intChildren.forEach(ch => slots.push({ 
+          type: 'node', 
+          name: ch, 
+          slotCount: countSlots(ch) 
+        }));
+        dirLeaves.forEach(lf => slots.push({ 
+          type: 'leaf', 
+          name: lf.name, 
+          slotCount: 1, 
+          leaf: lf 
+        }));
+        
+        const tot = slots.reduce((s, sl) => s + sl.slotCount, 0);
+        const w = right - left;
+        
+        nodePositions.set(clade, { x: left + w / 2, y });
+        
+        let cur = left;
+        slots.forEach(sl => {
+          const sw = (sl.slotCount / tot) * w;
+          if (sl.type === 'node') {
+            positionNode(sl.name, cur, cur + sw, depth + 1);
+          } else {
+            leafPositions.set(sl.name, { 
+              x: cur + sw / 2, 
+              y: startY + (depth + 1) * dynV, 
+              ...sl.leaf 
+            });
+          }
+          cur += sw;
+        });
+      }
+      
+      positionNode('Dinosauria', 0, totalSlots * dynH, 0);
+      
+      // SVG dimensions
+      const allX = [
+        ...Array.from(leafPositions.values()).map(p => p.x), 
+        ...Array.from(nodePositions.values()).map(p => p.x)
+      ];
+      const allY = [
+        ...Array.from(leafPositions.values()).map(p => p.y), 
+        ...Array.from(nodePositions.values()).map(p => p.y)
+      ];
+      
+      if (!allX.length || !allY.length) {
+        wrapper.innerHTML = '<div class="empty-state">No tree data.</div>';
+        return;
+      }
+      
+      const minX = Math.min(...allX);
+      const maxX = Math.max(...allX);
+      const maxY = Math.max(...allY);
+      const pad = 80;
+      const svgW = maxX - minX + pad * 2;
+      const svgH = maxY + pad;
+      
+      let svg = wrapper.querySelector('#tree-svg');
+      if (!svg) {
+        wrapper.innerHTML = '<svg id="tree-svg"></svg>';
+        svg = wrapper.querySelector('#tree-svg');
+      }
+      
+      svg.setAttribute('viewBox', `${minX - pad} 0 ${svgW} ${svgH}`);
+      svg.setAttribute('preserveAspectRatio', 'xMidYMin meet');
+      svg.innerHTML = '';
+      
+      // Edges: internal → internal
+      nodes.forEach((data, clade) => {
+        const pos = nodePositions.get(clade);
+        data.children.forEach(child => {
+          const cp = nodePositions.get(child);
+          if (!cp) return;
+          
+          const midY = (pos.y + nodeHeight / 2 + cp.y - nodeHeight / 2) / 2;
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', `M ${pos.x} ${pos.y + nodeHeight / 2} C ${pos.x} ${midY}, ${cp.x} ${midY}, ${cp.x} ${cp.y - nodeHeight / 2}`);
+          path.setAttribute('class', 'tree-line tree-line-revealed new-line');
+          path.setAttribute('stroke', '#c9a96e');
+          path.setAttribute('stroke-width', '3');
+          path.setAttribute('fill', 'none');
+          svg.appendChild(path);
+        });
+      });
+      
+      // Internal nodes
+      nodes.forEach((data, clade) => {
+        const pos = nodePositions.get(clade);
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'tree-node-group new-node');
+        g.style.cursor = 'pointer';
+        g.onclick = () => showCladeInfo(clade);
+        
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', pos.x - nodeWidth / 2);
+        rect.setAttribute('y', pos.y - nodeHeight / 2);
+        rect.setAttribute('width', nodeWidth);
+        rect.setAttribute('height', nodeHeight);
+        rect.setAttribute('rx', '6');
+        rect.setAttribute('fill', '#8b4726');
+        rect.setAttribute('stroke', '#a6623d');
+        rect.setAttribute('stroke-width', '2.5');
+        g.appendChild(rect);
+        
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', pos.x);
+        label.setAttribute('y', pos.y);
+        label.setAttribute('class', 'tree-node-label tree-node-label-ancestor');
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('dominant-baseline', 'middle');
+        label.setAttribute('font-size', '15px');
+        label.setAttribute('font-weight', '600');
+        label.textContent = clade;
+        g.appendChild(label);
+        svg.appendChild(g);
+      });
+      
+      // Edges: internal → leaf
+      leafPositions.forEach((leaf, name) => {
+        const pp = nodePositions.get(leaf.parentNode);
+        if (!pp) return;
+        
+        const midY = (pp.y + nodeHeight / 2 + leaf.y - nodeHeight / 2) / 2;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M ${pp.x} ${pp.y + nodeHeight / 2} C ${pp.x} ${midY}, ${leaf.x} ${midY}, ${leaf.x} ${leaf.y - nodeHeight / 2}`);
+        path.setAttribute('class', leaf.isTarget 
+          ? 'tree-line tree-line-revealed new-line' 
+          : (leaf.isHint ? 'tree-line tree-line-hint new-line' : 'tree-line tree-line-guess new-line')
+        );
+        path.setAttribute('stroke-width', leaf.isTarget ? '3' : '2');
+        path.setAttribute('fill', 'none');
+        svg.appendChild(path);
+      });
+      
+      // Leaf nodes
+      leafPositions.forEach((leaf, name) => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'new-node');
+        if (!leaf.isTarget) {
+          g.style.cursor = 'pointer';
+          g.onclick = () => showCladeInfo(leaf.displayName);
+        }
+        
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', leaf.x - nodeWidth / 2);
+        rect.setAttribute('y', leaf.y - nodeHeight / 2);
+        rect.setAttribute('width', nodeWidth);
+        rect.setAttribute('height', nodeHeight);
+        rect.setAttribute('rx', '6');
+        
+        if (leaf.isTarget) {
+          rect.setAttribute('fill', '#4a7c59');
+          rect.setAttribute('stroke', '#5a9c6b');
+          rect.setAttribute('stroke-width', '3');
+        } else if (leaf.isHint) {
+          rect.setAttribute('fill', 'rgba(166,138,90,0.3)');
+          rect.setAttribute('stroke', '#a68a5a');
+          rect.setAttribute('stroke-width', '2');
+          rect.setAttribute('stroke-dasharray', '3,3');
+        } else {
+          rect.setAttribute('fill', 'rgba(255,255,255,0.1)');
+          rect.setAttribute('stroke', '#8b6f47');
+          rect.setAttribute('stroke-width', '2');
+          rect.setAttribute('stroke-dasharray', '5,5');
+        }
+        g.appendChild(rect);
+        
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', leaf.x);
+        label.setAttribute('y', leaf.y);
+        label.setAttribute('class', leaf.isTarget 
+          ? 'tree-node-label tree-node-label-revealed' 
+          : (leaf.isHint ? 'tree-node-label tree-node-label-hint' : 'tree-node-label tree-node-label-guess')
+        );
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('dominant-baseline', 'middle');
+        label.setAttribute('font-size', leaf.isTarget ? '20px' : '15px');
+        label.setAttribute('font-weight', leaf.isTarget ? '700' : '500');
+        label.setAttribute('font-style', leaf.isTarget ? 'normal' : 'italic');
+        label.textContent = leaf.displayName;
+        g.appendChild(label);
+        svg.appendChild(g);
+      });
+      
+      // Auto-scale
+      requestAnimationFrame(() => {
+        const cRect = container.getBoundingClientRect();
+        const availW = cRect.width - 100;
+        const svgB = svg.getBBox();
+        const scale = Math.min(1, svgB.width > availW ? availW / svgB.width : 1);
+        
+        wrapper.style.transform = `scale(${scale})`;
+        wrapper.style.transformOrigin = 'top center';
+        wrapper.style.height = (svgB.height * scale) + 'px';
+      });
+
+      addTreeLegend(container);
+    }
+
+    function addTreeLegend(container) {
+      if (container.querySelector('.tree-legend')) return;
+      
+      const legend = document.createElement('div');
+      legend.className = 'tree-legend';
+      legend.innerHTML = `
+        <div class="legend-item">
+          <div class="legend-symbol legend-symbol-revealed"></div>
+          <span>Mystery lineage (revealed path)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol legend-symbol-ancestor"></div>
+          <span>Common ancestor node</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol legend-symbol-guess"></div>
+          <span>Your guess</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol legend-symbol-hint"></div>
+          <span>Hint (reveals clade)</span>
+        </div>
+      `;
+      container.appendChild(legend);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // VICTORY
+    // ═══════════════════════════════════════════════════════════════════════
+    function showVictory() {
+      if (currentUser) {
+        updateStatsAfterGame(true, guesses.length, selectedDifficulty);
+        markDailyChallengeCompleted(selectedDifficulty); // Mark daily challenge as done
+      }
+      document.getElementById('dino-input').disabled = true;
+      document.querySelector('.btn-guess').disabled = true;
+      document.querySelector('.btn-hint').disabled = true;
+      
+      const container = document.getElementById('tree-container');
+      const v = document.createElement('div');
+      v.className = 'victory';
+      v.innerHTML = `
+        <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
+        <div class="victory-dino">${targetDino.nome}</div>
+        <p style="font-size:1.1em; margin-top:15px; color:#c9a96e;">
+          Successfully identified in ${guesses.length} taxonomic queries
+        </p>
+        <p style="font-size:0.95em; margin-top:12px; color:#8b7355;">
+          ${revealedClades.size} clades revealed through phylogenetic analysis
+        </p>
+        <button class="btn-new-game" onclick="showDifficultySelection()">Return to Level Selection</button>
+      `;
+      container.insertBefore(v, container.firstChild);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // GUESS HISTORY
+    // ═══════════════════════════════════════════════════════════════════════
+    function updateGuessHistory() {
+      const historyDiv = document.getElementById('guess-history');
+      if (guesses.length === 0) {
+        historyDiv.innerHTML = '';
+        return;
+      }
+      
+      let html = '<div class="guess-history"><h3>Exploration History</h3>';
+      
+      guesses.slice().reverse().forEach(guess => {
+        const divInfo = guess.proximity.lastCommonClade 
+          ? ` → Last common: ${guess.proximity.lastCommonClade}` 
+          : '';
+        
+        html += `
+          <div class="guess-item ${guess.isHint ? 'guess-item-hint' : ''}">
+            <span class="guess-name">${guess.dino.nome}${divInfo}</span>
+            <span class="guess-match">${guess.proximity.matches}/${targetDino.linhagem.length} nodes (${guess.proximity.percentage}%)</span>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      historyDiv.innerHTML = html;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // WIKIPEDIA INFO PANEL
+    // ═══════════════════════════════════════════════════════════════════════
+    async function fetchWikipediaInfo(cladeName) {
+      try {
+        const searchRes = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cladeName)}&format=json&origin=*`
+        );
+        const searchData = await searchRes.json();
+        
+        if (!searchData.query.search.length) return null;
+
+        const pageTitle = searchData.query.search[0].title;
+        const pageUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`;
+
+        const extractRes = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages|extracts&format=json&pithumbsize=300&exintro=1&explaintext=1&origin=*`
+        );
+        const extractData = await extractRes.json();
+        const pages = extractData.query.pages;
+        const page = pages[Object.keys(pages)[0]];
+
+        return {
+          title: pageTitle,
+          url: pageUrl,
+          image: page.thumbnail?.source || null,
+          description: page.extract || null
+        };
+      } catch (e) {
+        console.error('Wiki info error:', e);
+        return null;
+      }
+    }
+
+    async function showCladeInfo(cladeName) {
+      const infoDiv = document.getElementById('clade-info');
+      infoDiv.innerHTML = `
+        <div class="clade-info">
+          <div class="loading">Retrieving phylogenetic information for ${cladeName}…</div>
+        </div>
+      `;
+
+      const wikiInfo = await fetchWikipediaInfo(cladeName);
+      
+      if (!wikiInfo) {
+        infoDiv.innerHTML = `
+          <div class="clade-info">
+            <h3>Clade: ${cladeName}</h3>
+            <p style="color:#999;font-style:italic;">No encyclopedia entry found.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `<div class="clade-info"><h3>Clade: ${cladeName}</h3><div class="clade-content">`;
+      
+      if (wikiInfo.image) {
+        html += `<img src="${wikiInfo.image}" alt="${wikiInfo.title}" class="clade-image" />`;
+      }
+      
+      html += `
+        <div class="clade-text">
+          ${wikiInfo.description 
+            ? `<p>${wikiInfo.description}</p>` 
+            : '<p style="color:#999;font-style:italic;">Description unavailable.</p>'
+          }
+          <a href="${wikiInfo.url}" target="_blank" class="clade-link">View Encyclopedia Entry</a>
+        </div>
+      `;
+      
+      html += `</div></div>`;
+      infoDiv.innerHTML = html;
+    }
+
+    async function updateCladeInfo() {
+      const infoDiv = document.getElementById('clade-info');
+      
+      if (guesses.length === 0) {
+        infoDiv.innerHTML = '';
+        return;
+      }
+
+      const bestGuess = guesses.reduce((b, c) => 
+        c.proximity.matches > b.proximity.matches ? c : b
+      );
+      
+      const lastCommonClade = bestGuess.proximity.lastCommonClade;
+      
+      if (!lastCommonClade) {
+        infoDiv.innerHTML = '';
+        return;
+      }
+
+      infoDiv.innerHTML = `
+        <div class="clade-info">
+          <div class="loading">Retrieving phylogenetic information for ${lastCommonClade}…</div>
+        </div>
+      `;
+
+      const wikiInfo = await fetchWikipediaInfo(lastCommonClade);
+      
+      if (!wikiInfo) {
+        infoDiv.innerHTML = `
+          <div class="clade-info">
+            <h3>Most Recent Common Ancestor: ${lastCommonClade}</h3>
+            <p style="color:#999;font-style:italic;">No encyclopedia entry found.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <div class="clade-info">
+          <h3>Most Recent Common Ancestor: ${lastCommonClade}</h3>
+          <div class="clade-content">
+      `;
+      
+      if (wikiInfo.image) {
+        html += `<img src="${wikiInfo.image}" alt="${wikiInfo.title}" class="clade-image" />`;
+      }
+      
+      html += `
+        <div class="clade-text">
+          ${wikiInfo.description 
+            ? `<p>${wikiInfo.description}</p>` 
+            : '<p style="color:#999;font-style:italic;">Description unavailable.</p>'
+          }
+          <a href="${wikiInfo.url}" target="_blank" class="clade-link">View Encyclopedia Entry</a>
+        </div>
+      `;
+      
+      html += `</div>`;
+
+      html += `<div class="phylo-path"><h4>Revealed Phylogenetic Path to Mystery Taxon:</h4>`;
+      for (let i = 0; i < bestGuess.proximity.matches; i++) {
+        html += `
+          <div class="phylo-step">
+            <span class="phylo-step-name">${targetDino.linhagem[i]}</span>
+          </div>
+        `;
+      }
+      html += `</div></div>`;
+      
+      infoDiv.innerHTML = html;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // AUTOCOMPLETE
+    // ═══════════════════════════════════════════════════════════════════════
+    function initializeAutocomplete() {
+      const input = document.getElementById('dino-input');
+      const sugDiv = document.getElementById('suggestions');
+      
+      if (!input || !sugDiv) return;
+
+      input.addEventListener('input', function() {
+        const text = this.value.toLowerCase().trim();
+        
+        if (text.length < 2) {
+          sugDiv.style.display = 'none';
+          return;
+        }
+        
+        const matches = database
+          .filter(d => 
+            d.nome.toLowerCase().includes(text) && 
+            !guessedNames.has(d.nome.toLowerCase())
+          )
+          .slice(0, 8);
+        
+        if (!matches.length) {
+          sugDiv.style.display = 'none';
+          return;
+        }
+        
+        sugDiv.innerHTML = matches
+          .map(d => `<div class="suggestion-item" onclick="selectSuggestion('${d.nome}')">${d.nome}</div>`)
+          .join('');
+        
+        sugDiv.style.display = 'block';
+      });
+
+      input.addEventListener('keypress', e => {
+        if (e.key === 'Enter') makeGuess();
+      });
+      
+      document.addEventListener('click', e => {
+        if (e.target !== input) sugDiv.style.display = 'none';
+      });
+    }
+
+    function selectSuggestion(name) {
+      const input = document.getElementById('dino-input');
+      const sugDiv = document.getElementById('suggestions');
+      
+      if (input && sugDiv) {
+        input.value = name;
+        sugDiv.style.display = 'none';
+        input.focus();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // STATISTICS DASHBOARD
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function showStatsDashboard() {
+      if (!currentUser) {
+        alert('Login to view statistics');
+        return;
+      }
+      
+      const winRate = userStats.gamesPlayed > 0 
+        ? Math.round((userStats.gamesWon / userStats.gamesPlayed) * 100) 
+        : 0;
+      
+      const appContent = document.getElementById('app-content');
+      
+      appContent.innerHTML = `
+        <div class="theme-toggle-container">
+          <button class="btn-hint" onclick="location.reload()">← Back to Game</button>
+        </div>
+        
+        <div class="game-card">
+          <h2 style="color:#d4b87e; margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
+            CLASSIFICATION RECORDS
+          </h2>
+          
+          <div style="text-align:center; margin-bottom:30px; color:#a68a5a; font-size:1.1em; letter-spacing:2px;">
+            Researcher ID: <span style="color:#c9a96e; font-weight:600;">${currentUser}</span>
+          </div>
+          
+          <div class="stats" style="grid-template-columns: repeat(4, 1fr); margin-bottom:40px;">
+            <div class="stat">
+              <div class="stat-value">${userStats.gamesPlayed}</div>
+              <div class="stat-label">Total Classifications</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${userStats.gamesWon}</div>
+              <div class="stat-label">Successful IDs</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${winRate}%</div>
+              <div class="stat-label">Success Rate</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${userStats.bestScore || '—'}</div>
+              <div class="stat-label">Best Score</div>
+            </div>
+          </div>
+          
+          <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
+            <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Classification Level Performance</h3>
+            ${generateDifficultyStats()}
+          </div>
+          
+          <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
+            <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Research Achievements</h3>
+            ${generateAchievements()}
+          </div>
+          
+          <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; border:2px solid #5d4a36;">
+            <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Recent Classifications</h3>
+            ${generateRecentGames()}
+          </div>
+        </div>
+      `;
+    }
+
+    function showAbout() {
+  const appContent = document.getElementById('app-content');
+  
+  appContent.innerHTML = `
+    <div class="theme-toggle-container">
+      <button class="btn-hint" onclick="showDifficultySelection()">← Return to Challenge Selection</button>
+    </div>
+    
+    <div class="game-card">
+      <h2 style="color:#d4b87e; margin-bottom:30px; text-align:center; font-size:2em; letter-spacing:3px;">
+        About Phylosaur
+      </h2>
+      
+      <div style="background:rgba(61,47,31,0.5); padding:30px; border-radius:8px; margin-bottom:25px; border:2px solid #5d4a36;">
+        <h3 style="color:#f4e4c1; margin-bottom:18px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:10px;">
+          Educational Objective
+        </h3>
+        <p style="color:#f8f6f3; line-height:1.8; margin-bottom:15px;">
+          Phylosaur is an educational tool designed for scientific dissemination and phylogenetic literacy. 
+          The primary objective is to familiarize users with dinosaur taxonomy and cladistic relationships 
+          through interactive classification challenges.
+        </p>
+        <p style="color:#f8f6f3; line-height:1.8; margin-bottom:15px;">
+          Players progressively reveal evolutionary trees by making taxonomic guesses, learning about 
+          shared derived characteristics (synapomorphies) and most recent common ancestors (MRCA) in the process.
+        </p>
+        <p style="color:#f8f6f3; line-height:1.8;">
+          This game serves as a pedagogical bridge between casual interest and formal paleontological study, 
+          making complex phylogenetic concepts accessible through gamification.
+        </p>
+      </div>
+      
+      <div style="background:rgba(61,47,31,0.5); padding:30px; border-radius:8px; margin-bottom:25px; border:2px solid #5d4a36;">
+        <h3 style="color:#f4e4c1; margin-bottom:18px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:10px;">
+          Data Sources & Acknowledgments
+        </h3>
+        <p style="color:#f8f6f3; line-height:1.8; margin-bottom:15px;">
+          Taxonomic data and phylogenetic relationships are sourced from 
+          <a href="http://www.TotalDino.com" target="_blank" style="color:#c9a96e; text-decoration:none; border-bottom:1px solid #c9a96e;">
+            TotalDino.com
+          </a>, 
+          a comprehensive database of dinosaur genera and their systematic positions.
+        </p>
+        <p style="color:#f8f6f3; line-height:1.8; margin-bottom:15px;">
+          The phylogenetic tree structure is derived from published cladistic analyses and represents 
+          current consensus topology in vertebrate paleontology. Encyclopedia entries are retrieved 
+          from Wikipedia via their public API.
+        </p>
+        <p style="color:#a68a5a; line-height:1.8; font-size:0.9em; font-style:italic;">
+          Note: Phylogenetic relationships are subject to ongoing research and revision. 
+          This game reflects a snapshot of current scientific understanding and may not include 
+          the most recent taxonomic revisions.
+        </p>
+      </div>
+      
+      <div style="background:rgba(61,47,31,0.5); padding:30px; border-radius:8px; border:2px solid #5d4a36;">
+        <h3 style="color:#f4e4c1; margin-bottom:18px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:10px;">
+          How to Play
+        </h3>
+        <div style="color:#f8f6f3; line-height:1.8;">
+          <p style="margin-bottom:12px;"><strong style="color:#c9a96e;">1. Select Difficulty Level</strong> — Choose from five taxonomic complexity tiers</p>
+          <p style="margin-bottom:12px;"><strong style="color:#c9a96e;">2. Submit Genus Names</strong> — Enter dinosaur genera to reveal phylogenetic proximity</p>
+          <p style="margin-bottom:12px;"><strong style="color:#c9a96e;">3. Analyze Tree Structure</strong> — Use revealed clades to narrow your classification</p>
+          <p style="margin-bottom:12px;"><strong style="color:#c9a96e;">4. Use Hints Strategically</strong> — Three hints available per challenge</p>
+          <p><strong style="color:#c9a96e;">5. Complete Classification</strong> — Identify the mystery taxon correctly</p>
+        </div>
+      </div>
+      
+      <button class="btn-new-game" onclick="showDifficultySelection()" style="margin-top:25px;">
+        Return to Challenge Selection
+      </button>
+    </div>
+  `;
+}
+
+    function generateDifficultyStats() {
+    const diffNames = {
+    'muito_facil': 'Level I (High-frequency)',
+    'facil': 'Level II (Common)',
+    'normal': 'Level III (Intermediate)',
+    'dificil': 'Level IV (Specialized)',
+    'muito_dificil': 'Level V (Rare)'
+    };
+      
+      let html = '';
+      for (let [key, stats] of Object.entries(userStats.difficultyStats)) {
+        if (stats.played === 0) continue;
+        
+        const winRate = Math.round((stats.won / stats.played) * 100);
+        
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #5d4a36;">
+            <span style="color:#f8f6f3; font-size:1em; letter-spacing:1px;">${diffNames[key]}</span>
+            <div style="text-align:right;">
+              <span style="color:#c9a96e; margin-right:20px; font-weight:600;">${stats.won}/${stats.played}</span>
+              <span style="color:#d4b87e; margin-right:15px;">${winRate}%</span>
+              <span style="color:#a68a5a; font-size:0.9em;">Avg: ${Math.round(stats.avgGuesses)} guesses</span>
+            </div>
+          </div>
+        `;
+      }
+      
+      return html || '<p style="color:#8b7355; font-style:italic; padding:20px; text-align:center;">No classifications completed yet. Begin your research!</p>';
+    }
+
+    function generateAchievements() {
+      const allAchievements = [
+        { id: 'first_win', name: 'First Discovery', desc: 'Complete your first classification' },
+        { id: 'perfect_game', name: 'Phylogenetic Prodigy', desc: 'Classify species in 3 guesses or fewer' },
+        { id: 'ten_wins', name: 'Taxonomist', desc: 'Successfully classify 10 species' },
+        { id: 'fifty_wins', name: 'Paleontologist', desc: 'Successfully classify 50 species' },
+        { id: 'hard_win', name: 'Specialist', desc: 'Complete Level IV classification' },
+        { id: 'very_hard_win', name: 'Master Classifier', desc: 'Complete Level V classification' }
+      ];
+      
+      let html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:15px;">';
+      
+      allAchievements.forEach(ach => {
+        const unlocked = userStats.achievements.includes(ach.id);
+        html += `
+          <div style="padding:18px; background:${unlocked ? 'rgba(74,124,89,0.25)' : 'rgba(42,31,22,0.3)'}; 
+                      border:2px solid ${unlocked ? '#5a9c6b' : '#5d4a36'}; border-radius:6px; 
+                      opacity:${unlocked ? '1' : '0.6'}; transition:all 0.3s;">
+            <div style="font-weight:600; color:${unlocked ? '#c8e6c9' : '#8b7355'}; margin-bottom:8px; font-size:1em; letter-spacing:1px;">
+              ${unlocked ? '◆' : '◇'} ${ach.name}
+            </div>
+            <div style="font-size:0.85em; color:#a68a5a; font-style:italic; line-height:1.4;">${ach.desc}</div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      return html;
+    }
+
+    function generateRecentGames() {
+      if (userStats.recentGames.length === 0) {
+        return '<p style="color:#8b7355; font-style:italic; padding:20px; text-align:center;">No recent classifications. Begin your research!</p>';
+      }
+      
+      const diffNames = {
+        'muito_facil': 'Initiate',
+        'facil': 'Explorer',
+        'normal': 'Researcher',
+        'dificil': 'Specialist',
+        'muito_dificil': 'Master'
+      };
+      
+      let html = '';
+      userStats.recentGames.forEach(game => {
+        const date = new Date(game.date).toLocaleDateString();
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:rgba(42,31,22,0.4); border-left:4px solid ${game.won ? '#5a9c6b' : '#8b6f47'}; border-radius:4px;">
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; margin-bottom:5px;">
+                <span style="color:${game.won ? '#c8e6c9' : '#d4a574'}; font-weight:700; margin-right:12px; font-size:1.1em;">
+                  ${game.won ? '✓' : '✗'}
+                </span>
+                <span style="color:#f8f6f3; font-style:italic; font-size:1em;">${game.target}</span>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:#c9a96e; font-size:1em; font-weight:600; margin-bottom:3px;">${game.guesses} guesses</div>
+              <div style="color:#8b7355; font-size:0.8em;">${diffNames[game.difficulty]} • ${date}</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      return html;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // DAILY CHALLENGE MODE
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function getDailySeed(difficulty) {
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      // Add difficulty to seed so each difficulty gets different dinosaur
+      return `${dateStr}-${difficulty}`;
+    }
+
+    function hashString(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return Math.abs(hash);
+    }
+
+    
+    
+  </script>
+</body>
+</html>
