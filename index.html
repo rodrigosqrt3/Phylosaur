@@ -155,6 +155,135 @@ body.light-mode .game-card {
       color: #5a3e1b !important;
     }
 
+    /* Achievement cards */
+    .achievement-card {
+      padding: 18px;
+      border-radius: 6px;
+      border: 2px solid;
+      transition: all 0.3s;
+    }
+
+    .achievement-locked {
+      background: rgba(42, 31, 22, 0.3);
+      border-color: #5d4a36;
+      opacity: 0.6;
+    }
+
+    .achievement-unlocked {
+      background: rgba(74, 124, 89, 0.25);
+      border-color: #5a9c6b;
+      opacity: 1;
+    }
+
+    .achievement-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 1em;
+      letter-spacing: 1px;
+      color: #c8e6c9;
+      transition: all 0.3s;
+    }
+
+    .achievement-locked .achievement-title {
+      color: #8b7355;
+    }
+
+    .achievement-desc {
+      font-size: 0.85em;
+      color: #a68a5a;
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    /* Light mode */
+    body.light-mode .achievement-locked {
+      background: rgba(232, 220, 200, 0.4);
+      border-color: #c9a96e;
+    }
+
+    body.light-mode .achievement-unlocked {
+      background: rgba(144, 238, 144, 0.15);
+      border-color: #4a7c59;
+    }
+
+    body.light-mode .achievement-unlocked .achievement-title {
+      color: #2d6b3f;
+    }
+
+    body.light-mode .achievement-locked .achievement-title {
+      color: #6b5340;
+    }
+
+    body.light-mode .achievement-desc {
+      color: #6b5340;
+    }
+
+    /* Difficulty stats */
+    .difficulty-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #5d4a36;
+    }
+
+    body.light-mode .difficulty-stat-row {
+      border-bottom-color: #c9a96e;
+    }
+
+    .diff-name {
+      color: #f8f6f3;
+      font-size: 1em;
+      letter-spacing: 1px;
+    }
+
+    body.light-mode .diff-name {
+      color: #2d2318;
+    }
+
+    .diff-stats {
+      text-align: right;
+    }
+
+    .diff-record {
+      color: #5a9c6b;
+      margin-right: 20px;
+      font-weight: 600;
+    }
+
+    body.light-mode .diff-record {
+      color: #2d6b3f;
+    }
+
+    .diff-winrate {
+      color: #d4b87e;
+      margin-right: 15px;
+    }
+
+    body.light-mode .diff-winrate {
+      color: #8b6f47;
+    }
+
+    .diff-avg {
+      color: #a68a5a;
+      font-size: 0.9em;
+    }
+
+    body.light-mode .diff-avg {
+      color: #6b5340;
+    }
+
+    .empty-stats {
+      color: #8b7355;
+      font-style: italic;
+      padding: 20px;
+      text-align: center;
+    }
+
+    body.light-mode .empty-stats {
+      color: #6b5340;
+    }
+
     body.light-mode .clade-text p {
       color: #2d2318;
     }
@@ -222,12 +351,6 @@ body.light-mode .game-card {
 
     body.light-mode .btn-new-game:hover {
       background: linear-gradient(180deg, #6a9a5a 0%, #4a7a3a 100%);
-    }
-
-    body.light-mode .difficulty-btn {
-      background: linear-gradient(180deg, #f5f0e8 0%, #e8dcc8 100%);
-      color: #2d2318;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.12);
     }
     
     body.light-mode .difficulty-btn:hover {
@@ -737,6 +860,81 @@ body.light-mode .game-card {
       transition: all 0.3s ease;
     }
 
+    /* Victory banner - modo escuro (padrão) */
+.challenge-completed-banner {
+  text-align: center;
+  padding: 40px;
+  background: rgba(74, 124, 89, 0.2);
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border: 2px solid #5a9c6b;
+  transition: all 0.3s ease;
+}
+
+.challenge-completed-banner h2 {
+  color: #c8e6c9;
+  margin-bottom: 15px;
+  font-size: 2em;
+  letter-spacing: 3px;
+}
+
+.challenge-completed-banner .dino-name {
+  font-size: 1.5em;
+  color: #d4b87e;
+  margin: 20px 0;
+  font-style: italic;
+}
+
+.challenge-completed-banner .attempts {
+  color: #a68a5a;
+  font-size: 1.1em;
+}
+
+/* Victory banner - modo claro */
+body.light-mode .challenge-completed-banner {
+  background: rgba(144, 238, 144, 0.15);
+  border-color: #4a7c59;
+}
+
+body.light-mode .challenge-completed-banner h2 {
+  color: #2d6b3f;
+}
+
+body.light-mode .challenge-completed-banner .dino-name {
+  color: #5a3e1b;
+}
+
+body.light-mode .challenge-completed-banner .attempts {
+  color: #6b5340;
+}
+
+/* Victory box (quando ganha jogando) */
+.victory-dino {
+  font-size: 2em;
+  margin: 25px 0;
+  font-style: italic;
+  color: #c8e6c9;
+  transition: all 0.3s ease;
+}
+
+body.light-mode .victory {
+  background: linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%);
+  color: #2d2318;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+body.light-mode .victory h2 {
+  color: #2d6b3f;
+}
+
+body.light-mode .victory-dino {
+  color: #2d6b3f;
+}
+
+body.light-mode .victory p {
+  color: #5a3e1b !important;
+}
+
     /* Difficulty tier indicators */
     .tier-indicator {
       display: inline-block;
@@ -774,7 +972,6 @@ body.light-mode .game-card {
 
 body.light-mode .difficulty-btn {
   background: rgba(245, 240, 232, 0.9);
-  border-color: #c9a96e;
   color: #2d2318;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
@@ -1542,16 +1739,6 @@ function getTodayString() {
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 }
 
-function markDailyChallengeCompleted(difficulty) {
-  if (!currentUser) return;
-  
-  const today = getTodayString();
-  const status = getDailyCompletionStatus();
-  status[difficulty] = true;
-  
-  localStorage.setItem(`phylosaur-daily-${currentUser}-${today}`, JSON.stringify(status));
-}
-
 function saveDailyChallengeResult(difficulty, targetDino, guessCount) {
   if (!currentUser) return;
   
@@ -1562,8 +1749,108 @@ function saveDailyChallengeResult(difficulty, targetDino, guessCount) {
     targetDino: targetDino.nome,
     targetLineage: targetDino.linhagem,
     guessCount: guessCount,
-    completed: true
+    completed: true,
+    guesses: guesses.map(g => ({
+      nome: g.dino.nome,
+      linhagem: g.dino.linhagem,
+      isHint: g.isHint || false
+    })),
+    revealedClades: Array.from(revealedClades),
+    hintHistory: hintHistory
   }));
+}
+
+function markDailyChallengeCompleted(difficulty) {
+  if (!currentUser) return;
+  
+  const today = getTodayString();
+  const status = getDailyCompletionStatus();
+  status[difficulty] = true;
+  
+  localStorage.setItem(`phylosaur-daily-${currentUser}-${today}`, JSON.stringify(status));
+}
+
+async function loadCompletedChallengeTree(difficulty, result) {
+  const wrapper = document.getElementById('tree-scroll-wrapper');
+  
+  try {
+    const res = await fetch('dinozooa_db.json');
+    if (!res.ok) throw new Error('Failed to load database');
+    
+    fullDatabase = await res.json();
+    database = fullDatabase.filter(d => d.dificuldade === difficulty);
+    
+    // Find the target dinosaur
+    const seed = getDailySeed(difficulty);
+    const hash = hashString(seed);
+    const index = hash % database.length;
+    
+    targetDino = database[index];
+    
+    // Verify it matches saved result
+    if (targetDino.nome !== result.targetDino) {
+      console.warn('Mismatch between saved and calculated target');
+    }
+    
+    // MUDANÇA CRÍTICA: Verificar se temos dados salvos dos guesses
+    if (result.guesses && result.guesses.length > 0) {
+      // Reconstruir guesses a partir dos dados salvos
+      guesses = result.guesses.map(savedGuess => {
+        const dino = database.find(d => d.nome === savedGuess.nome);
+        if (!dino) {
+          console.warn(`Dinosaur ${savedGuess.nome} not found in database`);
+          return null;
+        }
+        
+        const proximity = calculateProximity(dino, targetDino);
+        return {
+          dino: dino,
+          proximity: proximity,
+          isHint: savedGuess.isHint || false
+        };
+      }).filter(g => g !== null);
+      
+      // Restaurar clados revelados
+      revealedClades = new Set(result.revealedClades || []);
+      
+      // Restaurar histórico de hints
+      hintHistory = result.hintHistory || [];
+      
+    } else {
+      // Fallback: desafios antigos sem dados salvos
+      wrapper.innerHTML = `
+        <div class="empty-state" style="padding:80px 40px;">
+          <h3 style="color:#c9a96e; margin-bottom:20px; font-size:1.4em;">Challenge Completed</h3>
+          <p style="color:#a68a5a; line-height:1.8; margin-bottom:15px;">
+            This challenge was completed before the detailed save system was implemented.
+          </p>
+          <p style="color:#8b7355; font-size:0.95em; line-height:1.8;">
+            The phylogenetic tree from this session is not available for review.
+            Complete the challenge again to see the full tree visualization.
+          </p>
+          <button class="btn-new-game" onclick="showDifficultySelection()" 
+                  style="margin-top:30px; width:auto; padding:14px 28px;">
+            Return to Level Selection
+          </button>
+        </div>
+      `;
+      return;
+    }
+    
+    gameWon = true;
+    hintsRemaining = 0;
+    guessedNames = new Set(guesses.map(g => g.dino.nome.toLowerCase()));
+    
+    renderEnhancedTree();
+    updateCladeInfo();
+    updateGuessHistory();
+    
+  } catch (err) {
+    console.error('Error loading completed challenge:', err);
+    if (wrapper) {
+      wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading tree</strong><br>${err.message}</div>`;
+    }
+  }
 }
 
 function getDailyChallengeResult(difficulty) {
@@ -1591,16 +1878,11 @@ function showCompletedChallenge(difficulty, result) {
     </div>
 
     <div class="game-card">
-      <div style="text-align:center; padding:40px; background:rgba(74,124,89,0.2); border-radius:8px; margin-bottom:30px; border:2px solid #5a9c6b;">
-        <h2 style="color:#c8e6c9; margin-bottom:15px; font-size:2em; letter-spacing:3px;">
-          Challenge Completed
-        </h2>
-        <div style="font-size:1.5em; color:#d4b87e; margin:20px 0; font-style:italic;">
-          ${result.targetDino}
-        </div>
-        <div style="color:#a68a5a; font-size:1.1em;">
-          Classified in ${result.guessCount} attempts
-        </div>
+      <div class="challenge-completed-banner">
+        <h2>Challenge Completed</h2>
+        <div class="dino-name">${result.targetDino}</div>
+        <div class="attempts">Classified in ${result.guessCount} attempts</div>
+      </div>
       </div>
 
       <div id="tree-container">
@@ -1625,56 +1907,6 @@ function showCompletedChallenge(difficulty, result) {
 
   // Load database and show complete tree
   loadCompletedChallengeTree(difficulty, result);
-}
-
-async function loadCompletedChallengeTree(difficulty, result) {
-  const wrapper = document.getElementById('tree-scroll-wrapper');
-  
-  try {
-    const res = await fetch('dinozooa_db.json');
-    if (!res.ok) throw new Error('Failed to load database');
-    
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-    
-    // Find the target dinosaur
-    const seed = getDailySeed(difficulty);
-    const hash = hashString(seed);
-    const index = hash % database.length;
-    
-    targetDino = database[index];
-    
-    // Verify it matches saved result
-    if (targetDino.nome !== result.targetDino) {
-      console.warn('Mismatch between saved and calculated target');
-    }
-    
-    // Create a "perfect guess" to show the complete tree
-    guesses = [{
-      dino: targetDino,
-      proximity: {
-        matches: targetDino.linhagem.length,
-        percentage: 100,
-        lastCommonClade: targetDino.linhagem[targetDino.linhagem.length - 1],
-        divergenceDepth: targetDino.linhagem.length
-      },
-      isHint: false
-    }];
-    
-    gameWon = true;
-    hintsRemaining = 0;
-    guessedNames = new Set([targetDino.nome]);
-    revealedClades = new Set(targetDino.linhagem);
-    
-    renderEnhancedTree();
-    updateCladeInfo();
-    
-  } catch (err) {
-    console.error('Error loading completed challenge:', err);
-    if (wrapper) {
-      wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading tree</strong><br>${err.message}</div>`;
-    }
-  }
 }
 
 function generateDifficultyButton(difficulty, name, level, description, completed) {
@@ -1903,17 +2135,21 @@ async function loadDailyDatabase(difficulty) {
       document.getElementById('best-match').textContent = Math.max(...guesses.map(g => g.proximity.matches));
       document.getElementById('clades-revealed').textContent = revealedClades.size;
 
-      if (guessDino.nome === targetDino.nome) {
-        gameWon = true;
-        showVictory();
-      } else {
-        renderEnhancedTree();
-        updateCladeInfo();
-        updateGuessHistory();
-      }
+if (guessDino.nome === targetDino.nome) {
+  gameWon = true;
+  showVictory();
+  input.value = '';
+  document.getElementById('suggestions').style.display = 'none';
+  return; // ← ADICIONAR ISSO (para de executar aqui)
+}
 
-      input.value = '';
-      document.getElementById('suggestions').style.display = 'none';
+// Só executa isso se NÃO ganhou
+renderEnhancedTree();
+updateCladeInfo();
+updateGuessHistory();
+
+input.value = '';
+document.getElementById('suggestions').style.display = 'none';
     }
 
     function useHint() {
@@ -1924,28 +2160,39 @@ async function loadDailyDatabase(difficulty) {
       
       if (gameWon) return;
 
-        const requiredGuesses = 2; // pode ajustar: 1, 2, 3...
-        if (guessesSinceLastHint < requiredGuesses && guesses.length > 0) {
-            alert(`You must make ${requiredGuesses - guessesSinceLastHint} more classification attempt(s) before requesting another hint.`);
-            return;
-        }
-
-      const maxRevealed = guesses.length > 0 
-        ? Math.max(...guesses.map(g => g.proximity.matches), 0)
-        : 0;
-      
       const dinosauriaIndex = targetDino.linhagem.indexOf('Dinosauria');
       
-      let nextCladeIndex = maxRevealed;
+      // Calcular o índice mais profundo revelado (na lineagem do target)
+      let maxRevealedIndex = dinosauriaIndex; // começa em Dinosauria
       
-      if (maxRevealed === 0) {
-        nextCladeIndex = dinosauriaIndex + 1;
-      } else {
-        nextCladeIndex = maxRevealed;
+      // 1. Verificar profundidade dos guesses
+      if (guesses.length > 0) {
+        guesses.forEach(guess => {
+          // proximity.matches é quantos clados coincidem desde o início
+          // Então o índice real é: (proximity.matches - 1)
+          const guessDepth = guess.proximity.matches - 1;
+          if (guessDepth > maxRevealedIndex) {
+            maxRevealedIndex = guessDepth;
+          }
+        });
       }
       
+      // 2. Verificar clados revelados por hints anteriores
+      revealedClades.forEach(clade => {
+        if (targetDino.linhagem.includes(clade)) {
+          const cladeIndex = targetDino.linhagem.indexOf(clade);
+          if (cladeIndex > maxRevealedIndex) {
+            maxRevealedIndex = cladeIndex;
+          }
+        }
+      });
+      
+      // 3. O próximo clado é o seguinte ao mais profundo
+      const nextCladeIndex = maxRevealedIndex + 1;
+      
+      // 4. Verificar se chegamos ao fim
       if (nextCladeIndex >= targetDino.linhagem.length) {
-        alert('Complete lineage already revealed.');
+        alert('Complete lineage already revealed. No more hints available.');
         return;
       }
 
@@ -1959,14 +2206,12 @@ async function loadDailyDatabase(difficulty) {
       revealedClades.add(revealClade);
 
       hintHistory.push({
-      cladeName: revealClade,
-      depth: nextCladeIndex + 1
-    });
+        cladeName: revealClade,
+        depth: nextCladeIndex + 1
+      });
       
       document.getElementById('clades-revealed').textContent = revealedClades.size;
       
-      guessesSinceLastHint = 0;
-
       renderEnhancedTree();
       updateCladeInfo();
       updateGuessHistory();
@@ -2190,49 +2435,56 @@ guesses.forEach((guess, idx) => {
     }
   }
   
+  // MUDANÇA: Verifica se este guess é o vencedor
+  const isWinningGuess = gameWon && guess.dino.nome === targetDino.nome;
+  
   leaves.push({ 
     name: guess.dino.nome + '__leaf_' + idx, 
     displayName: guess.dino.nome, 
     parentNode: attachTo, 
-    isTarget: false, 
+    isTarget: isWinningGuess,  // ← MUDANÇA: marca como target se for o vencedor
     isHint: guess.isHint, 
     lineage: guess.dino.linhagem 
   });
 });
 
-// STEP 7 – mystery "?"
-// O "?" SEMPRE fica no clado mais profundo revelado (guess OU hint)
-let mysteryParent = 'Dinosauria';
-let maxDepthRevealed = -1;
+// STEP 7 – mystery "?" (ou nome revelado se ganhou)
 
-// Primeiro, verifica qual é o clado mais profundo entre os guesses
-if (deepestMRCA !== 'Dinosauria') {
-  const deepestMRCAIndex = targetLineage.indexOf(deepestMRCA);
-  if (deepestMRCAIndex > maxDepthRevealed) {
-    maxDepthRevealed = deepestMRCAIndex;
-    mysteryParent = deepestMRCA;
-  }
-}
+// Se o jogo NÃO foi ganho, adiciona o "?"
+// Se foi ganho, o dinossauro já está nos guesses, então não precisa adicionar
+if (!gameWon) {
+  let mysteryParent = 'Dinosauria';
+  let maxDepthRevealed = -1;
 
-// Depois, verifica se algum hint revelou algo mais profundo
-revealedClades.forEach(clade => {
-  if (targetLineage.includes(clade)) {
-    const cladeIndex = targetLineage.indexOf(clade);
-    if (cladeIndex > maxDepthRevealed) {
-      maxDepthRevealed = cladeIndex;
-      mysteryParent = clade;
+  // Primeiro, verifica qual é o clado mais profundo entre os guesses
+  if (deepestMRCA !== 'Dinosauria') {
+    const deepestMRCAIndex = targetLineage.indexOf(deepestMRCA);
+    if (deepestMRCAIndex > maxDepthRevealed) {
+      maxDepthRevealed = deepestMRCAIndex;
+      mysteryParent = deepestMRCA;
     }
   }
-});
 
-leaves.push({ 
-  name: '?__leaf_target', 
-  displayName: '?', 
-  parentNode: mysteryParent, 
-  isTarget: true, 
-  isHint: false, 
-  lineage: targetLineage 
-});
+  // Depois, verifica se algum hint revelou algo mais profundo
+  revealedClades.forEach(clade => {
+    if (targetLineage.includes(clade)) {
+      const cladeIndex = targetLineage.indexOf(clade);
+      if (cladeIndex > maxDepthRevealed) {
+        maxDepthRevealed = cladeIndex;
+        mysteryParent = clade;
+      }
+    }
+  });
+
+  leaves.push({ 
+    name: '?__leaf_target', 
+    displayName: '?', 
+    parentNode: mysteryParent, 
+    isTarget: true, 
+    isHint: false, 
+    lineage: targetLineage 
+  });
+}
       
       // Layout
       const nodePositions = new Map();
@@ -2404,10 +2656,8 @@ leaves.push({
       leafPositions.forEach((leaf, name) => {
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         g.setAttribute('class', 'new-node');
-        if (!leaf.isTarget) {
-          g.style.cursor = 'pointer';
-          g.onclick = () => showCladeInfo(leaf.displayName);
-        }
+        g.style.cursor = 'pointer';
+        g.onclick = () => showCladeInfo(leaf.displayName);
         
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('x', leaf.x - nodeWidth / 2);
@@ -2526,6 +2776,14 @@ leaves.push({
     // ═══════════════════════════════════════════════════════════════════════
 function updateGuessHistory() {
   const historyDiv = document.getElementById('guess-history');
+
+  if (!historyDiv) return; // Se não existe, não faz nada
+  
+  if (guesses.length === 0 && hintHistory.length === 0) {
+    historyDiv.innerHTML = '';
+    return;
+  }
+
   if (guesses.length === 0 && hintHistory.length === 0) {
     historyDiv.innerHTML = '';
     return;
@@ -2907,35 +3165,35 @@ function updateGuessHistory() {
   `;
 }
 
-    function generateDifficultyStats() {
-    const diffNames = {
+function generateDifficultyStats() {
+  const diffNames = {
     'muito_facil': 'Level I (High-frequency)',
     'facil': 'Level II (Common)',
     'normal': 'Level III (Intermediate)',
     'dificil': 'Level IV (Specialized)',
     'muito_dificil': 'Level V (Rare)'
-    };
-      
-      let html = '';
-      for (let [key, stats] of Object.entries(userStats.difficultyStats)) {
-        if (stats.played === 0) continue;
-        
-        const winRate = Math.round((stats.won / stats.played) * 100);
-        
-        html += `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #5d4a36;">
-            <span style="color:#f8f6f3; font-size:1em; letter-spacing:1px;">${diffNames[key]}</span>
-            <div style="text-align:right;">
-              <span style="color:#c9a96e; margin-right:20px; font-weight:600;">${stats.won}/${stats.played}</span>
-              <span style="color:#d4b87e; margin-right:15px;">${winRate}%</span>
-              <span style="color:#a68a5a; font-size:0.9em;">Avg: ${Math.round(stats.avgGuesses)} guesses</span>
-            </div>
-          </div>
-        `;
-      }
-      
-      return html || '<p style="color:#8b7355; font-style:italic; padding:20px; text-align:center;">No classifications completed yet. Begin your research!</p>';
-    }
+  };
+  
+  let html = '';
+  for (let [key, stats] of Object.entries(userStats.difficultyStats)) {
+    if (stats.played === 0) continue;
+    
+    const winRate = Math.round((stats.won / stats.played) * 100);
+    
+    html += `
+      <div class="difficulty-stat-row">
+        <span class="diff-name">${diffNames[key]}</span>
+        <div class="diff-stats">
+          <span class="diff-record">${stats.won}/${stats.played}</span>
+          <span class="diff-winrate">${winRate}%</span>
+          <span class="diff-avg">Avg: ${Math.round(stats.avgGuesses)} guesses</span>
+        </div>
+      </div>
+    `;
+  }
+  
+  return html || '<p class="empty-stats">No classifications completed yet. Begin your research!</p>';
+}
 
     function generateAchievements() {
       const allAchievements = [
@@ -2952,13 +3210,11 @@ function updateGuessHistory() {
       allAchievements.forEach(ach => {
         const unlocked = userStats.achievements.includes(ach.id);
         html += `
-          <div style="padding:18px; background:${unlocked ? 'rgba(74,124,89,0.25)' : 'rgba(42,31,22,0.3)'}; 
-                      border:2px solid ${unlocked ? '#5a9c6b' : '#5d4a36'}; border-radius:6px; 
-                      opacity:${unlocked ? '1' : '0.6'}; transition:all 0.3s;">
-            <div style="font-weight:600; color:${unlocked ? '#c8e6c9' : '#8b7355'}; margin-bottom:8px; font-size:1em; letter-spacing:1px;">
+          <div class="achievement-card ${unlocked ? 'achievement-unlocked' : 'achievement-locked'}">
+            <div class="achievement-title">
               ${unlocked ? '◆' : '◇'} ${ach.name}
             </div>
-            <div style="font-size:0.85em; color:#a68a5a; font-style:italic; line-height:1.4;">${ach.desc}</div>
+            <div class="achievement-desc">${ach.desc}</div>
           </div>
         `;
       });
