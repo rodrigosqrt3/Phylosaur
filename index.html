@@ -2272,34 +2272,7 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     // START GAME
     // ═══════════════════════════════════════════════════════════════════════
 async function startDailyChallenge(difficulty) {
-
-    // ADICIONAR ISSO NO INÍCIO:
-  // Verificar se há progresso salvo
-  const savedProgress = loadGameProgress(difficulty);
-  
-  if (savedProgress && savedProgress.guesses && savedProgress.guesses.length > 0) {
-    // Perguntar se quer continuar
-    const continueGame = await showModal({
-      title: 'Progress Found',
-      message: 'You have unfinished research for this classification challenge.',
-      info: [
-        { label: 'Attempts made', value: savedProgress.guesses.length },
-        { label: 'Hints remaining', value: savedProgress.hintsRemaining },
-        { label: 'Clades revealed', value: savedProgress.revealedClades?.length || 0 }
-      ],
-      buttons: [
-        { text: 'Continue Research', value: true, primary: true },
-        { text: 'Start Fresh', value: false, primary: false }
-      ]
-    });
-    
-    if (!continueGame) {
-      // Jogador quer começar do zero
-      clearGameProgress(difficulty);
-    }
-  }
-
-  // Check if this challenge was already completed today
+  // Primeiro, verificar se já completou hoje
   const existingResult = getDailyChallengeResult(difficulty);
   
   if (existingResult && existingResult.completed) {
@@ -2310,14 +2283,15 @@ async function startDailyChallenge(difficulty) {
   selectedDifficulty = difficulty;
   const appContent = document.getElementById('app-content');
   
+  // MONTAR A INTERFACE PRIMEIRO
   appContent.innerHTML = `
     <div class="theme-toggle-container">
-    <button id="theme-toggle" class="btn-hint" onclick="toggleTheme()">
+      <button id="theme-toggle" class="btn-hint" onclick="toggleTheme()">
         <span id="theme-icon">☀️</span> <span id="theme-text">Light Mode</span>
-    </button>
-    <button class="btn-hint" onclick="showAbout()" style="margin-left:10px;">About</button>
-    <button class="btn-hint" onclick="showDifficultySelection()" style="margin-left:10px;">Change Level</button>
-    ${currentUser ? `<button class="btn-hint" onclick="showStatsDashboard()" style="margin-left:10px;">Statistics</button>` : ''}
+      </button>
+      <button class="btn-hint" onclick="showAbout()" style="margin-left:10px;">About</button>
+      <button class="btn-hint" onclick="showDifficultySelection()" style="margin-left:10px;">Change Level</button>
+      ${currentUser ? `<button class="btn-hint" onclick="showStatsDashboard()" style="margin-left:10px;">Statistics</button>` : ''}
     </div>
 
     <div class="game-card">
@@ -2368,13 +2342,39 @@ async function startDailyChallenge(difficulty) {
     }
   }
 
-  loadDailyDatabase(difficulty);
+const savedProgress = loadGameProgress(difficulty);
+let continueGame = true;
+
+if (savedProgress && savedProgress.guesses && savedProgress.guesses.length > 0) {
+  continueGame = await showModal({
+    title: 'Progress Found',
+    message: 'You have unfinished research for this classification challenge.',
+    info: [
+      { label: 'Attempts made', value: savedProgress.guesses.length },
+      { label: 'Hints remaining', value: savedProgress.hintsRemaining },
+      { label: 'Clades revealed', value: savedProgress.revealedClades?.length || 0 }
+    ],
+    buttons: [
+      { text: 'Continue Research', value: 'continue', primary: true },
+      { text: 'Start Fresh', value: 'fresh', primary: false }
+    ]
+  });
+  
+  if (continueGame === 'fresh') { // ← MUDANÇA AQUI
+    // Jogador escolheu começar do zero
+    clearGameProgress(difficulty);
+    loadDailyDatabase(difficulty, true);
+    return;
+  }
 }
 
+// Se chegou aqui, continua normalmente
+loadDailyDatabase(difficulty, false);
+}
 
     // ═══════════════════════════════════════════════════════════════════════
     // LOAD DATABASE
-async function loadDailyDatabase(difficulty) {
+async function loadDailyDatabase(difficulty, forceClean = false) {
   const wrapper = document.getElementById('tree-scroll-wrapper');
   if (wrapper) wrapper.innerHTML = '<div class="loading">Loading classification database...</div>';
   
@@ -2383,8 +2383,6 @@ async function loadDailyDatabase(difficulty) {
     if (!res.ok) throw new Error('Failed to load database');
     
     fullDatabase = await res.json();
-    
-    // Filter by selected difficulty
     database = fullDatabase.filter(d => d.dificuldade === difficulty);
     
     console.log(`Loaded ${database.length} specimens for difficulty: ${difficulty}`);
@@ -2393,7 +2391,6 @@ async function loadDailyDatabase(difficulty) {
       throw new Error(`No specimens found for difficulty: ${difficulty}`);
     }
     
-    // Generate daily specimen using seed
     const seed = getDailySeed(difficulty);
     const hash = hashString(seed);
     const index = hash % database.length;
@@ -2408,8 +2405,9 @@ async function loadDailyDatabase(difficulty) {
     guessesSinceLastHint = 0;
     
     console.log('Daily specimen:', targetDino.nome, 'Seed:', seed);
-// Tentar carregar progresso salvo
-    const savedProgress = loadGameProgress(difficulty);
+    
+    // Tentar carregar progresso salvo (a menos que forceClean seja true)
+    const savedProgress = forceClean ? null : loadGameProgress(difficulty);
 
     if (savedProgress && savedProgress.targetDino === targetDino.nome) {
       console.log('📂 Loading saved progress...');
@@ -2422,7 +2420,6 @@ async function loadDailyDatabase(difficulty) {
           
           const proximity = calculateProximity(dino, targetDino);
           
-          // ADICIONAR: Marcar clados revelados
           if (proximity.lastCommonClade) {
             revealedClades.add(proximity.lastCommonClade);
           }
@@ -2445,7 +2442,7 @@ async function loadDailyDatabase(difficulty) {
       
       console.log(`✅ Restored ${guesses.length} guesses, ${hintsRemaining} hints remaining`);
       
-      // MUDANÇA CRÍTICA: Atualizar UI DEPOIS de processar tudo
+      // Atualizar UI DEPOIS de processar tudo
       setTimeout(() => {
         const bestMatch = guesses.length > 0 
           ? Math.max(...guesses.map(g => g.proximity.matches)) 
@@ -2456,14 +2453,13 @@ async function loadDailyDatabase(difficulty) {
         document.getElementById('best-match').textContent = bestMatch;
         document.getElementById('clades-revealed').textContent = revealedClades.size;
         
-        // Renderizar árvore com progresso
         renderEnhancedTree();
         updateCladeInfo();
         updateGuessHistory();
-      }, 100); // Pequeno delay para garantir que a UI está pronta
+      }, 100);
       
     } else {
-      // Novo jogo
+      // Novo jogo (ou Start Fresh)
       document.getElementById('attempts').textContent = '0';
       document.getElementById('hints').textContent = '3';
       document.getElementById('best-match').textContent = '0';
@@ -2473,16 +2469,8 @@ async function loadDailyDatabase(difficulty) {
         wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
       }
     }
-    
-    document.getElementById('attempts').textContent = '0';
-    document.getElementById('hints').textContent = '3';
-    document.getElementById('best-match').textContent = '0';
-    document.getElementById('clades-revealed').textContent = '0';
 
-    if (wrapper) {
-      wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
-    }
-
+    // Inicializar autocomplete sempre
     initializeAutocomplete();
     
   } catch (err) {
@@ -2580,11 +2568,20 @@ if (currentUser && !gameWon) {
 
     async function useHint() {
       if (hintsRemaining <= 0) {
-        await customAlert('No Hints Available', 'You have exhausted all phylogenetic hints for this challenge.');
+        await customAlert('No Hints Available', 'You have exhausted all hints for this challenge.');
         return;
       }
       
       if (gameWon) return;
+
+        const requiredGuesses = 2;
+        if (guessesSinceLastHint < requiredGuesses && guesses.length > 0) {
+          await customAlert(
+            'Hint Cooldown', 
+            `You must make <strong>${requiredGuesses - guessesSinceLastHint}</strong> more classification attempt(s) before requesting another hint.`
+          );
+          return;
+        }
 
       const dinosauriaIndex = targetDino.linhagem.indexOf('Dinosauria');
       
@@ -2627,7 +2624,7 @@ if (currentUser && !gameWon) {
 
       const revealClade = targetDino.linhagem[nextCladeIndex];
       
-      await customAlert('Phylogenetic Hint', `The next clade in the lineage is:<br><br><strong style="color:#d4b87e; font-size:1.2em;">${revealClade}</strong>`);
+      await customAlert('Hint', `The next clade in the lineage is:<br><br><strong style="color:#d4b87e; font-size:1.2em;">${revealClade}</strong>`);
 
       revealedClades.add(revealClade);
 
@@ -2637,6 +2634,8 @@ if (currentUser && !gameWon) {
       });
       
       document.getElementById('clades-revealed').textContent = revealedClades.size;
+
+      guessesSinceLastHint = 0;
       
       renderEnhancedTree();
       updateCladeInfo();
