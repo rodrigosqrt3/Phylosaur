@@ -1060,6 +1060,193 @@ body.light-mode .difficulty-completed {
       color: #c8e6c9;
     }
 
+    /* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+/* Modal container */
+.modal-box {
+  background: linear-gradient(180deg, #2c2318 0%, #221a12 100%);
+  border: 3px solid #4a3829;
+  border-radius: 8px;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+body.light-mode .modal-box {
+  background: linear-gradient(180deg, #f5f0e8 0%, #e8dcc8 100%);
+  border-color: #c9a96e;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Modal title */
+.modal-title {
+  font-size: 1.8em;
+  color: #d4b87e;
+  margin-bottom: 20px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-variant: small-caps;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+body.light-mode .modal-title {
+  color: #8b6f47;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal message */
+.modal-message {
+  color: #f8f6f3;
+  font-size: 1.05em;
+  line-height: 1.8;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+body.light-mode .modal-message {
+  color: #2d2318;
+}
+
+/* Modal info box (for progress details) */
+.modal-info {
+  background: rgba(61, 47, 31, 0.5);
+  border-left: 3px solid #8b7355;
+  padding: 15px 20px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+body.light-mode .modal-info {
+  background: rgba(201, 169, 110, 0.15);
+  border-left-color: #8b6f47;
+}
+
+.modal-info-item {
+  color: #c9a96e;
+  font-size: 0.95em;
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+body.light-mode .modal-info-item {
+  color: #5a3e1b;
+}
+
+.modal-info-label {
+  color: #8b7355;
+}
+
+body.light-mode .modal-info-label {
+  color: #6b5340;
+}
+
+/* Modal buttons */
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 25px;
+}
+
+.modal-btn {
+  padding: 14px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Georgia', serif;
+  border: 2px solid;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  min-width: 140px;
+}
+
+.modal-btn-primary {
+  background: linear-gradient(180deg, #d4b87e 0%, #c9a96e 50%, #a68a5a 100%);
+  color: #1a1410;
+  border-color: #8b7355;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.modal-btn-primary:hover {
+  background: linear-gradient(180deg, #e6c896 0%, #d4b87e 50%, #b89a6a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-btn-secondary {
+  background: linear-gradient(180deg, #3d2f1f 0%, #2a1f16 100%);
+  color: #c9a96e;
+  border-color: #5d4a36;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.modal-btn-secondary:hover {
+  background: linear-gradient(180deg, #4a3829 0%, #3d2f1f 100%);
+  border-color: #8b7355;
+}
+
+body.light-mode .modal-btn-primary {
+  background: linear-gradient(180deg, #8b6f47 0%, #6b5340 100%);
+  color: #fff;
+  border-color: #6b5340;
+}
+
+body.light-mode .modal-btn-primary:hover {
+  background: linear-gradient(180deg, #9b7f57 0%, #7b6350 100%);
+}
+
+body.light-mode .modal-btn-secondary {
+  background: linear-gradient(180deg, #e8dcc8 0%, #d4c4a0 100%);
+  color: #5a3e1b;
+  border-color: #c9a96e;
+}
+
+body.light-mode .modal-btn-secondary:hover {
+  background: linear-gradient(180deg, #f0e4d0 0%, #e0d4b0 100%);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateY(-30px) scale(0.95);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
     .loading {
       text-align: center;
       padding: 60px;
@@ -1526,6 +1713,103 @@ body.light-mode .difficulty-completed {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
+// CUSTOM MODALS
+// ═══════════════════════════════════════════════════════════════════════
+
+function showModal(options) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    
+    const box = document.createElement('div');
+    box.className = 'modal-box';
+    
+    let html = '';
+    
+    // Title
+    if (options.title) {
+      html += `<div class="modal-title">${options.title}</div>`;
+    }
+    
+    // Message
+    if (options.message) {
+      html += `<div class="modal-message">${options.message}</div>`;
+    }
+    
+    // Info box (para detalhes do progresso)
+    if (options.info) {
+      html += '<div class="modal-info">';
+      options.info.forEach(item => {
+        html += `
+          <div class="modal-info-item">
+            <span class="modal-info-label">${item.label}:</span>
+            <span>${item.value}</span>
+          </div>
+        `;
+      });
+      html += '</div>';
+    }
+    
+    // Buttons
+    html += '<div class="modal-buttons">';
+    
+    if (options.buttons) {
+      options.buttons.forEach((btn, index) => {
+        const btnClass = btn.primary ? 'modal-btn-primary' : 'modal-btn-secondary';
+        html += `<button class="modal-btn ${btnClass}" data-result="${btn.value}">${btn.text}</button>`;
+      });
+    } else {
+      // Default OK button
+      html += '<button class="modal-btn modal-btn-primary" data-result="ok">OK</button>';
+    }
+    
+    html += '</div>';
+    
+    box.innerHTML = html;
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    
+    // Handle button clicks
+    box.querySelectorAll('.modal-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const result = btn.getAttribute('data-result');
+        document.body.removeChild(overlay);
+        resolve(result);
+      });
+    });
+    
+    // Close on overlay click (optional)
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay && options.closeOnOverlay !== false) {
+        document.body.removeChild(overlay);
+        resolve(null);
+      }
+    });
+  });
+}
+
+// Helper: Custom alert
+function customAlert(title, message) {
+  return showModal({
+    title: title,
+    message: message,
+    buttons: [{ text: 'OK', value: 'ok', primary: true }]
+  });
+}
+
+// Helper: Custom confirm
+function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
+  return showModal({
+    title: title,
+    message: message,
+    buttons: [
+      { text: yesText, value: true, primary: true },
+      { text: noText, value: false, primary: false }
+    ]
+  });
+}
+
+    // ═══════════════════════════════════════════════════════════════════════
     // LOGIN & AUTHENTICATION
     // ═══════════════════════════════════════════════════════════════════════
 
@@ -1613,8 +1897,15 @@ body.light-mode .difficulty-completed {
       showDifficultySelection();
     }
 
-    function logout() {
-      if (confirm('Are you sure you want to logout?')) {
+    async function logout() {
+      const confirmLogout = await customConfirm(
+      'Confirm Logout', 
+      'Are you sure you want to end your research session?',
+      'Logout',
+      'Cancel'
+    );
+
+    if (confirmLogout) {
         currentUser = null;
         userStats = {
           gamesPlayed: 0,
@@ -1737,6 +2028,45 @@ function getDailyCompletionStatus() {
 function getTodayString() {
   const today = new Date();
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
+
+function saveGameProgress(difficulty) {
+  if (!currentUser) return;
+  
+  const today = getTodayString();
+  const key = `phylosaur-progress-${currentUser}-${today}-${difficulty}`;
+  
+  localStorage.setItem(key, JSON.stringify({
+    guesses: guesses.map(g => ({
+      nome: g.dino.nome,
+      linhagem: g.dino.linhagem,
+      isHint: g.isHint || false
+    })),
+    revealedClades: Array.from(revealedClades),
+    hintHistory: hintHistory,
+    hintsRemaining: hintsRemaining,
+    guessedNames: Array.from(guessedNames),
+    targetDino: targetDino.nome,
+    timestamp: new Date().toISOString()
+  }));
+}
+
+function loadGameProgress(difficulty) {
+  if (!currentUser) return null;
+  
+  const today = getTodayString();
+  const key = `phylosaur-progress-${currentUser}-${today}-${difficulty}`;
+  const saved = localStorage.getItem(key);
+  
+  return saved ? JSON.parse(saved) : null;
+}
+
+function clearGameProgress(difficulty) {
+  if (!currentUser) return;
+  
+  const today = getTodayString();
+  const key = `phylosaur-progress-${currentUser}-${today}-${difficulty}`;
+  localStorage.removeItem(key);
 }
 
 function saveDailyChallengeResult(difficulty, targetDino, guessCount) {
@@ -1941,7 +2271,33 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     // ═══════════════════════════════════════════════════════════════════════
     // START GAME
     // ═══════════════════════════════════════════════════════════════════════
-function startDailyChallenge(difficulty) {
+async function startDailyChallenge(difficulty) {
+
+    // ADICIONAR ISSO NO INÍCIO:
+  // Verificar se há progresso salvo
+  const savedProgress = loadGameProgress(difficulty);
+  
+  if (savedProgress && savedProgress.guesses && savedProgress.guesses.length > 0) {
+    // Perguntar se quer continuar
+    const continueGame = await showModal({
+      title: 'Progress Found',
+      message: 'You have unfinished research for this classification challenge.',
+      info: [
+        { label: 'Attempts made', value: savedProgress.guesses.length },
+        { label: 'Hints remaining', value: savedProgress.hintsRemaining },
+        { label: 'Clades revealed', value: savedProgress.revealedClades?.length || 0 }
+      ],
+      buttons: [
+        { text: 'Continue Research', value: true, primary: true },
+        { text: 'Start Fresh', value: false, primary: false }
+      ]
+    });
+    
+    if (!continueGame) {
+      // Jogador quer começar do zero
+      clearGameProgress(difficulty);
+    }
+  }
 
   // Check if this challenge was already completed today
   const existingResult = getDailyChallengeResult(difficulty);
@@ -2052,6 +2408,71 @@ async function loadDailyDatabase(difficulty) {
     guessesSinceLastHint = 0;
     
     console.log('Daily specimen:', targetDino.nome, 'Seed:', seed);
+// Tentar carregar progresso salvo
+    const savedProgress = loadGameProgress(difficulty);
+
+    if (savedProgress && savedProgress.targetDino === targetDino.nome) {
+      console.log('📂 Loading saved progress...');
+      
+      // Reconstruir guesses
+      if (savedProgress.guesses && savedProgress.guesses.length > 0) {
+        guesses = savedProgress.guesses.map(savedGuess => {
+          const dino = database.find(d => d.nome === savedGuess.nome);
+          if (!dino) return null;
+          
+          const proximity = calculateProximity(dino, targetDino);
+          
+          // ADICIONAR: Marcar clados revelados
+          if (proximity.lastCommonClade) {
+            revealedClades.add(proximity.lastCommonClade);
+          }
+          
+          return {
+            dino: dino,
+            proximity: proximity,
+            isHint: savedGuess.isHint || false
+          };
+        }).filter(g => g !== null);
+      }
+      
+      // Restaurar estado
+      if (savedProgress.revealedClades) {
+        savedProgress.revealedClades.forEach(c => revealedClades.add(c));
+      }
+      hintHistory = savedProgress.hintHistory || [];
+      hintsRemaining = savedProgress.hintsRemaining !== undefined ? savedProgress.hintsRemaining : 3;
+      guessedNames = new Set(savedProgress.guessedNames || []);
+      
+      console.log(`✅ Restored ${guesses.length} guesses, ${hintsRemaining} hints remaining`);
+      
+      // MUDANÇA CRÍTICA: Atualizar UI DEPOIS de processar tudo
+      setTimeout(() => {
+        const bestMatch = guesses.length > 0 
+          ? Math.max(...guesses.map(g => g.proximity.matches)) 
+          : 0;
+        
+        document.getElementById('attempts').textContent = guesses.length;
+        document.getElementById('hints').textContent = hintsRemaining;
+        document.getElementById('best-match').textContent = bestMatch;
+        document.getElementById('clades-revealed').textContent = revealedClades.size;
+        
+        // Renderizar árvore com progresso
+        renderEnhancedTree();
+        updateCladeInfo();
+        updateGuessHistory();
+      }, 100); // Pequeno delay para garantir que a UI está pronta
+      
+    } else {
+      // Novo jogo
+      document.getElementById('attempts').textContent = '0';
+      document.getElementById('hints').textContent = '3';
+      document.getElementById('best-match').textContent = '0';
+      document.getElementById('clades-revealed').textContent = '0';
+      
+      if (wrapper) {
+        wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+      }
+    }
     
     document.getElementById('attempts').textContent = '0';
     document.getElementById('hints').textContent = '3';
@@ -2094,26 +2515,26 @@ async function loadDailyDatabase(difficulty) {
       };
     }
 
-    function makeGuess() {
+    async function makeGuess() {
       if (gameWon) return;
       
       const input = document.getElementById('dino-input');
       const guessName = input.value.trim();
       
       if (!guessName) {
-        alert('Enter a taxon name!');
+        await customAlert('Input Required', 'Please enter a specimen name to classify.');
         return;
       }
 
       const guessDino = database.find(d => d.nome.toLowerCase() === guessName.toLowerCase());
       
       if (!guessDino) {
-        alert('Taxon not found in database! Use autocomplete suggestions.');
+        await customAlert('Taxon Not Found', 'This specimen is not in the classification database. Please use the autocomplete suggestions.');
         return;
       }
 
       if (guessedNames.has(guessDino.nome.toLowerCase())) {
-        alert('You already tried this one, but you can guess it again if you want!');
+        await customAlert('Duplicate Classification', 'This specimen has already been classified in this session.');
       }
       
       guessedNames.add(guessDino.nome.toLowerCase());
@@ -2150,11 +2571,16 @@ updateGuessHistory();
 
 input.value = '';
 document.getElementById('suggestions').style.display = 'none';
+
+if (currentUser && !gameWon) {
+  saveGameProgress(selectedDifficulty);
+}
+
     }
 
-    function useHint() {
+    async function useHint() {
       if (hintsRemaining <= 0) {
-        alert('No hints remaining.');
+        await customAlert('No Hints Available', 'You have exhausted all phylogenetic hints for this challenge.');
         return;
       }
       
@@ -2192,7 +2618,7 @@ document.getElementById('suggestions').style.display = 'none';
       
       // 4. Verificar se chegamos ao fim
       if (nextCladeIndex >= targetDino.linhagem.length) {
-        alert('Complete lineage already revealed. No more hints available.');
+        await customAlert('Lineage Complete', 'The complete phylogenetic path has been revealed. No additional hints available.');
         return;
       }
 
@@ -2201,7 +2627,7 @@ document.getElementById('suggestions').style.display = 'none';
 
       const revealClade = targetDino.linhagem[nextCladeIndex];
       
-      alert(`Hint: The next clade is "${revealClade}"`);
+      await customAlert('Phylogenetic Hint', `The next clade in the lineage is:<br><br><strong style="color:#d4b87e; font-size:1.2em;">${revealClade}</strong>`);
 
       revealedClades.add(revealClade);
 
@@ -2215,6 +2641,10 @@ document.getElementById('suggestions').style.display = 'none';
       renderEnhancedTree();
       updateCladeInfo();
       updateGuessHistory();
+
+      if (currentUser) {
+        saveGameProgress(selectedDifficulty);
+      }
     }
 
 
@@ -2745,6 +3175,10 @@ if (!gameWon) {
     // VICTORY
     // ═══════════════════════════════════════════════════════════════════════
     function showVictory() {
+        if (currentUser) {
+          clearGameProgress(selectedDifficulty);
+        }
+
     if (currentUser) {
     updateStatsAfterGame(true, guesses.length, selectedDifficulty);
     markDailyChallengeCompleted(selectedDifficulty);
