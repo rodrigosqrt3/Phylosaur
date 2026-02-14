@@ -38,7 +38,7 @@
       "Herrerasauridae"
     ],
     "profundidade": 7,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Gnathovorax",
@@ -340,7 +340,7 @@
       "Unaysauridae"
     ],
     "profundidade": 10,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Macrocollum",
@@ -463,7 +463,7 @@
       "Ruehleia"
     ],
     "profundidade": 11,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Issi",
@@ -553,7 +553,7 @@
       "Massopoda"
     ],
     "profundidade": 11,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Eucnemesaurus",
@@ -941,7 +941,7 @@
       "Massospondylidae"
     ],
     "profundidade": 14,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Jingshanosaurus",
@@ -983,7 +983,7 @@
       "Massospondylidae"
     ],
     "profundidade": 14,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Xingxiulong",
@@ -1074,7 +1074,7 @@
       "Anchisauria"
     ],
     "profundidade": 16,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Mussaurus",
@@ -1193,7 +1193,7 @@
       "Sauropoda"
     ],
     "profundidade": 17,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Melanorosaurus",
@@ -1218,7 +1218,7 @@
       "Melanorosauridae"
     ],
     "profundidade": 18,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Camelotia",
@@ -1269,7 +1269,7 @@
       "Lessemsauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Lessemsaurus",
@@ -1321,7 +1321,7 @@
       "Lessemsauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Ingentia",
@@ -1399,7 +1399,7 @@
       "Lessemsauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Blikanasaurus",
@@ -1555,7 +1555,7 @@
       "Lessemsauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Pulanesaura",
@@ -1581,7 +1581,7 @@
       "Lessemsauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Isanosaurus",
@@ -1745,7 +1745,7 @@
       "Vulcanodontidae"
     ],
     "profundidade": 21,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Archaeodontosaurus",
@@ -1913,7 +1913,7 @@
       "Eusauropoda"
     ],
     "profundidade": 21,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Chondrosteosaurus",
@@ -2202,7 +2202,7 @@
       "Cetiosauridae"
     ],
     "profundidade": 22,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Tonganosaurus",
@@ -2352,7 +2352,7 @@
       "Mamenchisauridae"
     ],
     "profundidade": 23,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Anhuilong",
@@ -2442,7 +2442,7 @@
       "Mamenchisauridae"
     ],
     "profundidade": 23,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Yuanmousaurus",
@@ -2927,7 +2927,7 @@
       "Turiasauria"
     ],
     "profundidade": 24,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Zby",
@@ -3020,7 +3020,7 @@
       "Turiasauria"
     ],
     "profundidade": 24,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Moabosaurus",
@@ -3146,7 +3146,7 @@
       "Neosauropoda"
     ],
     "profundidade": 25,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Ultrasaurus",
@@ -3244,6 +3244,41 @@
     ],
     "profundidade": 26,
     "dificuldade": "facil"
+  },
+  {
+    "nome": "Cienciargentina",
+    "linhagem": [
+      "Archosaurs",
+      "Avemetatarsalia / Ornithosuchia / Ornithodira",
+      "Dinosauromorpha",
+      "Dinosauriformes",
+      "Dinosauria",
+      "Saurischia",
+      "Eusaurischia",
+      "Sauropodomorpha",
+      "Bagualosauria",
+      "Plateosauria",
+      "Massopoda",
+      "Riojasauridae",
+      "Sauropodiformes",
+      "Massospondylidae",
+      "Sauropodiformes",
+      "Anchisauria",
+      "Sauropoda",
+      "Melanorosauridae",
+      "Lessemsauridae",
+      "Gravisauria",
+      "Eusauropoda",
+      "Cetiosauridae",
+      "Mamenchisauridae",
+      "Turiasauria",
+      "Neosauropoda",
+      "Diplodocoidea",
+      "Diplodocimorpha",
+      "Rebbachisauridae"
+    ],
+    "profundidade": 28,
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Xenoposeidon",
@@ -3593,7 +3628,7 @@
       "Rebbachisauridae"
     ],
     "profundidade": 28,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Dzharatitanis",
@@ -3846,7 +3881,7 @@
       "Rebbachisaurinae"
     ],
     "profundidade": 30,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Nigersaurus",
@@ -4760,7 +4795,7 @@
       "Diplodocinae"
     ],
     "profundidade": 30,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Diplodocus",
@@ -4933,7 +4968,7 @@
       "Macronaria"
     ],
     "profundidade": 26,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Haestasaurus",
@@ -5036,7 +5071,7 @@
       "Camarasauridae"
     ],
     "profundidade": 28,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Oplosaurus",
@@ -5538,7 +5573,7 @@
       "Titanosauriformes"
     ],
     "profundidade": 29,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Atlasaurus",
@@ -5871,7 +5906,7 @@
       "Brachiosauridae"
     ],
     "profundidade": 30,
-    "dificuldade": "facil"
+    "dificuldade": "muito_facil"
   },
   {
     "nome": "Abydosaurus",
@@ -6093,7 +6128,7 @@
       "Somphospondyli"
     ],
     "profundidade": 30,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Garumbatitan",
@@ -6352,7 +6387,7 @@
       "Somphospondyli"
     ],
     "profundidade": 30,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Agustinia",
@@ -6537,7 +6572,7 @@
       "Somphospondyli"
     ],
     "profundidade": 30,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Sauroposeidon",
@@ -6875,7 +6910,7 @@
       "Euhelopodidae"
     ],
     "profundidade": 31,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Gannansaurus",
@@ -7103,7 +7138,7 @@
       "Euhelopodidae"
     ],
     "profundidade": 31,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Huanghetitan",
@@ -7802,7 +7837,7 @@
       "Titanosauria"
     ],
     "profundidade": 32,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Kaijutitan",
@@ -8076,7 +8111,7 @@
       "Diamantinasauria"
     ],
     "profundidade": 33,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Sarmientosaurus",
@@ -8236,7 +8271,7 @@
       "Diamantinasauria"
     ],
     "profundidade": 33,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Uriash",
@@ -8437,7 +8472,7 @@
       "Lithostrotia"
     ],
     "profundidade": 34,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Sonidosaurus",
@@ -8645,7 +8680,7 @@
       "Colossosauria"
     ],
     "profundidade": 35,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Brasilotitan",
@@ -8729,7 +8764,7 @@
       "Colossosauria"
     ],
     "profundidade": 35,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Laplatasaurus",
@@ -8984,7 +9019,7 @@
       "Lognkosauria"
     ],
     "profundidade": 36,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Petrobrasaurus",
@@ -9199,7 +9234,7 @@
       "Lognkosauria"
     ],
     "profundidade": 36,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Patagotitan",
@@ -9672,7 +9707,7 @@
       "Rinconsauria"
     ],
     "profundidade": 36,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Uberabatitan",
@@ -9801,7 +9836,7 @@
       "Rinconsauria"
     ],
     "profundidade": 36,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Overosaurus",
@@ -9845,7 +9880,7 @@
       "Aeolosaurini"
     ],
     "profundidade": 37,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Bravasaurus",
@@ -10411,7 +10446,7 @@
       "Saltasauroidea"
     ],
     "profundidade": 35,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Mnyamawamtuka",
@@ -10579,7 +10614,7 @@
       "Saltasauroidea"
     ],
     "profundidade": 35,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Tapuiasaurus",
@@ -10621,7 +10656,7 @@
       "Saltasauroidea"
     ],
     "profundidade": 35,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Isisaurus",
@@ -10749,7 +10784,7 @@
       "Nemegtosaurus"
     ],
     "profundidade": 36,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Baurutitan",
@@ -10792,7 +10827,7 @@
       "Nemegtosaurus"
     ],
     "profundidade": 36,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Titanomachya",
@@ -10880,7 +10915,7 @@
       "Mansourasaurus"
     ],
     "profundidade": 38,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Atsinganosaurus",
@@ -11015,7 +11050,7 @@
       "Lirainosaurinae"
     ],
     "profundidade": 38,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Igai",
@@ -11372,7 +11407,7 @@
       "Paralititan"
     ],
     "profundidade": 38,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Magyarosaurus",
@@ -11646,7 +11681,7 @@
       "Coelophysidae"
     ],
     "profundidade": 11,
-    "dificuldade": "facil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Camposaurus",
@@ -11772,7 +11807,7 @@
       "Coelophysidae"
     ],
     "profundidade": 11,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Lophostropheus",
@@ -11876,7 +11911,7 @@
       "Coelophysoidea"
     ],
     "profundidade": 10,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Tachiraptor",
@@ -11970,7 +12005,7 @@
       "Neoceratosauria"
     ],
     "profundidade": 13,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Berberosaurus",
@@ -12014,7 +12049,7 @@
       "Ceratosauridae"
     ],
     "profundidade": 16,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Ceratosaurus",
@@ -12183,7 +12218,7 @@
       "Noasauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Afromimus",
@@ -12209,7 +12244,7 @@
       "Noasauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Limusaurus",
@@ -12237,7 +12272,7 @@
       "Elaphrosaurinae"
     ],
     "profundidade": 21,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Elaphrosaurus",
@@ -12456,7 +12491,7 @@
       "Noasaurinae"
     ],
     "profundidade": 20,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Masiakasaurus",
@@ -12640,7 +12675,7 @@
       "Abelisauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Vitakridrinda",
@@ -12719,7 +12754,7 @@
       "Abelisauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Rugops",
@@ -12857,7 +12892,7 @@
       "Majungasaurinae"
     ],
     "profundidade": 21,
-    "dificuldade": "muito_facil"
+    "dificuldade": "facil"
   },
   {
     "nome": "Rahiolisaurus",
@@ -12886,7 +12921,7 @@
       "Dahalokely"
     ],
     "profundidade": 22,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Ilokelesia",
@@ -13026,7 +13061,7 @@
       "Brachyrostra"
     ],
     "profundidade": 21,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Caletodraco",
@@ -13293,7 +13328,7 @@
       "Abelisaurinae"
     ],
     "profundidade": 24,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Carnotaurus",
@@ -13412,7 +13447,7 @@
       "Tetanurae"
     ],
     "profundidade": 12,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Pandoravenator",
@@ -13721,7 +13756,7 @@
       "Spinosauridae"
     ],
     "profundidade": 18,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Protathlitis",
@@ -14012,7 +14047,7 @@
       "Spinosaurinae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Irritator",
@@ -14221,7 +14256,7 @@
       "Afrovenatorinae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Poekilopleuron",
@@ -14325,7 +14360,7 @@
       "Afrovenatorinae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Duriavenator",
@@ -14452,7 +14487,7 @@
       "Allosauroidea"
     ],
     "profundidade": 16,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Asfaltovenator",
@@ -14478,6 +14513,30 @@
     "dificuldade": "facil"
   },
   {
+    "nome": "Yuanmouraptor",
+    "linhagem": [
+      "Archosaurs",
+      "Avemetatarsalia / Ornithosuchia / Ornithodira",
+      "Dinosauromorpha",
+      "Dinosauriformes",
+      "Dinosauria",
+      "Saurischia",
+      "Eusaurischia",
+      "Theropoda",
+      "Neotheropoda",
+      "Coelophysoidea",
+      "Averostra",
+      "Tetanurae",
+      "Orionides",
+      "Avetheropoda",
+      "Carnosauria",
+      "Allosauroidea",
+      "Metriacanthosauridae"
+    ],
+    "profundidade": 17,
+    "dificuldade": "dificil"
+  },
+  {
     "nome": "Yangchuanosaurus",
     "linhagem": [
       "Archosaurs",
@@ -14495,9 +14554,10 @@
       "Orionides",
       "Avetheropoda",
       "Carnosauria",
-      "Allosauroidea"
+      "Allosauroidea",
+      "Metriacanthosauridae"
     ],
-    "profundidade": 16,
+    "profundidade": 17,
     "dificuldade": "normal"
   },
   {
@@ -14518,9 +14578,11 @@
       "Orionides",
       "Avetheropoda",
       "Carnosauria",
-      "Allosauroidea"
+      "Allosauroidea",
+      "Metriacanthosauridae",
+      "Metriacanthosaurinae"
     ],
-    "profundidade": 16,
+    "profundidade": 18,
     "dificuldade": "dificil"
   },
   {
@@ -14542,9 +14604,10 @@
       "Avetheropoda",
       "Carnosauria",
       "Allosauroidea",
+      "Metriacanthosauridae",
       "Metriacanthosaurinae"
     ],
-    "profundidade": 17,
+    "profundidade": 18,
     "dificuldade": "dificil"
   },
   {
@@ -14566,9 +14629,10 @@
       "Avetheropoda",
       "Carnosauria",
       "Allosauroidea",
+      "Metriacanthosauridae",
       "Metriacanthosaurinae"
     ],
-    "profundidade": 17,
+    "profundidade": 18,
     "dificuldade": "normal"
   },
   {
@@ -14590,9 +14654,10 @@
       "Avetheropoda",
       "Carnosauria",
       "Allosauroidea",
+      "Metriacanthosauridae",
       "Metriacanthosaurinae"
     ],
-    "profundidade": 17,
+    "profundidade": 18,
     "dificuldade": "normal"
   },
   {
@@ -14614,9 +14679,10 @@
       "Avetheropoda",
       "Carnosauria",
       "Allosauroidea",
+      "Metriacanthosauridae",
       "Metriacanthosaurinae"
     ],
-    "profundidade": 17,
+    "profundidade": 18,
     "dificuldade": "normal"
   },
   {
@@ -14872,7 +14938,7 @@
       "Neovenatoridae"
     ],
     "profundidade": 20,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Neovenator",
@@ -14899,7 +14965,7 @@
       "Neovenatoridae"
     ],
     "profundidade": 20,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Siats",
@@ -15284,7 +15350,7 @@
       "Giganotosaurini"
     ],
     "profundidade": 22,
-    "dificuldade": "muito_facil"
+    "dificuldade": "facil"
   },
   {
     "nome": "Giganotosaurus",
@@ -15342,7 +15408,7 @@
       "Giganotosaurini"
     ],
     "profundidade": 22,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Unquillosaurus",
@@ -15448,7 +15514,7 @@
       "Allosauria"
     ],
     "profundidade": 17,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Phaedrolosaurus",
@@ -15588,7 +15654,7 @@
       "Coeluridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Guanlong",
@@ -15666,7 +15732,7 @@
       "Coeluridae"
     ],
     "profundidade": 19,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Yutyrannus",
@@ -15869,7 +15935,7 @@
       "Stokesosauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Stokesosaurus",
@@ -16103,7 +16169,7 @@
       "Stokesosauridae"
     ],
     "profundidade": 19,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Dryptosaurus",
@@ -16242,7 +16308,7 @@
       "Albertosaurinae"
     ],
     "profundidade": 22,
-    "dificuldade": "muito_facil"
+    "dificuldade": "facil"
   },
   {
     "nome": "Albertosaurus",
@@ -16548,7 +16614,7 @@
       "Daspletosaurini"
     ],
     "profundidade": 24,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Lythronax",
@@ -16886,7 +16952,7 @@
       "Megaraptoridae"
     ],
     "profundidade": 18,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Aoniraptor",
@@ -17061,7 +17127,7 @@
       "Megaraptoridae"
     ],
     "profundidade": 18,
-    "dificuldade": "facil"
+    "dificuldade": "muito_facil"
   },
   {
     "nome": "Aorun",
@@ -17133,7 +17199,7 @@
       "Maniraptoromorpha"
     ],
     "profundidade": 17,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Aniksosaurus",
@@ -17451,7 +17517,7 @@
       "Sinosauropterygidae"
     ],
     "profundidade": 20,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Compsognathus",
@@ -17696,7 +17762,7 @@
       "Macrocheiriformes"
     ],
     "profundidade": 21,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Hexing",
@@ -17811,7 +17877,7 @@
       "Ornithomimoidea"
     ],
     "profundidade": 22,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Harpymimus",
@@ -17898,7 +17964,7 @@
       "Ornithomimoidea"
     ],
     "profundidade": 22,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Paraxenisaurus",
@@ -18047,7 +18113,7 @@
       "Ornithomimidae"
     ],
     "profundidade": 23,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Aepyornithomimus",
@@ -18137,7 +18203,7 @@
       "Ornithomimidae"
     ],
     "profundidade": 23,
-    "dificuldade": "facil"
+    "dificuldade": "muito_facil"
   },
   {
     "nome": "Rativates",
@@ -18197,7 +18263,7 @@
       "Ornithomimidae"
     ],
     "profundidade": 23,
-    "dificuldade": "muito_facil"
+    "dificuldade": "facil"
   },
   {
     "nome": "Qiupalong",
@@ -18287,7 +18353,7 @@
       "Ornithomimidae"
     ],
     "profundidade": 23,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Ornithomimus",
@@ -18427,7 +18493,7 @@
       "Alvarezsauroidea"
     ],
     "profundidade": 21,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Tugulusaurus",
@@ -18539,7 +18605,7 @@
       "Alvarezsauroidea"
     ],
     "profundidade": 21,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Patagonykus",
@@ -19171,7 +19237,7 @@
       "Mononykini"
     ],
     "profundidade": 24,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Heptasteornis",
@@ -19289,7 +19355,7 @@
       "Therizinosauria"
     ],
     "profundidade": 22,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Jianchangosaurus",
@@ -19624,7 +19690,7 @@
       "Therizinosauridae"
     ],
     "profundidade": 24,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Duonychus",
@@ -19869,7 +19935,7 @@
       "Oviraptorosauria"
     ],
     "profundidade": 23,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Similicaudipteryx",
@@ -19929,7 +19995,7 @@
       "Oviraptorosauria"
     ],
     "profundidade": 23,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Incisivosaurus",
@@ -20220,7 +20286,7 @@
       "Caenagnathidae"
     ],
     "profundidade": 27,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Chirostenotes",
@@ -20532,7 +20598,7 @@
       "Caenagnathinae"
     ],
     "profundidade": 28,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Epichirostenotes",
@@ -21018,7 +21084,7 @@
       "Citipatiinae"
     ],
     "profundidade": 28,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Corythoraptor",
@@ -21298,7 +21364,7 @@
       "Heyuanniinae"
     ],
     "profundidade": 28,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Jiangxisaurus",
@@ -21368,7 +21434,7 @@
       "Heyuanniinae"
     ],
     "profundidade": 28,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Halszkaraptor",
@@ -21504,7 +21570,7 @@
       "Halszkaraptorinae"
     ],
     "profundidade": 27,
-    "dificuldade": "normal"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Diuqin",
@@ -21679,7 +21745,7 @@
       "Unenlagiinae"
     ],
     "profundidade": 28,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Pamparaptor",
@@ -21819,7 +21885,7 @@
       "Unenlagiinae"
     ],
     "profundidade": 28,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Rahonavis",
@@ -21889,7 +21955,7 @@
       "Unenlagiinae"
     ],
     "profundidade": 28,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Unenlagia",
@@ -21954,10 +22020,9 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
+    "profundidade": 26,
     "dificuldade": "normal"
   },
   {
@@ -21988,10 +22053,9 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
+    "profundidade": 26,
     "dificuldade": "dificil"
   },
   {
@@ -22022,11 +22086,10 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
-    "dificuldade": "normal"
+    "profundidade": 26,
+    "dificuldade": "facil"
   },
   {
     "nome": "Hesperonychus",
@@ -22056,10 +22119,9 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
+    "profundidade": 26,
     "dificuldade": "dificil"
   },
   {
@@ -22090,10 +22152,9 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
+    "profundidade": 26,
     "dificuldade": "muito_facil"
   },
   {
@@ -22124,11 +22185,10 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
-    "dificuldade": "muito_dificil"
+    "profundidade": 26,
+    "dificuldade": "dificil"
   },
   {
     "nome": "Sinornithosaurus",
@@ -22158,10 +22218,9 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
+    "profundidade": 26,
     "dificuldade": "facil"
   },
   {
@@ -22192,10 +22251,9 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
+    "profundidade": 26,
     "dificuldade": "dificil"
   },
   {
@@ -22226,10 +22284,9 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
+    "profundidade": 26,
     "dificuldade": "dificil"
   },
   {
@@ -22260,10 +22317,9 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
+    "profundidade": 26,
     "dificuldade": "normal"
   },
   {
@@ -22294,10 +22350,9 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria"
     ],
-    "profundidade": 27,
+    "profundidade": 26,
     "dificuldade": "dificil"
   },
   {
@@ -22328,11 +22383,10 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria"
     ],
-    "profundidade": 28,
+    "profundidade": 27,
     "dificuldade": "muito_dificil"
   },
   {
@@ -22363,12 +22417,11 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae"
     ],
-    "profundidade": 29,
+    "profundidade": 28,
     "dificuldade": "normal"
   },
   {
@@ -22399,12 +22452,11 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae"
     ],
-    "profundidade": 29,
+    "profundidade": 28,
     "dificuldade": "normal"
   },
   {
@@ -22435,13 +22487,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae"
     ],
-    "profundidade": 29,
-    "dificuldade": "facil"
+    "profundidade": 28,
+    "dificuldade": "normal"
   },
   {
     "nome": "Dakotaraptor",
@@ -22471,13 +22522,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Dromaeosaurinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "normal"
   },
   {
@@ -22508,13 +22558,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Dromaeosaurinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "dificil"
   },
   {
@@ -22545,13 +22594,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Dromaeosaurinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "facil"
   },
   {
@@ -22582,13 +22630,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Dromaeosaurinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "dificil"
   },
   {
@@ -22619,13 +22666,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "normal"
   },
   {
@@ -22656,13 +22702,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "muito_facil"
   },
   {
@@ -22693,13 +22738,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "muito_dificil"
   },
   {
@@ -22730,13 +22774,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "normal"
   },
   {
@@ -22767,14 +22810,13 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
-    "dificuldade": "dificil"
+    "profundidade": 29,
+    "dificuldade": "normal"
   },
   {
     "nome": "Utahraptor",
@@ -22804,13 +22846,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "muito_facil"
   },
   {
@@ -22841,13 +22882,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "facil"
   },
   {
@@ -22878,13 +22918,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "normal"
   },
   {
@@ -22915,14 +22954,13 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
-    "dificuldade": "dificil"
+    "profundidade": 29,
+    "dificuldade": "normal"
   },
   {
     "nome": "Luanchuanraptor",
@@ -22952,13 +22990,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "dificil"
   },
   {
@@ -22989,13 +23026,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "normal"
   },
   {
@@ -23026,13 +23062,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "muito_facil"
   },
   {
@@ -23063,13 +23098,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "muito_dificil"
   },
   {
@@ -23100,13 +23134,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "dificil"
   },
   {
@@ -23137,14 +23170,13 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
-    "dificuldade": "normal"
+    "profundidade": 29,
+    "dificuldade": "dificil"
   },
   {
     "nome": "Dineobellator",
@@ -23174,13 +23206,12 @@
       "Paraves",
       "Eumaniraptora",
       "Dromaeosauridae",
-      "Unenlagiidae",
       "Microraptoria",
       "Eudromaeosauria",
       "Saurornitholestinae",
       "Velociraptorinae"
     ],
-    "profundidade": 30,
+    "profundidade": 29,
     "dificuldade": "dificil"
   },
   {
@@ -24301,7 +24332,7 @@
       "Troodontinae"
     ],
     "profundidade": 28,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Zanabazar",
@@ -24336,7 +24367,7 @@
       "Troodontinae"
     ],
     "profundidade": 28,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Wellnhoferia",
@@ -24368,7 +24399,7 @@
       "Archaeopterygidae"
     ],
     "profundidade": 25,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Archaeopteryx",
@@ -25027,7 +25058,7 @@
       "Scansoriopterygidae"
     ],
     "profundidade": 26,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Elopteryx",
@@ -25093,7 +25124,7 @@
       "Scansoriopterygidae"
     ],
     "profundidade": 26,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Fukuipteryx",
@@ -26072,7 +26103,7 @@
       "Sinornis"
     ],
     "profundidade": 35,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Concornis",
@@ -26411,7 +26442,7 @@
       "Gobipterygidae"
     ],
     "profundidade": 36,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Yuornis",
@@ -27057,7 +27088,7 @@
       "Pengornithidae"
     ],
     "profundidade": 35,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Yuanchuavis",
@@ -27731,7 +27762,7 @@
       "Ambiortiformes"
     ],
     "profundidade": 34,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Archaeorhynchus",
@@ -27856,7 +27887,7 @@
       "Schizoouridae"
     ],
     "profundidade": 35,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Jiuquanornis",
@@ -27898,7 +27929,7 @@
       "Ornithuromorpha"
     ],
     "profundidade": 35,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Eogranivora",
@@ -27982,7 +28013,7 @@
       "Ornithuromorpha"
     ],
     "profundidade": 35,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Hollanda",
@@ -28195,7 +28226,7 @@
       "Hongshanornithidae"
     ],
     "profundidade": 36,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Tianyuornis",
@@ -30291,7 +30322,7 @@
       "Heterodontosaurinae"
     ],
     "profundidade": 9,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Serendipaceratops",
@@ -30502,7 +30533,7 @@
       "Thescelosauridae"
     ],
     "profundidade": 12,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Zephyrosaurus",
@@ -30665,7 +30696,7 @@
       "Jeholosauridae"
     ],
     "profundidade": 14,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Fona",
@@ -30728,7 +30759,7 @@
       "Thescelosaurinae"
     ],
     "profundidade": 14,
-    "dificuldade": "facil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Kulindadromeus",
@@ -30747,7 +30778,7 @@
       "Thescelosauridae"
     ],
     "profundidade": 12,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Albalophosaurus",
@@ -30929,7 +30960,7 @@
       "Ceratopsia"
     ],
     "profundidade": 16,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Kulceratops",
@@ -31182,7 +31213,7 @@
       "Ceratopsia"
     ],
     "profundidade": 16,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Mosaiceratops",
@@ -31327,7 +31358,7 @@
       "Helioceratops"
     ],
     "profundidade": 18,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Udanoceratops",
@@ -31652,7 +31683,7 @@
       "Ceratopsoidea"
     ],
     "profundidade": 18,
-    "dificuldade": "muito_facil"
+    "dificuldade": "facil"
   },
   {
     "nome": "Zuniceratops",
@@ -31678,7 +31709,7 @@
       "Ceratopsomorpha"
     ],
     "profundidade": 19,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Turanoceratops",
@@ -31841,7 +31872,7 @@
       "Centrosaurinae"
     ],
     "profundidade": 21,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Brachyceratops",
@@ -31869,7 +31900,7 @@
       "Centrosaurinae"
     ],
     "profundidade": 21,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Menefeeceratops",
@@ -32042,7 +32073,7 @@
       "Nasutoceratopsini"
     ],
     "profundidade": 22,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Xenoceratops",
@@ -32246,7 +32277,7 @@
       "Centrosaurini"
     ],
     "profundidade": 23,
-    "dificuldade": "facil"
+    "dificuldade": "muito_facil"
   },
   {
     "nome": "Coronosaurus",
@@ -32825,7 +32856,7 @@
       "Chasmosaurinae"
     ],
     "profundidade": 21,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Bravoceratops",
@@ -32994,7 +33025,7 @@
       "Triceratopsini"
     ],
     "profundidade": 22,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Ojoceratops",
@@ -33201,7 +33232,7 @@
       "Pachycephalosauridae"
     ],
     "profundidade": 16,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Stegoceras",
@@ -33271,7 +33302,7 @@
       "Pachycephalosaurinae"
     ],
     "profundidade": 17,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Homalocephale",
@@ -33579,7 +33610,7 @@
       "Ornithopoda"
     ],
     "profundidade": 14,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Weewarrasaurus",
@@ -33730,7 +33761,7 @@
       "Elasmaria"
     ],
     "profundidade": 15,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Chakisaurus",
@@ -33752,7 +33783,7 @@
       "Elasmaria"
     ],
     "profundidade": 15,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Tietasaura",
@@ -33994,7 +34025,7 @@
       "Elasmaria"
     ],
     "profundidade": 15,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Gasparinisaura",
@@ -34411,7 +34442,7 @@
       "Rhabdodontidae"
     ],
     "profundidade": 19,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Zalmoxes",
@@ -34437,7 +34468,7 @@
       "Rhabdodontidae"
     ],
     "profundidade": 19,
-    "dificuldade": "muito_facil"
+    "dificuldade": "facil"
   },
   {
     "nome": "Hesperonyx",
@@ -34670,7 +34701,7 @@
       "Ankylopollexia"
     ],
     "profundidade": 19,
-    "dificuldade": "normal"
+    "dificuldade": "facil"
   },
   {
     "nome": "Oblitosaurus",
@@ -34964,7 +34995,7 @@
       "Styracosterna"
     ],
     "profundidade": 20,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Hippodraco",
@@ -35045,7 +35076,7 @@
       "Styracosterna"
     ],
     "profundidade": 20,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Lanzhousaurus",
@@ -35099,7 +35130,7 @@
       "Styracosterna"
     ],
     "profundidade": 20,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Bayannurosaurus",
@@ -35154,7 +35185,7 @@
       "Neoiguanodontia"
     ],
     "profundidade": 21,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Ouranosaurus",
@@ -35270,7 +35301,7 @@
       "Iguanodontidae"
     ],
     "profundidade": 23,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Barilium",
@@ -35300,7 +35331,7 @@
       "Iguanodontidae"
     ],
     "profundidade": 23,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Iguanodon",
@@ -35480,7 +35511,7 @@
       "Hadrosauroidea"
     ],
     "profundidade": 23,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Xuwulong",
@@ -35902,7 +35933,7 @@
       "Hadrosauromorpha"
     ],
     "profundidade": 24,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Eolambia",
@@ -36429,7 +36460,7 @@
       "Hadrosauromorpha"
     ],
     "profundidade": 24,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Gonkoken",
@@ -36646,7 +36677,7 @@
       "Hadrosauromorpha"
     ],
     "profundidade": 24,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Hadrosaurus",
@@ -37011,7 +37042,7 @@
       "Brachylophosaurini"
     ],
     "profundidade": 28,
-    "dificuldade": "facil"
+    "dificuldade": "muito_facil"
   },
   {
     "nome": "Ornatops",
@@ -37189,7 +37220,7 @@
       "Austrokritosauria"
     ],
     "profundidade": 30,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Bonapartesaurus",
@@ -37226,7 +37257,7 @@
       "Austrokritosauria"
     ],
     "profundidade": 30,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Huallasaurus",
@@ -37448,7 +37479,7 @@
       "Austrokritosauria"
     ],
     "profundidade": 30,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Rhinorex",
@@ -37633,7 +37664,7 @@
       "Austrokritosauria"
     ],
     "profundidade": 30,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Laiyangosaurus",
@@ -37925,7 +37956,7 @@
       "Lambeosaurinae"
     ],
     "profundidade": 27,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Adynomosaurus",
@@ -38968,7 +38999,7 @@
       "Thyreophoroidea"
     ],
     "profundidade": 11,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Lexovisaurus",
@@ -39154,7 +39185,7 @@
       "Huayangosauridae"
     ],
     "profundidade": 14,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Monkonosaurus",
@@ -39238,7 +39269,7 @@
       "Stegosauridae"
     ],
     "profundidade": 14,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Alcovasaurus",
@@ -39323,7 +39354,7 @@
       "Dacentrurinae"
     ],
     "profundidade": 15,
-    "dificuldade": "normal"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Thyreosaurus",
@@ -39389,7 +39420,7 @@
       "Dacentrurinae"
     ],
     "profundidade": 15,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Miragaia",
@@ -39548,7 +39579,7 @@
       "Stegosaurinae"
     ],
     "profundidade": 16,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Spicomellus",
@@ -39588,7 +39619,7 @@
       "Ankylosauria"
     ],
     "profundidade": 13,
-    "dificuldade": "dificil"
+    "dificuldade": "muito_dificil"
   },
   {
     "nome": "Tianchisaurus",
@@ -39631,6 +39662,27 @@
     "dificuldade": "normal"
   },
   {
+    "nome": "Minmi",
+    "linhagem": [
+      "Archosaurs",
+      "Avemetatarsalia / Ornithosuchia / Ornithodira",
+      "Dinosauromorpha",
+      "Dinosauriformes",
+      "Dinosauria",
+      "Ornithischia",
+      "Saphornithischia",
+      "Heterodontosauridae",
+      "Genasauria",
+      "Thyreophora",
+      "Thyreophoroidea",
+      "Eurypoda",
+      "Ankylosauria",
+      "Parankylosauria"
+    ],
+    "profundidade": 14,
+    "dificuldade": "normal"
+  },
+  {
     "nome": "Kunbarrasaurus",
     "linhagem": [
       "Archosaurs",
@@ -39649,10 +39701,10 @@
       "Parankylosauria"
     ],
     "profundidade": 14,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
-    "nome": "Stegouros",
+    "nome": "Antarctopelta",
     "linhagem": [
       "Archosaurs",
       "Avemetatarsalia / Ornithosuchia / Ornithodira",
@@ -39670,10 +39722,31 @@
       "Parankylosauria"
     ],
     "profundidade": 14,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
-    "nome": "Antarctopelta",
+    "nome": "Patagopelta",
+    "linhagem": [
+      "Archosaurs",
+      "Avemetatarsalia / Ornithosuchia / Ornithodira",
+      "Dinosauromorpha",
+      "Dinosauriformes",
+      "Dinosauria",
+      "Ornithischia",
+      "Saphornithischia",
+      "Heterodontosauridae",
+      "Genasauria",
+      "Thyreophora",
+      "Thyreophoroidea",
+      "Eurypoda",
+      "Ankylosauria",
+      "Parankylosauria"
+    ],
+    "profundidade": 14,
+    "dificuldade": "normal"
+  },
+  {
+    "nome": "Stegouros",
     "linhagem": [
       "Archosaurs",
       "Avemetatarsalia / Ornithosuchia / Ornithodira",
@@ -39817,28 +39890,7 @@
       "Euankylosauria"
     ],
     "profundidade": 14,
-    "dificuldade": "dificil"
-  },
-  {
-    "nome": "Minmi",
-    "linhagem": [
-      "Archosaurs",
-      "Avemetatarsalia / Ornithosuchia / Ornithodira",
-      "Dinosauromorpha",
-      "Dinosauriformes",
-      "Dinosauria",
-      "Ornithischia",
-      "Saphornithischia",
-      "Heterodontosauridae",
-      "Genasauria",
-      "Thyreophora",
-      "Thyreophoroidea",
-      "Eurypoda",
-      "Ankylosauria",
-      "Euankylosauria"
-    ],
-    "profundidade": 14,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Propanoplosaurus",
@@ -40272,7 +40324,7 @@
       "Struthiosaurini"
     ],
     "profundidade": 18,
-    "dificuldade": "muito_dificil"
+    "dificuldade": "dificil"
   },
   {
     "nome": "Hungarosaurus",
@@ -40322,7 +40374,7 @@
       "Struthiosaurini"
     ],
     "profundidade": 18,
-    "dificuldade": "facil"
+    "dificuldade": "muito_facil"
   },
   {
     "nome": "Pawpawsaurus",
@@ -40447,7 +40499,7 @@
       "Struthiosaurini"
     ],
     "profundidade": 18,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Tatankacephalus",
@@ -40777,7 +40829,7 @@
       "Ankylosauridae"
     ],
     "profundidade": 15,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Bissektipelta",
@@ -40869,7 +40921,7 @@
       "Ankylosaurinae"
     ],
     "profundidade": 16,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Crichtonsaurus",
@@ -41145,7 +41197,7 @@
       "Ankylosaurinae"
     ],
     "profundidade": 16,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Dyoplosaurus",
@@ -41241,7 +41293,7 @@
       "Ankylosaurini"
     ],
     "profundidade": 17,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   },
   {
     "nome": "Ankylosaurus",
@@ -41313,6 +41365,6 @@
       "Ankylosaurini"
     ],
     "profundidade": 17,
-    "dificuldade": "dificil"
+    "dificuldade": "normal"
   }
 ]
