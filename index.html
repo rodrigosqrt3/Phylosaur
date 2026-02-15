@@ -155,6 +155,15 @@ body.light-mode .game-card {
       color: #5a3e1b !important;
     }
 
+    body.light-mode .victory div[style*="rgba(61,47,31,0.5)"] {
+    background: rgba(201, 169, 110, 0.15) !important;
+    border-color: #8b6f47 !important;
+    }
+
+    body.light-mode .victory div[style*="rgba(255,149,0"] {
+    background: linear-gradient(135deg, rgba(255,149,0,0.15), rgba(255,69,0,0.15)) !important;
+    }
+
     /* Achievement cards */
     .achievement-card {
       padding: 18px;
@@ -2100,6 +2109,81 @@ function markDailyChallengeCompleted(difficulty) {
   localStorage.setItem(`phylosaur-daily-${currentUser}-${today}`, JSON.stringify(status));
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// STREAK SYSTEM
+// ═══════════════════════════════════════════════════════════════════════
+
+function getStreakData() {
+  if (!currentUser) return { current: 0, best: 0, lastPlayed: null };
+  
+  const key = `phylosaur-streak-${currentUser}`;
+  const saved = localStorage.getItem(key);
+  
+  if (!saved) {
+    return { current: 0, best: 0, lastPlayed: null };
+  }
+  
+  return JSON.parse(saved);
+}
+
+function saveStreakData(streakData) {
+  if (!currentUser) return;
+  
+  const key = `phylosaur-streak-${currentUser}`;
+  localStorage.setItem(key, JSON.stringify(streakData));
+}
+
+function updateStreak() {
+  if (!currentUser) return;
+  
+  const today = getTodayString();
+  const streakData = getStreakData();
+  
+  // Se já jogou hoje, não atualiza
+  if (streakData.lastPlayed === today) {
+    return streakData;
+  }
+  
+  // Calcular diferença de dias
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+  
+  if (streakData.lastPlayed === yesterdayStr) {
+    // Continuou a streak!
+    streakData.current++;
+  } else if (streakData.lastPlayed === null) {
+    // Primeira vez jogando
+    streakData.current = 1;
+  } else {
+    // Perdeu a streak
+    streakData.current = 1;
+  }
+  
+  // Atualizar best streak
+  if (streakData.current > streakData.best) {
+    streakData.best = streakData.current;
+  }
+  
+  streakData.lastPlayed = today;
+  
+  saveStreakData(streakData);
+  
+  return streakData;
+}
+
+function checkStreakMilestone(streak) {
+  const milestones = [3, 7, 14, 30, 50, 100];
+  
+  for (let milestone of milestones) {
+    if (streak === milestone) {
+      return milestone;
+    }
+  }
+  
+  return null;
+}
+
 async function loadCompletedChallengeTree(difficulty, result) {
   const wrapper = document.getElementById('tree-scroll-wrapper');
   
@@ -3123,7 +3207,7 @@ if (!gameWon) {
         label.setAttribute('dominant-baseline', 'middle');
         label.setAttribute('font-size', leaf.isTarget ? '20px' : '15px');
         label.setAttribute('font-weight', leaf.isTarget ? '700' : '500');
-        label.setAttribute('font-style', leaf.isTarget ? 'normal' : 'italic');
+        label.setAttribute('font-style', 'italic'); 
         label.textContent = leaf.displayName;
         g.appendChild(label);
         svg.appendChild(g);
@@ -3178,11 +3262,17 @@ if (!gameWon) {
           clearGameProgress(selectedDifficulty);
         }
 
-    if (currentUser) {
-    updateStatsAfterGame(true, guesses.length, selectedDifficulty);
-    markDailyChallengeCompleted(selectedDifficulty);
-    saveDailyChallengeResult(selectedDifficulty, targetDino, guesses.length);
-    }
+let streakData = null;
+let milestone = null;
+
+if (currentUser) {
+  streakData = updateStreak(); // ← ADICIONAR ISSO
+  milestone = checkStreakMilestone(streakData.current); // ← ADICIONAR ISSO
+  
+  updateStatsAfterGame(true, guesses.length, selectedDifficulty);
+  markDailyChallengeCompleted(selectedDifficulty);
+  saveDailyChallengeResult(selectedDifficulty, targetDino, guesses.length);
+}
       document.getElementById('dino-input').disabled = true;
       document.querySelector('.btn-guess').disabled = true;
       document.querySelector('.btn-hint').disabled = true;
@@ -3190,18 +3280,52 @@ if (!gameWon) {
       const container = document.getElementById('tree-container');
       const v = document.createElement('div');
       v.className = 'victory';
-      v.innerHTML = `
-        <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
-        <div class="victory-dino">${targetDino.nome}</div>
-        <p style="font-size:1.1em; margin-top:15px; color:#c9a96e;">
-          Successfully identified in ${guesses.length} taxonomic queries
-        </p>
-        <p style="font-size:0.95em; margin-top:12px; color:#8b7355;">
-          ${revealedClades.size} clades revealed through phylogenetic analysis
-        </p>
-        <button class="btn-new-game" onclick="showDifficultySelection()">Return to Level Selection</button>
-      `;
+      let streakHTML = '';
+if (streakData) {
+  streakHTML = `
+    <div style="margin-top:25px; padding:20px; background:rgba(61,47,31,0.5); border-radius:8px; border:2px solid #8b7355;">
+      <div style="font-size:1.8em; color:#ff9500; margin-bottom:8px;">
+        ◆ ${streakData.current} Day Streak
+      </div>
+      <div style="font-size:0.9em; color:#a68a5a;">
+        Best: ${streakData.best} days
+      </div>
+    </div>
+  `;
+  
+  // Se atingiu milestone, mostrar mensagem especial
+  if (milestone) {
+    streakHTML = `
+      <div style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid #ff9500; animation:celebrate 0.6s ease-out;">
+        <div style="font-size:2.2em; color:#ff9500; margin-bottom:12px;">
+          ◆  ${milestone} DAY MILESTONE! ◆ 
+        </div>
+        <div style="font-size:1.1em; color:#d4b87e; margin-bottom:8px;">
+          Current Streak: ${streakData.current} days
+        </div>
+        <div style="font-size:0.9em; color:#a68a5a;">
+          Best: ${streakData.best} days
+        </div>
+      </div>
+    `;
+  }
+}
+
+v.innerHTML = `
+  <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
+  <div class="victory-dino">${targetDino.nome}</div>
+  <p style="font-size:1.1em; margin-top:15px; color:#c9a96e;">
+    Successfully identified in ${guesses.length} taxonomic queries
+  </p>
+  <p style="font-size:0.95em; margin-top:12px; color:#8b7355;">
+    ${revealedClades.size} clades revealed through phylogenetic analysis
+  </p>
+  ${streakHTML}
+  <button class="btn-new-game" onclick="showDifficultySelection()">Return to Level Selection</button>
+`;
       container.insertBefore(v, container.firstChild);
+      renderEnhancedTree();
+      updateCladeInfo();
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -3456,6 +3580,38 @@ function updateGuessHistory() {
       }
     }
 
+    function generateStreakDisplay() {
+  if (!currentUser) return '';
+  
+  const streakData = getStreakData();
+  
+  if (streakData.current === 0) {
+    return `
+      <div style="text-align:center; padding:30px; background:rgba(61,47,31,0.3); border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
+        <div style="font-size:1.5em; color:#8b7355; margin-bottom:10px;">◆ Start Your Streak!</div>
+        <div style="color:#a68a5a; font-size:0.95em;">Complete a challenge every day to build your research streak</div>
+      </div>
+    `;
+  }
+  
+  return `
+    <div style="text-align:center; padding:30px; background:rgba(255,149,0,0.1); border-radius:8px; margin-bottom:30px; border:2px solid #ff9500;">
+      <div style="font-size:2.5em; color:#ff9500; margin-bottom:15px;">
+        ◆ ${streakData.current}
+      </div>
+      <div style="font-size:1.2em; color:#d4b87e; margin-bottom:8px; font-weight:600; letter-spacing:1px;">
+        CURRENT STREAK
+      </div>
+      <div style="color:#a68a5a; font-size:0.95em;">
+        Best: ${streakData.best} days
+      </div>
+      <div style="margin-top:20px; color:#8b7355; font-size:0.85em; font-style:italic;">
+        Last played: ${streakData.lastPlayed || 'Never'}
+      </div>
+    </div>
+  `;
+}
+
     // ═══════════════════════════════════════════════════════════════════════
     // STATISTICS DASHBOARD
     // ═══════════════════════════════════════════════════════════════════════
@@ -3504,6 +3660,8 @@ function updateGuessHistory() {
               <div class="stat-label">Best Score</div>
             </div>
           </div>
+
+          ${generateStreakDisplay()}
           
           <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
             <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Classification Level Performance</h3>
