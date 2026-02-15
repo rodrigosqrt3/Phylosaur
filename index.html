@@ -377,6 +377,53 @@ body.light-mode .game-card {
     body.light-mode .difficulty-very-hard  { border-color: #a03020; }
     body.light-mode .difficulty-very-hard:hover  { background: linear-gradient(180deg, #f5e8e8 0%, #e8d8d8 100%); }
 
+    /* Difficulty info box */
+    .difficulty-info-box {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(61, 47, 31, 0.3);
+    border-radius: 6px;
+    border-left: 3px solid #8b6f47;
+    }
+
+    .difficulty-info-text {
+    color: #c9a96e;
+    font-size: 0.9em;
+    line-height: 1.8;
+    }
+
+    /* About page text - light mode fix */
+    .game-card > div[style*="color:#f8f6f3"] p,
+    .game-card > div[style*="color:#f8f6f3"] h3 {
+    transition: color 0.3s ease;
+    }
+
+    body.light-mode .game-card > div[style*="color:#f8f6f3"] {
+    color: #2d2318 !important;
+    }
+
+    body.light-mode .game-card > div[style*="color:#f8f6f3"] p {
+    color: #2d2318 !important;
+    }
+
+    body.light-mode .game-card > div[style*="color:#f8f6f3"] h3 {
+    color: #5a3e1b !important;
+    }
+
+    body.light-mode .game-card em {
+    color: #5a3e1b;
+    }
+
+    /* Light mode */
+    body.light-mode .difficulty-info-box {
+    background: rgba(139, 115, 85, 0.15);
+    border-left-color: #8b6f47;
+    }
+
+    body.light-mode .difficulty-info-text {
+    color: #5a3e1b;
+    }
+
     .container {
       max-width: 1600px;
       margin: 0 auto;
@@ -1568,6 +1615,7 @@ body.light-mode .modal-btn-secondary:hover {
     let selectedDifficulty = null;
     let hintHistory = [];
     let guessesSinceLastHint = 0;
+    let isPracticeMode = false;
 
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -1971,7 +2019,7 @@ function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
             </div>
             
             <div class="game-card" style="text-align:center;">
-            <h2 style="color:#d4b87e; margin-bottom:12px; font-size:1.8em;">Daily Phylogenetic Challenge</h2>
+            <h2 style="color:#d4b87e; margin-bottom:12px; font-size:1.8em;">Daily Challenge</h2>
             <p style="color:#a68a5a; margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
                 ${getCurrentDateFormatted()} — Select Classification Level
             </p>
@@ -1983,11 +2031,19 @@ function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
                 ${generateDifficultyButton('dificil', 'LEVEL IV', 'IV', '', completionStatus.dificil)}
                 ${generateDifficultyButton('muito_dificil', 'LEVEL V', 'V', '', completionStatus.muito_dificil)}
             </div>
+
+            <div style="margin-top:30px; text-align:center;">
+            <button class="btn-hint" onclick="showPracticeMode()" style="padding:18px 40px; font-size:15px;">
+                Practice Mode
+            </button>
+            <div style="margin-top:12px; color:#8b7355; font-size:0.85em; font-style:italic;">
+                Train without affecting your statistics or streak
+            </div>
+            </div>
             
-            <div style="margin-top:30px; padding:20px; background:rgba(61,47,31,0.3); border-radius:6px; border-left:3px solid #8b6f47;">
-                <div style="color:#c9a96e; font-size:0.9em; line-height:1.8;">
+            <div class="difficulty-info-box">
+            <div class="difficulty-info-text">
                 Each difficulty level presents a unique specimen for today's date. All researchers worldwide receive identical classification challenges. Progress is tracked independently per difficulty level.
-                </div>
             </div>
             </div>
         `;
@@ -2000,6 +2056,294 @@ function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
             text.textContent = 'Dark Mode';
         }
         }
+
+function showPracticeMode() {
+  const appContent = document.getElementById('app-content');
+  
+  appContent.innerHTML = `
+    <div class="theme-toggle-container">
+      <button id="theme-toggle" class="btn-hint" onclick="toggleTheme()">
+        <span id="theme-icon">☀️</span> <span id="theme-text">Light Mode</span>
+      </button>
+      <button class="btn-hint" onclick="showAbout()" style="margin-left:10px;">About</button>
+      <button class="btn-hint" onclick="showDifficultySelection()" style="margin-left:10px;">← Back</button>
+    </div>
+
+    <div class="game-card" style="text-align:center;">
+      <h2 style="color:#d4b87e; margin-bottom:12px; font-size:1.8em;">Practice Mode</h2>
+      <p style="color:#a68a5a; margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
+        Train your phylogenetic skills — Select classification level
+      </p>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; margin:30px 0;">
+        ${generatePracticeDifficultyButton('muito_facil', 'LEVEL I', 'I')}
+        ${generatePracticeDifficultyButton('facil', 'LEVEL II', 'II')}
+        ${generatePracticeDifficultyButton('normal', 'LEVEL III', 'III')}
+        ${generatePracticeDifficultyButton('dificil', 'LEVEL IV', 'IV')}
+        ${generatePracticeDifficultyButton('muito_dificil', 'LEVEL V', 'V')}
+      </div>
+
+      <div class="difficulty-info-box" style="max-width:500px; margin:30px auto 0;">
+        <div class="difficulty-info-text">
+          ◆ Practice mode does not affect your statistics or streak<br>
+          ◆ No daily limits, play as many times as you want<br>
+          ◆ Random specimen selected from chosen difficulty level
+        </div>
+      </div>
+    </div>
+  `;
+
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    const icon = document.getElementById('theme-icon');
+    const text = document.getElementById('theme-text');
+    if (currentTheme === 'light') {
+      icon.textContent = '🌙';
+      text.textContent = 'Dark Mode';
+    }
+  }
+}
+
+function generatePracticeDifficultyButton(difficulty, name, level) {
+  const tierCount = {'muito_facil': 1, 'facil': 2, 'normal': 3, 'dificil': 4, 'muito_dificil': 5}[difficulty];
+  let tiers = '';
+  for (let i = 1; i <= 5; i++) {
+    tiers += `<span class="tier-indicator ${i <= tierCount ? 'filled' : ''}"></span>`;
+  }
+  
+  return `
+    <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]}" 
+            onclick="startPracticeChallenge('${difficulty}')" 
+            style="padding:30px; font-size:1.2em;">
+      <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
+        ◆ ${name}
+      </div>
+      <div style="margin:8px 0;">
+        ${tiers}
+      </div>
+      <div style="font-size:0.85em; color:#a68a5a;">Classification Level ${level}</div>
+    </button>
+  `;
+}
+
+function initializePracticeSearch() {
+  const searchInput = document.getElementById('practice-search');
+  const suggestionsDiv = document.getElementById('practice-suggestions');
+  
+  if (!searchInput || !suggestionsDiv) return;
+
+  searchInput.addEventListener('input', async function() {
+    const query = this.value.toLowerCase().trim();
+    
+    if (query.length < 2) {
+      suggestionsDiv.innerHTML = '';
+      return;
+    }
+
+    // Carregar database se necessário
+    if (!fullDatabase || fullDatabase.length === 0) {
+      try {
+        const res = await fetch('dinozooa_db.json');
+        fullDatabase = await res.json();
+      } catch (err) {
+        console.error('Failed to load database:', err);
+        return;
+      }
+    }
+
+    // Filtrar por dificuldade selecionada
+    const difficulty = document.getElementById('practice-difficulty').value;
+    const filtered = fullDatabase.filter(d => 
+      d.dificuldade === difficulty && 
+      d.nome.toLowerCase().includes(query)
+    ).slice(0, 10);
+
+    if (filtered.length === 0) {
+      suggestionsDiv.innerHTML = '<div style="padding:10px; color:#8b7355; font-style:italic;">No matches found</div>';
+      return;
+    }
+
+    suggestionsDiv.innerHTML = filtered.map(dino => 
+      `<div class="suggestion-item" onclick="selectPracticeDino('${dino.nome}')" style="cursor:pointer; padding:12px; border-bottom:1px solid #3d2f1f;">
+        ${dino.nome}
+      </div>`
+    ).join('');
+  });
+
+  // Limpar sugestões ao mudar dificuldade
+  document.getElementById('practice-difficulty').addEventListener('change', () => {
+    searchInput.value = '';
+    suggestionsDiv.innerHTML = '';
+  });
+}
+
+function selectPracticeDino(name) {
+  document.getElementById('practice-search').value = name;
+  document.getElementById('practice-suggestions').innerHTML = '';
+}
+
+async function startPracticeGame() {
+  const difficulty = document.getElementById('practice-difficulty').value;
+  const searchQuery = document.getElementById('practice-search').value.trim();
+
+  // Carregar database
+  try {
+    const res = await fetch('dinozooa_db.json');
+    fullDatabase = await res.json();
+    database = fullDatabase.filter(d => d.dificuldade === difficulty);
+  } catch (err) {
+    await customAlert('Error', 'Failed to load specimen database.');
+    return;
+  }
+
+  // Escolher dinossauro
+  let selectedDino;
+  
+  if (searchQuery) {
+    // Buscar dinossauro específico
+    selectedDino = database.find(d => d.nome.toLowerCase() === searchQuery.toLowerCase());
+    
+    if (!selectedDino) {
+      await customAlert('Not Found', `"${searchQuery}" not found in ${difficulty} difficulty.`);
+      return;
+    }
+  } else {
+    // Aleatório
+    const randomIndex = Math.floor(Math.random() * database.length);
+    selectedDino = database[randomIndex];
+  }
+
+  // Iniciar jogo de treino
+  startPracticeChallenge(difficulty, selectedDino);
+}
+
+async function startPracticeChallenge(difficulty) {
+  selectedDifficulty = difficulty;
+  
+  const appContent = document.getElementById('app-content');
+  
+  // MESMA INTERFACE do jogo normal, mas com banner indicando "PRACTICE"
+  appContent.innerHTML = `
+    <div class="theme-toggle-container">
+      <button id="theme-toggle" class="btn-hint" onclick="toggleTheme()">
+        <span id="theme-icon">☀️</span> <span id="theme-text">Light Mode</span>
+      </button>
+      <button class="btn-hint" onclick="showAbout()" style="margin-left:10px;">About</button>
+      <button class="btn-hint" onclick="showPracticeMode()" style="margin-left:10px;">← Back</button>
+    </div>
+
+    <!-- Banner de PRACTICE MODE -->
+    <div style="text-align:center; padding:15px; background:rgba(139,115,85,0.2); border-radius:8px; margin-bottom:20px; border:2px solid #8b7355;">
+      <div style="color:#c9a96e; font-weight:600; letter-spacing:2px; font-size:1.1em;">
+        🎓 PRACTICE MODE
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value" id="attempts">0</div>
+          <div class="stat-label">Attempts</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="hints">3</div>
+          <div class="stat-label">Hints</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="best-match">0</div>
+          <div class="stat-label">Deepest Node</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="clades-revealed">0</div>
+          <div class="stat-label">Clades Revealed</div>
+        </div>
+      </div>
+
+      <div class="input-section">
+        <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
+        <button class="btn-guess" onclick="makeGuess()">Submit</button>
+        <button class="btn-hint" onclick="useHint()">Hint</button>
+        <div id="suggestions"></div>
+      </div>
+
+      <div id="tree-container">
+        <div id="tree-scroll-wrapper">
+          <div class="empty-state">Loading practice challenge...</div>
+        </div>
+      </div>
+
+      <div id="clade-info"></div>
+      <div id="guess-history"></div>
+    </div>
+  `;
+
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    const icon = document.getElementById('theme-icon');
+    const text = document.getElementById('theme-text');
+    if (currentTheme === 'light') {
+      icon.textContent = '🌙';
+      text.textContent = 'Dark Mode';
+    }
+  }
+
+  // Carregar database e escolher aleatório
+  loadPracticeDatabase(difficulty);
+}
+
+async function loadPracticeDatabase(difficulty) {
+  isPracticeMode = true; // ← Marcar que está em modo treino
+  
+  const wrapper = document.getElementById('tree-scroll-wrapper');
+  if (wrapper) wrapper.innerHTML = '<div class="loading">Loading practice challenge...</div>';
+  
+  try {
+    const res = await fetch('dinozooa_db.json');
+    if (!res.ok) throw new Error('Failed to load database');
+    
+    fullDatabase = await res.json();
+    database = fullDatabase.filter(d => d.dificuldade === difficulty);
+    
+    console.log(`Loaded ${database.length} specimens for practice mode (${difficulty})`);
+    
+    if (database.length === 0) {
+      throw new Error(`No specimens found for difficulty: ${difficulty}`);
+    }
+    
+    // Escolher aleatório (não baseado em seed diário)
+    const randomIndex = Math.floor(Math.random() * database.length);
+    targetDino = database[randomIndex];
+    
+    // Resetar estado do jogo
+    guesses = [];
+    hintsRemaining = 3;
+    gameWon = false;
+    guessedNames = new Set();
+    revealedClades = new Set();
+    hintHistory = [];
+    guessesSinceLastHint = 0;
+    
+    console.log('Practice specimen:', targetDino.nome);
+    
+    // Atualizar UI
+    document.getElementById('attempts').textContent = '0';
+    document.getElementById('hints').textContent = '3';
+    document.getElementById('best-match').textContent = '0';
+    document.getElementById('clades-revealed').textContent = '0';
+    
+    if (wrapper) {
+      wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+    }
+
+    initializeAutocomplete();
+    
+  } catch (err) {
+    console.error('Database error:', err);
+    if (wrapper) {
+      wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
+    }
+  }
+}
 
         function getCurrentDateFormatted() {
   const today = new Date();
@@ -2356,6 +2700,7 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     // START GAME
     // ═══════════════════════════════════════════════════════════════════════
 async function startDailyChallenge(difficulty) {
+    isPracticeMode = false;
   // Primeiro, verificar se já completou hoje
   const existingResult = getDailyChallengeResult(difficulty);
   
@@ -2644,7 +2989,7 @@ updateGuessHistory();
 input.value = '';
 document.getElementById('suggestions').style.display = 'none';
 
-if (currentUser && !gameWon) {
+if (currentUser && !gameWon && !isPracticeMode) {
   saveGameProgress(selectedDifficulty);
 }
 
@@ -2725,9 +3070,9 @@ if (currentUser && !gameWon) {
       updateCladeInfo();
       updateGuessHistory();
 
-      if (currentUser) {
-        saveGameProgress(selectedDifficulty);
-      }
+if (currentUser && !isPracticeMode) {
+  saveGameProgress(selectedDifficulty);
+}
     }
 
 
@@ -3258,75 +3603,95 @@ if (!gameWon) {
     // VICTORY
     // ═══════════════════════════════════════════════════════════════════════
     function showVictory() {
-        if (currentUser) {
-          clearGameProgress(selectedDifficulty);
-        }
+  if (currentUser && !isPracticeMode) {
+    clearGameProgress(selectedDifficulty);
+  }
 
-let streakData = null;
-let milestone = null;
+  let streakData = null;
+  let milestone = null;
 
-if (currentUser) {
-  streakData = updateStreak(); // ← ADICIONAR ISSO
-  milestone = checkStreakMilestone(streakData.current); // ← ADICIONAR ISSO
+  // Só atualiza stats/streak se NÃO for modo treino
+  if (currentUser && !isPracticeMode) {
+    streakData = updateStreak();
+    milestone = checkStreakMilestone(streakData.current);
+    
+    updateStatsAfterGame(true, guesses.length, selectedDifficulty);
+    markDailyChallengeCompleted(selectedDifficulty);
+    saveDailyChallengeResult(selectedDifficulty, targetDino, guesses.length);
+  }
+
+  document.getElementById('dino-input').disabled = true;
+  document.querySelector('.btn-guess').disabled = true;
+  document.querySelector('.btn-hint').disabled = true;
   
-  updateStatsAfterGame(true, guesses.length, selectedDifficulty);
-  markDailyChallengeCompleted(selectedDifficulty);
-  saveDailyChallengeResult(selectedDifficulty, targetDino, guesses.length);
-}
-      document.getElementById('dino-input').disabled = true;
-      document.querySelector('.btn-guess').disabled = true;
-      document.querySelector('.btn-hint').disabled = true;
-      
-      const container = document.getElementById('tree-container');
-      const v = document.createElement('div');
-      v.className = 'victory';
-      let streakHTML = '';
-if (streakData) {
-  streakHTML = `
-    <div style="margin-top:25px; padding:20px; background:rgba(61,47,31,0.5); border-radius:8px; border:2px solid #8b7355;">
-      <div style="font-size:1.8em; color:#ff9500; margin-bottom:8px;">
-        ◆ ${streakData.current} Day Streak
-      </div>
-      <div style="font-size:0.9em; color:#a68a5a;">
-        Best: ${streakData.best} days
-      </div>
-    </div>
-  `;
-  
-  // Se atingiu milestone, mostrar mensagem especial
-  if (milestone) {
-    streakHTML = `
-      <div style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid #ff9500; animation:celebrate 0.6s ease-out;">
-        <div style="font-size:2.2em; color:#ff9500; margin-bottom:12px;">
-          ◆  ${milestone} DAY MILESTONE! ◆ 
+  const container = document.getElementById('tree-container');
+  const v = document.createElement('div');
+  v.className = 'victory';
+
+  // Banner diferente para modo treino
+  let modeHTML = '';
+  if (isPracticeMode) {
+    modeHTML = `
+      <div style="padding:15px; background:rgba(139,115,85,0.15); border-radius:6px; margin-bottom:20px; border:2px solid #8b7355;">
+        <div style="color:#c9a96e; font-weight:600; letter-spacing:1px; font-size:0.95em;">
+          🎓 Practice Mode — Statistics not recorded
         </div>
-        <div style="font-size:1.1em; color:#d4b87e; margin-bottom:8px;">
-          Current Streak: ${streakData.current} days
+      </div>
+    `;
+  }
+
+  let streakHTML = '';
+  // Só mostra streak se NÃO for modo treino
+  if (streakData && !isPracticeMode) {
+    streakHTML = `
+      <div style="margin-top:25px; padding:20px; background:rgba(61,47,31,0.5); border-radius:8px; border:2px solid #8b7355;">
+        <div style="font-size:1.8em; color:#ff9500; margin-bottom:8px;">
+          ◆ ${streakData.current} Day Streak
         </div>
         <div style="font-size:0.9em; color:#a68a5a;">
           Best: ${streakData.best} days
         </div>
       </div>
     `;
-  }
-}
-
-v.innerHTML = `
-  <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
-  <div class="victory-dino">${targetDino.nome}</div>
-  <p style="font-size:1.1em; margin-top:15px; color:#c9a96e;">
-    Successfully identified in ${guesses.length} taxonomic queries
-  </p>
-  <p style="font-size:0.95em; margin-top:12px; color:#8b7355;">
-    ${revealedClades.size} clades revealed through phylogenetic analysis
-  </p>
-  ${streakHTML}
-  <button class="btn-new-game" onclick="showDifficultySelection()">Return to Level Selection</button>
-`;
-      container.insertBefore(v, container.firstChild);
-      renderEnhancedTree();
-      updateCladeInfo();
+    
+    // Se atingiu milestone, mostrar mensagem especial
+    if (milestone) {
+      streakHTML = `
+        <div style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid #ff9500; animation:celebrate 0.6s ease-out;">
+          <div style="font-size:2.2em; color:#ff9500; margin-bottom:12px;">
+            ◆ ${milestone} DAY MILESTONE! ◆ 
+          </div>
+          <div style="font-size:1.1em; color:#d4b87e; margin-bottom:8px;">
+            Current Streak: ${streakData.current} days
+          </div>
+          <div style="font-size:0.9em; color:#a68a5a;">
+            Best: ${streakData.best} days
+          </div>
+        </div>
+      `;
     }
+  }
+
+  v.innerHTML = `
+    ${modeHTML}
+    <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
+    <div class="victory-dino">${targetDino.nome}</div>
+    <p style="font-size:1.1em; margin-top:15px; color:#c9a96e;">
+      Successfully identified in ${guesses.length} taxonomic queries
+    </p>
+    <p style="font-size:0.95em; margin-top:12px; color:#8b7355;">
+      ${revealedClades.size} clades revealed through phylogenetic analysis
+    </p>
+    ${streakHTML}
+    <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+      ${isPracticeMode ? 'Practice Another' : 'Return to Level Selection'}
+    </button>
+  `;
+
+  container.insertBefore(v, container.firstChild);
+  renderEnhancedTree();
+  updateCladeInfo();
+}
 
     // ═══════════════════════════════════════════════════════════════════════
     // GUESS HISTORY
@@ -3681,7 +4046,7 @@ function updateGuessHistory() {
       `;
     }
 
-    function showAbout() {
+function showAbout() {
   const appContent = document.getElementById('app-content');
   
   appContent.innerHTML = `
@@ -3689,67 +4054,153 @@ function updateGuessHistory() {
       <button class="btn-hint" onclick="showDifficultySelection()">← Return to Challenge Selection</button>
     </div>
     
-    <div class="game-card">
+    <div class="game-card" style="max-width: 900px; margin: 0 auto;">
       <h2 style="color:#d4b87e; margin-bottom:30px; text-align:center; font-size:2em; letter-spacing:3px;">
         About Phylosaur
       </h2>
       
-      <div style="background:rgba(61,47,31,0.5); padding:30px; border-radius:8px; margin-bottom:25px; border:2px solid #5d4a36;">
-        <h3 style="color:#f4e4c1; margin-bottom:18px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:10px;">
-          Educational Objective
+      <div style="color:#f8f6f3; line-height:2; font-size:1.05em; text-align:justify;">
+        
+        <p style="margin-bottom:25px;">
+          Phylosaur is an interactive educational tool designed to familiarize users with the principles 
+          of phylogenetic systematics through the lens of dinosaurian taxonomy. The game employs a 
+          progressive tree-building mechanism wherein players deduce the systematic position of mystery 
+          taxa by analyzing shared derived characteristics (synapomorphies) and identifying most recent 
+          common ancestors within the cladistic framework.
+        </p>
+
+        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+          Phylogenetic Foundations
         </h3>
-        <p style="color:#f8f6f3; line-height:1.8; margin-bottom:15px;">
-          Phylosaur is an educational tool designed for scientific dissemination and phylogenetic literacy. 
-          The primary objective is to familiarize users with dinosaur taxonomy and cladistic relationships 
-          through interactive classification challenges.
+
+        <p style="margin-bottom:25px;">
+          Modern biological classification rests upon phylogenetic systematics, a methodology that organizes 
+          organisms according to their evolutionary relationships rather than superficial morphological 
+          similarities. This approach, pioneered by Willi Hennig in the mid-twentieth century, recognizes 
+          that meaningful taxonomic groupings (clades) must be monophyletic, comprising an ancestor and all 
+          of its descendants. Each clade is diagnosed by the presence of synapomorphies, which are derived 
+          character states inherited from a common ancestor and shared exclusively among its descendants.
         </p>
-        <p style="color:#f8f6f3; line-height:1.8; margin-bottom:15px;">
-          Players progressively reveal evolutionary trees by making taxonomic guesses, learning about 
-          shared derived characteristics (synapomorphies) and most recent common ancestors (MRCA) in the process.
+
+        <p style="margin-bottom:25px;">
+          Within this framework, Dinosauria represents a well-supported clade united by numerous 
+          osteological synapomorphies. The group is formally diagnosed by features including an open 
+          acetabulum, elongated deltopectoral crest on the humerus, and modifications to the ankle joint 
+          that facilitate a parasagittal gait. Dinosauria is subdivided into two primary clades: Saurischia, 
+          characterized by a triradiate pelvis with the pubis directed anteroventrally, and Ornithischia, 
+          distinguished by a retroversed pubis and predentary bone. Modern phylogenetic analyses place 
+          Avialae (birds) within Saurischia as highly derived theropods, rendering traditional distinctions 
+          between "dinosaurs" and "birds" paraphyletic and therefore scientifically obsolete.
         </p>
-        <p style="color:#f8f6f3; line-height:1.8;">
-          This game serves as a pedagogical bridge between casual interest and formal paleontological study, 
-          making complex phylogenetic concepts accessible through gamification.
-        </p>
-      </div>
-      
-      <div style="background:rgba(61,47,31,0.5); padding:30px; border-radius:8px; margin-bottom:25px; border:2px solid #5d4a36;">
-        <h3 style="color:#f4e4c1; margin-bottom:18px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:10px;">
-          Data Sources & Acknowledgments
+
+        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+          Game Mechanics and Educational Objectives
         </h3>
-        <p style="color:#f8f6f3; line-height:1.8; margin-bottom:15px;">
-          Taxonomic data and phylogenetic relationships are sourced from 
-          <a href="http://www.TotalDino.com" target="_blank" style="color:#c9a96e; text-decoration:none; border-bottom:1px solid #c9a96e;">
-            TotalDino.com
-          </a>, 
-          a comprehensive database of dinosaur genera and their systematic positions.
+
+        <p style="margin-bottom:25px;">
+          Players are presented with a mystery taxon and must infer its phylogenetic position through 
+          iterative hypothesis testing. Each classification attempt reveals the deepest node shared between 
+          the proposed taxon and the target, thereby progressively constraining the phylogenetic search 
+          space. This mechanism mirrors the actual process of phylogenetic inference, wherein researchers 
+          place unknown taxa by identifying their closest relatives through character analysis and cladistic 
+          methodology.
         </p>
-        <p style="color:#f8f6f3; line-height:1.8; margin-bottom:15px;">
-          The phylogenetic tree structure is derived from published cladistic analyses and represents 
-          current consensus topology in vertebrate paleontology. Encyclopedia entries are retrieved 
-          from Wikipedia via their public API.
+
+        <p style="margin-bottom:25px;">
+        The game offers five difficulty tiers determined by taxonomic familiarity as measured through 
+        Wikipedia pageview statistics over a thirty-day period. This metric serves as a proxy for public 
+        recognition rather than phylogenetic complexity or fossil completeness. Higher difficulty levels 
+        incorporate taxa with lower pageview counts (generally lesser-known genera that receive less popular 
+        attention) thereby requiring broader taxonomic knowledge independent of their scientific importance 
+        or systematic resolution. Daily challenges ensure that all participants worldwide confront identical 
+        classification problems.
         </p>
-        <p style="color:#a68a5a; line-height:1.8; font-size:0.9em; font-style:italic;">
-          Note: Phylogenetic relationships are subject to ongoing research and revision. 
-          This game reflects a snapshot of current scientific understanding and may not include 
-          the most recent taxonomic revisions.
-        </p>
-      </div>
-      
-      <div style="background:rgba(61,47,31,0.5); padding:30px; border-radius:8px; border:2px solid #5d4a36;">
-        <h3 style="color:#f4e4c1; margin-bottom:18px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:10px;">
-          How to Play
+
+        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+          Data Sources and Taxonomic Authority
         </h3>
-        <div style="color:#f8f6f3; line-height:1.8;">
-          <p style="margin-bottom:12px;"><strong style="color:#c9a96e;">1. Select Difficulty Level</strong> — Choose from five taxonomic complexity tiers</p>
-          <p style="margin-bottom:12px;"><strong style="color:#c9a96e;">2. Submit Genus Names</strong> — Enter dinosaur genera to reveal phylogenetic proximity</p>
-          <p style="margin-bottom:12px;"><strong style="color:#c9a96e;">3. Analyze Tree Structure</strong> — Use revealed clades to narrow your classification</p>
-          <p style="margin-bottom:12px;"><strong style="color:#c9a96e;">4. Use Hints Strategically</strong> — Three hints available per challenge</p>
-          <p><strong style="color:#c9a96e;">5. Complete Classification</strong> — Identify the mystery taxon correctly</p>
-        </div>
+
+        <p style="margin-bottom:25px;">
+        Phylogenetic relationships and taxonomic data are derived from a publicly accessible Google Sheets 
+        database (spreadsheet ID: 1rgflfIWW6x2h6jRRTe6cRO4YWc3mEKzVmJ7UzREFNq8) compiled and maintained by 
+        TotalDino.com. This resource aggregates information from peer-reviewed literature and systematic 
+        revisions, presenting a hierarchical structure that reflects current consensus topology as understood 
+        within vertebrate paleontology. Users should recognize that phylogenetic hypotheses remain subject 
+        to revision as new fossil discoveries and analytical methods refine our understanding of dinosaurian 
+        relationships. Certain problematic taxa, those based on fragmentary or non-diagnostic material or 
+        exhibiting nomenclatural ambiguities (such as homonyms with non-paleontological entities), have been 
+        manually reviewed and, where appropriate, excluded or reclassified to maintain database integrity.
+        </p>
+
+        <p style="margin-bottom:25px;">
+        Difficulty classification methodology employs Wikipedia pageview metrics retrieved via the Wikimedia 
+        REST API, aggregating thirty-day access statistics for each taxon. Genera are stratified into quintiles 
+        based on these pageview counts, with the most frequently accessed taxa assigned to lower difficulty 
+        tiers and obscure genera with minimal page traffic assigned to higher difficulty levels. This approach 
+        acknowledges that taxonomic familiarity — operationalized here as public digital engagement—constitutes 
+        a distinct dimension from phylogenetic complexity, fossil completeness, or systematic significance. 
+        Consequently, scientifically important but publicly unfamiliar taxa may appear at higher difficulty 
+        levels, while fragmentary or taxonomically problematic genera with substantial popular culture presence 
+        may occupy lower tiers.
+        </p>
+
+        <p style="margin-bottom:25px;">
+          Supplementary information regarding clade diagnoses and evolutionary context is retrieved from 
+          Wikipedia's public API. While this resource provides accessible overviews suitable for educational 
+          contexts, users are encouraged to consult primary literature (including original species descriptions, 
+          phylogenetic analyses published in journals such as <em>Nature</em>, <em>Science</em>, <em>Journal 
+          of Vertebrate Paleontology</em>, and <em>Cladistics</em>) for authoritative systematic information.
+        </p>
+
+        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+          Methodological Considerations and Limitations
+        </h3>
+
+        <p style="margin-bottom:25px;">
+          Phylogenetic trees are hypotheses of evolutionary relationships, not immutable facts. The topology 
+          presented here represents one interpretation of available data and may differ from alternative 
+          analyses that employ different character matrices, taxon sampling strategies, or analytical methods. 
+          Furthermore, phylogenetic resolution varies considerably across the dinosaurian tree; while some 
+          clades such as Tyrannosauridae exhibit robust support across multiple independent analyses, others 
+          remain poorly resolved due to incomplete fossil records or morphological conservatism. Users should 
+          interpret tree topology with appropriate epistemic humility, recognizing that scientific understanding 
+          of dinosaurian phylogeny continues to evolve.
+        </p>
+
+        <p style="margin-bottom:25px;">
+          Taxonomic nomenclature follows standard conventions wherein genus names are italicized and capitalized, 
+          while higher-level clade names are rendered in standard font with initial capitalization. Some taxa 
+          included in the database may represent <em>nomina dubia</em> (names of doubtful validity based on 
+          insufficient diagnostic material) or taxonomic wastebasket groups subject to ongoing systematic revision. 
+        </p>
+
+        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+          Acknowledgments and Further Resources
+        </h3>
+
+        <p style="margin-bottom:25px;">
+          This project acknowledges the foundational work of countless paleontologists whose systematic research 
+          underlies our current understanding of dinosaurian phylogeny. For readers seeking deeper engagement 
+          with the primary literature, recommended resources include the Paleobiology Database (paleobiodb.org), 
+          which archives stratigraphic and taxonomic occurrence data; the Tree of Life Web Project (tolweb.org), 
+          providing comprehensive phylogenetic overviews; and Fossilworks (fossilworks.org), which maintains 
+          detailed taxonomic and bibliographic records. Users interested in formal training in phylogenetic 
+          methodology are encouraged to consult <em>Phylogenetics: Theory and Practice of Phylogenetic Systematics</em> 
+          by E.O. Wiley and Bruce Lieberman, or <em>Inferring Phylogenies</em> by Joseph Felsenstein.
+        </p>
+
+        <p style="margin-bottom:35px;">
+          Phylosaur is provided as an educational resource without commercial intent. Users are encouraged to 
+          provide feedback regarding taxonomic inaccuracies, interface improvements, or pedagogical suggestions 
+          that might enhance the tool's effectiveness as an instructional aid. While this application aims for 
+          scientific rigor, it should not be cited as a primary source in formal academic contexts; instead, 
+          users should trace information to original systematic publications through the references provided in 
+          supplementary materials.
+        </p>
+
       </div>
-      
-      <button class="btn-new-game" onclick="showDifficultySelection()" style="margin-top:25px;">
+
+      <button class="btn-new-game" onclick="showDifficultySelection()" style="margin-top:30px;">
         Return to Challenge Selection
       </button>
     </div>
