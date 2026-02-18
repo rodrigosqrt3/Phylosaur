@@ -4,12 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phylosaur</title>
+<link rel="icon" type="image/svg+xml" href="dinosaur-footprint-1-svgrepo-com.svg">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+
+    html {
+        scroll-behavior: smooth;
+        }
 
     body {
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -545,7 +550,7 @@ body.light-mode .game-card {
       border: 2px solid;
       border-radius: 3px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* ← melhor easing */
       text-transform: uppercase;
       letter-spacing: 1.5px;
       position: relative;
@@ -1100,6 +1105,90 @@ body.light-mode .difficulty-completed {
         opacity: 0;
       }
     }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+   ANIMAÇÕES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Fade in suave para elementos */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Aplicar animação aos cards principais */
+.game-card {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Stats aparecem um após o outro */
+.stat {
+  animation: fadeInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.stat:nth-child(1) { animation-delay: 0.1s; }
+.stat:nth-child(2) { animation-delay: 0.2s; }
+.stat:nth-child(3) { animation-delay: 0.3s; }
+.stat:nth-child(4) { animation-delay: 0.4s; }
+
+/* Botões de dificuldade aparecem em cascata */
+.difficulty-btn {
+  animation: fadeInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.difficulty-btn:nth-child(1) { animation-delay: 0.1s; }
+.difficulty-btn:nth-child(2) { animation-delay: 0.2s; }
+.difficulty-btn:nth-child(3) { animation-delay: 0.3s; }
+.difficulty-btn:nth-child(4) { animation-delay: 0.4s; }
+.difficulty-btn:nth-child(5) { animation-delay: 0.5s; }
+
+/* Modal aparece com bounce suave */
+.modal-box {
+  animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Victory banner pulse */
+.victory {
+  animation: victoryAppear 0.6s ease-out;
+}
+
+@keyframes victoryAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
     .victory h2 {
       font-size: 2.5em;
@@ -2043,7 +2132,7 @@ function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
             
             <div class="difficulty-info-box">
             <div class="difficulty-info-text">
-                Each difficulty level presents a unique specimen for today's date. All researchers worldwide receive identical classification challenges. Progress is tracked independently per difficulty level.
+                Each difficulty level presents a unique specimen for today's date. All players worldwide receive identical classification challenges. Progress is tracked independently per difficulty level.
             </div>
             </div>
         `;
@@ -4091,6 +4180,15 @@ function showAbout() {
           distinguished by a retroversed pubis and predentary bone. Modern phylogenetic analyses place 
           Avialae (birds) within Saurischia as highly derived theropods, rendering traditional distinctions 
           between "dinosaurs" and "birds" paraphyletic and therefore scientifically obsolete.
+        </p>
+
+        <p style="margin-bottom:25px; padding:20px; background:rgba(61,47,31,0.3); border-left:4px solid #8b7355; font-style:italic;">
+        "The combination of such characters... will, it is presumed, be deemed sufficient ground for establishing 
+        a distinct tribe or sub-order of Saurian Reptiles, for which I would propose the name of <em>Dinosauria</em>."
+        <span style="display:block; margin-top:10px; font-style:normal; font-size:0.9em; color:#a68a5a;">
+            — Richard Owen (1842). Report on British Fossil Reptiles, Part II. <em>Report of the British Association 
+            for the Advancement of Science</em>, 11: 60–204.
+        </span>
         </p>
 
         <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
