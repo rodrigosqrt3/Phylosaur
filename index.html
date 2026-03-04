@@ -2599,33 +2599,15 @@ async function loadGameProgress(difficulty) {
   };
 }
 
-function clearGameProgress(difficulty) {
-  if (!currentUser) return;
-  
+async function clearGameProgress(difficulty) {
+  if (!currentUserId) return;
   const today = getTodayString();
-  const key = `phylosaur-progress-${currentUser}-${today}-${difficulty}`;
-  localStorage.removeItem(key);
-}
-
-function saveDailyChallengeResult(difficulty, targetDino, guessCount) {
-  if (!currentUser) return;
-  
-  const today = getTodayString();
-  const key = `phylosaur-daily-result-${currentUser}-${today}-${difficulty}`;
-  
-  localStorage.setItem(key, JSON.stringify({
-    targetDino: targetDino.nome,
-    targetLineage: targetDino.linhagem,
-    guessCount: guessCount,
-    completed: true,
-    guesses: guesses.map(g => ({
-      nome: g.dino.nome,
-      linhagem: g.dino.linhagem,
-      isHint: g.isHint || false
-    })),
-    revealedClades: Array.from(revealedClades),
-    hintHistory: hintHistory
-  }));
+  await sb.from('daily_results')
+    .delete()
+    .eq('user_id', currentUserId)
+    .eq('played_date', today)
+    .eq('difficulty', difficulty)
+    .eq('won', false); 
 }
 
 async function markDailyChallengeCompleted(difficulty) {
@@ -2793,16 +2775,6 @@ async function loadCompletedChallengeTree(difficulty, result) {
   }
 }
 
-function getDailyChallengeResult(difficulty) {
-  if (!currentUser) return null;
-  
-  const today = getTodayString();
-  const key = `phylosaur-daily-result-${currentUser}-${today}-${difficulty}`;
-  const saved = localStorage.getItem(key);
-  
-  return saved ? JSON.parse(saved) : null;
-}
-
 function showCompletedChallenge(difficulty, result) {
   selectedDifficulty = difficulty;
   const appContent = document.getElementById('app-content');
@@ -2882,12 +2854,30 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     // START GAME
     // ═══════════════════════════════════════════════════════════════════════
 async function startDailyChallenge(difficulty) {
-    isPracticeMode = false;
-  // Primeiro, verificar se já completou hoje
-  const existingResult = getDailyChallengeResult(difficulty);
-  
-  if (existingResult && existingResult.completed) {
-    showCompletedChallenge(difficulty, existingResult);
+  isPracticeMode = false;
+
+  // Check Supabase for today's completed result
+  const today = getTodayString();
+  let existingResult = null;
+
+  if (currentUserId) {
+    const { data } = await sb.from('daily_results')
+      .select('*')
+      .eq('user_id', currentUserId)
+      .eq('played_date', today)
+      .eq('difficulty', difficulty)
+      .single();
+    existingResult = data;
+  }
+
+  if (existingResult && existingResult.won) {
+    showCompletedChallenge(difficulty, {
+      targetDino: existingResult.target_dino,
+      guessCount: existingResult.guess_count,
+      guesses: existingResult.guesses,
+      revealedClades: existingResult.revealed_clades,
+      hintHistory: existingResult.hint_history
+    });
     return;
   }
   
@@ -3017,8 +3007,7 @@ async function loadDailyDatabase(difficulty, forceClean = false) {
     
     console.log('Daily specimen:', targetDino.nome, 'Seed:', seed);
     
-    // Tentar carregar progresso salvo (a menos que forceClean seja true)
-    const savedProgress = forceClean ? null : loadGameProgress(difficulty);
+    const savedProgress = forceClean ? null : await loadGameProgress(difficulty);
 
     if (savedProgress && savedProgress.targetDino === targetDino.nome) {
       console.log('📂 Loading saved progress...');
@@ -3798,7 +3787,6 @@ if (!gameWon) {
     milestone = checkStreakMilestone(streakData.current);
     await updateStatsAfterGame(true, guesses.length, selectedDifficulty);
     await markDailyChallengeCompleted(selectedDifficulty);
-    await saveDailyChallengeResult(selectedDifficulty, targetDino, guesses.length);
   }
 
   document.getElementById('dino-input').disabled = true;
