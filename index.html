@@ -948,6 +948,7 @@
           font-size: 11px;
           letter-spacing: 0.5px;
         }
+      }
 
     #tree-container {
       background: linear-gradient(180deg, #1a1410 0%, #0f0a08 100%);
@@ -974,7 +975,7 @@
     .clade-image   { max-width: 100%; }
 
     .tree-legend { grid-template-columns: 1fr 1fr; gap: 10px; }
-    }
+
 
     #tree-container {
     background: linear-gradient(180deg, #1a1410 0%, #0f0a08 100%);
@@ -1861,6 +1862,27 @@ body.light-mode .modal-btn-secondary:hover {
     .difficulty-hard:hover  { border-color: #e08060; background: linear-gradient(180deg, #3d2520 0%, #2a1a16 100%); }
     .difficulty-very-hard  { border-color: #b04030; }
     .difficulty-very-hard:hover  { border-color: #d05040; background: linear-gradient(180deg, #3d1f18 0%, #2a1612 100%); }
+
+    @keyframes branchGrow {
+      from { stroke-dashoffset: 1000; opacity: 0; }
+      to   { stroke-dashoffset: 0;    opacity: 1; }
+    }
+
+    @keyframes nodeAppear {
+      0%   { opacity: 0; transform: scale(0.3); }
+      50%  { transform: scale(1.1); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .new-node {
+      animation: nodeAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .new-line {
+      stroke-dasharray: 1000;
+      animation: branchGrow 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
     </style>
 </head>
 <body>
@@ -1871,7 +1893,7 @@ body.light-mode .modal-btn-secondary:hover {
         <div style="flex:1;"></div>
 
         <div style="flex:2; text-align:center;">
-        <h1>Phylosaur</h1>
+        <h1 style="cursor:pointer;" onclick="showDifficultySelection()">Phylosaur</h1>
         <p class="subtitle">A phylogenetic classification challenge</p>
         </div>
 
@@ -3327,6 +3349,7 @@ body.light-mode .modal-btn-secondary:hover {
             renderEnhancedTree();
             updateCladeInfo();
             updateGuessHistory();
+            document.getElementById('dino-input')?.focus();
           }, 100);
           
         } else {
@@ -3339,8 +3362,10 @@ body.light-mode .modal-btn-secondary:hover {
             wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
           }
         }
-        initializeAutocomplete();
         
+        initializeAutocomplete();
+        document.getElementById('dino-input')?.focus();
+
       } catch (err) {
         console.error('Database error:', err);
         if (wrapper) {
