@@ -919,6 +919,25 @@
         .input-section .btn-guess { flex: 1; }
         .input-section .btn-hint { width: 100%; }
         header > div { flex-wrap: wrap; gap: 10px; }
+          header > div {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+        header > div > div:first-child {
+          display: none; /* hide the empty spacer div */
+        }
+
+        header > div > div:nth-child(2) {
+          flex: none;
+          text-align: center;
+        }
+
+        header > div > div:last-child {
+          flex: none;
+          justify-content: center !important;
+        }
         #header-controls {
           flex-wrap: wrap;
           justify-content: flex-end;
