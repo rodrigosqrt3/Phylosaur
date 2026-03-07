@@ -1399,7 +1399,6 @@ body.light-mode .difficulty-completed {
 .difficulty-btn:nth-child(4) { animation-delay: 0.4s; }
 .difficulty-btn:nth-child(5) { animation-delay: 0.5s; }
 
-/* Modal aparece com bounce suave */
 .modal-box {
   animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1465,7 +1464,6 @@ body.light-mode .difficulty-completed {
   backdrop-filter: blur(4px);
 }
 
-/* Modal container */
 .modal-box {
   background: linear-gradient(180deg, #2c2318 0%, #221a12 100%);
   border: 3px solid #4a3829;
@@ -1478,6 +1476,8 @@ body.light-mode .difficulty-completed {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 body.light-mode .modal-box {
@@ -2679,14 +2679,16 @@ body.light-mode .modal-btn-secondary:hover {
             </div>
 
             <div style="margin-top:30px; text-align:center;">
-            <button class="btn-hint" onclick="showPracticeMode()" style="padding:18px 40px; font-size:15px;">
-                Practice Mode
-            </button>
-            <div style="margin-top:12px; color:#8b7355; font-size:0.85em; font-style:italic;">
-                Train without affecting your statistics or streak
+              <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+                <button class="btn-hint" onclick="showHowToPlay()" style="padding:18px 40px; font-size:15px;">
+                  How to Play
+                </button>
+                <button class="btn-hint" onclick="showPracticeMode()" style="padding:18px 40px; font-size:15px;">
+                  Practice Mode
+                </button>
+              </div>
             </div>
-            </div>
-            
+          
             <div class="difficulty-info-box">
             <div class="difficulty-info-text">
                 Each difficulty level presents a unique specimen for today's date. All players worldwide receive identical classification challenges. Progress is tracked independently per difficulty level.
@@ -2713,14 +2715,6 @@ body.light-mode .modal-btn-secondary:hover {
                 ${generatePracticeDifficultyButton('normal', 'LEVEL III', 'III')}
                 ${generatePracticeDifficultyButton('dificil', 'LEVEL IV', 'IV')}
                 ${generatePracticeDifficultyButton('muito_dificil', 'LEVEL V', 'V')}
-              </div>
-
-              <div class="difficulty-info-box" style="max-width:500px; margin:30px auto 0;">
-                <div class="difficulty-info-text">
-                  ◆ Practice mode does not affect your statistics or streak<br>
-                  ◆ No daily limits, play as many times as you want<br>
-                  ◆ Random specimen selected from chosen difficulty level
-                </div>
               </div>
             </div>
           `;
@@ -4770,6 +4764,47 @@ body.light-mode .modal-btn-secondary:hover {
         </div>
       `;
     }
+
+    function showHowToPlay() {
+      showModal({
+        title: 'How to Play',
+        message: `
+          <div style="text-align:left; line-height:2;">
+            <p style="margin-bottom:16px;">A mystery dinosaur is hidden each day. Your goal is to identify it through phylogenetic reasoning.</p>
+            
+            <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
+              <strong style="color:#d4b87e;">1. Guess a genus</strong><br>
+              Type any dinosaur name and submit. The tree will reveal how closely related your guess is to the target.
+            </div>
+
+            <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
+              <strong style="color:#d4b87e;">2. Read the tree</strong><br>
+              Each guess reveals the deepest clade shared with the mystery dinosaur. The closer on the tree, the warmer you are.
+            </div>
+
+            <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
+              <strong style="color:#d4b87e;">3. Use hints wisely</strong><br>
+              You have 3 hints per challenge. Each hint reveals the next clade in the target's lineage. You must make 2 guesses between hints.
+            </div>
+
+            <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
+              <strong style="color:#d4b87e;">4. Five difficulty levels</strong><br>
+              Level I features well-known genera. Level V features obscure taxa requiring broad taxonomic knowledge.
+            </div>
+
+            <div style="padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
+              <strong style="color:#d4b87e;">Tip</strong><br>
+              Click any node on the tree to read about that clade. New here? Start with Level I.
+            </div>
+          </div>
+        `,
+        buttons: [
+          { text: 'Start Classifying', value: 'ok', primary: true }
+        ],
+        closeOnOverlay: true
+      });
+    }
+
     function generateDifficultyStats(diffStats) {
       const diffNames = {
         'muito_facil': 'Level I',
