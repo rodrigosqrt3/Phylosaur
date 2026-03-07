@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phylosaur</title>
-<link rel="icon" type="image/svg+xml" href="dinosaur-footprint-1-svgrepo-com.svg">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="icon" type="image/svg+xml" href="dinosaur-footprint-1-svgrepo-com.svg">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
       margin: 0;
@@ -170,7 +170,6 @@
     background: linear-gradient(135deg, rgba(255,149,0,0.15), rgba(255,69,0,0.15)) !important;
     }
 
-    /* ── LOGIN REDESIGN ── */
     .tab-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -347,7 +346,6 @@
     }
     @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
-    /* Light mode overrides */
     body.light-mode .tab-btn { color: #8b7355; }
     body.light-mode .tab-btn.active { color: #5a3e1b; border-bottom-color: #8b6f47; }
     body.light-mode .login-field input { background: white; border-color: #c9a96e; color: #2d2318; }
@@ -358,7 +356,6 @@
     body.light-mode .login-benefits-title { color: #6b5340; }
     body.light-mode .login-benefits-grid span { color: #6b5340; }
 
-    /* Achievement cards */
     .achievement-card {
       padding: 18px;
       border-radius: 6px;
@@ -398,7 +395,6 @@
       line-height: 1.4;
     }
 
-    /* Light mode */
     body.light-mode .achievement-locked {
       background: rgba(232, 220, 200, 0.4);
       border-color: #c9a96e;
@@ -421,7 +417,6 @@
       color: #6b5340;
     }
 
-    /* Difficulty stats */
     .difficulty-stat-row {
       display: flex;
       justify-content: space-between;
@@ -571,7 +566,6 @@
     body.light-mode .difficulty-very-hard  { border-color: #a03020; }
     body.light-mode .difficulty-very-hard:hover  { background: linear-gradient(180deg, #f5e8e8 0%, #e8d8d8 100%); }
 
-    /* Difficulty info box */
     .difficulty-info-box {
     margin-top: 30px;
     padding: 20px;
@@ -586,7 +580,6 @@
     line-height: 1.8;
     }
 
-    /* About page text - light mode fix */
     .game-card > div[style*="color:#f8f6f3"] p,
     .game-card > div[style*="color:#f8f6f3"] h3 {
     transition: color 0.3s ease;
@@ -608,7 +601,6 @@
     color: #5a3e1b;
     }
 
-    /* Light mode */
     body.light-mode .difficulty-info-box {
     background: rgba(139, 115, 85, 0.15);
     border-left-color: #8b6f47;
@@ -777,17 +769,17 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
 
-.btn-hint {
-  background: rgba(61, 47, 31, 0.8);
-  color: #c9a96e;
-  border-color: #5d4a36;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
+      .btn-hint {
+        background: rgba(61, 47, 31, 0.8);
+        color: #c9a96e;
+        border-color: #5d4a36;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      }
 
-.btn-hint:hover:not(:disabled) {
-  background: rgba(74, 56, 41, 0.9);
-  border-color: #8b7355;
-}
+      .btn-hint:hover:not(:disabled) {
+        background: rgba(74, 56, 41, 0.9);
+        border-color: #8b7355;
+      }
 
     .btn-new-game {
       background: linear-gradient(180deg, #3d4a2f 0%, #2d3a1f 100%);
@@ -916,47 +908,48 @@
     }
 
     @media (max-width: 768px) {
-    h1 { font-size: 1.8em; letter-spacing: 6px; }
-    .subtitle { font-size: 0.85em; }
-    
-    header { padding: 20px; }
-    
-    #header-controls button { 
-        padding: 6px 10px; 
-        font-size: 11px;
-        letter-spacing: 0.5px;
+        h1 { font-size: 1.6em; letter-spacing: 4px; }
+        .game-card { padding: 20px; }
+        .stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .stat { padding: 14px; }
+        .stat-value { font-size: 1.8em; }
+        .clade-content { flex-direction: column; }
+        .clade-image { max-width: 100%; }
+        .input-section { flex-wrap: wrap; }
+        .input-section .btn-guess { flex: 1; }
+        .input-section .btn-hint { width: 100%; }
+        header > div { flex-wrap: wrap; gap: 10px; }
+        #header-controls {
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          gap: 6px;
+        }
+        #header-controls button {
+          padding: 6px 10px;
+          font-size: 11px;
+          letter-spacing: 0.5px;
+        }
+
+    #tree-container {
+      background: linear-gradient(180deg, #1a1410 0%, #0f0a08 100%);
+      border: 3px solid #3d2f1f;
+      border-radius: 4px;
+      padding: 20px;
+      min-height: 300px;
+      max-height: 70vh;
+      overflow: auto;
+      position: relative;
+      box-shadow: 
+        inset 0 4px 12px rgba(0,0,0,0.8),
+        0 4px 12px rgba(0,0,0,0.6);
+      transition: all 0.3s ease;
+      -webkit-overflow-scrolling: touch;
+      cursor: grab;
     }
 
-    .game-card { padding: 20px; }
-
-    .stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .stat { padding: 14px; }
-    .stat-value { font-size: 1.8em; }
-
-    .input-section { flex-wrap: wrap; }
-    .input-section .btn-guess { flex: 1; }
-    .input-section .btn-hint  { width: 100%; }
-
-#tree-container {
-  background: linear-gradient(180deg, #1a1410 0%, #0f0a08 100%);
-  border: 3px solid #3d2f1f;
-  border-radius: 4px;
-  padding: 20px;
-  min-height: 300px;
-  max-height: 70vh;
-  overflow: auto;
-  position: relative;
-  box-shadow: 
-    inset 0 4px 12px rgba(0,0,0,0.8),
-    0 4px 12px rgba(0,0,0,0.6);
-  transition: all 0.3s ease;
-  -webkit-overflow-scrolling: touch;
-  cursor: grab;
-}
-
-#tree-container:active {
-  cursor: grabbing;
-}
+    #tree-container:active {
+      cursor: grabbing;
+    }
 
     .clade-content { flex-direction: column; }
     .clade-image   { max-width: 100%; }
@@ -1015,7 +1008,7 @@
     #tree-scroll-wrapper {
     position: relative;
     z-index: 1;
-    display: inline-block; /* shrink to content width */
+    display: inline-block;
     min-width: 100%;
     }
 
@@ -1155,82 +1148,78 @@
       transition: all 0.3s ease;
     }
 
-    /* Victory banner - modo escuro (padrão) */
-.challenge-completed-banner {
-  text-align: center;
-  padding: 40px;
-  background: rgba(74, 124, 89, 0.2);
-  border-radius: 8px;
-  margin-bottom: 30px;
-  border: 2px solid #5a9c6b;
-  transition: all 0.3s ease;
-}
+    .challenge-completed-banner {
+      text-align: center;
+      padding: 40px;
+      background: rgba(74, 124, 89, 0.2);
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border: 2px solid #5a9c6b;
+      transition: all 0.3s ease;
+    }
 
-.challenge-completed-banner h2 {
-  color: #c8e6c9;
-  margin-bottom: 15px;
-  font-size: 2em;
-  letter-spacing: 3px;
-}
+    .challenge-completed-banner h2 {
+      color: #c8e6c9;
+      margin-bottom: 15px;
+      font-size: 2em;
+      letter-spacing: 3px;
+    }
 
-.challenge-completed-banner .dino-name {
-  font-size: 1.5em;
-  color: #d4b87e;
-  margin: 20px 0;
-  font-style: italic;
-}
+    .challenge-completed-banner .dino-name {
+      font-size: 1.5em;
+      color: #d4b87e;
+      margin: 20px 0;
+      font-style: italic;
+    }
 
-.challenge-completed-banner .attempts {
-  color: #a68a5a;
-  font-size: 1.1em;
-}
+    .challenge-completed-banner .attempts {
+      color: #a68a5a;
+      font-size: 1.1em;
+    }
 
-/* Victory banner - modo claro */
-body.light-mode .challenge-completed-banner {
-  background: rgba(144, 238, 144, 0.15);
-  border-color: #4a7c59;
-}
+    body.light-mode .challenge-completed-banner {
+      background: rgba(144, 238, 144, 0.15);
+      border-color: #4a7c59;
+    }
 
-body.light-mode .challenge-completed-banner h2 {
-  color: #2d6b3f;
-}
+    body.light-mode .challenge-completed-banner h2 {
+      color: #2d6b3f;
+    }
 
-body.light-mode .challenge-completed-banner .dino-name {
-  color: #5a3e1b;
-}
+    body.light-mode .challenge-completed-banner .dino-name {
+      color: #5a3e1b;
+    }
 
-body.light-mode .challenge-completed-banner .attempts {
-  color: #6b5340;
-}
+    body.light-mode .challenge-completed-banner .attempts {
+      color: #6b5340;
+    }
 
-/* Victory box (quando ganha jogando) */
-.victory-dino {
-  font-size: 2em;
-  margin: 25px 0;
-  font-style: italic;
-  color: #c8e6c9;
-  transition: all 0.3s ease;
-}
+    .victory-dino {
+      font-size: 2em;
+      margin: 25px 0;
+      font-style: italic;
+      color: #c8e6c9;
+      transition: all 0.3s ease;
+    }
 
-body.light-mode .victory {
-  background: linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%);
-  color: #2d2318;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
+    body.light-mode .victory {
+      background: linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%);
+      color: #2d2318;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
 
-body.light-mode .victory h2 {
-  color: #2d6b3f;
-}
+    body.light-mode .victory h2 {
+      color: #2d6b3f;
+    }
 
-body.light-mode .victory-dino {
-  color: #2d6b3f;
-}
+    body.light-mode .victory-dino {
+      color: #2d6b3f;
+    }
 
-body.light-mode .victory p {
-  color: #5a3e1b !important;
-}
+    body.light-mode .victory p {
+      color: #5a3e1b !important;
+    }
 
-    /* Difficulty tier indicators */
     .tier-indicator {
       display: inline-block;
       width: 8px;
@@ -1245,36 +1234,35 @@ body.light-mode .victory p {
       background: currentColor;
     }
 
- .difficulty-btn {
-  background: rgba(42, 31, 22, 0.7);
-  border: 2px solid #5d4a36;
-  border-radius: 6px;
-  color: #f8f6f3;
-  transition: all 0.25s;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-}
+    .difficulty-btn {
+      background: rgba(42, 31, 22, 0.7);
+      border: 2px solid #5d4a36;
+      border-radius: 6px;
+      color: #f8f6f3;
+      transition: all 0.25s;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+    }
 
-.difficulty-btn::after,
-.difficulty-btn::before {
-  display: none;
-}
+    .difficulty-btn::after,
+    .difficulty-btn::before {
+      display: none;
+    }
 
-.difficulty-btn:hover {
-  border-color: #c9a96e;
-  box-shadow: 0 5px 16px rgba(0,0,0,0.5);
-  transform: translateY(-3px);
-}
+    .difficulty-btn:hover {
+      border-color: #c9a96e;
+      box-shadow: 0 5px 16px rgba(0,0,0,0.5);
+      transform: translateY(-3px);
+    }
 
-body.light-mode .difficulty-btn {
-  background: rgba(245, 240, 232, 0.9);
-  color: #2d2318;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-}
+    body.light-mode .difficulty-btn {
+      background: rgba(245, 240, 232, 0.9);
+      color: #2d2318;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
 
-body.light-mode .difficulty-btn:hover {
-  box-shadow: 0 5px 16px rgba(0,0,0,0.15);
-}
-
+    body.light-mode .difficulty-btn:hover {
+      box-shadow: 0 5px 16px rgba(0,0,0,0.15);
+    }
 
     .difficulty-btn > div {
       position: relative;
@@ -1854,62 +1842,7 @@ body.light-mode .modal-btn-secondary:hover {
     .difficulty-hard:hover  { border-color: #e08060; background: linear-gradient(180deg, #3d2520 0%, #2a1a16 100%); }
     .difficulty-very-hard  { border-color: #b04030; }
     .difficulty-very-hard:hover  { border-color: #d05040; background: linear-gradient(180deg, #3d1f18 0%, #2a1612 100%); }
-
-    @media (max-width: 768px) {
-      h1 { font-size: 2em; }
-      .game-card { padding: 20px; }
-      .stats { grid-template-columns: repeat(2, 1fr); }
-      .clade-content { flex-direction: column; }
-      .clade-image { max-width: 100%; }
-      .input-section { flex-wrap: wrap; }
-      .btn-hint { width: 100%; }
-    }
-
-    @keyframes fadeIn {
-      from { 
-        opacity: 0; 
-        transform: translateY(15px) scale(0.95); 
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0) scale(1); 
-      }
-    }
-
-    @keyframes branchGrow {
-      from { 
-        stroke-dashoffset: 1000;
-        opacity: 0;
-      }
-      to { 
-        stroke-dashoffset: 0;
-        opacity: 1;
-      }
-    }
-    
-    @keyframes nodeAppear {
-      0% {
-        opacity: 0;
-        transform: scale(0.3);
-      }
-      50% {
-        transform: scale(1.1);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    .new-node {
-      animation: nodeAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .new-line {
-      stroke-dasharray: 1000;
-      animation: branchGrow 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-  </style>
+    </style>
 </head>
 <body>
   <div class="container" id="main-container">
@@ -1978,7 +1911,6 @@ body.light-mode .modal-btn-secondary:hover {
       achievements: []
     };
 
-    // Difficulty mapping
     const DIFFICULTY_MAP = {
       'muito_facil': 'very-easy',
       'facil': 'easy',
@@ -1990,7 +1922,6 @@ body.light-mode .modal-btn-secondary:hover {
     // ═══════════════════════════════════════════════════════════════════════
     // USER ACCOUNT SYSTEM
     // ═══════════════════════════════════════════════════════════════════════
-
     async function initializeUserSystem() {
     const { data: { session } } = await sb.auth.getSession();
     
@@ -2028,7 +1959,7 @@ body.light-mode .modal-btn-secondary:hover {
         .eq('user_id', currentUserId)
         .single();
 
-    if (current) return; // row exists, never touch it here
+    if (current) return;
 
     await sb.from('statistics').insert({
         user_id:       currentUserId,
@@ -2043,7 +1974,6 @@ body.light-mode .modal-btn-secondary:hover {
     async function updateStatsAfterGame(won, guessCount, difficulty) {
     if (!currentUserId) return;
 
-    // Always read current values from DB first — never trust in-memory state
     const { data: current } = await sb.from('statistics')
         .select('*')
         .eq('user_id', currentUserId)
@@ -2072,7 +2002,6 @@ body.light-mode .modal-btn-secondary:hover {
         updated_at:   new Date().toISOString()
     }, { onConflict: 'user_id' });
 
-    // Keep in-memory in sync
     userStats.gamesPlayed  = newPlayed;
     userStats.gamesWon     = newWon;
     userStats.totalGuesses = newTotal;
@@ -2168,7 +2097,8 @@ body.light-mode .modal-btn-secondary:hover {
         'game':       themeBtn + aboutBtn + backBtn + statsBtn,
         'stats':      themeBtn + `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Back</button>`,
         'about':      themeBtn + `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Back</button>`,
-        'practice':   themeBtn + aboutBtn + `<button class="btn-hint" onclick="showPracticeMode()" style="padding:8px 14px; font-size:12px;">← Back</button>`,
+        'practice-menu': themeBtn + aboutBtn + `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Back</button>`,
+        'practice':      themeBtn + aboutBtn + `<button class="btn-hint" onclick="showPracticeMode()" style="padding:8px 14px; font-size:12px;">← Back</button>`,
     };
 
     controls.innerHTML = map[screen] || themeBtn;
@@ -2185,153 +2115,95 @@ body.light-mode .modal-btn-secondary:hover {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-// CUSTOM MODALS
-// ═══════════════════════════════════════════════════════════════════════
-function initTreePanning() {
-  const container = document.getElementById('tree-container');
-  if (!container) return;
-
-  let isDown = false;
-  let startX, startY, scrollLeft, scrollTop;
-
-  // Mouse
-  container.addEventListener('mousedown', e => {
-    if (e.target.closest('.tree-node-group, g')) return; // don't interfere with node clicks
-    isDown = true;
-    startX = e.pageX - container.offsetLeft;
-    startY = e.pageY - container.offsetTop;
-    scrollLeft = container.scrollLeft;
-    scrollTop  = container.scrollTop;
-  });
-
-  container.addEventListener('mouseleave', () => isDown = false);
-  container.addEventListener('mouseup',    () => isDown = false);
-
-  container.addEventListener('mousemove', e => {
-    if (!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - container.offsetLeft;
-    const y = e.pageY - container.offsetTop;
-    container.scrollLeft = scrollLeft - (x - startX);
-    container.scrollTop  = scrollTop  - (y - startY);
-  });
-
-  // Touch — native scroll handles it, but prevent accidental zoom
-  container.addEventListener('touchstart', e => {
-    if (e.touches.length === 1) {
-      startX = e.touches[0].pageX;
-      startY = e.touches[0].pageY;
-      scrollLeft = container.scrollLeft;
-      scrollTop  = container.scrollTop;
-    }
-  }, { passive: true });
-
-  container.addEventListener('touchmove', e => {
-    if (e.touches.length !== 1) return;
-    const x = e.touches[0].pageX;
-    const y = e.touches[0].pageY;
-    container.scrollLeft = scrollLeft - (x - startX);
-    container.scrollTop  = scrollTop  - (y - startY);
-  }, { passive: true });
-}
-
-function showModal(options) {
-  return new Promise((resolve) => {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    
-    const box = document.createElement('div');
-    box.className = 'modal-box';
-    
-    let html = '';
-    
-    // Title
-    if (options.title) {
-      html += `<div class="modal-title">${options.title}</div>`;
-    }
-    
-    // Message
-    if (options.message) {
-      html += `<div class="modal-message">${options.message}</div>`;
-    }
-    
-    // Info box (para detalhes do progresso)
-    if (options.info) {
-      html += '<div class="modal-info">';
-      options.info.forEach(item => {
-        html += `
-          <div class="modal-info-item">
-            <span class="modal-info-label">${item.label}:</span>
-            <span>${item.value}</span>
-          </div>
-        `;
+    // CUSTOM MODALS
+    // ═══════════════════════════════════════════════════════════════════════
+    function showModal(options) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        
+        const box = document.createElement('div');
+        box.className = 'modal-box';
+        
+        let html = '';
+        
+        if (options.title) {
+          html += `<div class="modal-title">${options.title}</div>`;
+        }
+        
+        if (options.message) {
+          html += `<div class="modal-message">${options.message}</div>`;
+        }
+        
+        if (options.info) {
+          html += '<div class="modal-info">';
+          options.info.forEach(item => {
+            html += `
+              <div class="modal-info-item">
+                <span class="modal-info-label">${item.label}:</span>
+                <span>${item.value}</span>
+              </div>
+            `;
+          });
+          html += '</div>';
+        }
+        
+        html += '<div class="modal-buttons">';
+        
+        if (options.buttons) {
+          options.buttons.forEach((btn, index) => {
+            const btnClass = btn.primary ? 'modal-btn-primary' : 'modal-btn-secondary';
+            html += `<button class="modal-btn ${btnClass}" data-result="${btn.value}">${btn.text}</button>`;
+          });
+        } else {
+          html += '<button class="modal-btn modal-btn-primary" data-result="ok">OK</button>';
+        }
+        
+        html += '</div>';
+        
+        box.innerHTML = html;
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        
+        box.querySelectorAll('.modal-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const result = btn.getAttribute('data-result');
+            document.body.removeChild(overlay);
+            resolve(result);
+          });
+        });
+        
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay && options.closeOnOverlay !== false) {
+            document.body.removeChild(overlay);
+            resolve(null);
+          }
+        });
       });
-      html += '</div>';
     }
-    
-    // Buttons
-    html += '<div class="modal-buttons">';
-    
-    if (options.buttons) {
-      options.buttons.forEach((btn, index) => {
-        const btnClass = btn.primary ? 'modal-btn-primary' : 'modal-btn-secondary';
-        html += `<button class="modal-btn ${btnClass}" data-result="${btn.value}">${btn.text}</button>`;
+
+    function customAlert(title, message) {
+      return showModal({
+        title: title,
+        message: message,
+        buttons: [{ text: 'OK', value: 'ok', primary: true }]
       });
-    } else {
-      // Default OK button
-      html += '<button class="modal-btn modal-btn-primary" data-result="ok">OK</button>';
     }
-    
-    html += '</div>';
-    
-    box.innerHTML = html;
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-    
-    // Handle button clicks
-    box.querySelectorAll('.modal-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const result = btn.getAttribute('data-result');
-        document.body.removeChild(overlay);
-        resolve(result);
+
+    function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
+      return showModal({
+        title: title,
+        message: message,
+        buttons: [
+          { text: yesText, value: true, primary: true },
+          { text: noText, value: false, primary: false }
+        ]
       });
-    });
-    
-    // Close on overlay click (optional)
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay && options.closeOnOverlay !== false) {
-        document.body.removeChild(overlay);
-        resolve(null);
-      }
-    });
-  });
-}
-
-// Helper: Custom alert
-function customAlert(title, message) {
-  return showModal({
-    title: title,
-    message: message,
-    buttons: [{ text: 'OK', value: 'ok', primary: true }]
-  });
-}
-
-// Helper: Custom confirm
-function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
-  return showModal({
-    title: title,
-    message: message,
-    buttons: [
-      { text: yesText, value: true, primary: true },
-      { text: noText, value: false, primary: false }
-    ]
-  });
 }
 
     // ═══════════════════════════════════════════════════════════════════════
     // LOGIN & AUTHENTICATION
     // ═══════════════════════════════════════════════════════════════════════
-
     function showLoginScreen() {
         setHeaderControls('login');
     const appContent = document.getElementById('app-content');
@@ -2434,171 +2306,166 @@ function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
         </div>
     `;
 
-    // Theme sync
     const icon = document.getElementById('theme-icon');
     const text = document.getElementById('theme-text');
     if (currentTheme === 'light') { icon.textContent = '🌙'; text.textContent = 'Dark Mode'; }
 
-    // Enter key support
     document.addEventListener('keydown', loginEnterHandler);
+}
+
+    function loginSwitchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.login-form-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('login-panel-' + tab).classList.add('active');
+      loginClearErrors();
     }
 
-
- // ── DELETE your old login() function and replace with these ──
-
-function loginSwitchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.login-form-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  document.getElementById('login-panel-' + tab).classList.add('active');
-  loginClearErrors();
-}
-
-function loginShowReset(show = true) {
-  document.querySelectorAll('.login-form-panel').forEach(p => p.classList.remove('active'));
-  document.querySelector('.tab-row').style.display = show ? 'none' : 'grid';
-  if (show) {
-    document.getElementById('login-panel-reset').classList.add('active');
-  } else {
-    document.getElementById('login-panel-signin').classList.add('active');
-    document.querySelector('.tab-row').style.display = 'grid';
-  }
-}
-
-function loginClearErrors() {
-  document.querySelectorAll('.login-field-error').forEach(e => e.classList.remove('visible'));
-  document.querySelectorAll('.login-field input').forEach(i => i.classList.remove('input-error'));
-  document.querySelectorAll('.login-global-error, .login-global-success').forEach(e => e.classList.remove('visible'));
-}
-
-function loginShowFieldError(errId) {
-  const err = document.getElementById(errId);
-  if (!err) return;
-  err.classList.add('visible');
-  err.previousElementSibling.classList.add('input-error');
-}
-
-function loginShowGlobalError(panelPrefix, msg) {
-  const el = document.getElementById(panelPrefix + '-global-error');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add('visible');
-}
-
-function loginShowGlobalSuccess(panelPrefix, msg) {
-  const el = document.getElementById(panelPrefix + '-global-success');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add('visible');
-}
-
-function loginSetLoading(btnId, loading) {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-  btn.disabled = loading;
-  btn.classList.toggle('btn-loading', loading);
-}
-
-function loginIsValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
-
-function loginEnterHandler(e) {
-  if (e.key !== 'Enter') return;
-  const active = document.querySelector('.login-form-panel.active');
-  if (!active) return;
-  const id = active.id;
-  if (id === 'login-panel-signin')   handleSignIn();
-  else if (id === 'login-panel-register') handleRegister();
-  else if (id === 'login-panel-reset')    handleReset();
-}
-
-async function handleSignIn() {
-  loginClearErrors();
-  const email    = document.getElementById('signin-email')?.value.trim();
-  const password = document.getElementById('signin-password')?.value;
-  let valid = true;
-
-  if (!loginIsValidEmail(email))  { loginShowFieldError('signin-email-err');    valid = false; }
-  if (!password)                  { loginShowFieldError('signin-password-err'); valid = false; }
-  if (!valid) return;
-
-  loginSetLoading('signin-btn', true);
-
-  let { data, error } = await sb.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    if (error.message.includes('Invalid login credentials')) {
-      loginShowGlobalError('signin', 'Invalid email or password. Please try again.');
-    } else {
-      loginShowGlobalError('signin', error.message);
+    function loginShowReset(show = true) {
+      document.querySelectorAll('.login-form-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector('.tab-row').style.display = show ? 'none' : 'grid';
+      if (show) {
+        document.getElementById('login-panel-reset').classList.add('active');
+      } else {
+        document.getElementById('login-panel-signin').classList.add('active');
+        document.querySelector('.tab-row').style.display = 'grid';
+      }
     }
-    loginSetLoading('signin-btn', false);
-    return;
-  }
 
-  const { data: profile } = await sb.from('profiles')
-    .select('username')
-    .eq('id', data.user.id)
-    .single();
+    function loginClearErrors() {
+      document.querySelectorAll('.login-field-error').forEach(e => e.classList.remove('visible'));
+      document.querySelectorAll('.login-field input').forEach(i => i.classList.remove('input-error'));
+      document.querySelectorAll('.login-global-error, .login-global-success').forEach(e => e.classList.remove('visible'));
+    }
 
-  currentUser   = profile?.username || email.split('@')[0];
-  currentUserId = data.user.id;
-  await initUserStatsRow();
+    function loginShowFieldError(errId) {
+      const err = document.getElementById(errId);
+      if (!err) return;
+      err.classList.add('visible');
+      err.previousElementSibling.classList.add('input-error');
+    }
 
-  document.removeEventListener('keydown', loginEnterHandler);
-  showDifficultySelection();
-}
+    function loginShowGlobalError(panelPrefix, msg) {
+      const el = document.getElementById(panelPrefix + '-global-error');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
 
-async function handleRegister() {
-  loginClearErrors();
-  const email    = document.getElementById('reg-email')?.value.trim();
-  const password = document.getElementById('reg-password')?.value;
-  const confirm  = document.getElementById('reg-confirm')?.value;
-  let valid = true;
+    function loginShowGlobalSuccess(panelPrefix, msg) {
+      const el = document.getElementById(panelPrefix + '-global-success');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
 
-  if (!loginIsValidEmail(email))   { loginShowFieldError('reg-email-err');    valid = false; }
-  if (password.length < 6)         { loginShowFieldError('reg-password-err'); valid = false; }
-  if (password !== confirm)        { loginShowFieldError('reg-confirm-err');  valid = false; }
-  if (!valid) return;
+    function loginSetLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.disabled = loading;
+      btn.classList.toggle('btn-loading', loading);
+    }
 
-  loginSetLoading('register-btn', true);
+    function loginIsValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 
-  const { data, error } = await sb.auth.signUp({ email, password });
+    function loginEnterHandler(e) {
+      if (e.key !== 'Enter') return;
+      const active = document.querySelector('.login-form-panel.active');
+      if (!active) return;
+      const id = active.id;
+      if (id === 'login-panel-signin')   handleSignIn();
+      else if (id === 'login-panel-register') handleRegister();
+      else if (id === 'login-panel-reset')    handleReset();
+    }
 
-  if (error) {
-    loginShowGlobalError('register', error.message);
-    loginSetLoading('register-btn', false);
-    return;
-  }
+    async function handleSignIn() {
+      loginClearErrors();
+      const email    = document.getElementById('signin-email')?.value.trim();
+      const password = document.getElementById('signin-password')?.value;
+      let valid = true;
 
-  if (data.user) {
-    const usernameFromEmail = email.split('@')[0];
-    await sb.from('profiles').insert({ id: data.user.id, username: usernameFromEmail });
-  }
+      if (!loginIsValidEmail(email))  { loginShowFieldError('signin-email-err');    valid = false; }
+      if (!password)                  { loginShowFieldError('signin-password-err'); valid = false; }
+      if (!valid) return;
 
-  loginSetLoading('register-btn', false);
-  loginShowGlobalSuccess('register', 'Account created! Check your email to confirm, then sign in.');
-}
+      loginSetLoading('signin-btn', true);
 
-async function handleReset() {
-  loginClearErrors();
-  const email = document.getElementById('reset-email')?.value.trim();
+      let { data, error } = await sb.auth.signInWithPassword({ email, password });
 
-  if (!loginIsValidEmail(email)) { loginShowFieldError('reset-email-err'); return; }
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          loginShowGlobalError('signin', 'Invalid email or password. Please try again.');
+        } else {
+          loginShowGlobalError('signin', error.message);
+        }
+        loginSetLoading('signin-btn', false);
+        return;
+      }
 
-  loginSetLoading('reset-btn', true);
+      const { data: profile } = await sb.from('profiles')
+        .select('username')
+        .eq('id', data.user.id)
+        .single();
 
-  const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin
-  });
+      currentUser   = profile?.username || email.split('@')[0];
+      currentUserId = data.user.id;
+      await initUserStatsRow();
 
-  loginSetLoading('reset-btn', false);
+      document.removeEventListener('keydown', loginEnterHandler);
+      showDifficultySelection();
+    }
 
-  if (error) {
-    loginShowGlobalError('reset', error.message);
-  } else {
-    loginShowGlobalSuccess('reset', 'Reset link sent! Check your inbox.');
-  }
-}
+    async function handleRegister() {
+      loginClearErrors();
+      const email    = document.getElementById('reg-email')?.value.trim();
+      const password = document.getElementById('reg-password')?.value;
+      const confirm  = document.getElementById('reg-confirm')?.value;
+      let valid = true;
+
+      if (!loginIsValidEmail(email))   { loginShowFieldError('reg-email-err');    valid = false; }
+      if (password.length < 6)         { loginShowFieldError('reg-password-err'); valid = false; }
+      if (password !== confirm)        { loginShowFieldError('reg-confirm-err');  valid = false; }
+      if (!valid) return;
+
+      loginSetLoading('register-btn', true);
+
+      const { data, error } = await sb.auth.signUp({ email, password });
+
+      if (error) {
+        loginShowGlobalError('register', error.message);
+        loginSetLoading('register-btn', false);
+        return;
+      }
+
+      if (data.user) {
+        const usernameFromEmail = email.split('@')[0];
+        await sb.from('profiles').insert({ id: data.user.id, username: usernameFromEmail });
+      }
+
+      loginSetLoading('register-btn', false);
+      loginShowGlobalSuccess('register', 'Account created! Check your email to confirm, then sign in.');
+    }
+
+    async function handleReset() {
+      loginClearErrors();
+      const email = document.getElementById('reset-email')?.value.trim();
+
+      if (!loginIsValidEmail(email)) { loginShowFieldError('reset-email-err'); return; }
+
+      loginSetLoading('reset-btn', true);
+
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin
+      });
+
+      loginSetLoading('reset-btn', false);
+
+      if (error) {
+        loginShowGlobalError('reset', error.message);
+      } else {
+        loginShowGlobalSuccess('reset', 'Reset link sent! Check your inbox.');
+      }
+    }
 
     function continueAsGuest() {
       currentUser = null;
@@ -2634,7 +2501,7 @@ async function handleReset() {
         };
         showLoginScreen();
     }
-    }
+}
 
     // ═══════════════════════════════════════════════════════════════════════
     // INITIALIZATION
@@ -2668,19 +2535,6 @@ async function handleReset() {
     }
 
     await initializeUserSystem();
-    if (currentUser) {
-        showDifficultySelection();
-    } else {
-        showLoginScreen();
-    }
-    });
-
-    document.addEventListener('DOMContentLoaded', async function() {
-    const savedTheme = localStorage.getItem('phylosaur-theme');
-    if (savedTheme === 'light') toggleTheme();
-    
-    await initializeUserSystem();
-    
     if (currentUser) {
         showDifficultySelection();
     } else {
@@ -2750,12 +2604,10 @@ async function handleReset() {
     const el = document.getElementById('update-global-success');
     el.textContent = 'Password updated! Redirecting to your dashboard…';
     el.classList.add('visible');
-
-    // Clean the URL so the token doesn't linger
     window.history.replaceState({}, document.title, window.location.pathname);
 
     setTimeout(() => showDifficultySelection(), 1500);
-    }
+}
 
     // ═══════════════════════════════════════════════════════════════════════
     // DIFFICULTY SELECTION SCREEN
@@ -2763,8 +2615,6 @@ async function handleReset() {
     async function showDifficultySelection() {
         setHeaderControls('difficulty');
         const appContent = document.getElementById('app-content');
-        
-        // Get today's completion status for each difficulty
         const completionStatus = await getDailyCompletionStatus();
         
         appContent.innerHTML = `            
@@ -2803,257 +2653,160 @@ async function handleReset() {
         startCountdown();
         }
 
-function showPracticeMode() {
-    setHeaderControls('practice');
-  const appContent = document.getElementById('app-content');
-  
-  appContent.innerHTML = `
-    <div class="game-card" style="text-align:center;">
-      <h2 style="color:#d4b87e; margin-bottom:12px; font-size:1.8em;">Practice Mode</h2>
-      <p style="color:#a68a5a; margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
-        Train your phylogenetic skills — Select classification level
-      </p>
+        function showPracticeMode() {
+            setHeaderControls('practice-menu');
+          const appContent = document.getElementById('app-content');
+          
+          appContent.innerHTML = `
+            <div class="game-card" style="text-align:center;">
+              <h2 style="color:#d4b87e; margin-bottom:12px; font-size:1.8em;">Practice Mode</h2>
+              <p style="color:#a68a5a; margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
+                Train your phylogenetic skills — Select classification level
+              </p>
 
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; margin:30px 0;">
-        ${generatePracticeDifficultyButton('muito_facil', 'LEVEL I', 'I')}
-        ${generatePracticeDifficultyButton('facil', 'LEVEL II', 'II')}
-        ${generatePracticeDifficultyButton('normal', 'LEVEL III', 'III')}
-        ${generatePracticeDifficultyButton('dificil', 'LEVEL IV', 'IV')}
-        ${generatePracticeDifficultyButton('muito_dificil', 'LEVEL V', 'V')}
-      </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; margin:30px 0;">
+                ${generatePracticeDifficultyButton('muito_facil', 'LEVEL I', 'I')}
+                ${generatePracticeDifficultyButton('facil', 'LEVEL II', 'II')}
+                ${generatePracticeDifficultyButton('normal', 'LEVEL III', 'III')}
+                ${generatePracticeDifficultyButton('dificil', 'LEVEL IV', 'IV')}
+                ${generatePracticeDifficultyButton('muito_dificil', 'LEVEL V', 'V')}
+              </div>
 
-      <div class="difficulty-info-box" style="max-width:500px; margin:30px auto 0;">
-        <div class="difficulty-info-text">
-          ◆ Practice mode does not affect your statistics or streak<br>
-          ◆ No daily limits, play as many times as you want<br>
-          ◆ Random specimen selected from chosen difficulty level
-        </div>
-      </div>
-    </div>
-  `;
-}
+              <div class="difficulty-info-box" style="max-width:500px; margin:30px auto 0;">
+                <div class="difficulty-info-text">
+                  ◆ Practice mode does not affect your statistics or streak<br>
+                  ◆ No daily limits, play as many times as you want<br>
+                  ◆ Random specimen selected from chosen difficulty level
+                </div>
+              </div>
+            </div>
+          `;
+        }
 
-function generatePracticeDifficultyButton(difficulty, name, level) {
-  const tierCount = {'muito_facil': 1, 'facil': 2, 'normal': 3, 'dificil': 4, 'muito_dificil': 5}[difficulty];
-  let tiers = '';
-  for (let i = 1; i <= 5; i++) {
-    tiers += `<span class="tier-indicator ${i <= tierCount ? 'filled' : ''}"></span>`;
-  }
-  
-  return `
-    <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]}" 
-            onclick="startPracticeChallenge('${difficulty}')" 
-            style="padding:30px; font-size:1.2em;">
-      <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
-        ${name}
-      </div>
-      <div style="margin:8px 0;">
-        ${tiers}
-      </div>
-    </button>
-  `;
-}
+        function generatePracticeDifficultyButton(difficulty, name, level) {
+          const tierCount = {'muito_facil': 1, 'facil': 2, 'normal': 3, 'dificil': 4, 'muito_dificil': 5}[difficulty];
+          let tiers = '';
+          for (let i = 1; i <= 5; i++) {
+            tiers += `<span class="tier-indicator ${i <= tierCount ? 'filled' : ''}"></span>`;
+          }
+          
+          return `
+            <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]}" 
+                    onclick="startPracticeChallenge('${difficulty}')" 
+                    style="padding:30px; font-size:1.2em;">
+              <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
+                ${name}
+              </div>
+              <div style="margin:8px 0;">
+                ${tiers}
+              </div>
+            </button>
+          `;
+        }
 
-function initializePracticeSearch() {
-  const searchInput = document.getElementById('practice-search');
-  const suggestionsDiv = document.getElementById('practice-suggestions');
-  
-  if (!searchInput || !suggestionsDiv) return;
+        async function startPracticeChallenge(difficulty) {
+            setHeaderControls('practice');
+          selectedDifficulty = difficulty;
+          
+          const appContent = document.getElementById('app-content');
+          
+          appContent.innerHTML = `
 
-  searchInput.addEventListener('input', async function() {
-    const query = this.value.toLowerCase().trim();
-    
-    if (query.length < 2) {
-      suggestionsDiv.innerHTML = '';
-      return;
-    }
+            <div style="text-align:center; padding:15px; background:rgba(139,115,85,0.2); border-radius:8px; margin-bottom:20px; border:2px solid #8b7355;">
+              <div style="color:#c9a96e; font-weight:600; letter-spacing:2px; font-size:1.1em;">
+                PRACTICE MODE
+              </div>
+            </div>
 
-    // Carregar database se necessário
-    if (!fullDatabase || fullDatabase.length === 0) {
-      try {
-        const res = await fetch('dinozooa_db.json');
-        fullDatabase = await res.json();
-      } catch (err) {
-        console.error('Failed to load database:', err);
-        return;
-      }
-    }
+            <div class="game-card">
+              <div class="stats">
+                <div class="stat">
+                  <div class="stat-value" id="attempts">0</div>
+                  <div class="stat-label">Attempts</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="hints">3</div>
+                  <div class="stat-label">Hints</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="best-match">0</div>
+                  <div class="stat-label">Deepest Node</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="clades-revealed">0</div>
+                  <div class="stat-label">Clades Revealed</div>
+                </div>
+              </div>
 
-    // Filtrar por dificuldade selecionada
-    const difficulty = document.getElementById('practice-difficulty').value;
-    const filtered = fullDatabase.filter(d => 
-      d.dificuldade === difficulty && 
-      d.nome.toLowerCase().includes(query)
-    ).slice(0, 10);
+              <div class="input-section">
+                <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
+                <button class="btn-guess" onclick="makeGuess()">Submit</button>
+                <button class="btn-hint" onclick="useHint()">Hint</button>
+                <div id="suggestions"></div>
+              </div>
 
-    if (filtered.length === 0) {
-      suggestionsDiv.innerHTML = '<div style="padding:10px; color:#8b7355; font-style:italic;">No matches found</div>';
-      return;
-    }
+              <div id="tree-container">
+                <div id="tree-scroll-wrapper">
+                  <div class="empty-state">Loading practice challenge...</div>
+                </div>
+              </div>
 
-    suggestionsDiv.innerHTML = filtered.map(dino => 
-      `<div class="suggestion-item" onclick="selectPracticeDino('${dino.nome}')" style="cursor:pointer; padding:12px; border-bottom:1px solid #3d2f1f;">
-        ${dino.nome}
-      </div>`
-    ).join('');
-  });
+              <div id="clade-info"></div>
+              <div id="guess-history"></div>
+            </div>
+          `;
+          loadPracticeDatabase(difficulty);
+        }
 
-  // Limpar sugestões ao mudar dificuldade
-  document.getElementById('practice-difficulty').addEventListener('change', () => {
-    searchInput.value = '';
-    suggestionsDiv.innerHTML = '';
-  });
-}
+        async function loadPracticeDatabase(difficulty) {
+          isPracticeMode = true;
+          
+          const wrapper = document.getElementById('tree-scroll-wrapper');
+          if (wrapper) wrapper.innerHTML = '<div class="loading">Loading practice challenge...</div>';
+          
+          try {
+            const res = await fetch('phylosaur_db.json');
+            if (!res.ok) throw new Error('Failed to load database');
+            
+            fullDatabase = await res.json();
+            database = fullDatabase.filter(d => d.dificuldade === difficulty);
+            
+            console.log(`Loaded ${database.length} specimens for practice mode (${difficulty})`);
+            
+            if (database.length === 0) {
+              throw new Error(`No specimens found for difficulty: ${difficulty}`);
+            }
+            
+            const randomIndex = Math.floor(Math.random() * database.length);
+            targetDino = database[randomIndex];
+            guesses = [];
+            hintsRemaining = 3;
+            gameWon = false;
+            guessedNames = new Set();
+            revealedClades = new Set();
+            hintHistory = [];
+            guessesSinceLastHint = 0;
+            
+            console.log('Practice specimen:', targetDino.nome);
+            
+            document.getElementById('attempts').textContent = '0';
+            document.getElementById('hints').textContent = '3';
+            document.getElementById('best-match').textContent = '0';
+            document.getElementById('clades-revealed').textContent = '0';
+            
+            if (wrapper) {
+              wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+            }
 
-function selectPracticeDino(name) {
-  document.getElementById('practice-search').value = name;
-  document.getElementById('practice-suggestions').innerHTML = '';
-}
-
-async function startPracticeGame() {
-  const difficulty = document.getElementById('practice-difficulty').value;
-  const searchQuery = document.getElementById('practice-search').value.trim();
-
-  // Carregar database
-  try {
-    const res = await fetch('dinozooa_db.json');
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-  } catch (err) {
-    await customAlert('Error', 'Failed to load specimen database.');
-    return;
-  }
-
-  // Escolher dinossauro
-  let selectedDino;
-  
-  if (searchQuery) {
-    // Buscar dinossauro específico
-    selectedDino = database.find(d => d.nome.toLowerCase() === searchQuery.toLowerCase());
-    
-    if (!selectedDino) {
-      await customAlert('Not Found', `"${searchQuery}" not found in ${difficulty} difficulty.`);
-      return;
-    }
-  } else {
-    // Aleatório
-    const randomIndex = Math.floor(Math.random() * database.length);
-    selectedDino = database[randomIndex];
-  }
-
-  // Iniciar jogo de treino
-  startPracticeChallenge(difficulty, selectedDino);
-}
-
-async function startPracticeChallenge(difficulty) {
-    setHeaderControls('practice');
-  selectedDifficulty = difficulty;
-  
-  const appContent = document.getElementById('app-content');
-  
-  // MESMA INTERFACE do jogo normal, mas com banner indicando "PRACTICE"
-  appContent.innerHTML = `
-
-    <!-- Banner de PRACTICE MODE -->
-    <div style="text-align:center; padding:15px; background:rgba(139,115,85,0.2); border-radius:8px; margin-bottom:20px; border:2px solid #8b7355;">
-      <div style="color:#c9a96e; font-weight:600; letter-spacing:2px; font-size:1.1em;">
-         PRACTICE MODE
-      </div>
-    </div>
-
-    <div class="game-card">
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-value" id="attempts">0</div>
-          <div class="stat-label">Attempts</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="hints">3</div>
-          <div class="stat-label">Hints</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="best-match">0</div>
-          <div class="stat-label">Deepest Node</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="clades-revealed">0</div>
-          <div class="stat-label">Clades Revealed</div>
-        </div>
-      </div>
-
-      <div class="input-section">
-        <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
-        <button class="btn-guess" onclick="makeGuess()">Submit</button>
-        <button class="btn-hint" onclick="useHint()">Hint</button>
-        <div id="suggestions"></div>
-      </div>
-
-      <div id="tree-container">
-        <div id="tree-scroll-wrapper">
-          <div class="empty-state">Loading practice challenge...</div>
-        </div>
-      </div>
-
-      <div id="clade-info"></div>
-      <div id="guess-history"></div>
-    </div>
-  `;
-  loadPracticeDatabase(difficulty);
-}
-
-async function loadPracticeDatabase(difficulty) {
-  isPracticeMode = true; // ← Marcar que está em modo treino
-  
-  const wrapper = document.getElementById('tree-scroll-wrapper');
-  if (wrapper) wrapper.innerHTML = '<div class="loading">Loading practice challenge...</div>';
-  
-  try {
-    const res = await fetch('dinozooa_db.json');
-    if (!res.ok) throw new Error('Failed to load database');
-    
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-    
-    console.log(`Loaded ${database.length} specimens for practice mode (${difficulty})`);
-    
-    if (database.length === 0) {
-      throw new Error(`No specimens found for difficulty: ${difficulty}`);
-    }
-    
-    // Escolher aleatório (não baseado em seed diário)
-    const randomIndex = Math.floor(Math.random() * database.length);
-    targetDino = database[randomIndex];
-    
-    // Resetar estado do jogo
-    guesses = [];
-    hintsRemaining = 3;
-    gameWon = false;
-    guessedNames = new Set();
-    revealedClades = new Set();
-    hintHistory = [];
-    guessesSinceLastHint = 0;
-    
-    console.log('Practice specimen:', targetDino.nome);
-    
-    // Atualizar UI
-    document.getElementById('attempts').textContent = '0';
-    document.getElementById('hints').textContent = '3';
-    document.getElementById('best-match').textContent = '0';
-    document.getElementById('clades-revealed').textContent = '0';
-    
-    if (wrapper) {
-      wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
-    }
-
-    initializeAutocomplete();
-    
-  } catch (err) {
-    console.error('Database error:', err);
-    if (wrapper) {
-      wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
-    }
-  }
-}
+            initializeAutocomplete();
+            
+          } catch (err) {
+            console.error('Database error:', err);
+            if (wrapper) {
+              wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
+            }
+          }
+        }
 
         function getCurrentDateFormatted() {
             const today = new Date();
@@ -3084,517 +2837,498 @@ async function loadPracticeDatabase(difficulty) {
             update();
             }
 
-async function getDailyCompletionStatus() {
-  if (!currentUserId) return { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
-  
-  const today = getTodayString();
-  const { data } = await sb.from('daily_results')
-    .select('difficulty')
-    .eq('user_id', currentUserId)
-    .eq('played_date', today);
-  
-  const status = { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
-  if (data) data.forEach(row => { status[row.difficulty] = true; });
-  return status;
-}
-  
-
-function getTodayString() {
-  const today = new Date();
-  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-}
-
-async function saveGameProgress(difficulty) {
-  if (!currentUserId || isPracticeMode) return;
-  
-  const today = getTodayString();
-  
-  const { error } = await sb.from('daily_results').upsert({
-    user_id: currentUserId,
-    played_date: today,
-    difficulty: difficulty,
-    target_dino: targetDino.nome,
-    guess_count: guesses.length,
-    won: gameWon,
-    guesses: guesses.map(g => ({ nome: g.dino.nome, isHint: g.isHint || false })),
-    revealed_clades: Array.from(revealedClades),
-    hint_history: hintHistory
-  }, { onConflict: 'user_id,played_date,difficulty' });
-  
-  if (error) console.error('Error saving progress:', error);
-}
-
-async function loadGameProgress(difficulty) {
-  if (!currentUserId) return null;
-  
-  const today = getTodayString();
-  
-  const { data, error } = await sb.from('daily_results')
-    .select('*')
-    .eq('user_id', currentUserId)
-    .eq('played_date', today)
-    .eq('difficulty', difficulty)
-    .single();
-  
-  if (error || !data) return null;
-  
-  return {
-    guesses: data.guesses,
-    revealedClades: data.revealed_clades,
-    hintHistory: data.hint_history,
-    hintsRemaining: 3 - (data.hint_history?.length || 0),
-    guessedNames: data.guesses?.map(g => g.nome) || [],
-    targetDino: data.target_dino
-  };
-}
-
-async function clearGameProgress(difficulty) {
-  if (!currentUserId) return;
-  const today = getTodayString();
-  await sb.from('daily_results')
-    .delete()
-    .eq('user_id', currentUserId)
-    .eq('played_date', today)
-    .eq('difficulty', difficulty)
-    .eq('won', false); 
-}
-
-async function markDailyChallengeCompleted(difficulty) {
-  if (!currentUserId) return;
-  const today = getTodayString();
-  await sb.from('daily_results').upsert({
-    user_id: currentUserId,
-    played_date: today,
-    difficulty: difficulty,
-    target_dino: targetDino.nome,
-    guess_count: guesses.length,
-    won: gameWon,
-    guesses: guesses.map(g => ({ nome: g.dino.nome, isHint: g.isHint || false })),
-    revealed_clades: Array.from(revealedClades),
-    hint_history: hintHistory
-  }, { onConflict: 'user_id,played_date,difficulty' });
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// STREAK SYSTEM
-// ═══════════════════════════════════════════════════════════════════════
-
-async function getStreakData() {
-  if (!currentUserId) return { current: 0, best: 0, lastPlayed: null };
-
-  const { data } = await sb.from('statistics')
-    .select('current_streak, best_streak, last_played')
-    .eq('user_id', currentUserId)
-    .single();
-
-  if (!data) return { current: 0, best: 0, lastPlayed: null };
-  return { current: data.current_streak || 0, best: data.best_streak || 0, lastPlayed: data.last_played };
-}
-
-async function saveStreakData(streakData) {
-  if (!currentUserId) return;
-
-  await sb.from('statistics').upsert({
-    user_id: currentUserId,
-    current_streak: streakData.current,
-    best_streak: streakData.best,
-    last_played: streakData.lastPlayed
-  }, { onConflict: 'user_id' });
-}
-
-async function updateStreak() {
-  if (!currentUserId) return { current: 0, best: 0 };
-
-  const today = getTodayString();
-  const streakData = await getStreakData();
-
-  if (streakData.lastPlayed === today) return streakData;
-
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-
-  if (streakData.lastPlayed === yesterdayStr) {
-    streakData.current++;
-  } else if (!streakData.lastPlayed) {
-    streakData.current = 1;
-  } else {
-    streakData.current = 1;
-  }
-
-  if (streakData.current > streakData.best) streakData.best = streakData.current;
-  streakData.lastPlayed = today;
-
-  await saveStreakData(streakData);
-  return streakData;
-}
-
-function checkStreakMilestone(streak) {
-  const milestones = [3, 7, 14, 30, 50, 100];
-  
-  for (let milestone of milestones) {
-    if (streak === milestone) {
-      return milestone;
+    async function getDailyCompletionStatus() {
+      if (!currentUserId) return { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
+      
+      const today = getTodayString();
+      const { data } = await sb.from('daily_results')
+        .select('difficulty')
+        .eq('user_id', currentUserId)
+        .eq('played_date', today)
+        .eq('won', true);
+      
+      const status = { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
+      if (data) data.forEach(row => { status[row.difficulty] = true; });
+      return status;
     }
-  }
   
-  return null;
-}
 
-async function loadCompletedChallengeTree(difficulty, result) {
-  const wrapper = document.getElementById('tree-scroll-wrapper');
-  
-  try {
-    const res = await fetch('dinozooa_db.json');
-    if (!res.ok) throw new Error('Failed to load database');
-    
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-    
-    // Find the target dinosaur
-    const seed = getDailySeed(difficulty);
-    const hash = hashString(seed);
-    const index = hash % database.length;
-    
-    targetDino = database[index];
-    
-    // Verify it matches saved result
-    if (targetDino.nome !== result.targetDino) {
-      console.warn('Mismatch between saved and calculated target');
+    function getTodayString() {
+      const today = new Date();
+      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
-    
-    // MUDANÇA CRÍTICA: Verificar se temos dados salvos dos guesses
-    if (result.guesses && result.guesses.length > 0) {
-      // Reconstruir guesses a partir dos dados salvos
-      guesses = result.guesses.map(savedGuess => {
-        const dino = database.find(d => d.nome === savedGuess.nome);
-        if (!dino) {
-          console.warn(`Dinosaur ${savedGuess.nome} not found in database`);
-          return null;
+
+    async function saveGameProgress(difficulty) {
+      if (!currentUserId || isPracticeMode) return;
+      
+      const today = getTodayString();
+      
+      const { error } = await sb.from('daily_results').upsert({
+        user_id: currentUserId,
+        played_date: today,
+        difficulty: difficulty,
+        target_dino: targetDino.nome,
+        guess_count: guesses.length,
+        won: gameWon,
+        guesses: guesses.map(g => ({ nome: g.dino.nome, isHint: g.isHint || false })),
+        revealed_clades: Array.from(revealedClades),
+        hint_history: hintHistory
+      }, { onConflict: 'user_id,played_date,difficulty' });
+      
+      if (error) console.error('Error saving progress:', error);
+    }
+
+    async function loadGameProgress(difficulty) {
+      if (!currentUserId) return null;
+      
+      const today = getTodayString();
+      
+      const { data, error } = await sb.from('daily_results')
+        .select('*')
+        .eq('user_id', currentUserId)
+        .eq('played_date', today)
+        .eq('difficulty', difficulty)
+        .single();
+      
+      if (error || !data) return null;
+      
+      return {
+        guesses: data.guesses,
+        revealedClades: data.revealed_clades,
+        hintHistory: data.hint_history,
+        hintsRemaining: 3 - (data.hint_history?.length || 0),
+        guessedNames: data.guesses?.map(g => g.nome) || [],
+        targetDino: data.target_dino
+      };
+    }
+
+    async function clearGameProgress(difficulty) {
+      if (!currentUserId) return;
+      const today = getTodayString();
+      await sb.from('daily_results')
+        .delete()
+        .eq('user_id', currentUserId)
+        .eq('played_date', today)
+        .eq('difficulty', difficulty)
+        .eq('won', false); 
+    }
+
+    async function markDailyChallengeCompleted(difficulty) {
+      if (!currentUserId) return;
+      const today = getTodayString();
+      await sb.from('daily_results').upsert({
+        user_id: currentUserId,
+        played_date: today,
+        difficulty: difficulty,
+        target_dino: targetDino.nome,
+        guess_count: guesses.length,
+        won: gameWon,
+        guesses: guesses.map(g => ({ nome: g.dino.nome, isHint: g.isHint || false })),
+        revealed_clades: Array.from(revealedClades),
+        hint_history: hintHistory
+      }, { onConflict: 'user_id,played_date,difficulty' });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // STREAK SYSTEM
+    // ═══════════════════════════════════════════════════════════════════════
+
+    async function getStreakData() {
+      if (!currentUserId) return { current: 0, best: 0, lastPlayed: null };
+
+      const { data } = await sb.from('statistics')
+        .select('current_streak, best_streak, last_played')
+        .eq('user_id', currentUserId)
+        .single();
+
+      if (!data) return { current: 0, best: 0, lastPlayed: null };
+      return { current: data.current_streak || 0, best: data.best_streak || 0, lastPlayed: data.last_played };
+    }
+
+    async function saveStreakData(streakData) {
+      if (!currentUserId) return;
+
+      await sb.from('statistics').upsert({
+        user_id: currentUserId,
+        current_streak: streakData.current,
+        best_streak: streakData.best,
+        last_played: streakData.lastPlayed
+      }, { onConflict: 'user_id' });
+    }
+
+    async function updateStreak() {
+      if (!currentUserId) return { current: 0, best: 0 };
+
+      const today = getTodayString();
+      const streakData = await getStreakData();
+
+      if (streakData.lastPlayed === today) return streakData;
+
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+      if (streakData.lastPlayed === yesterdayStr) {
+        streakData.current++;
+      } else if (!streakData.lastPlayed) {
+        streakData.current = 1;
+      } else {
+        streakData.current = 1;
+      }
+
+      if (streakData.current > streakData.best) streakData.best = streakData.current;
+      streakData.lastPlayed = today;
+
+      await saveStreakData(streakData);
+      return streakData;
+    }
+
+    function checkStreakMilestone(streak) {
+      const milestones = [3, 7, 14, 30, 50, 100];
+      
+      for (let milestone of milestones) {
+        if (streak === milestone) {
+          return milestone;
+        }
+      }
+      
+      return null;
+    }
+
+    async function loadCompletedChallengeTree(difficulty, result) {
+      const wrapper = document.getElementById('tree-scroll-wrapper');
+      
+      try {
+        const res = await fetch('phylosaur_db.json');
+        if (!res.ok) throw new Error('Failed to load database');
+        
+        fullDatabase = await res.json();
+        database = fullDatabase.filter(d => d.dificuldade === difficulty);
+        
+        const seed = getDailySeed(difficulty);
+        const hash = hashString(seed);
+        const index = hash % database.length;
+        
+        targetDino = database[index];
+        
+        if (targetDino.nome !== result.targetDino) {
+          console.warn('Mismatch between saved and calculated target');
         }
         
-        const proximity = calculateProximity(dino, targetDino);
-        return {
-          dino: dino,
-          proximity: proximity,
-          isHint: savedGuess.isHint || false
-        };
-      }).filter(g => g !== null);
-      
-      // Restaurar clados revelados
-      revealedClades = new Set(result.revealedClades || []);
-      
-      // Restaurar histórico de hints
-      hintHistory = result.hintHistory || [];
-      
-    } else {
-      // Fallback: desafios antigos sem dados salvos
-      wrapper.innerHTML = `
-        <div class="empty-state" style="padding:80px 40px;">
-          <h3 style="color:#c9a96e; margin-bottom:20px; font-size:1.4em;">Challenge Completed</h3>
-          <p style="color:#a68a5a; line-height:1.8; margin-bottom:15px;">
-            This challenge was completed before the detailed save system was implemented.
-          </p>
-          <p style="color:#8b7355; font-size:0.95em; line-height:1.8;">
-            The phylogenetic tree from this session is not available for review.
-            Complete the challenge again to see the full tree visualization.
-          </p>
-          <button class="btn-new-game" onclick="showDifficultySelection()" 
-                  style="margin-top:30px; width:auto; padding:14px 28px;">
-            Return to Level Selection
-          </button>
-        </div>
-      `;
-      return;
-    }
-    
-    gameWon = true;
-    hintsRemaining = 0;
-    guessedNames = new Set(guesses.map(g => g.dino.nome.toLowerCase()));
-    
-    renderEnhancedTree();
-    updateCladeInfo();
-    updateGuessHistory();
-    
-  } catch (err) {
-    console.error('Error loading completed challenge:', err);
-    if (wrapper) {
-      wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading tree</strong><br>${err.message}</div>`;
-    }
-  }
-}
-
-function showCompletedChallenge(difficulty, result) {
-    setHeaderControls('game');
-  selectedDifficulty = difficulty;
-  const appContent = document.getElementById('app-content');
-  
-  appContent.innerHTML = `
-
-
-    <div class="game-card">
-      <div class="challenge-completed-banner">
-        <h2>Challenge Completed</h2>
-        <div class="dino-name">${result.targetDino}</div>
-        <div class="attempts">Classified in ${result.guessCount} attempts</div>
-      </div>
-      </div>
-
-      <div id="tree-container">
-        <div id="tree-scroll-wrapper">
-          <div class="loading">Loading phylogenetic tree...</div>
-        </div>
-      </div>
-
-      <div id="clade-info"></div>
-    </div>
-  `;
-  loadCompletedChallengeTree(difficulty, result);
-}
-
-function generateDifficultyButton(difficulty, name, level, description, completed) {
-  const tierCount = {'muito_facil': 1, 'facil': 2, 'normal': 3, 'dificil': 4, 'muito_dificil': 5}[difficulty];
-  let tiers = '';
-  for (let i = 1; i <= 5; i++) {
-    tiers += `<span class="tier-indicator ${i <= tierCount ? 'filled' : ''}"></span>`;
-  }
-  
-  const statusIndicator = completed 
-    ? '<div style="position:absolute; top:10px; right:10px; width:24px; height:24px; background:#5a9c6b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:bold;">✓</div>'
-    : '';
-  
-  const borderClass = completed ? 'difficulty-completed' : '';
-  
-  return `
-    <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]} ${borderClass}" 
-            onclick="startDailyChallenge('${difficulty}')" 
-            style="padding:30px; font-size:1.2em; position:relative;">
-      ${statusIndicator}
-      <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
-         ${name}
-      </div>
-      <div style="margin:8px 0;">
-        ${tiers}
-      </div>
-      ${description ? `<div style="font-size:0.75em; color:#8b7355; font-style:italic;">${description}</div>` : ''}
-    </button>
-  `;
-}
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // START GAME
-    // ═══════════════════════════════════════════════════════════════════════
-async function startDailyChallenge(difficulty) {
-    setHeaderControls('game');
-  isPracticeMode = false;
-
-  // Check Supabase for today's completed result
-  const today = getTodayString();
-  let existingResult = null;
-
-  if (currentUserId) {
-    const { data } = await sb.from('daily_results')
-      .select('*')
-      .eq('user_id', currentUserId)
-      .eq('played_date', today)
-      .eq('difficulty', difficulty)
-      .single();
-    existingResult = data;
-  }
-
-  if (existingResult && existingResult.won) {
-    showCompletedChallenge(difficulty, {
-      targetDino: existingResult.target_dino,
-      guessCount: existingResult.guess_count,
-      guesses: existingResult.guesses,
-      revealedClades: existingResult.revealed_clades,
-      hintHistory: existingResult.hint_history
-    });
-    return;
-  }
-  
-  selectedDifficulty = difficulty;
-  const appContent = document.getElementById('app-content');
-  
-  // MONTAR A INTERFACE PRIMEIRO
-  appContent.innerHTML = `
-
-
-    <div class="game-card">
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-value" id="attempts">0</div>
-          <div class="stat-label">Attempts</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="hints">3</div>
-          <div class="stat-label">Hints</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="best-match">0</div>
-          <div class="stat-label">Deepest Node</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="clades-revealed">0</div>
-          <div class="stat-label">Clades Revealed</div>
-        </div>
-      </div>
-
-      <div class="input-section">
-        <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
-        <button class="btn-guess" onclick="makeGuess()">Submit</button>
-        <button class="btn-hint" onclick="useHint()">Hint</button>
-        <div id="suggestions"></div>
-      </div>
-
-      <div id="tree-container">
-        <div id="tree-scroll-wrapper">
-          <div class="empty-state">Loading classification challenge...</div>
-        </div>
-      </div>
-
-      <div id="clade-info"></div>
-      <div id="guess-history"></div>
-    </div>
-  `;
-
-const savedProgress = loadGameProgress(difficulty);
-let continueGame = true;
-
-if (savedProgress && savedProgress.guesses && savedProgress.guesses.length > 0) {
-  continueGame = await showModal({
-    title: 'Progress Found',
-    message: 'You have unfinished research for this classification challenge.',
-    info: [
-      { label: 'Attempts made', value: savedProgress.guesses.length },
-      { label: 'Hints remaining', value: savedProgress.hintsRemaining },
-      { label: 'Clades revealed', value: savedProgress.revealedClades?.length || 0 }
-    ],
-    buttons: [
-      { text: 'Continue Research', value: 'continue', primary: true },
-      { text: 'Start Fresh', value: 'fresh', primary: false }
-    ]
-  });
-  
-  if (continueGame === 'fresh') { // ← MUDANÇA AQUI
-    // Jogador escolheu começar do zero
-    clearGameProgress(difficulty);
-    loadDailyDatabase(difficulty, true);
-    return;
-  }
-}
-
-// Se chegou aqui, continua normalmente
-loadDailyDatabase(difficulty, false);
-}
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // LOAD DATABASE
-async function loadDailyDatabase(difficulty, forceClean = false) {
-  const wrapper = document.getElementById('tree-scroll-wrapper');
-  if (wrapper) wrapper.innerHTML = '<div class="loading">Loading classification database...</div>';
-  
-  try {
-    const res = await fetch('dinozooa_db.json');
-    if (!res.ok) throw new Error('Failed to load database');
-    
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-    
-    console.log(`Loaded ${database.length} specimens for difficulty: ${difficulty}`);
-    
-    if (database.length === 0) {
-      throw new Error(`No specimens found for difficulty: ${difficulty}`);
-    }
-    
-    const seed = getDailySeed(difficulty);
-    const hash = hashString(seed);
-    const index = hash % database.length;
-    
-    targetDino = database[index];
-    guesses = [];
-    hintsRemaining = 3;
-    gameWon = false;
-    guessedNames = new Set();
-    revealedClades = new Set();
-    hintHistory = [];
-    guessesSinceLastHint = 0;
-    
-    console.log('Daily specimen:', targetDino.nome, 'Seed:', seed);
-    
-    const savedProgress = forceClean ? null : await loadGameProgress(difficulty);
-
-    if (savedProgress && savedProgress.targetDino === targetDino.nome) {
-      console.log('📂 Loading saved progress...');
-      
-      // Reconstruir guesses
-      if (savedProgress.guesses && savedProgress.guesses.length > 0) {
-        guesses = savedProgress.guesses.map(savedGuess => {
-          const dino = database.find(d => d.nome === savedGuess.nome);
-          if (!dino) return null;
+        if (result.guesses && result.guesses.length > 0) {
+          guesses = result.guesses.map(savedGuess => {
+            const dino = database.find(d => d.nome === savedGuess.nome);
+            if (!dino) {
+              console.warn(`Dinosaur ${savedGuess.nome} not found in database`);
+              return null;
+            }
+            
+            const proximity = calculateProximity(dino, targetDino);
+            return {
+              dino: dino,
+              proximity: proximity,
+              isHint: savedGuess.isHint || false
+            };
+          }).filter(g => g !== null);
           
-          const proximity = calculateProximity(dino, targetDino);
+          revealedClades = new Set(result.revealedClades || []);
+          hintHistory = result.hintHistory || [];
           
-          if (proximity.lastCommonClade) {
-            revealedClades.add(proximity.lastCommonClade);
-          }
-          
-          return {
-            dino: dino,
-            proximity: proximity,
-            isHint: savedGuess.isHint || false
-          };
-        }).filter(g => g !== null);
-      }
-      
-      // Restaurar estado
-      if (savedProgress.revealedClades) {
-        savedProgress.revealedClades.forEach(c => revealedClades.add(c));
-      }
-      hintHistory = savedProgress.hintHistory || [];
-      hintsRemaining = savedProgress.hintsRemaining !== undefined ? savedProgress.hintsRemaining : 3;
-      guessedNames = new Set(savedProgress.guessedNames || []);
-      
-      console.log(`✅ Restored ${guesses.length} guesses, ${hintsRemaining} hints remaining`);
-      
-      // Atualizar UI DEPOIS de processar tudo
-      setTimeout(() => {
-        const bestMatch = guesses.length > 0 
-          ? Math.max(...guesses.map(g => g.proximity.matches)) 
-          : 0;
+        } else {
+          wrapper.innerHTML = `
+            <div class="empty-state" style="padding:80px 40px;">
+              <h3 style="color:#c9a96e; margin-bottom:20px; font-size:1.4em;">Challenge Completed</h3>
+              <p style="color:#a68a5a; line-height:1.8; margin-bottom:15px;">
+                This challenge was completed before the detailed save system was implemented.
+              </p>
+              <p style="color:#8b7355; font-size:0.95em; line-height:1.8;">
+                The phylogenetic tree from this session is not available for review.
+                Complete the challenge again to see the full tree visualization.
+              </p>
+              <button class="btn-new-game" onclick="showDifficultySelection()" 
+                      style="margin-top:30px; width:auto; padding:14px 28px;">
+                Return to Level Selection
+              </button>
+            </div>
+          `;
+          return;
+        }
         
-        document.getElementById('attempts').textContent = guesses.length;
-        document.getElementById('hints').textContent = hintsRemaining;
-        document.getElementById('best-match').textContent = bestMatch;
-        document.getElementById('clades-revealed').textContent = revealedClades.size;
+        gameWon = true;
+        hintsRemaining = 0;
+        guessedNames = new Set(guesses.map(g => g.dino.nome.toLowerCase()));
         
         renderEnhancedTree();
         updateCladeInfo();
         updateGuessHistory();
-      }, 100);
-      
-    } else {
-      // Novo jogo (ou Start Fresh)
-      document.getElementById('attempts').textContent = '0';
-      document.getElementById('hints').textContent = '3';
-      document.getElementById('best-match').textContent = '0';
-      document.getElementById('clades-revealed').textContent = '0';
-      
-      if (wrapper) {
-        wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+        
+      } catch (err) {
+        console.error('Error loading completed challenge:', err);
+        if (wrapper) {
+          wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading tree</strong><br>${err.message}</div>`;
+        }
       }
     }
 
-    // Inicializar autocomplete sempre
-    initializeAutocomplete();
-    
-  } catch (err) {
-    console.error('Database error:', err);
-    if (wrapper) {
-      wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
+    function showCompletedChallenge(difficulty, result) {
+        setHeaderControls('game');
+      selectedDifficulty = difficulty;
+      const appContent = document.getElementById('app-content');
+      
+      appContent.innerHTML = `
+
+
+        <div class="game-card">
+          <div class="challenge-completed-banner">
+            <h2>Challenge Completed</h2>
+            <div class="dino-name">${result.targetDino}</div>
+            <div class="attempts">Classified in ${result.guessCount} attempts</div>
+          </div>
+          </div>
+
+          <div id="tree-container">
+            <div id="tree-scroll-wrapper">
+              <div class="loading">Loading phylogenetic tree...</div>
+            </div>
+          </div>
+
+          <div id="clade-info"></div>
+        </div>
+      `;
+      loadCompletedChallengeTree(difficulty, result);
     }
+
+    function generateDifficultyButton(difficulty, name, level, description, completed) {
+      const tierCount = {'muito_facil': 1, 'facil': 2, 'normal': 3, 'dificil': 4, 'muito_dificil': 5}[difficulty];
+      let tiers = '';
+      for (let i = 1; i <= 5; i++) {
+        tiers += `<span class="tier-indicator ${i <= tierCount ? 'filled' : ''}"></span>`;
+      }
+      
+      const statusIndicator = completed 
+        ? '<div style="position:absolute; top:10px; right:10px; width:24px; height:24px; background:#5a9c6b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:bold;">✓</div>'
+        : '';
+      
+      const borderClass = completed ? 'difficulty-completed' : '';
+      
+      return `
+        <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]} ${borderClass}" 
+                onclick="startDailyChallenge('${difficulty}')" 
+                style="padding:30px; font-size:1.2em; position:relative;">
+          ${statusIndicator}
+          <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
+            ${name}
+          </div>
+          <div style="margin:8px 0;">
+            ${tiers}
+          </div>
+          ${description ? `<div style="font-size:0.75em; color:#8b7355; font-style:italic;">${description}</div>` : ''}
+        </button>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // START GAME
+    // ═══════════════════════════════════════════════════════════════════════
+    async function startDailyChallenge(difficulty) {
+      setHeaderControls('game');
+      isPracticeMode = false;
+      const today = getTodayString();
+      let existingResult = null;
+
+      if (currentUserId) {
+        const { data } = await sb.from('daily_results')
+          .select('*')
+          .eq('user_id', currentUserId)
+          .eq('played_date', today)
+          .eq('difficulty', difficulty)
+          .single();
+        existingResult = data;
+      }
+
+      if (existingResult && existingResult.won) {
+        showCompletedChallenge(difficulty, {
+          targetDino: existingResult.target_dino,
+          guessCount: existingResult.guess_count,
+          guesses: existingResult.guesses,
+          revealedClades: existingResult.revealed_clades,
+          hintHistory: existingResult.hint_history
+        });
+        return;
+      }
+      
+      selectedDifficulty = difficulty;
+      const appContent = document.getElementById('app-content');
+      
+      appContent.innerHTML = `
+        <div class="game-card">
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-value" id="attempts">0</div>
+              <div class="stat-label">Attempts</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="hints">3</div>
+              <div class="stat-label">Hints</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="best-match">0</div>
+              <div class="stat-label">Deepest Node</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="clades-revealed">0</div>
+              <div class="stat-label">Clades Revealed</div>
+            </div>
+          </div>
+
+          <div class="input-section">
+            <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
+            <button class="btn-guess" onclick="makeGuess()">Submit</button>
+            <button class="btn-hint" onclick="useHint()">Hint</button>
+            <div id="suggestions"></div>
+          </div>
+
+          <div id="tree-container">
+            <div id="tree-scroll-wrapper">
+              <div class="empty-state">Loading classification challenge...</div>
+            </div>
+          </div>
+
+          <div id="clade-info"></div>
+          <div id="guess-history"></div>
+        </div>
+      `;
+
+    const savedProgress = loadGameProgress(difficulty);
+    let continueGame = true;
+
+    if (savedProgress && savedProgress.guesses && savedProgress.guesses.length > 0) {
+      continueGame = await showModal({
+        title: 'Progress Found',
+        message: 'You have unfinished research for this classification challenge.',
+        info: [
+          { label: 'Attempts made', value: savedProgress.guesses.length },
+          { label: 'Hints remaining', value: savedProgress.hintsRemaining },
+          { label: 'Clades revealed', value: savedProgress.revealedClades?.length || 0 }
+        ],
+        buttons: [
+          { text: 'Continue Research', value: 'continue', primary: true },
+          { text: 'Start Fresh', value: 'fresh', primary: false }
+        ]
+      });
+      
+      if (continueGame === 'fresh') {
+        clearGameProgress(difficulty);
+        loadDailyDatabase(difficulty, true);
+        return;
+      }
+    }
+    loadDailyDatabase(difficulty, false);
   }
-}
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // LOAD DATABASE
+    // ═══════════════════════════════════════════════════════════════════════
+    async function loadDailyDatabase(difficulty, forceClean = false) {
+      const wrapper = document.getElementById('tree-scroll-wrapper');
+      if (wrapper) wrapper.innerHTML = '<div class="loading">Loading classification database...</div>';
+      
+      try {
+        const res = await fetch('phylosaur_db.json');
+        if (!res.ok) throw new Error('Failed to load database');
+        
+        fullDatabase = await res.json();
+        database = fullDatabase.filter(d => d.dificuldade === difficulty);
+        
+        console.log(`Loaded ${database.length} specimens for difficulty: ${difficulty}`);
+        
+        if (database.length === 0) {
+          throw new Error(`No specimens found for difficulty: ${difficulty}`);
+        }
+        
+        const seed = getDailySeed(difficulty);
+        const hash = hashString(seed);
+        const index = hash % database.length;
+        
+        targetDino = database[index];
+        guesses = [];
+        hintsRemaining = 3;
+        gameWon = false;
+        guessedNames = new Set();
+        revealedClades = new Set();
+        hintHistory = [];
+        guessesSinceLastHint = 0;
+        
+        console.log('Daily specimen:', targetDino.nome, 'Seed:', seed);
+        
+        const savedProgress = forceClean ? null : await loadGameProgress(difficulty);
+
+        if (savedProgress && savedProgress.targetDino === targetDino.nome) {
+          console.log('Loading saved progress...');
+          
+          // Reconstruir guesses
+          if (savedProgress.guesses && savedProgress.guesses.length > 0) {
+            guesses = savedProgress.guesses.map(savedGuess => {
+              const dino = database.find(d => d.nome === savedGuess.nome);
+              if (!dino) return null;
+              
+              const proximity = calculateProximity(dino, targetDino);
+              
+              if (proximity.lastCommonClade) {
+                revealedClades.add(proximity.lastCommonClade);
+              }
+              
+              return {
+                dino: dino,
+                proximity: proximity,
+                isHint: savedGuess.isHint || false
+              };
+            }).filter(g => g !== null);
+          }
+          
+          if (savedProgress.revealedClades) {
+            savedProgress.revealedClades.forEach(c => revealedClades.add(c));
+          }
+          hintHistory = savedProgress.hintHistory || [];
+          hintsRemaining = savedProgress.hintsRemaining !== undefined ? savedProgress.hintsRemaining : 3;
+          guessedNames = new Set(savedProgress.guessedNames || []);
+          
+          console.log(`Restored ${guesses.length} guesses, ${hintsRemaining} hints remaining`);
+          
+          setTimeout(() => {
+            const bestMatch = guesses.length > 0 
+              ? Math.max(...guesses.map(g => g.proximity.matches)) 
+              : 0;
+            
+            document.getElementById('attempts').textContent = guesses.length;
+            document.getElementById('hints').textContent = hintsRemaining;
+            document.getElementById('best-match').textContent = bestMatch;
+            document.getElementById('clades-revealed').textContent = revealedClades.size;
+            
+            renderEnhancedTree();
+            updateCladeInfo();
+            updateGuessHistory();
+          }, 100);
+          
+        } else {
+          document.getElementById('attempts').textContent = '0';
+          document.getElementById('hints').textContent = '3';
+          document.getElementById('best-match').textContent = '0';
+          document.getElementById('clades-revealed').textContent = '0';
+          
+          if (wrapper) {
+            wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+          }
+        }
+        initializeAutocomplete();
+        
+      } catch (err) {
+        console.error('Database error:', err);
+        if (wrapper) {
+          wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
+        }
+      }
+    }
     // ═══════════════════════════════════════════════════════════════════════
     // GAME LOGIC
     // ═══════════════════════════════════════════════════════════════════════
@@ -3659,26 +3393,23 @@ async function loadDailyDatabase(difficulty, forceClean = false) {
       document.getElementById('best-match').textContent = Math.max(...guesses.map(g => g.proximity.matches));
       document.getElementById('clades-revealed').textContent = revealedClades.size;
 
-if (guessDino.nome === targetDino.nome) {
-  gameWon = true;
-  showVictory();
-  input.value = '';
-  document.getElementById('suggestions').style.display = 'none';
-  return; // ← ADICIONAR ISSO (para de executar aqui)
-}
+      if (guessDino.nome === targetDino.nome) {
+        gameWon = true;
+        showVictory();
+        input.value = '';
+        document.getElementById('suggestions').style.display = 'none';
+        return; 
+      }
+      renderEnhancedTree();
+      updateCladeInfo();
+      updateGuessHistory();
 
-// Só executa isso se NÃO ganhou
-renderEnhancedTree();
-updateCladeInfo();
-updateGuessHistory();
+      input.value = '';
+      document.getElementById('suggestions').style.display = 'none';
 
-input.value = '';
-document.getElementById('suggestions').style.display = 'none';
-
-if (currentUser && !gameWon && !isPracticeMode) {
-  saveGameProgress(selectedDifficulty);
-}
-
+      if (currentUser && !gameWon && !isPracticeMode) {
+        saveGameProgress(selectedDifficulty);
+      }
     }
 
     async function useHint() {
@@ -3699,15 +3430,10 @@ if (currentUser && !gameWon && !isPracticeMode) {
         }
 
       const dinosauriaIndex = targetDino.linhagem.indexOf('Dinosauria');
+      let maxRevealedIndex = dinosauriaIndex;
       
-      // Calcular o índice mais profundo revelado (na lineagem do target)
-      let maxRevealedIndex = dinosauriaIndex; // começa em Dinosauria
-      
-      // 1. Verificar profundidade dos guesses
       if (guesses.length > 0) {
         guesses.forEach(guess => {
-          // proximity.matches é quantos clados coincidem desde o início
-          // Então o índice real é: (proximity.matches - 1)
           const guessDepth = guess.proximity.matches - 1;
           if (guessDepth > maxRevealedIndex) {
             maxRevealedIndex = guessDepth;
@@ -3715,7 +3441,6 @@ if (currentUser && !gameWon && !isPracticeMode) {
         });
       }
       
-      // 2. Verificar clados revelados por hints anteriores
       revealedClades.forEach(clade => {
         if (targetDino.linhagem.includes(clade)) {
           const cladeIndex = targetDino.linhagem.indexOf(clade);
@@ -3724,11 +3449,7 @@ if (currentUser && !gameWon && !isPracticeMode) {
           }
         }
       });
-      
-      // 3. O próximo clado é o seguinte ao mais profundo
       const nextCladeIndex = maxRevealedIndex + 1;
-      
-      // 4. Verificar se chegamos ao fim
       if (nextCladeIndex >= targetDino.linhagem.length) {
         await customAlert('Lineage Complete', 'The complete phylogenetic path has been revealed. No additional hints available.');
         return;
@@ -3759,7 +3480,7 @@ if (currentUser && !gameWon && !isPracticeMode) {
     if (currentUser && !isPracticeMode) {
     saveGameProgress(selectedDifficulty);
     }
-    }
+  }
 
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -3787,6 +3508,52 @@ if (currentUser && !gameWon && !isPracticeMode) {
     // ═══════════════════════════════════════════════════════════════════════
     // TREE RENDERING
     // ═══════════════════════════════════════════════════════════════════════
+    function initTreePanning() {
+      const container = document.getElementById('tree-container');
+      if (!container) return;
+
+      let isDown = false;
+      let startX, startY, scrollLeft, scrollTop;
+
+      container.addEventListener('mousedown', e => {
+        if (e.target.closest('.tree-node-group, g')) return;
+        isDown = true;
+        startX = e.pageX - container.offsetLeft;
+        startY = e.pageY - container.offsetTop;
+        scrollLeft = container.scrollLeft;
+        scrollTop  = container.scrollTop;
+      });
+
+      container.addEventListener('mouseleave', () => isDown = false);
+      container.addEventListener('mouseup',    () => isDown = false);
+
+      container.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - container.offsetLeft;
+        const y = e.pageY - container.offsetTop;
+        container.scrollLeft = scrollLeft - (x - startX);
+        container.scrollTop  = scrollTop  - (y - startY);
+      });
+
+      container.addEventListener('touchstart', e => {
+        if (e.touches.length === 1) {
+          startX = e.touches[0].pageX;
+          startY = e.touches[0].pageY;
+          scrollLeft = container.scrollLeft;
+          scrollTop  = container.scrollTop;
+        }
+      }, { passive: true });
+
+      container.addEventListener('touchmove', e => {
+        if (e.touches.length !== 1) return;
+        const x = e.touches[0].pageX;
+        const y = e.touches[0].pageY;
+        container.scrollLeft = scrollLeft - (x - startX);
+        container.scrollTop  = scrollTop  - (y - startY);
+      }, { passive: true });
+    }
+
     function renderEnhancedTree() {
       const container = document.getElementById('tree-container');
       const wrapper   = document.getElementById('tree-scroll-wrapper');
@@ -3796,7 +3563,6 @@ if (currentUser && !gameWon && !isPracticeMode) {
       const targetLineage = targetDino.linhagem;
       const dinoIndex     = findDinosauriaIndex(targetLineage);
       
-      // STEP 1 – deepest MRCA
       let deepestMRCA      = 'Dinosauria';
       let deepestMRCAIndex = dinoIndex;
       
@@ -3816,7 +3582,6 @@ if (currentUser && !gameWon && !isPracticeMode) {
         }
       });
       
-      // STEP 2 – guess-grouping clades
       const guessGroupingClades = new Set();
       for (let i = 0; i < guesses.length; i++) {
         for (let j = i + 1; j < guesses.length; j++) {
@@ -3827,23 +3592,18 @@ if (currentUser && !gameWon && !isPracticeMode) {
         }
       }
       
-      // STEP 3 – minimal clade set
       const showClades = new Set(['Dinosauria']);
-
-      // SEMPRE adiciona clados revelados por hints
       revealedClades.forEach(c => {
         if (targetLineage.includes(c)) {
           showClades.add(c);
         }
       });
 
-      // Se houver guesses, processa normalmente
       if (guesses.length > 0) {
         if (deepestMRCA !== 'Dinosauria') showClades.add(deepestMRCA);
         guessGroupingClades.forEach(c => showClades.add(c));
       }
-      
-      // STEP 4 – connect with parents
+
       let changed = true;
       while (changed) {
         changed = false;
@@ -3968,69 +3728,67 @@ if (currentUser && !gameWon && !isPracticeMode) {
         nodes.get(c).children.forEach(ch => recalcDepths(ch, d + 1));
       })('Dinosauria', 0);
       
-// STEP 6 – leaves
-const leaves = [];
-guesses.forEach((guess, idx) => {
-  let attachTo = 'Dinosauria';
-  for (let i = guess.dino.linhagem.length - 1; i >= 0; i--) {
-    if (showClades.has(guess.dino.linhagem[i])) {
-      attachTo = guess.dino.linhagem[i];
-      break;
-    }
-  }
-  
-  // MUDANÇA: Verifica se este guess é o vencedor
-  const isWinningGuess = gameWon && guess.dino.nome === targetDino.nome;
-  
-  leaves.push({ 
-    name: guess.dino.nome + '__leaf_' + idx, 
-    displayName: guess.dino.nome, 
-    parentNode: attachTo, 
-    isTarget: isWinningGuess,  // ← MUDANÇA: marca como target se for o vencedor
-    isHint: guess.isHint, 
-    lineage: guess.dino.linhagem 
-  });
-});
+      // STEP 6 – leaves
+      const leaves = [];
+      guesses.forEach((guess, idx) => {
+        let attachTo = 'Dinosauria';
+        for (let i = guess.dino.linhagem.length - 1; i >= 0; i--) {
+          if (showClades.has(guess.dino.linhagem[i])) {
+            attachTo = guess.dino.linhagem[i];
+            break;
+          }
+        }
+        
+        const isWinningGuess = gameWon && guess.dino.nome === targetDino.nome;
+        
+        leaves.push({ 
+          name: guess.dino.nome + '__leaf_' + idx, 
+          displayName: guess.dino.nome, 
+          parentNode: attachTo, 
+          isTarget: isWinningGuess, 
+          isHint: guess.isHint, 
+          lineage: guess.dino.linhagem 
+        });
+      });
 
-// STEP 7 – mystery "?" (ou nome revelado se ganhou)
+      // STEP 7 – mystery "?" (ou nome revelado se ganhou)
 
-// Se o jogo NÃO foi ganho, adiciona o "?"
-// Se foi ganho, o dinossauro já está nos guesses, então não precisa adicionar
-if (!gameWon) {
-  let mysteryParent = 'Dinosauria';
-  let maxDepthRevealed = -1;
+      // Se o jogo NÃO foi ganho, adiciona o "?"
+      // Se foi ganho, o dinossauro já está nos guesses, então não precisa adicionar
+      if (!gameWon) {
+        let mysteryParent = 'Dinosauria';
+        let maxDepthRevealed = -1;
 
-  // Primeiro, verifica qual é o clado mais profundo entre os guesses
-  if (deepestMRCA !== 'Dinosauria') {
-    const deepestMRCAIndex = targetLineage.indexOf(deepestMRCA);
-    if (deepestMRCAIndex > maxDepthRevealed) {
-      maxDepthRevealed = deepestMRCAIndex;
-      mysteryParent = deepestMRCA;
-    }
-  }
+        // Primeiro, verifica qual é o clado mais profundo entre os guesses
+        if (deepestMRCA !== 'Dinosauria') {
+          const deepestMRCAIndex = targetLineage.indexOf(deepestMRCA);
+          if (deepestMRCAIndex > maxDepthRevealed) {
+            maxDepthRevealed = deepestMRCAIndex;
+            mysteryParent = deepestMRCA;
+          }
+        }
 
-  // Depois, verifica se algum hint revelou algo mais profundo
-  revealedClades.forEach(clade => {
-    if (targetLineage.includes(clade)) {
-      const cladeIndex = targetLineage.indexOf(clade);
-      if (cladeIndex > maxDepthRevealed) {
-        maxDepthRevealed = cladeIndex;
-        mysteryParent = clade;
+        // Depois, verifica se algum hint revelou algo mais profundo
+        revealedClades.forEach(clade => {
+          if (targetLineage.includes(clade)) {
+            const cladeIndex = targetLineage.indexOf(clade);
+            if (cladeIndex > maxDepthRevealed) {
+              maxDepthRevealed = cladeIndex;
+              mysteryParent = clade;
+            }
+          }
+        });
+
+        leaves.push({ 
+          name: '?__leaf_target', 
+          displayName: '?', 
+          parentNode: mysteryParent, 
+          isTarget: true, 
+          isHint: false, 
+          lineage: targetLineage 
+        });
       }
-    }
-  });
-
-  leaves.push({ 
-    name: '?__leaf_target', 
-    displayName: '?', 
-    parentNode: mysteryParent, 
-    isTarget: true, 
-    isHint: false, 
-    lineage: targetLineage 
-  });
-}
       
-      // Layout
       const nodePositions = new Map();
       const leafPositions = new Map();
       const startY = 60;
@@ -4096,8 +3854,6 @@ if (!gameWon) {
       }
       
       positionNode('Dinosauria', 0, totalSlots * dynH, 0);
-      
-      // SVG dimensions
       const allX = [
         ...Array.from(leafPositions.values()).map(p => p.x), 
         ...Array.from(nodePositions.values()).map(p => p.x)
@@ -4129,7 +3885,6 @@ if (!gameWon) {
       svg.setAttribute('preserveAspectRatio', 'xMidYMin meet');
       svg.innerHTML = '';
       
-      // Edges: internal → internal
       nodes.forEach((data, clade) => {
         const pos = nodePositions.get(clade);
         data.children.forEach(child => {
@@ -4147,7 +3902,6 @@ if (!gameWon) {
         });
       });
       
-      // Internal nodes
       nodes.forEach((data, clade) => {
         const pos = nodePositions.get(clade);
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -4181,7 +3935,6 @@ if (!gameWon) {
         svg.appendChild(g);
       });
       
-      // Edges: internal → leaf
       leafPositions.forEach((leaf, name) => {
         const pp = nodePositions.get(leaf.parentNode);
         if (!pp) return;
@@ -4198,7 +3951,6 @@ if (!gameWon) {
         svg.appendChild(path);
       });
       
-      // Leaf nodes
       leafPositions.forEach((leaf, name) => {
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         g.setAttribute('class', 'new-node');
@@ -4251,36 +4003,32 @@ if (!gameWon) {
       
       // Auto-scale
     requestAnimationFrame(() => {
-  const svgB = svg.getBBox();
-  const padding = 80;
-  const naturalW = svgB.width + padding * 2;
-  const naturalH = svgB.height + padding;
-  const availW = container.getBoundingClientRect().width - 40;
-  const isMobile = window.innerWidth <= 768;
+    const svgB = svg.getBBox();
+    const padding = 80;
+    const naturalW = svgB.width + padding * 2;
+    const naturalH = svgB.height + padding;
+    const availW = container.getBoundingClientRect().width - 40;
+    const isMobile = window.innerWidth <= 768;
+    const shouldScale = naturalW <= availW * 1.2;
 
-  // If tree fits comfortably, scale it to fit — no scroll needed
-  // If tree is too wide, let it be natural size and scroll
-  const shouldScale = naturalW <= availW * 1.2;
-
-  if (shouldScale) {
-    const scale = Math.min(1, availW / naturalW);
-    svg.setAttribute('width', naturalW);
-    svg.setAttribute('height', naturalH);
-    wrapper.style.transform = `scale(${scale})`;
-    wrapper.style.transformOrigin = 'top center';
-    wrapper.style.width = '100%';
-    wrapper.style.height = (naturalH * scale) + 'px';
-    container.style.overflowX = 'hidden';
-  } else {
-    // Too wide — scroll instead of squish
-    svg.setAttribute('width', naturalW);
-    svg.setAttribute('height', naturalH);
-    wrapper.style.transform = 'none';
-    wrapper.style.width = naturalW + 'px';
-    wrapper.style.height = naturalH + 'px';
-    container.style.overflowX = 'auto';
-  }
-});
+    if (shouldScale) {
+      const scale = Math.min(1, availW / naturalW);
+      svg.setAttribute('width', naturalW);
+      svg.setAttribute('height', naturalH);
+      wrapper.style.transform = `scale(${scale})`;
+      wrapper.style.transformOrigin = 'top center';
+      wrapper.style.width = '100%';
+      wrapper.style.height = (naturalH * scale) + 'px';
+      container.style.overflowX = 'hidden';
+    } else {
+      svg.setAttribute('width', naturalW);
+      svg.setAttribute('height', naturalH);
+      wrapper.style.transform = 'none';
+      wrapper.style.width = naturalW + 'px';
+      wrapper.style.height = naturalH + 'px';
+      container.style.overflowX = 'auto';
+    }
+  });
     
       initTreePanning();
     }
@@ -4444,52 +4192,50 @@ if (!gameWon) {
     // ═══════════════════════════════════════════════════════════════════════
     // GUESS HISTORY
     // ═══════════════════════════════════════════════════════════════════════
-function updateGuessHistory() {
-  const historyDiv = document.getElementById('guess-history');
+    function updateGuessHistory() {
+      const historyDiv = document.getElementById('guess-history');
 
-  if (!historyDiv) return; // Se não existe, não faz nada
-  
-  if (guesses.length === 0 && hintHistory.length === 0) {
-    historyDiv.innerHTML = '';
-    return;
-  }
+      if (!historyDiv) return;
+      
+      if (guesses.length === 0 && hintHistory.length === 0) {
+        historyDiv.innerHTML = '';
+        return;
+      }
 
-  if (guesses.length === 0 && hintHistory.length === 0) {
-    historyDiv.innerHTML = '';
-    return;
-  }
-  
-  let html = '<div class="guess-history"><h3>Exploration History</h3>';
-  
-  // Show hints
-  if (hintHistory.length > 0) {
-    hintHistory.slice().reverse().forEach(hint => {
-      html += `
-        <div class="guess-item guess-item-hint">
-          <span class="guess-name">[HINT: ${hint.cladeName}]</span>
-          <span class="guess-match">Revealed clade at depth ${hint.depth}</span>
-        </div>
-      `;
-    });
-  }
-  
-  // Show guesses
-  guesses.slice().reverse().forEach(guess => {
-    const divInfo = guess.proximity.lastCommonClade 
-      ? ` → Last common: ${guess.proximity.lastCommonClade}` 
-      : '';
-    
-    html += `
-      <div class="guess-item">
-        <span class="guess-name">${guess.dino.nome}${divInfo}</span>
-        <span class="guess-match">${guess.proximity.matches}/${targetDino.linhagem.length} nodes (${guess.proximity.percentage}%)</span>
-      </div>
-    `;
-  });
-  
-  html += '</div>';
-  historyDiv.innerHTML = html;
-}
+      if (guesses.length === 0 && hintHistory.length === 0) {
+        historyDiv.innerHTML = '';
+        return;
+      }
+      
+      let html = '<div class="guess-history"><h3>Exploration History</h3>';
+      
+      if (hintHistory.length > 0) {
+        hintHistory.slice().reverse().forEach(hint => {
+          html += `
+            <div class="guess-item guess-item-hint">
+              <span class="guess-name">[HINT: ${hint.cladeName}]</span>
+              <span class="guess-match">Revealed clade at depth ${hint.depth}</span>
+            </div>
+          `;
+        });
+      }
+      
+      guesses.slice().reverse().forEach(guess => {
+        const divInfo = guess.proximity.lastCommonClade 
+          ? ` → Last common: ${guess.proximity.lastCommonClade}` 
+          : '';
+        
+        html += `
+          <div class="guess-item">
+            <span class="guess-name">${guess.dino.nome}${divInfo}</span>
+            <span class="guess-match">${guess.proximity.matches}/${targetDino.linhagem.length} nodes (${guess.proximity.percentage}%)</span>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      historyDiv.innerHTML = html;
+    }
 
     // ═══════════════════════════════════════════════════════════════════════
     // WIKIPEDIA INFO PANEL
@@ -4702,369 +4448,385 @@ function updateGuessHistory() {
       }
     }
 
-    function generateStreakDisplay(streakData) {
-  if (!currentUser) return '';
-
-  if (!streakData || streakData.current === 0) {
-    return `
-      <div style="text-align:center; padding:30px; background:rgba(61,47,31,0.3); border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
-        <div style="font-size:1.5em; color:#8b7355; margin-bottom:10px;">◆ Start Your Streak!</div>
-        <div style="color:#a68a5a; font-size:0.95em;">Complete a challenge every day to build your research streak</div>
-      </div>
-    `;
-  }
-
-  return `
-    <div style="text-align:center; padding:30px; background:rgba(255,149,0,0.1); border-radius:8px; margin-bottom:30px; border:2px solid #ff9500;">
-      <div style="font-size:2.5em; color:#ff9500; margin-bottom:15px;">◆ ${streakData.current}</div>
-      <div style="font-size:1.2em; color:#d4b87e; margin-bottom:8px; font-weight:600; letter-spacing:1px;">CURRENT STREAK</div>
-      <div style="color:#a68a5a; font-size:0.95em;">Best: ${streakData.best} days</div>
-      <div style="margin-top:20px; color:#8b7355; font-size:0.85em; font-style:italic;">Last played: ${streakData.lastPlayed || 'Never'}</div>
-    </div>
-  `;
-}
-
     // ═══════════════════════════════════════════════════════════════════════
     // STATISTICS DASHBOARD
     // ═══════════════════════════════════════════════════════════════════════
 
     async function showStatsDashboard() {
-        setHeaderControls('stats');
-  if (!currentUser) {
-    alert('Login to view statistics');
-    return;
-  }
+      setHeaderControls('stats');
+      if (!currentUser) {
+        alert('Login to view statistics');
+        return;
+      }
 
-  const { data: stats } = await sb.from('statistics')
-    .select('*')
-    .eq('user_id', currentUserId)
-    .single();
+      const { data: stats } = await sb.from('statistics')
+        .select('*')
+        .eq('user_id', currentUserId)
+        .single();
 
-  const { data: diffStats } = await sb.from('difficulty_stats')
-    .select('*')
-    .eq('user_id', currentUserId);
+      const { data: diffStats } = await sb.from('difficulty_stats')
+        .select('*')
+        .eq('user_id', currentUserId);
 
-  const { data: recentGames } = await sb.from('daily_results')
-    .select('*')
-    .eq('user_id', currentUserId)
-    .order('created_at', { ascending: false })
-    .limit(10);
+      const { data: recentGames } = await sb.from('daily_results')
+        .select('*')
+        .eq('user_id', currentUserId)
+        .order('created_at', { ascending: false })
+        .limit(10);
 
-  const { data: achievements } = await sb.from('achievements')
-    .select('achievement_id')
-    .eq('user_id', currentUserId);
+      const { data: achievements } = await sb.from('achievements')
+        .select('achievement_id')
+        .eq('user_id', currentUserId);
 
-  const gamesPlayed = stats?.games_played || 0;
-  const gamesWon = stats?.games_won || 0;
-  const winRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
-  const streakData = { current: stats?.current_streak || 0, best: stats?.best_streak || 0, lastPlayed: stats?.last_played };
-  const unlockedAchievements = new Set(achievements ? achievements.map(a => a.achievement_id) : []);
+      const gamesPlayed = stats?.games_played || 0;
+      const gamesWon = stats?.games_won || 0;
+      const winRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
+      const streakData = { current: stats?.current_streak || 0, best: stats?.best_streak || 0, lastPlayed: stats?.last_played };
+      const unlockedAchievements = new Set(achievements ? achievements.map(a => a.achievement_id) : []);
 
-  const appContent = document.getElementById('app-content');
+      const appContent = document.getElementById('app-content');
 
-  appContent.innerHTML = `
+      appContent.innerHTML = `
 
 
-    <div class="game-card">
-      <h2 style="color:#d4b87e; margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
-        CLASSIFICATION RECORDS
-      </h2>
+        <div class="game-card">
+          <h2 style="color:#d4b87e; margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
+            CLASSIFICATION RECORDS
+          </h2>
 
-      <div style="text-align:center; margin-bottom:30px; color:#a68a5a; font-size:1.1em; letter-spacing:2px;">
-        Researcher ID: <span style="color:#c9a96e; font-weight:600;">${currentUser}</span>
-      </div>
+          <div style="text-align:center; margin-bottom:30px; color:#a68a5a; font-size:1.1em; letter-spacing:2px;">
+            Researcher ID: <span style="color:#c9a96e; font-weight:600;">${currentUser}</span>
+          </div>
 
-      <div class="stats" style="grid-template-columns: repeat(4, 1fr); margin-bottom:40px;">
-        <div class="stat"><div class="stat-value">${gamesPlayed}</div><div class="stat-label">Total Classifications</div></div>
-        <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">Successful IDs</div></div>
-        <div class="stat"><div class="stat-value">${winRate}%</div><div class="stat-label">Success Rate</div></div>
-        <div class="stat"><div class="stat-value">${stats?.best_score || '—'}</div><div class="stat-label">Best Score</div></div>
-      </div>
+          <div class="stats" style="grid-template-columns: repeat(4, 1fr); margin-bottom:40px;">
+            <div class="stat"><div class="stat-value">${gamesPlayed}</div><div class="stat-label">Total Classifications</div></div>
+            <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">Successful IDs</div></div>
+            <div class="stat"><div class="stat-value">${winRate}%</div><div class="stat-label">Success Rate</div></div>
+            <div class="stat"><div class="stat-value">${stats?.best_score || '—'}</div><div class="stat-label">Best Score</div></div>
+          </div>
 
-      ${generateStreakDisplay(streakData)}
+          ${generateStreakDisplay(streakData)}
 
-      <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
-        <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Classification Level Performance</h3>
-        ${generateDifficultyStats(diffStats)}
-      </div>
+          <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
+            <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Classification Level Performance</h3>
+            ${generateDifficultyStats(diffStats)}
+          </div>
 
-      <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
-        <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Research Achievements</h3>
-        ${generateAchievements(unlockedAchievements)}
-      </div>
+          <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
+            <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Research Achievements</h3>
+            ${generateAchievements(unlockedAchievements)}
+          </div>
 
-      <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; border:2px solid #5d4a36;">
-        <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Recent Classifications</h3>
-        ${generateRecentGames(recentGames)}
-      </div>
-    </div>
-  `;
-}
-
-function showAbout() {
-    setHeaderControls('about');
-  const appContent = document.getElementById('app-content');
-  
-  appContent.innerHTML = `
-
-    
-    <div class="game-card" style="max-width: 900px; margin: 0 auto;">
-      <h2 style="color:#d4b87e; margin-bottom:30px; text-align:center; font-size:2em; letter-spacing:3px;">
-        About Phylosaur
-      </h2>
-      
-      <div style="color:#f8f6f3; line-height:2; font-size:1.05em; text-align:justify;">
-        
-        <p style="margin-bottom:25px;">
-          Phylosaur is an interactive educational tool designed to familiarize users with the principles 
-          of phylogenetic systematics through the lens of dinosaurian taxonomy. The game employs a 
-          progressive tree-building mechanism wherein players deduce the systematic position of mystery 
-          taxa by analyzing shared derived characteristics (synapomorphies) and identifying most recent 
-          common ancestors within the cladistic framework.
-        </p>
-
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
-          Phylogenetic Foundations
-        </h3>
-
-        <p style="margin-bottom:25px;">
-          Modern biological classification rests upon phylogenetic systematics, a methodology that organizes 
-          organisms according to their evolutionary relationships rather than superficial morphological 
-          similarities. This approach, pioneered by Willi Hennig in the mid-twentieth century, recognizes 
-          that meaningful taxonomic groupings (clades) must be monophyletic, comprising an ancestor and all 
-          of its descendants. Each clade is diagnosed by the presence of synapomorphies, which are derived 
-          character states inherited from a common ancestor and shared exclusively among its descendants.
-        </p>
-
-        <p style="margin-bottom:25px;">
-          Within this framework, Dinosauria represents a well-supported clade united by numerous 
-          osteological synapomorphies. The group is formally diagnosed by features including an open 
-          acetabulum, elongated deltopectoral crest on the humerus, and modifications to the ankle joint 
-          that facilitate a parasagittal gait. Dinosauria is subdivided into two primary clades: Saurischia, 
-          characterized by a triradiate pelvis with the pubis directed anteroventrally, and Ornithischia, 
-          distinguished by a retroversed pubis and predentary bone. Modern phylogenetic analyses place 
-          Avialae (birds) within Saurischia as highly derived theropods, rendering traditional distinctions 
-          between "dinosaurs" and "birds" paraphyletic and therefore scientifically obsolete.
-        </p>
-
-        <p style="margin-bottom:25px; padding:20px; background:rgba(61,47,31,0.3); border-left:4px solid #8b7355; font-style:italic;">
-        "The combination of such characters... will, it is presumed, be deemed sufficient ground for establishing 
-        a distinct tribe or sub-order of Saurian Reptiles, for which I would propose the name of <em>Dinosauria</em>."
-        <span style="display:block; margin-top:10px; font-style:normal; font-size:0.9em; color:#a68a5a;">
-            — Richard Owen (1842). Report on British Fossil Reptiles, Part II. <em>Report of the British Association 
-            for the Advancement of Science</em>, 11: 60–204.
-        </span>
-        </p>
-
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
-          Game Mechanics and Educational Objectives
-        </h3>
-
-        <p style="margin-bottom:25px;">
-          Players are presented with a mystery taxon and must infer its phylogenetic position through 
-          iterative hypothesis testing. Each classification attempt reveals the deepest node shared between 
-          the proposed taxon and the target, thereby progressively constraining the phylogenetic search 
-          space. This mechanism mirrors the actual process of phylogenetic inference, wherein researchers 
-          place unknown taxa by identifying their closest relatives through character analysis and cladistic 
-          methodology.
-        </p>
-
-        <p style="margin-bottom:25px;">
-        The game offers five difficulty tiers determined by taxonomic familiarity as measured through 
-        Wikipedia pageview statistics over a thirty-day period. This metric serves as a proxy for public 
-        recognition rather than phylogenetic complexity or fossil completeness. Higher difficulty levels 
-        incorporate taxa with lower pageview counts (generally lesser-known genera that receive less popular 
-        attention) thereby requiring broader taxonomic knowledge independent of their scientific importance 
-        or systematic resolution. Daily challenges ensure that all participants worldwide confront identical 
-        classification problems.
-        </p>
-
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
-          Data Sources and Taxonomic Authority
-        </h3>
-
-        <p style="margin-bottom:25px;">
-        Phylogenetic relationships and taxonomic data are derived from a publicly accessible Google Sheets 
-        database (spreadsheet ID: 1rgflfIWW6x2h6jRRTe6cRO4YWc3mEKzVmJ7UzREFNq8) compiled and maintained by 
-        TotalDino.com. This resource aggregates information from peer-reviewed literature and systematic 
-        revisions, presenting a hierarchical structure that reflects current consensus topology as understood 
-        within vertebrate paleontology. Users should recognize that phylogenetic hypotheses remain subject 
-        to revision as new fossil discoveries and analytical methods refine our understanding of dinosaurian 
-        relationships. Certain problematic taxa, those based on fragmentary or non-diagnostic material or 
-        exhibiting nomenclatural ambiguities (such as homonyms with non-paleontological entities), have been 
-        manually reviewed and, where appropriate, excluded or reclassified to maintain database integrity.
-        </p>
-
-        <p style="margin-bottom:25px;">
-        Difficulty classification methodology employs Wikipedia pageview metrics retrieved via the Wikimedia 
-        REST API, aggregating thirty-day access statistics for each taxon. Genera are stratified into quintiles 
-        based on these pageview counts, with the most frequently accessed taxa assigned to lower difficulty 
-        tiers and obscure genera with minimal page traffic assigned to higher difficulty levels. This approach 
-        acknowledges that taxonomic familiarity — operationalized here as public digital engagement—constitutes 
-        a distinct dimension from phylogenetic complexity, fossil completeness, or systematic significance. 
-        Consequently, scientifically important but publicly unfamiliar taxa may appear at higher difficulty 
-        levels, while fragmentary or taxonomically problematic genera with substantial popular culture presence 
-        may occupy lower tiers.
-        </p>
-
-        <p style="margin-bottom:25px;">
-          Supplementary information regarding clade diagnoses and evolutionary context is retrieved from 
-          Wikipedia's public API. While this resource provides accessible overviews suitable for educational 
-          contexts, users are encouraged to consult primary literature (including original species descriptions, 
-          phylogenetic analyses published in journals such as <em>Nature</em>, <em>Science</em>, <em>Journal 
-          of Vertebrate Paleontology</em>, and <em>Cladistics</em>) for authoritative systematic information.
-        </p>
-
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
-          Methodological Considerations and Limitations
-        </h3>
-
-        <p style="margin-bottom:25px;">
-          Phylogenetic trees are hypotheses of evolutionary relationships, not immutable facts. The topology 
-          presented here represents one interpretation of available data and may differ from alternative 
-          analyses that employ different character matrices, taxon sampling strategies, or analytical methods. 
-          Furthermore, phylogenetic resolution varies considerably across the dinosaurian tree; while some 
-          clades such as Tyrannosauridae exhibit robust support across multiple independent analyses, others 
-          remain poorly resolved due to incomplete fossil records or morphological conservatism. Users should 
-          interpret tree topology with appropriate epistemic humility, recognizing that scientific understanding 
-          of dinosaurian phylogeny continues to evolve.
-        </p>
-
-        <p style="margin-bottom:25px;">
-          Taxonomic nomenclature follows standard conventions wherein genus names are italicized and capitalized, 
-          while higher-level clade names are rendered in standard font with initial capitalization. Some taxa 
-          included in the database may represent <em>nomina dubia</em> (names of doubtful validity based on 
-          insufficient diagnostic material) or taxonomic wastebasket groups subject to ongoing systematic revision. 
-        </p>
-
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
-          Acknowledgments and Further Resources
-        </h3>
-
-        <p style="margin-bottom:25px;">
-          This project acknowledges the foundational work of countless paleontologists whose systematic research 
-          underlies our current understanding of dinosaurian phylogeny. For readers seeking deeper engagement 
-          with the primary literature, recommended resources include the Paleobiology Database (paleobiodb.org), 
-          which archives stratigraphic and taxonomic occurrence data; the Tree of Life Web Project (tolweb.org), 
-          providing comprehensive phylogenetic overviews; and Fossilworks (fossilworks.org), which maintains 
-          detailed taxonomic and bibliographic records. Users interested in formal training in phylogenetic 
-          methodology are encouraged to consult <em>Phylogenetics: Theory and Practice of Phylogenetic Systematics</em> 
-          by E.O. Wiley and Bruce Lieberman, or <em>Inferring Phylogenies</em> by Joseph Felsenstein.
-        </p>
-
-        <p style="margin-bottom:35px;">
-          Phylosaur is provided as an educational resource without commercial intent. Users are encouraged to 
-          provide feedback regarding taxonomic inaccuracies, interface improvements, or pedagogical suggestions 
-          that might enhance the tool's effectiveness as an instructional aid. While this application aims for 
-          scientific rigor, it should not be cited as a primary source in formal academic contexts; instead, 
-          users should trace information to original systematic publications through the references provided in 
-          supplementary materials.
-        </p>
-
-      </div>
-
-      <button class="btn-new-game" onclick="showDifficultySelection()" style="margin-top:30px;">
-        Return to Challenge Selection
-      </button>
-    </div>
-  `;
-}
-function generateDifficultyStats(diffStats) {
-  const diffNames = {
-    'muito_facil': 'Level I',
-    'facil': 'Level II',
-    'normal': 'Level III',
-    'dificil': 'Level IV',
-    'muito_dificil': 'Level V'
-  };
-
-  if (!diffStats || diffStats.length === 0) {
-    return '<p class="empty-stats">No classifications completed yet. Begin your research!</p>';
-  }
-
-  let html = '';
-  diffStats.forEach(stat => {
-    const winRate = stat.played > 0 ? Math.round((stat.won / stat.played) * 100) : 0;
-    html += `
-      <div class="difficulty-stat-row">
-        <span class="diff-name">${diffNames[stat.difficulty] || stat.difficulty}</span>
-        <div class="diff-stats">
-          <span class="diff-record">${stat.won}/${stat.played}</span>
-          <span class="diff-winrate">${winRate}%</span>
-          <span class="diff-avg">Avg: ${Math.round(stat.avg_guesses)} guesses</span>
-        </div>
-      </div>
-    `;
-  });
-  return html;
-}
-
-function generateAchievements(unlockedSet) {
-  const allAchievements = [
-    { id: 'first_win', name: 'First Discovery', desc: 'Complete your first classification' },
-    { id: 'perfect_game', name: 'Phylogenetic Prodigy', desc: 'Classify species in 3 guesses or fewer' },
-    { id: 'ten_wins', name: 'Taxonomist', desc: 'Successfully classify 10 species' },
-    { id: 'fifty_wins', name: 'Paleontologist', desc: 'Successfully classify 50 species' },
-    { id: 'hard_win', name: 'Specialist', desc: 'Complete Level IV classification' },
-    { id: 'very_hard_win', name: 'Master Classifier', desc: 'Complete Level V classification' }
-  ];
-
-  let html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:15px;">';
-  allAchievements.forEach(ach => {
-    const unlocked = unlockedSet && unlockedSet.has(ach.id);
-    html += `
-      <div class="achievement-card ${unlocked ? 'achievement-unlocked' : 'achievement-locked'}">
-        <div class="achievement-title">${unlocked ? '◆' : '◇'} ${ach.name}</div>
-        <div class="achievement-desc">${ach.desc}</div>
-      </div>
-    `;
-  });
-  html += '</div>';
-  return html;
-}
-
-function generateRecentGames(recentGames) {
-  if (!recentGames || recentGames.length === 0) {
-    return '<p style="color:#8b7355; font-style:italic; padding:20px; text-align:center;">No recent classifications. Begin your research!</p>';
-  }
-
-  const diffNames = {
-    'muito_facil': 'Level I',
-    'facil': 'Level II',
-    'normal': 'Level III',
-    'dificil': 'Level IV',
-    'muito_dificil': 'Level V'
-  };
-
-  let html = '';
-  recentGames.forEach(game => {
-    const date = new Date(game.created_at).toLocaleDateString();
-    html += `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:rgba(42,31,22,0.4); border-left:4px solid ${game.won ? '#5a9c6b' : '#8b6f47'}; border-radius:4px;">
-        <div style="flex:1;">
-          <div style="display:flex; align-items:center; margin-bottom:5px;">
-            <span style="color:${game.won ? '#c8e6c9' : '#d4a574'}; font-weight:700; margin-right:12px; font-size:1.1em;">${game.won ? '✓' : '✗'}</span>
-            <span style="color:#f8f6f3; font-style:italic; font-size:1em;">${game.target_dino}</span>
+          <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; border:2px solid #5d4a36;">
+            <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Recent Classifications</h3>
+            ${generateRecentGames(recentGames)}
           </div>
         </div>
-        <div style="text-align:right;">
-          <div style="color:#c9a96e; font-size:1em; font-weight:600; margin-bottom:3px;">${game.guess_count} guesses</div>
-          <div style="color:#8b7355; font-size:0.8em;">${diffNames[game.difficulty]} • ${date}</div>
+      `;
+    }
+
+    function generateStreakDisplay(streakData) {
+      if (!currentUser) return '';
+
+      if (!streakData || streakData.current === 0) {
+        return `
+          <div style="text-align:center; padding:30px; background:rgba(61,47,31,0.3); border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
+            <div style="font-size:1.5em; color:#8b7355; margin-bottom:10px;">◆ Start Your Streak!</div>
+            <div style="color:#a68a5a; font-size:0.95em;">Complete a challenge every day to build your research streak</div>
+          </div>
+        `;
+      }
+
+      return `
+        <div style="text-align:center; padding:30px; background:rgba(255,149,0,0.1); border-radius:8px; margin-bottom:30px; border:2px solid #ff9500;">
+          <div style="font-size:2.5em; color:#ff9500; margin-bottom:15px;">◆ ${streakData.current}</div>
+          <div style="font-size:1.2em; color:#d4b87e; margin-bottom:8px; font-weight:600; letter-spacing:1px;">CURRENT STREAK</div>
+          <div style="color:#a68a5a; font-size:0.95em;">Best: ${streakData.best} days</div>
+          <div style="margin-top:20px; color:#8b7355; font-size:0.85em; font-style:italic;">Last played: ${streakData.lastPlayed || 'Never'}</div>
         </div>
-      </div>
-    `;
-  });
-  return html;
-}
+      `;
+    }
+
+    function showAbout() {
+        setHeaderControls('about');
+      const appContent = document.getElementById('app-content');
+      
+      appContent.innerHTML = `
+
+        
+        <div class="game-card" style="max-width: 900px; margin: 0 auto;">
+          <h2 style="color:#d4b87e; margin-bottom:30px; text-align:center; font-size:2em; letter-spacing:3px;">
+            About Phylosaur
+          </h2>
+          
+          <div style="color:#f8f6f3; line-height:2; font-size:1.05em; text-align:justify;">
+            
+            <p style="margin-bottom:25px;">
+              Phylosaur is an interactive educational tool designed to familiarize users with the principles 
+              of phylogenetic systematics through the lens of dinosaurian taxonomy. The game employs a 
+              progressive tree-building mechanism wherein players deduce the systematic position of mystery 
+              taxa by analyzing shared derived characteristics (synapomorphies) and identifying most recent 
+              common ancestors within the cladistic framework.
+            </p>
+
+            <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+              Phylogenetic Foundations
+            </h3>
+
+            <p style="margin-bottom:25px;">
+              Modern biological classification rests upon phylogenetic systematics, a methodology that organizes 
+              organisms according to their evolutionary relationships rather than superficial morphological 
+              similarities. This approach, pioneered by Willi Hennig in the mid-twentieth century, recognizes 
+              that meaningful taxonomic groupings (clades) must be monophyletic, comprising an ancestor and all 
+              of its descendants. Each clade is diagnosed by the presence of synapomorphies, which are derived 
+              character states inherited from a common ancestor and shared exclusively among its descendants.
+            </p>
+
+            <p style="margin-bottom:25px;">
+              Within this framework, Dinosauria represents a well-supported clade united by numerous 
+              osteological synapomorphies. The group is formally diagnosed by features including an open 
+              acetabulum, elongated deltopectoral crest on the humerus, and modifications to the ankle joint 
+              that facilitate a parasagittal gait. Dinosauria is subdivided into two primary clades: Saurischia, 
+              characterized by a triradiate pelvis with the pubis directed anteroventrally, and Ornithischia, 
+              distinguished by a retroversed pubis and predentary bone. Modern phylogenetic analyses place 
+              Avialae (birds) within Saurischia as highly derived theropods, rendering traditional distinctions 
+              between "dinosaurs" and "birds" paraphyletic and therefore scientifically obsolete.
+            </p>
+
+            <p style="margin-bottom:25px; padding:20px; background:rgba(61,47,31,0.3); border-left:4px solid #8b7355; font-style:italic;">
+            "The combination of such characters... will, it is presumed, be deemed sufficient ground for establishing 
+            a distinct tribe or sub-order of Saurian Reptiles, for which I would propose the name of <em>Dinosauria</em>."
+            <span style="display:block; margin-top:10px; font-style:normal; font-size:0.9em; color:#a68a5a;">
+                — Richard Owen (1842). Report on British Fossil Reptiles, Part II. <em>Report of the British Association 
+                for the Advancement of Science</em>, 11: 60–204.
+            </span>
+            </p>
+
+            <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+              Game Mechanics and Educational Objectives
+            </h3>
+
+            <p style="margin-bottom:25px;">
+              Players are presented with a mystery taxon and must infer its phylogenetic position through 
+              iterative hypothesis testing. Each classification attempt reveals the deepest node shared between 
+              the proposed taxon and the target, thereby progressively constraining the phylogenetic search 
+              space. This mechanism mirrors the actual process of phylogenetic inference, wherein researchers 
+              place unknown taxa by identifying their closest relatives through character analysis and cladistic 
+              methodology.
+            </p>
+
+            <p style="margin-bottom:25px;">
+            The game offers five difficulty tiers determined by taxonomic familiarity as measured through 
+            Wikipedia pageview statistics over a thirty-day period. This metric serves as a proxy for public 
+            recognition rather than phylogenetic complexity or fossil completeness. Higher difficulty levels 
+            incorporate taxa with lower pageview counts (generally lesser-known genera that receive less popular 
+            attention) thereby requiring broader taxonomic knowledge independent of their scientific importance 
+            or systematic resolution. Daily challenges ensure that all participants worldwide confront identical 
+            classification problems.
+            </p>
+
+            <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+              Data Sources and Taxonomic Authority
+            </h3>
+
+            <p style="margin-bottom:25px;">
+            Taxonomic occurrence data and genus-level diversity are sourced from the Paleobiology Database 
+            (paleobiodb.org), an open-access repository of fossil taxa maintained by the international 
+            paleontological community. The database is filtered to include only extinct, valid genera outside 
+            crown Aves, removing modern birds and nomenclaturally problematic taxa. Phylogenetic lineages for 
+            each genus are retrieved from Wikispecies (species.wikimedia.org), the free species directory, 
+            via recursive parsing of its taxonomic template chain. Users should recognize that phylogenetic 
+            hypotheses remain subject to revision as new fossil discoveries and analytical methods refine our 
+            understanding of dinosaurian relationships. Certain taxa exhibiting nomenclatural ambiguities, 
+            such as homonyms with non-paleontological entities, have been manually reviewed and remapped 
+            to maintain database integrity.
+            </p>
+
+            <p style="margin-bottom:25px;">
+            Difficulty classification methodology employs Wikipedia pageview metrics retrieved via the Wikimedia 
+            REST API, aggregating thirty-day access statistics for each taxon. Genera are stratified into quintiles 
+            based on these pageview counts, with the most frequently accessed taxa assigned to lower difficulty 
+            tiers and obscure genera with minimal page traffic assigned to higher difficulty levels. This approach 
+            acknowledges that taxonomic familiarity, operationalized here as public digital engagement—constitutes 
+            a distinct dimension from phylogenetic complexity, fossil completeness, or systematic significance. 
+            Consequently, scientifically important but publicly unfamiliar taxa may appear at higher difficulty 
+            levels, while fragmentary or taxonomically problematic genera with substantial popular culture presence 
+            may occupy lower tiers.
+            </p>
+
+            <p style="margin-bottom:25px;">
+              Supplementary information regarding clade diagnoses and evolutionary context is retrieved from 
+              Wikipedia's public API. While this resource provides accessible overviews suitable for educational 
+              contexts, users are encouraged to consult primary literature (including original species descriptions, 
+              phylogenetic analyses published in journals such as <em>Nature</em>, <em>Science</em>, <em>Journal 
+              of Vertebrate Paleontology</em>, and <em>Cladistics</em>) for authoritative systematic information.
+            </p>
+
+            <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+              Methodological Considerations and Limitations
+            </h3>
+
+            <p style="margin-bottom:25px;">
+              Phylogenetic trees are hypotheses of evolutionary relationships, not immutable facts. The topology 
+              presented here represents one interpretation of available data and may differ from alternative 
+              analyses that employ different character matrices, taxon sampling strategies, or analytical methods. 
+              Furthermore, phylogenetic resolution varies considerably across the dinosaurian tree; while some 
+              clades such as Tyrannosauridae exhibit robust support across multiple independent analyses, others 
+              remain poorly resolved due to incomplete fossil records or morphological conservatism. Users should 
+              interpret tree topology with appropriate epistemic humility, recognizing that scientific understanding 
+              of dinosaurian phylogeny continues to evolve.
+            </p>
+
+            <p style="margin-bottom:25px;">
+              Taxonomic nomenclature follows standard conventions wherein genus names are italicized and capitalized, 
+              while higher-level clade names are rendered in standard font with initial capitalization. Some taxa 
+              included in the database may represent <em>nomina dubia</em> (names of doubtful validity based on 
+              insufficient diagnostic material) or taxonomic wastebasket groups subject to ongoing systematic revision. 
+            </p>
+
+            <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+              Acknowledgments and Further Resources
+            </h3>
+
+            <p style="margin-bottom:25px;">
+              This project acknowledges the foundational work of countless paleontologists whose systematic research 
+              underlies our current understanding of dinosaurian phylogeny. For readers seeking deeper engagement 
+              with the primary literature, recommended resources include the Paleobiology Database (paleobiodb.org), 
+              which archives stratigraphic and taxonomic occurrence data; the Tree of Life Web Project (tolweb.org), 
+              providing comprehensive phylogenetic overviews; and Fossilworks (fossilworks.org), which maintains 
+              detailed taxonomic and bibliographic records. Users interested in formal training in phylogenetic 
+              methodology are encouraged to consult <em>Phylogenetics: Theory and Practice of Phylogenetic Systematics</em> 
+              by E.O. Wiley and Bruce Lieberman, or <em>Inferring Phylogenies</em> by Joseph Felsenstein.
+            </p>
+
+            <p style="margin-bottom:35px;">
+              Phylosaur is provided as an educational resource without commercial intent. Users are encouraged to 
+              provide feedback regarding taxonomic inaccuracies, interface improvements, or pedagogical suggestions 
+              that might enhance the tool's effectiveness as an instructional aid. While this application aims for 
+              scientific rigor, it should not be cited as a primary source in formal academic contexts; instead, 
+              users should trace information to original systematic publications through the references provided in 
+              supplementary materials.
+            </p>
+
+          </div>
+
+          <p style="margin-bottom:35px; padding:20px; background:rgba(61,47,31,0.3); border-left:4px solid #8b7355; border-radius:2px;">
+            Phylosaur is currently under active development. Taxonomic inaccuracies, interface issues, 
+            missing genera, or any other problems are expected and your feedback is genuinely invaluable. 
+            If you encounter anything worth reporting, however small, please write to 
+            <a href="mailto:rodrigo03.villa@gmail.com" style="color:#c9a96e; text-decoration:none; border-bottom:1px solid #8b7355;">rodrigo03.villa@gmail.com</a>. 
+            Every message is read and deeply appreciated.
+          </p>
+
+          <button class="btn-new-game" onclick="showDifficultySelection()" style="margin-top:30px;">
+            Return to Challenge Selection
+          </button>
+        </div>
+      `;
+    }
+    function generateDifficultyStats(diffStats) {
+      const diffNames = {
+        'muito_facil': 'Level I',
+        'facil': 'Level II',
+        'normal': 'Level III',
+        'dificil': 'Level IV',
+        'muito_dificil': 'Level V'
+      };
+
+      if (!diffStats || diffStats.length === 0) {
+        return '<p class="empty-stats">No classifications completed yet. Begin your research!</p>';
+      }
+
+      let html = '';
+      diffStats.forEach(stat => {
+        const winRate = stat.played > 0 ? Math.round((stat.won / stat.played) * 100) : 0;
+        html += `
+          <div class="difficulty-stat-row">
+            <span class="diff-name">${diffNames[stat.difficulty] || stat.difficulty}</span>
+            <div class="diff-stats">
+              <span class="diff-record">${stat.won}/${stat.played}</span>
+              <span class="diff-winrate">${winRate}%</span>
+              <span class="diff-avg">Avg: ${Math.round(stat.avg_guesses)} guesses</span>
+            </div>
+          </div>
+        `;
+      });
+      return html;
+    }
+
+    function generateAchievements(unlockedSet) {
+      const allAchievements = [
+        { id: 'first_win', name: 'First Discovery', desc: 'Complete your first classification' },
+        { id: 'perfect_game', name: 'Phylogenetic Prodigy', desc: 'Classify species in 3 guesses or fewer' },
+        { id: 'ten_wins', name: 'Taxonomist', desc: 'Successfully classify 10 species' },
+        { id: 'fifty_wins', name: 'Paleontologist', desc: 'Successfully classify 50 species' },
+        { id: 'hard_win', name: 'Specialist', desc: 'Complete Level IV classification' },
+        { id: 'very_hard_win', name: 'Master Classifier', desc: 'Complete Level V classification' }
+      ];
+
+      let html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:15px;">';
+      allAchievements.forEach(ach => {
+        const unlocked = unlockedSet && unlockedSet.has(ach.id);
+        html += `
+          <div class="achievement-card ${unlocked ? 'achievement-unlocked' : 'achievement-locked'}">
+            <div class="achievement-title">${unlocked ? '◆' : '◇'} ${ach.name}</div>
+            <div class="achievement-desc">${ach.desc}</div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      return html;
+    }
 
     // ═══════════════════════════════════════════════════════════════════════
     // DAILY CHALLENGE MODE
     // ═══════════════════════════════════════════════════════════════════════
+    function generateRecentGames(recentGames) {
+      if (!recentGames || recentGames.length === 0) {
+        return '<p style="color:#8b7355; font-style:italic; padding:20px; text-align:center;">No recent classifications. Begin your research!</p>';
+      }
+
+      const diffNames = {
+        'muito_facil': 'Level I',
+        'facil': 'Level II',
+        'normal': 'Level III',
+        'dificil': 'Level IV',
+        'muito_dificil': 'Level V'
+      };
+
+      const today = getTodayString();
+
+      let html = '';
+      recentGames.forEach(game => {
+        const date = new Date(game.created_at).toLocaleDateString();
+        
+        const isToday = game.played_date === today;
+        const spoiler = isToday && !game.won;
+        const dinoDisplay = spoiler 
+          ? '<span style="color:#5d4a36; font-style:italic;">[ classified today — hidden ]</span>' 
+          : `<span style="color:#f8f6f3; font-style:italic;">${game.target_dino}</span>`;
+
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:rgba(42,31,22,0.4); border-left:4px solid ${game.won ? '#5a9c6b' : '#8b6f47'}; border-radius:4px;">
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; margin-bottom:5px;">
+                <span style="color:${game.won ? '#c8e6c9' : '#d4a574'}; font-weight:700; margin-right:12px; font-size:1.1em;">${game.won ? '✓' : '…'}</span>
+                ${dinoDisplay}
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:#c9a96e; font-size:1em; font-weight:600; margin-bottom:3px;">${game.guess_count} guesses</div>
+              <div style="color:#8b7355; font-size:0.8em;">${diffNames[game.difficulty]} • ${date}</div>
+            </div>
+          </div>
+        `;
+      });
+      return html;
+    }
 
     function getDailySeed(difficulty) {
       const today = new Date();
       const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      // Add difficulty to seed so each difficulty gets different dinosaur
       return `${dateStr}-${difficulty}`;
     }
 
@@ -5077,9 +4839,6 @@ function generateRecentGames(recentGames) {
       }
       return Math.abs(hash);
     }
-
-    
-    
   </script>
 </body>
 </html>
