@@ -39,7 +39,6 @@
        text-rendering: optimizeLegibility;
     }
 
-    /* LIGHT MODE STYLES */
     body.light-mode {
       background: #e8dcc8;
       background-image: 
@@ -257,6 +256,7 @@
     font-style: italic;
     display: none;
     }
+
     .login-field-error.visible { display: block; }
 
     .login-forgot {
@@ -270,6 +270,7 @@
     cursor: pointer;
     transition: color 0.2s;
     }
+
     .login-forgot:hover { color: #a68a5a; }
 
     .login-divider {
@@ -278,12 +279,14 @@
     gap: 14px;
     margin: 22px 0;
     }
+
     .login-divider::before, .login-divider::after {
     content: '';
     flex: 1;
     height: 1px;
     background: #3d2f1f;
     }
+
     .login-divider span { color: #5d4a36; font-size: 0.8em; letter-spacing: 1px; }
 
     .login-benefits {
@@ -293,6 +296,7 @@
     border-left: 3px solid #5d4a36;
     border-radius: 2px;
     }
+
     .login-benefits-title {
     color: #8b7355;
     font-size: 0.75em;
@@ -300,15 +304,18 @@
     text-transform: uppercase;
     margin-bottom: 10px;
     }
+
     .login-benefits-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 5px 16px;
     }
+
     .login-benefits-grid span {
     color: #6b5340;
     font-size: 0.82em;
     }
+
     .login-benefits-grid span::before { content: '◆ '; color: #5d4a36; font-size: 0.7em; }
 
     .login-global-error {
@@ -322,6 +329,7 @@
     text-align: center;
     display: none;
     }
+
     .login-global-error.visible { display: block; }
 
     .login-global-success {
@@ -335,6 +343,7 @@
     text-align: center;
     display: none;
     }
+
     .login-global-success.visible { display: block; }
 
     .btn-loading { position: relative; color: transparent !important; }
@@ -349,6 +358,7 @@
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     }
+
     @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
     body.light-mode .tab-btn { color: #8b7355; }
@@ -683,7 +693,6 @@
     transition: all 0.3s ease;
     }
 
-    
     .game-card::before,
     .game-card::after {
     display: none;
@@ -750,42 +759,40 @@
       pointer-events: none;
     }
 
-        .btn-guess {
-        background: #c9a96e;
-        color: #1a1410;
-        border-color: #8b7355;
-        font-weight: 700;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-        }
+    .btn-guess {
+    background: #c9a96e;
+    color: #1a1410;
+    border-color: #8b7355;
+    font-weight: 700;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
 
-        .btn-guess::before {
-        display: none;
-        }
+    .btn-guess::before {
+    display: none;
+    }
 
+    .btn-guess:hover:not(:disabled) {
+    background: #d4b87e;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transform: translateY(-1px);
+    }
 
+    .btn-guess:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
 
-        .btn-guess:hover:not(:disabled) {
-        background: #d4b87e;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-        transform: translateY(-1px);
-        }
+    .btn-hint {
+      background: rgba(61, 47, 31, 0.8);
+      color: #c9a96e;
+      border-color: #5d4a36;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
 
-        .btn-guess:active:not(:disabled) {
-        transform: translateY(1px);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-
-      .btn-hint {
-        background: rgba(61, 47, 31, 0.8);
-        color: #c9a96e;
-        border-color: #5d4a36;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      }
-
-      .btn-hint:hover:not(:disabled) {
-        background: rgba(74, 56, 41, 0.9);
-        border-color: #8b7355;
-      }
+    .btn-hint:hover:not(:disabled) {
+      background: rgba(74, 56, 41, 0.9);
+      border-color: #8b7355;
+    }
 
     .btn-new-game {
       background: linear-gradient(180deg, #3d4a2f 0%, #2d3a1f 100%);
@@ -931,30 +938,32 @@
         gap: 16px;
       }
 
-        header > div > div:first-child {
-          display: none; /* hide the empty spacer div */
-        }
-
-        header > div > div:nth-child(2) {
-          flex: none;
-          text-align: center;
-        }
-
-        header > div > div:last-child {
-          flex: none;
-          justify-content: center !important;
-        }
-        #header-controls {
-          flex-wrap: wrap;
-          justify-content: flex-end;
-          gap: 6px;
-        }
-        #header-controls button {
-          padding: 6px 10px;
-          font-size: 11px;
-          letter-spacing: 0.5px;
-        }
+      header > div > div:first-child {
+        display: none;
       }
+
+      header > div > div:nth-child(2) {
+        flex: none;
+        text-align: center;
+      }
+
+      header > div > div:last-child {
+        flex: none;
+        justify-content: center !important;
+      }
+      
+      #header-controls {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+
+      #header-controls button {
+        padding: 6px 10px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+      }
+    }
 
     #tree-container {
       background: linear-gradient(180deg, #1a1410 0%, #0f0a08 100%);
@@ -982,20 +991,19 @@
 
     .tree-legend { grid-template-columns: 1fr 1fr; gap: 10px; }
 
-
     #tree-container {
     background: linear-gradient(180deg, #1a1410 0%, #0f0a08 100%);
     border: 3px solid #3d2f1f;
     border-radius: 4px;
     padding: 20px;
     min-height: 300px;
-    overflow: auto; /* ← scrollable in both directions */
+    overflow: auto;
     position: relative;
     box-shadow: 
         inset 0 4px 12px rgba(0,0,0,0.8),
         0 4px 12px rgba(0,0,0,0.6);
     transition: all 0.3s ease;
-    -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+    -webkit-overflow-scrolling: touch;
     cursor: grab;
     }
 
@@ -1318,14 +1326,14 @@
     }
 
     .difficulty-completed {
-  border-color: #5a9c6b !important;
-  box-shadow: 0 0 20px rgba(90, 156, 107, 0.3) !important;
-}
+      border-color: #5a9c6b !important;
+      box-shadow: 0 0 20px rgba(90, 156, 107, 0.3) !important;
+    }
 
-body.light-mode .difficulty-completed {
-  border-color: #4a7c59 !important;
-  box-shadow: 0 0 20px rgba(74, 124, 89, 0.3) !important;
-}
+    body.light-mode .difficulty-completed {
+      border-color: #4a7c59 !important;
+      box-shadow: 0 0 20px rgba(74, 124, 89, 0.3) !important;
+    }
 
     @keyframes shimmer {
       0%, 100% { opacity: 0; }
@@ -1354,88 +1362,83 @@ body.light-mode .difficulty-completed {
       }
     }
 
-    /* ═══════════════════════════════════════════════════════════════════════
-   ANIMAÇÕES
-   ═══════════════════════════════════════════════════════════════════════ */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-/* Fade in suave para elementos */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+    /* Aplicar animação aos cards principais */
+    .game-card {
+      animation: fadeInUp 0.5s ease-out;
+    }
 
-/* Aplicar animação aos cards principais */
-.game-card {
-  animation: fadeInUp 0.5s ease-out;
-}
+    /* Stats aparecem um após o outro */
+    .stat {
+      animation: fadeInUp 0.5s ease-out;
+      animation-fill-mode: both;
+    }
 
-/* Stats aparecem um após o outro */
-.stat {
-  animation: fadeInUp 0.5s ease-out;
-  animation-fill-mode: both;
-}
+    .stat:nth-child(1) { animation-delay: 0.1s; }
+    .stat:nth-child(2) { animation-delay: 0.2s; }
+    .stat:nth-child(3) { animation-delay: 0.3s; }
+    .stat:nth-child(4) { animation-delay: 0.4s; }
 
-.stat:nth-child(1) { animation-delay: 0.1s; }
-.stat:nth-child(2) { animation-delay: 0.2s; }
-.stat:nth-child(3) { animation-delay: 0.3s; }
-.stat:nth-child(4) { animation-delay: 0.4s; }
+    /* Botões de dificuldade aparecem em cascata */
+    .difficulty-btn {
+      animation: fadeInUp 0.5s ease-out;
+      animation-fill-mode: both;
+    }
 
-/* Botões de dificuldade aparecem em cascata */
-.difficulty-btn {
-  animation: fadeInUp 0.5s ease-out;
-  animation-fill-mode: both;
-}
+    .difficulty-btn:nth-child(1) { animation-delay: 0.1s; }
+    .difficulty-btn:nth-child(2) { animation-delay: 0.2s; }
+    .difficulty-btn:nth-child(3) { animation-delay: 0.3s; }
+    .difficulty-btn:nth-child(4) { animation-delay: 0.4s; }
+    .difficulty-btn:nth-child(5) { animation-delay: 0.5s; }
 
-.difficulty-btn:nth-child(1) { animation-delay: 0.1s; }
-.difficulty-btn:nth-child(2) { animation-delay: 0.2s; }
-.difficulty-btn:nth-child(3) { animation-delay: 0.3s; }
-.difficulty-btn:nth-child(4) { animation-delay: 0.4s; }
-.difficulty-btn:nth-child(5) { animation-delay: 0.5s; }
+    .modal-box {
+      animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
 
-.modal-box {
-  animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+    @keyframes modalAppear {
+      from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
 
-@keyframes modalAppear {
-  from {
-    opacity: 0;
-    transform: scale(0.8) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
+    /* Victory banner pulse */
+    .victory {
+      animation: victoryAppear 0.6s ease-out;
+    }
 
-/* Victory banner pulse */
-.victory {
-  animation: victoryAppear 0.6s ease-out;
-}
-
-@keyframes victoryAppear {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
+    @keyframes victoryAppear {
+      0% {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      50% {
+        transform: scale(1.02);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
 
     .victory h2 {
       font-size: 2.5em;
@@ -1453,20 +1456,20 @@ body.light-mode .difficulty-completed {
     }
 
     /* Modal overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  animation: fadeIn 0.2s ease;
-  backdrop-filter: blur(4px);
-}
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeIn 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
 
 .modal-box {
   background: linear-gradient(180deg, #2c2318 0%, #221a12 100%);
@@ -1510,7 +1513,6 @@ body.light-mode .modal-title {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Modal message */
 .modal-message {
   color: #f8f6f3;
   font-size: 1.05em;
@@ -1523,7 +1525,6 @@ body.light-mode .modal-message {
   color: #2d2318;
 }
 
-/* Modal info box (for progress details) */
 .modal-info {
   background: rgba(61, 47, 31, 0.5);
   border-left: 3px solid #8b7355;
@@ -1557,7 +1558,6 @@ body.light-mode .modal-info-label {
   color: #6b5340;
 }
 
-/* Modal buttons */
 .modal-buttons {
   display: flex;
   gap: 15px;
@@ -1838,7 +1838,6 @@ body.light-mode .modal-btn-secondary:hover {
       border-color: #a6623d;
     }
 
-    /* Difficulty button styles */
     .difficulty-btn {
       background: linear-gradient(180deg, #3d2f1f 0%, #2a1f16 100%);
       border: 2px solid #5d4a36;
@@ -1904,14 +1903,12 @@ body.light-mode .modal-btn-secondary:hover {
         </div>
 
         <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:10px;" id="header-controls">
-        <!-- filled dynamically -->
         </div>
 
     </div>
     </header>
 
     <div id="app-content">
-      <!-- Filled by JavaScript -->
     </div>
   </div>
 
@@ -1973,9 +1970,6 @@ body.light-mode .modal-btn-secondary:hover {
       'muito_dificil': 'very-hard'
     };
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // USER ACCOUNT SYSTEM
-    // ═══════════════════════════════════════════════════════════════════════
     async function initializeUserSystem() {
     const { data: { session } } = await sb.auth.getSession();
     
