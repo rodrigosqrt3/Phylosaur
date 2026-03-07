@@ -6,8 +6,11 @@
   <title>Phylosaur</title>
   <link rel="icon" type="image/svg+xml" href="dinosaur-footprint-1-svgrepo-com.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <meta name="theme-color" content="#2d2318">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -568,6 +571,12 @@
     body.light-mode .difficulty-very-hard  { border-color: #a03020; }
     body.light-mode .difficulty-very-hard:hover  { background: linear-gradient(180deg, #f5e8e8 0%, #e8d8d8 100%); }
 
+    .btn-header {
+      padding: 8px 14px;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+
     .difficulty-info-box {
     margin-top: 30px;
     padding: 20px;
@@ -643,25 +652,20 @@
       background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.6), transparent);
     }
 
-   h1 {
-    font-size: 3.5em;
-    margin-bottom: 10px;
-    color: #d4b87e;
-    font-weight: 300;
-    letter-spacing: 12px;
-    text-transform: uppercase;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
-    font-variant: small-caps;
+    h1 {
+      font-size: 3.5em;
+      margin-bottom: 10px;
+      color: #d4b87e;
+      font-weight: 900;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
     }
 
     .subtitle {
       font-size: 1.1em;
       color: #a68a5a;
       font-style: italic;
-      font-weight: 300;
-      letter-spacing: 2px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-      transition: all 0.3s ease;
+      font-weight: 400;
+      letter-spacing: 3px;
     }
 
     #theme-toggle {
@@ -1913,6 +1917,13 @@ body.light-mode .modal-btn-secondary:hover {
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+  MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <script>
     const SUPABASE_URL = 'https://rpezjtvmxardbkjjtpit.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwZXpqdHZteGFyZGJramp0cGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDE3MzUsImV4cCI6MjA4ODIxNzczNX0.yaycbDJ_0zllmiiD__AR1XhB8_mwrldRUTsUxMnrWAU'
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -2117,31 +2128,31 @@ body.light-mode .modal-btn-secondary:hover {
     if (!controls) return;
 
     const themeBtn = `
-        <button class="btn-hint" onclick="toggleTheme()" id="theme-toggle" style="padding:8px 14px; font-size:12px;">
+      <button class="btn-hint btn-header" onclick="toggleTheme()" id="theme-toggle">
         <span id="theme-icon">${currentTheme === 'light' ? '🌙' : '☀️'}</span>
-        </button>
+      </button>
     `;
 
-    const aboutBtn = `<button class="btn-hint" onclick="showAbout()" style="padding:8px 14px; font-size:12px;">About</button>`;
+    const aboutBtn = `<button class="btn-hint btn-header" onclick="showAbout()" style="padding:8px 14px; font-size:12px;">About</button>`;
     
     const statsBtn = currentUser 
-        ? `<button class="btn-hint" onclick="showStatsDashboard()" style="padding:8px 14px; font-size:12px;">Stats</button>` 
-        : '';
-    
+      ? `<button class="btn-hint btn-header" onclick="showStatsDashboard()">Stats</button>` 
+      : '';
+
     const logoutBtn = currentUser 
-        ? `<button class="btn-hint" onclick="logout()" style="padding:8px 14px; font-size:12px;">${currentUser}</button>` 
-        : '';
+      ? `<button class="btn-hint btn-header" onclick="logout()">${currentUser}</button>` 
+      : '';
 
     const backBtn = `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Levels</button>`;
 
     const map = {
-        'login':      themeBtn,
-        'difficulty': themeBtn + aboutBtn + statsBtn + logoutBtn,
-        'game':       themeBtn + aboutBtn + backBtn + statsBtn,
-        'stats':      themeBtn + `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Back</button>`,
-        'about':      themeBtn + `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Back</button>`,
-        'practice-menu': themeBtn + aboutBtn + `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Back</button>`,
-        'practice':      themeBtn + aboutBtn + `<button class="btn-hint" onclick="showPracticeMode()" style="padding:8px 14px; font-size:12px;">← Back</button>`,
+      'login':        themeBtn,
+      'difficulty':   themeBtn + aboutBtn + statsBtn + logoutBtn,
+      'game':         themeBtn + aboutBtn + backBtn + statsBtn,
+      'stats':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
+      'about':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
+      'practice-menu':themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
+      'practice':     themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showPracticeMode()">← Back</button>`,
     };
 
     controls.innerHTML = map[screen] || themeBtn;
@@ -2255,14 +2266,11 @@ body.light-mode .modal-btn-secondary:hover {
 
         <div class="game-card" style="max-width:480px; margin:40px auto; padding:40px;">
 
-
-        <!-- TAB SWITCHER -->
         <div class="tab-row">
             <button class="tab-btn active" id="tab-signin"   onclick="loginSwitchTab('signin')">Sign In</button>
             <button class="tab-btn"        id="tab-register" onclick="loginSwitchTab('register')">Create Account</button>
         </div>
 
-        <!-- SIGN IN PANEL -->
         <div class="login-form-panel active" id="login-panel-signin">
             <div class="login-global-error"   id="signin-global-error"></div>
             <div class="login-global-success" id="signin-global-success"></div>
@@ -4703,6 +4711,54 @@ body.light-mode .modal-btn-secondary:hover {
             </p>
 
             <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+              Mathematical Foundations
+            </h3>
+            <p style="margin-bottom:25px;">
+              The proximity measure computed by Phylosaur has a precise mathematical interpretation. 
+              Given two taxa $A$ and $B$ with lineages $L_A$ and $L_B$ represented as 
+              ordered sequences of clades from root to tip, the game computes the length of their 
+              longest common prefix , equivalently, the depth of their most recent common ancestor 
+              (MRCA). The phylogenetic distance between any two taxa is then formally defined as:
+            </p>
+            <p style="margin-bottom:25px; padding:20px; background:rgba(61,47,31,0.3); border-radius:4px; text-align:center;">
+              $$d(A, B) = \\text{depth}(A) + \\text{depth}(B) - 2 \\cdot \\text{depth}(\\text{MRCA}(A, B))$$
+            </p>
+            <p style="margin-bottom:25px;">
+              This quantity defines a tree metric, it is symmetric, non-negative, and satisfies 
+              the triangle inequality $d(A,C) \\leq d(A,B) + d(B,C)$ for all taxa $A$, $B$, $C$. 
+              Each guess therefore partitions the remaining hypothesis space: a guess sharing depth 
+              $k$ with the target eliminates all taxa residing outside the clade diagnosed at that 
+              depth, progressively constraining the search space in a manner analogous to binary 
+              search on a sorted structure, though operating on a hierarchical tree topology rather 
+              than a linear sequence.
+            </p>
+            <p style="margin-bottom:25px;">
+              From an information-theoretic perspective, each guess constitutes a noisy query 
+              revealing the depth of the MRCA between the queried taxon and the hidden target. 
+              If we model the target as a uniformly distributed random variable over the 
+              difficulty-stratified taxon set of size $n$, the expected number of guesses required 
+              for identification scales with the entropy $H = \\log_2(n)$ of the prior 
+              distribution. Hints function as direct entropy-reducing revelations, each disclosing 
+              one additional node along the target lineage and thereby collapsing the hypothesis 
+              space to the subtree rooted at the revealed clade. The constraint requiring two 
+              intervening guesses between consecutive hints is designed to preserve the inferential 
+              challenge by ensuring players actively engage with the phylogenetic structure rather 
+              than exhausting hint allocations sequentially.
+            </p>
+            <p style="margin-bottom:25px;">
+              Difficulty stratification employs a non-parametric quintile decomposition of the 
+              Wikipedia pageview distribution. Formally, let $V = \\{v_1, v_2, \\ldots, v_m\\}$ 
+              denote the sorted vector of thirty-day pageview counts across all $m$ taxa with 
+              positive pageview values. The difficulty boundaries are defined at the 20th, 40th, 
+              60th, and 80th percentiles of $V$, partitioning taxa into five equiprobable strata 
+              under the empirical pageview distribution. Taxa with zero pageviews, those absent 
+              from Wikipedia or generating no recorded traffic, are assigned to the highest 
+              difficulty tier by default, as are genera whose names constitute homonyms with 
+              non-paleontological entities, for which pageview counts would otherwise reflect 
+              unrelated subject matter.
+            </p>
+
+            <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
               Methodological Considerations and Limitations
             </h3>
 
@@ -4763,6 +4819,17 @@ body.light-mode .modal-btn-secondary:hover {
           </button>
         </div>
       `;
+      setTimeout(() => {
+        if (window.renderMathInElement) {
+          renderMathInElement(document.querySelector('.game-card'), {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
+          });
+        }
+      }, 50);
     }
 
     function showHowToPlay() {
@@ -4795,6 +4862,11 @@ body.light-mode .modal-btn-secondary:hover {
             <div style="padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
               <strong style="color:#d4b87e;">Tip</strong><br>
               Click any node on the tree to read about that clade. New here? Start with Level I.
+              <br><br>
+              <span style="color:#8b7355; font-style:italic; font-size:0.9em;">
+                The game currently has no guess limit while I evaluate what feels most balanced. 
+                This may change in future updates.
+              </span>
             </div>
           </div>
         `,
