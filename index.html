@@ -3,12 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta property="og:title" content="Phylosaur">
-  <meta property="og:description" content="A daily dinosaur phylogenetics game. Guess the hidden genus from evolutionary relationships.">
-  <meta property="og:image" content="https://rodrigosqrt3.github.io/Phylosaur/preview.png">
-  <meta property="og:url" content="https://rodrigosqrt3.github.io/Phylosaur/">
-  <meta property="og:type" content="website">
-
   <title>Phylosaur</title>
   <link rel="icon" type="image/svg+xml" href="dinosaur-footprint-1-svgrepo-com.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -4139,10 +4133,32 @@ body.light-mode .modal-btn-secondary:hover {
         }
     }
 
+    const imageUrl = await fetchWikimediaImage(targetDino.nome);
+    const commonsPage = `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(targetDino.nome + ' TD.png')}`;
+    const imageHTML = imageUrl 
+      ? `<div style="max-width:320px; margin:20px auto;">
+          <img src="${imageUrl}" alt="${targetDino.nome}" 
+                id="victory-dino-img"
+                style="width:100%; border:2px solid #5d4a36; 
+                      border-radius:8px; display:block;
+                      box-shadow:0 4px 16px rgba(0,0,0,0.5);
+                      cursor:zoom-in;
+                      transition:transform 0.2s, box-shadow 0.2s;"
+                onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.7)'"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.5)'"
+                onclick="openImageLightbox('${imageUrl}', '${targetDino.nome}', '${commonsPage}')" />
+          <div style="text-align:center; margin-top:8px; font-size:0.78em; color:#5d4a36; font-style:italic; letter-spacing:1px;">
+            Art by <a href="https://totaldino.com" target="_blank" style="color:#8b7355; text-decoration:none;">TotalDino</a>
+            · <a href="${commonsPage}" target="_blank" style="color:#8b7355; text-decoration:none;">Wikimedia Commons</a>
+          </div>
+        </div>`
+      : '';
+
     v.innerHTML = `
         ${modeHTML}
         <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
         <div class="victory-dino">${targetDino.nome}</div>
+        ${imageHTML}
         <p style="font-size:1.1em; margin-top:15px; color:#c9a96e;">
         Successfully identified in ${guesses.length} taxonomic queries
         </p>
@@ -4235,6 +4251,40 @@ body.light-mode .modal-btn-secondary:hover {
         }
         });
     }
+    }
+
+    function openImageLightbox(url, name, commonsPage) {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position:fixed; top:0; left:0; right:0; bottom:0;
+        background:rgba(0,0,0,0.92); z-index:99999;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        cursor:zoom-out; animation:fadeIn 0.2s ease;
+        padding:20px;
+      `;
+      
+      overlay.innerHTML = `
+        <img src="${url}" alt="${name}"
+            style="max-width:90vw; max-height:80vh; border-radius:8px;
+                    border:2px solid #5d4a36; box-shadow:0 8px 40px rgba(0,0,0,0.8);" />
+        <div style="margin-top:16px; font-family:Georgia,serif; font-style:italic;
+                    color:#c9a96e; font-size:1.1em; letter-spacing:1px;">${name}</div>
+        <div style="margin-top:8px; font-size:0.82em; color:#5d4a36; letter-spacing:1px;">
+          Art by <a href="https://totaldino.com" target="_blank" 
+                    style="color:#8b7355; text-decoration:none;"
+                    onclick="event.stopPropagation()">TotalDino</a>
+          · <a href="${commonsPage}" target="_blank"
+              style="color:#8b7355; text-decoration:none;"
+              onclick="event.stopPropagation()">View on Wikimedia Commons</a>
+        </div>
+        <div style="margin-top:16px; color:#5d4a36; font-size:0.8em; letter-spacing:2px;">
+          CLICK ANYWHERE TO CLOSE
+        </div>
+      `;
+      
+      overlay.onclick = () => document.body.removeChild(overlay);
+      document.body.appendChild(overlay);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -4429,6 +4479,26 @@ body.light-mode .modal-btn-secondary:hover {
       html += `</div></div>`;
       
       infoDiv.innerHTML = html;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TotalDino.com
+    // ═══════════════════════════════════════════════════════════════════════
+
+    async function fetchWikimediaImage(taxonName) {
+      try {
+        const fileName = `${taxonName} TD.png`;
+        const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=File:${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const pages = data.query.pages;
+        const page = pages[Object.keys(pages)[0]];
+        if (page['-1']) return null; // file not found
+        return page?.imageinfo?.[0]?.url || null;
+      } catch (e) {
+        console.error('Wikimedia image error:', e);
+        return null;
+      }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -5002,4 +5072,3 @@ body.light-mode .modal-btn-secondary:hover {
   </script>
 </body>
 </html>
-
