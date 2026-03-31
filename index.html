@@ -2141,8 +2141,8 @@ body.light-mode .modal-btn-secondary:hover {
 
     const map = {
       'login':        themeBtn,
-      'difficulty':   themeBtn + aboutBtn + statsBtn + logoutBtn,
-      'game':         themeBtn + aboutBtn + backBtn + statsBtn,
+      'difficulty': themeBtn + aboutBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
+      'game': themeBtn + aboutBtn + backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
       'stats':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
       'about':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
       'practice-menu':themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
@@ -2341,11 +2341,12 @@ body.light-mode .modal-btn-secondary:hover {
         </div>
 
         <p style="text-align:center; margin-top:20px;">
-        <span onclick="continueAsGuest()" style="color:#5d4a36; font-size:0.85em; font-style:italic; cursor:pointer; letter-spacing:1px; transition:color 0.2s;"
-            onmouseover="this.style.color='#a68a5a'" 
-            onmouseout="this.style.color='#5d4a36'">
-            Continue without an account
-        </span>
+        <button onclick="continueAsGuest()" 
+                class="btn-hint" 
+                style="width:100%; padding:15px; font-size:14px; 
+                      letter-spacing:2px; margin-top:12px;">
+          Play Without Account
+        </button>
         </p>
 
         </div>
@@ -2357,6 +2358,165 @@ body.light-mode .modal-btn-secondary:hover {
 
     document.addEventListener('keydown', loginEnterHandler);
 }
+
+    function showLoginModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'login-modal-overlay';
+    
+    const box = document.createElement('div');
+    box.className = 'modal-box';
+    box.style.maxWidth = '480px';
+    box.style.width = '90%';
+    
+    box.innerHTML = `
+        <div class="tab-row" style="margin:-40px -40px 36px;">
+        <button class="tab-btn active" id="tab-signin" onclick="loginSwitchTab('signin')">Sign In</button>
+        <button class="tab-btn" id="tab-register" onclick="loginSwitchTab('register')">Create Account</button>
+        </div>
+
+        <div class="login-form-panel active" id="login-panel-signin">
+        <div class="login-global-error" id="signin-global-error"></div>
+        <div class="login-global-success" id="signin-global-success"></div>
+        <div class="login-field">
+            <label>Email</label>
+            <input type="email" id="signin-email" placeholder="your@email.com" autocomplete="email" />
+            <div class="login-field-error" id="signin-email-err">Please enter a valid email address.</div>
+        </div>
+        <div class="login-field">
+            <label>Password</label>
+            <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password" />
+            <div class="login-field-error" id="signin-password-err">Password is required.</div>
+        </div>
+        <span class="login-forgot" onclick="loginShowReset()">Forgot password?</span>
+        <button class="btn-guess" id="signin-btn" onclick="handleSignInModal()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+            Sign In
+        </button>
+        </div>
+
+        <div class="login-form-panel" id="login-panel-register">
+        <div class="login-global-error" id="register-global-error"></div>
+        <div class="login-global-success" id="register-global-success"></div>
+        <div class="login-field">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email" />
+            <div class="login-field-error" id="reg-email-err">Please enter a valid email address.</div>
+        </div>
+        <div class="login-field">
+            <label>Password</label>
+            <input type="password" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password" />
+            <div class="login-field-error" id="reg-password-err">Password must be at least 6 characters.</div>
+        </div>
+        <div class="login-field" style="margin-bottom:28px;">
+            <label>Confirm Password</label>
+            <input type="password" id="reg-confirm" placeholder="Repeat password" autocomplete="new-password" />
+            <div class="login-field-error" id="reg-confirm-err">Passwords do not match.</div>
+        </div>
+        <button class="btn-guess" id="register-btn" onclick="handleRegisterModal()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+            Create Account
+        </button>
+        </div>
+
+        <div class="login-form-panel" id="login-panel-reset">
+        <span class="login-forgot" style="display:inline-block; margin-bottom:20px;" onclick="loginShowReset(false)">← Back</span>
+        <div class="login-global-error" id="reset-global-error"></div>
+        <div class="login-global-success" id="reset-global-success"></div>
+        <div class="login-field" style="margin-bottom:28px;">
+            <label>Email</label>
+            <input type="email" id="reset-email" placeholder="your@email.com" />
+            <div class="login-field-error" id="reset-email-err">Please enter a valid email address.</div>
+        </div>
+        <button class="btn-guess" id="reset-btn" onclick="handleReset()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+            Send Reset Link
+        </button>
+        </div>
+
+        <button onclick="closeLoginModal()" 
+                class="btn-hint" 
+                style="width:100%; padding:12px; font-size:12px; 
+                    letter-spacing:2px; margin-top:20px;">
+        Continue Without Account
+        </button>
+    `;
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', e => {
+        if (e.target === overlay) closeLoginModal();
+    });
+    }
+
+    function closeLoginModal() {
+    const overlay = document.getElementById('login-modal-overlay');
+    if (overlay) document.body.removeChild(overlay);
+    }
+
+    async function handleSignInModal() {
+    loginClearErrors();
+    const email    = document.getElementById('signin-email')?.value.trim();
+    const password = document.getElementById('signin-password')?.value;
+    let valid = true;
+
+    if (!loginIsValidEmail(email))  { loginShowFieldError('signin-email-err');    valid = false; }
+    if (!password)                  { loginShowFieldError('signin-password-err'); valid = false; }
+    if (!valid) return;
+
+    loginSetLoading('signin-btn', true);
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        loginShowGlobalError('signin', 'Invalid email or password. Please try again.');
+        loginSetLoading('signin-btn', false);
+        return;
+    }
+
+    const { data: profile } = await sb.from('profiles')
+        .select('username')
+        .eq('id', data.user.id)
+        .single();
+
+    currentUser   = profile?.username || email.split('@')[0];
+    currentUserId = data.user.id;
+    await initUserStatsRow();
+
+    closeLoginModal();
+    setHeaderControls(selectedDifficulty ? 'game' : 'difficulty');
+    }
+
+    async function handleRegisterModal() {
+    loginClearErrors();
+    const email    = document.getElementById('reg-email')?.value.trim();
+    const password = document.getElementById('reg-password')?.value;
+    const confirm  = document.getElementById('reg-confirm')?.value;
+    let valid = true;
+
+    if (!loginIsValidEmail(email))   { loginShowFieldError('reg-email-err');    valid = false; }
+    if (password.length < 6)         { loginShowFieldError('reg-password-err'); valid = false; }
+    if (password !== confirm)        { loginShowFieldError('reg-confirm-err');  valid = false; }
+    if (!valid) return;
+
+    loginSetLoading('register-btn', true);
+
+    const { data, error } = await sb.auth.signUp({ email, password });
+
+    if (error) {
+        loginShowGlobalError('register', error.message);
+        loginSetLoading('register-btn', false);
+        return;
+    }
+
+    if (data.user) {
+        await sb.from('profiles').insert({ 
+        id: data.user.id, 
+        username: email.split('@')[0] 
+        });
+    }
+
+    loginSetLoading('register-btn', false);
+    loginShowGlobalSuccess('register', 'Account created! Check your email to confirm, then sign in.');
+    }
 
     function loginSwitchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -2544,7 +2704,7 @@ body.light-mode .modal-btn-secondary:hover {
         recentGames: [],
         achievements: []
         };
-        showLoginScreen();
+        showDifficultySelection();
     }
 }
 
@@ -2560,14 +2720,17 @@ body.light-mode .modal-btn-secondary:hover {
 
     if (params.get('error')) {
     await initializeUserSystem();
-    showLoginScreen();
+    showDifficultySelection();
     setTimeout(() => {
+        showLoginModal();
+        setTimeout(() => {
         const el = document.getElementById('signin-global-error');
         if (el) {
-        el.textContent = 'Your reset link has expired. Please request a new one.';
-        el.classList.add('visible');
+            el.textContent = 'Your reset link has expired. Please request a new one.';
+            el.classList.add('visible');
         }
         window.history.replaceState({}, document.title, window.location.pathname);
+        }, 100);
     }, 100);
     return;
     }
@@ -2580,11 +2743,7 @@ body.light-mode .modal-btn-secondary:hover {
     }
 
     await initializeUserSystem();
-    if (currentUser) {
-        showDifficultySelection();
-    } else {
-        showLoginScreen();
-    }
+    showDifficultySelection();
     });
 
     function showPasswordUpdateForm() {
@@ -3330,7 +3489,7 @@ body.light-mode .modal-btn-secondary:hover {
           }
           hintHistory = savedProgress.hintHistory || [];
           hintsRemaining = savedProgress.hintsRemaining !== undefined ? savedProgress.hintsRemaining : 3;
-          guessedNames = new Set(savedProgress.guessedNames || []);
+          guessedNames = new Set((savedProgress.guesses || []).map(g => g.nome.toLowerCase()));
           
           console.log(`Restored ${guesses.length} guesses, ${hintsRemaining} hints remaining`);
           
@@ -3414,6 +3573,7 @@ body.light-mode .modal-btn-secondary:hover {
 
       if (guessedNames.has(guessDino.nome.toLowerCase())) {
         await customAlert('Duplicate Classification', 'This specimen has already been classified in this session.');
+        return;
       }
       
       guessedNames.add(guessDino.nome.toLowerCase());
@@ -4135,44 +4295,42 @@ body.light-mode .modal-btn-secondary:hover {
 
     const imageUrl = await fetchWikimediaImage(targetDino.nome);
     const commonsPage = `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(targetDino.nome + ' TD.png')}`;
-    const imageHTML = imageUrl 
-      ? `<div style="max-width:320px; margin:20px auto;">
-          <img src="${imageUrl}" alt="${targetDino.nome}" 
-                id="victory-dino-img"
+        v.innerHTML = `
+            ${modeHTML}
+            <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
+            <div class="victory-dino">${targetDino.nome}</div>
+            <p style="font-size:0.95em; color:#8b7355; margin-top:8px; letter-spacing:1px;">
+            ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · ${revealedClades.size} ${revealedClades.size === 1 ? 'clade' : 'clades'} revealed
+            </p>
+
+            ${imageUrl ? `
+            <div style="max-width:440px; margin:24px auto 0;">
+            <img src="${imageUrl}" alt="${targetDino.nome}" 
                 style="width:100%; border:2px solid #5d4a36; 
-                      border-radius:8px; display:block;
-                      box-shadow:0 4px 16px rgba(0,0,0,0.5);
-                      cursor:zoom-in;
-                      transition:transform 0.2s, box-shadow 0.2s;"
+                        border-radius:8px; display:block;
+                        box-shadow:0 4px 16px rgba(0,0,0,0.5);
+                        cursor:zoom-in;
+                        transition:transform 0.2s, box-shadow 0.2s;"
                 onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.7)'"
                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.5)'"
                 onclick="openImageLightbox('${imageUrl}', '${targetDino.nome}', '${commonsPage}')" />
-          <div style="text-align:center; margin-top:8px; font-size:0.78em; color:#5d4a36; font-style:italic; letter-spacing:1px;">
-            Art by <a href="https://totaldino.com" target="_blank" style="color:#8b7355; text-decoration:none;">TotalDino</a>
-            · <a href="${commonsPage}" target="_blank" style="color:#8b7355; text-decoration:none;">Wikimedia Commons</a>
-          </div>
-        </div>`
-      : '';
+            <div style="text-align:center; margin-top:8px; font-size:0.78em; color:#5d4a36; font-style:italic; letter-spacing:1px;">
+                Art by <a href="https://totaldino.com" target="_blank" style="color:#8b7355; text-decoration:none;">TotalDino</a>
+                · <a href="https://totaldino.com/dino/${targetDino.nome.toLowerCase()}" target="_blank" style="color:#8b7355; text-decoration:none;">View on TotalDino</a>
+                · <a href="${commonsPage}" target="_blank" style="color:#8b7355; text-decoration:none;">Wikimedia Commons</a>
+            </div>
+            </div>` : ''}
 
-    v.innerHTML = `
-        ${modeHTML}
-        <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
-        <div class="victory-dino">${targetDino.nome}</div>
-        ${imageHTML}
-        <p style="font-size:1.1em; margin-top:15px; color:#c9a96e;">
-        Successfully identified in ${guesses.length} taxonomic queries
-        </p>
-        <p style="font-size:0.95em; margin-top:12px; color:#8b7355;">
-        ${revealedClades.size} clades revealed through phylogenetic analysis
-        </p>
-        ${streakHTML}
-        <button class="btn-hint" onclick="shareResult()" id="share-btn" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px; margin-bottom:12px;">
-        Share Result
-        </button>
-        <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+            ${streakHTML}
+
+            <button class="btn-hint" onclick="shareResult()" id="share-btn" 
+                    style="width:100%; padding:15px; font-size:14px; letter-spacing:2px; margin-top:24px; margin-bottom:12px;">
+            Share Result
+            </button>
+            <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
             ${isPracticeMode ? 'Practice Another' : 'Return to Level Selection'}
-        </button>
-    `;
+            </button>
+        `;
 
     container.insertBefore(v, container.firstChild);
     renderEnhancedTree();
