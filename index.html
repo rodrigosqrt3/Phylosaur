@@ -1939,6 +1939,7 @@ body.light-mode .modal-btn-secondary:hover {
     let hintHistory = [];
     let guessesSinceLastHint = 0;
     let isPracticeMode = false;
+    let isGiveUpMode = false;
 
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -2940,6 +2941,10 @@ body.light-mode .modal-btn-secondary:hover {
                 <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
                 <button class="btn-guess" onclick="makeGuess()">Submit</button>
                 <button class="btn-hint" onclick="useHint()">Hint</button>
+                <button class="btn-hint" onclick="giveUp()" 
+                        style="opacity:0.6; font-size:12px; padding:10px 16px; letter-spacing:1px;">
+                Give Up
+                </button>
                 <div id="suggestions"></div>
               </div>
 
@@ -2979,6 +2984,7 @@ body.light-mode .modal-btn-secondary:hover {
             targetDino = database[randomIndex];
             guesses = [];
             hintsRemaining = 3;
+            isGiveUpMode = false;
             gameWon = false;
             guessedNames = new Set();
             revealedClades = new Set();
@@ -3383,6 +3389,10 @@ body.light-mode .modal-btn-secondary:hover {
             <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
             <button class="btn-guess" onclick="makeGuess()">Submit</button>
             <button class="btn-hint" onclick="useHint()">Hint</button>
+            <button class="btn-hint" onclick="giveUp()" 
+                    style="opacity:0.6; font-size:12px; padding:10px 16px; letter-spacing:1px;">
+            Give Up
+            </button>
             <div id="suggestions"></div>
           </div>
 
@@ -3451,6 +3461,7 @@ body.light-mode .modal-btn-secondary:hover {
         targetDino = database[index];
         guesses = [];
         hintsRemaining = 3;
+        isGiveUpMode = false;
         gameWon = false;
         guessedNames = new Set();
         revealedClades = new Set();
@@ -3684,6 +3695,74 @@ body.light-mode .modal-btn-secondary:hover {
     }
   }
 
+    async function giveUp() {
+        if (gameWon) return;
+
+        const confirm = await customConfirm(
+            'Give Up?',
+            `Are you sure you want to reveal the answer? This will count as a loss.`,
+            'Give Up',
+            'Keep Trying'
+        );
+
+        if (confirm !== 'true') return;
+
+        gameWon = false;
+
+        if (currentUser && !isPracticeMode) {
+            await updateStatsAfterGame(false, guesses.length, selectedDifficulty);
+            await markDailyChallengeCompleted(selectedDifficulty);
+        }
+
+        document.getElementById('dino-input').disabled = true;
+        document.querySelector('.btn-guess').disabled = true;
+        document.querySelector('.btn-hint').disabled = true;
+        document.querySelector('.btn-giveup')?.setAttribute('disabled', true);
+
+        const imageUrl = await fetchWikimediaImage(targetDino.nome);
+        const commonsPage = `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(targetDino.nome + ' TD.png')}`;
+
+        const container = document.getElementById('tree-container');
+        const v = document.createElement('div');
+        v.className = 'victory';
+        v.style.background = 'linear-gradient(135deg, #3d2318 0%, #2c1a12 100%)';
+
+        v.innerHTML = `
+            <h2 style="color:#c06040;">BETTER LUCK TOMORROW</h2>
+            <div class="victory-dino">${targetDino.nome}</div>
+            <p style="font-size:0.95em; color:#8b7355; margin-top:8px; letter-spacing:1px;">
+            ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · gave up
+            </p>
+
+            ${imageUrl ? `
+            <div style="max-width:440px; margin:24px auto 0;">
+            <img src="${imageUrl}" alt="${targetDino.nome}" 
+                style="width:100%; border:2px solid #5d4a36; 
+                        border-radius:8px; display:block;
+                        box-shadow:0 4px 16px rgba(0,0,0,0.5);
+                        cursor:zoom-in;
+                        transition:transform 0.2s, box-shadow 0.2s;"
+                onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.7)'"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.5)'"
+                onclick="openImageLightbox('${imageUrl}', '${targetDino.nome}', '${commonsPage}')" />
+            <div style="text-align:center; margin-top:8px; font-size:0.78em; color:#5d4a36; font-style:italic; letter-spacing:1px;">
+                Art by <a href="https://totaldino.com" target="_blank" style="color:#8b7355; text-decoration:none;">TotalDino</a>
+                · <a href="https://totaldino.com/dino/${targetDino.nome.toLowerCase()}" target="_blank" style="color:#8b7355; text-decoration:none;">View on TotalDino</a>
+                · <a href="${commonsPage}" target="_blank" style="color:#8b7355; text-decoration:none;">Wikimedia Commons</a>
+            </div>
+            </div>` : ''}
+
+            <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+            ${isPracticeMode ? 'Practice Another' : 'Return to Level Selection'}
+            </button>
+        `;
+
+        container.insertBefore(v, container.firstChild);
+        isGiveUpMode = true;
+        gameWon = true;
+        renderEnhancedTree();
+        updateCladeInfo();
+        }
 
     // ═══════════════════════════════════════════════════════════════════════
     // TREE HELPERS
@@ -3930,66 +4009,64 @@ body.light-mode .modal-btn-secondary:hover {
         nodes.get(c).children.forEach(ch => recalcDepths(ch, d + 1));
       })('Dinosauria', 0);
       
-      // STEP 6 – leaves
-      const leaves = [];
-      guesses.forEach((guess, idx) => {
-        let attachTo = 'Dinosauria';
-        for (let i = guess.dino.linhagem.length - 1; i >= 0; i--) {
-          if (showClades.has(guess.dino.linhagem[i])) {
-            attachTo = guess.dino.linhagem[i];
-            break;
-          }
+    // STEP 6 – leaves
+    const leaves = [];
+    guesses.forEach((guess, idx) => {
+    let attachTo = 'Dinosauria';
+    for (let i = guess.dino.linhagem.length - 1; i >= 0; i--) {
+        if (showClades.has(guess.dino.linhagem[i])) {
+        attachTo = guess.dino.linhagem[i];
+        break;
         }
-        
-        const isWinningGuess = gameWon && guess.dino.nome === targetDino.nome;
-        
-        leaves.push({ 
-          name: guess.dino.nome + '__leaf_' + idx, 
-          displayName: guess.dino.nome, 
-          parentNode: attachTo, 
-          isTarget: isWinningGuess, 
-          isHint: guess.isHint, 
-          lineage: guess.dino.linhagem 
-        });
-      });
+    }
+    
+    const isWinningGuess = gameWon && !isGiveUpMode && guess.dino.nome === targetDino.nome;
+    
+    leaves.push({ 
+        name: guess.dino.nome + '__leaf_' + idx, 
+        displayName: guess.dino.nome, 
+        parentNode: attachTo, 
+        isTarget: isWinningGuess,
+        isGiveUp: false,
+        isHint: guess.isHint, 
+        lineage: guess.dino.linhagem 
+    });
+    });
 
       // STEP 7 – mystery "?" (ou nome revelado se ganhou)
 
-      // Se o jogo NÃO foi ganho, adiciona o "?"
-      // Se foi ganho, o dinossauro já está nos guesses, então não precisa adicionar
-      if (!gameWon) {
-        let mysteryParent = 'Dinosauria';
-        let maxDepthRevealed = -1;
+    if (!gameWon || isGiveUpMode) {
+    let mysteryParent = 'Dinosauria';
+    let maxDepthRevealed = -1;
 
-        // Primeiro, verifica qual é o clado mais profundo entre os guesses
-        if (deepestMRCA !== 'Dinosauria') {
-          const deepestMRCAIndex = targetLineage.indexOf(deepestMRCA);
-          if (deepestMRCAIndex > maxDepthRevealed) {
-            maxDepthRevealed = deepestMRCAIndex;
-            mysteryParent = deepestMRCA;
-          }
+    if (deepestMRCA !== 'Dinosauria') {
+        const deepestMRCAIndex = targetLineage.indexOf(deepestMRCA);
+        if (deepestMRCAIndex > maxDepthRevealed) {
+        maxDepthRevealed = deepestMRCAIndex;
+        mysteryParent = deepestMRCA;
         }
+    }
 
-        // Depois, verifica se algum hint revelou algo mais profundo
-        revealedClades.forEach(clade => {
-          if (targetLineage.includes(clade)) {
-            const cladeIndex = targetLineage.indexOf(clade);
-            if (cladeIndex > maxDepthRevealed) {
-              maxDepthRevealed = cladeIndex;
-              mysteryParent = clade;
-            }
-          }
-        });
+    revealedClades.forEach(clade => {
+        if (targetLineage.includes(clade)) {
+        const cladeIndex = targetLineage.indexOf(clade);
+        if (cladeIndex > maxDepthRevealed) {
+            maxDepthRevealed = cladeIndex;
+            mysteryParent = clade;
+        }
+        }
+    });
 
-        leaves.push({ 
-          name: '?__leaf_target', 
-          displayName: '?', 
-          parentNode: mysteryParent, 
-          isTarget: true, 
-          isHint: false, 
-          lineage: targetLineage 
-        });
-      }
+    leaves.push({ 
+        name: '?__leaf_target', 
+        displayName: isGiveUpMode ? targetDino.nome : '?', 
+        parentNode: mysteryParent, 
+        isTarget: true,
+        isGiveUp: isGiveUpMode,
+        isHint: false, 
+        lineage: targetLineage 
+    });
+    }
       
       const nodePositions = new Map();
       const leafPositions = new Map();
@@ -4169,20 +4246,24 @@ body.light-mode .modal-btn-secondary:hover {
         rect.setAttribute('height', nodeHeight);
         rect.setAttribute('rx', '6');
         
-        if (leaf.isTarget) {
-          rect.setAttribute('fill', '#4a7c59');
-          rect.setAttribute('stroke', '#5a9c6b');
-          rect.setAttribute('stroke-width', '3');
+        if (leaf.isTarget && !leaf.isGiveUp) {
+        rect.setAttribute('fill', '#4a7c59');
+        rect.setAttribute('stroke', '#5a9c6b');
+        rect.setAttribute('stroke-width', '3');
+        } else if (leaf.isTarget && leaf.isGiveUp) {
+        rect.setAttribute('fill', '#8b3a2a');
+        rect.setAttribute('stroke', '#c06040');
+        rect.setAttribute('stroke-width', '3');
         } else if (leaf.isHint) {
-          rect.setAttribute('fill', 'rgba(166,138,90,0.3)');
-          rect.setAttribute('stroke', '#a68a5a');
-          rect.setAttribute('stroke-width', '2');
-          rect.setAttribute('stroke-dasharray', '3,3');
+        rect.setAttribute('fill', 'rgba(166,138,90,0.3)');
+        rect.setAttribute('stroke', '#a68a5a');
+        rect.setAttribute('stroke-width', '2');
+        rect.setAttribute('stroke-dasharray', '3,3');
         } else {
-          rect.setAttribute('fill', 'rgba(255,255,255,0.1)');
-          rect.setAttribute('stroke', '#8b6f47');
-          rect.setAttribute('stroke-width', '2');
-          rect.setAttribute('stroke-dasharray', '5,5');
+        rect.setAttribute('fill', 'rgba(255,255,255,0.1)');
+        rect.setAttribute('stroke', '#8b6f47');
+        rect.setAttribute('stroke-width', '2');
+        rect.setAttribute('stroke-dasharray', '5,5');
         }
         g.appendChild(rect);
         
