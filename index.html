@@ -359,6 +359,11 @@
     animation: spin 0.7s linear infinite;
     }
 
+    .suggestion-item.highlighted {
+        background: #3d2f1f;
+        color: #c9a96e;
+    }
+
     @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
     body.light-mode .tab-btn { color: #8b7355; }
@@ -863,7 +868,7 @@
 
     .stat {
       text-align: center;
-      padding: 20px;
+      padding: 12px 8px;
       background: linear-gradient(180deg, #4a3829 0%, #3d2f1f 50%, #2a1f16 100%);
       border: 2px solid #5d4a36;
       border-radius: 3px;
@@ -1378,12 +1383,10 @@
       to { opacity: 1; }
     }
 
-    /* Aplicar animação aos cards principais */
     .game-card {
       animation: fadeInUp 0.5s ease-out;
     }
 
-    /* Stats aparecem um após o outro */
     .stat {
       animation: fadeInUp 0.5s ease-out;
       animation-fill-mode: both;
@@ -1393,8 +1396,8 @@
     .stat:nth-child(2) { animation-delay: 0.2s; }
     .stat:nth-child(3) { animation-delay: 0.3s; }
     .stat:nth-child(4) { animation-delay: 0.4s; }
+    .stat:nth-child(5) { animation-delay: 0.5s; }
 
-    /* Botões de dificuldade aparecem em cascata */
     .difficulty-btn {
       animation: fadeInUp 0.5s ease-out;
       animation-fill-mode: both;
@@ -1940,7 +1943,6 @@ body.light-mode .modal-btn-secondary:hover {
     let guessesSinceLastHint = 0;
     let isPracticeMode = false;
     let isGiveUpMode = false;
-
 
     // ═══════════════════════════════════════════════════════════════════════
     // USER ACCOUNT SYSTEM
@@ -2720,27 +2722,27 @@ body.light-mode .modal-btn-secondary:hover {
     const params = new URLSearchParams(hash.replace('#', ''));
 
     if (params.get('error')) {
-    await initializeUserSystem();
-    showDifficultySelection();
-    setTimeout(() => {
+        await initializeUserSystem();
+        showDifficultySelection();
+        setTimeout(() => {
         showLoginModal();
         setTimeout(() => {
-        const el = document.getElementById('signin-global-error');
-        if (el) {
+            const el = document.getElementById('signin-global-error');
+            if (el) {
             el.textContent = 'Your reset link has expired. Please request a new one.';
             el.classList.add('visible');
-        }
-        window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            window.history.replaceState({}, document.title, window.location.pathname);
         }, 100);
-    }, 100);
-    return;
+        }, 100);
+        return;
     }
 
     if (params.get('type') === 'recovery') {
-    await initializeUserSystem();
-    showPasswordUpdateForm();
-    window.history.replaceState({}, document.title, window.location.pathname);
-    return;
+        await initializeUserSystem();
+        showPasswordUpdateForm();
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
     }
 
     await initializeUserSystem();
@@ -2918,7 +2920,7 @@ body.light-mode .modal-btn-secondary:hover {
             </div>
 
             <div class="game-card">
-              <div class="stats">
+              <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
                 <div class="stat">
                   <div class="stat-value" id="attempts">0</div>
                   <div class="stat-label">Attempts</div>
@@ -2932,8 +2934,12 @@ body.light-mode .modal-btn-secondary:hover {
                   <div class="stat-label">Deepest Node</div>
                 </div>
                 <div class="stat">
-                  <div class="stat-value" id="clades-revealed">0</div>
-                  <div class="stat-label">Clades Revealed</div>
+                <div class="stat-value" id="clades-revealed">0</div>
+                <div class="stat-label">Clades Revealed</div>
+                </div>
+                <div class="stat">
+                <div class="stat-value" id="possible-specimens">—</div>
+                <div class="stat-label">Possible</div>
                 </div>
               </div>
 
@@ -3283,11 +3289,11 @@ body.light-mode .modal-btn-secondary:hover {
 
 
         <div class="game-card">
-          <div class="challenge-completed-banner">
-            <h2>Challenge Completed</h2>
-            <div class="dino-name">${result.targetDino}</div>
-            <div class="attempts">Classified in ${result.guessCount} attempts</div>
-          </div>
+            <div class="challenge-completed-banner" style="${result.gaveUp ? 'background:rgba(139,58,42,0.2); border-color:#8b3a2a;' : ''}">
+                <h2 style="${result.gaveUp ? 'color:#c06040;' : ''}">${result.gaveUp ? 'You Gave Up' : 'Challenge Completed'}</h2>
+                <div class="dino-name">${result.targetDino}</div>
+                <div class="attempts">${result.gaveUp ? `After ${result.guessCount} attempts` : `Classified in ${result.guessCount} attempts`}</div>
+            </div>
           </div>
 
           <div id="tree-container">
@@ -3303,32 +3309,32 @@ body.light-mode .modal-btn-secondary:hover {
     }
 
     function generateDifficultyButton(difficulty, name, level, description, completed) {
-      const tierCount = {'muito_facil': 1, 'facil': 2, 'normal': 3, 'dificil': 4, 'muito_dificil': 5}[difficulty];
-      let tiers = '';
-      for (let i = 1; i <= 5; i++) {
+    const tierCount = {'muito_facil': 1, 'facil': 2, 'normal': 3, 'dificil': 4, 'muito_dificil': 5}[difficulty];
+    let tiers = '';
+    for (let i = 1; i <= 5; i++) {
         tiers += `<span class="tier-indicator ${i <= tierCount ? 'filled' : ''}"></span>`;
-      }
-      
-      const statusIndicator = completed 
+    }
+    
+    const statusIndicator = completed 
         ? '<div style="position:absolute; top:10px; right:10px; width:24px; height:24px; background:#5a9c6b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:bold;">✓</div>'
         : '';
-      
-      const borderClass = completed ? 'difficulty-completed' : '';
-      
-      return `
+    
+    const borderClass = completed ? 'difficulty-completed' : '';
+    
+    return `
         <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]} ${borderClass}" 
                 onclick="startDailyChallenge('${difficulty}')" 
                 style="padding:30px; font-size:1.2em; position:relative;">
-          ${statusIndicator}
-          <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
+        ${statusIndicator}
+        <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
             ${name}
-          </div>
-          <div style="margin:8px 0;">
+        </div>
+        <div style="margin:8px 0;">
             ${tiers}
-          </div>
-          ${description ? `<div style="font-size:0.75em; color:#8b7355; font-style:italic;">${description}</div>` : ''}
+        </div>
+        ${description ? `<div style="font-size:0.75em; color:#8b7355; font-style:italic;">${description}</div>` : ''}
         </button>
-      `;
+    `;
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -3350,23 +3356,24 @@ body.light-mode .modal-btn-secondary:hover {
         existingResult = data;
       }
 
-      if (existingResult && existingResult.won) {
-        showCompletedChallenge(difficulty, {
-          targetDino: existingResult.target_dino,
-          guessCount: existingResult.guess_count,
-          guesses: existingResult.guesses,
-          revealedClades: existingResult.revealed_clades,
-          hintHistory: existingResult.hint_history
-        });
-        return;
-      }
+        if (existingResult && (existingResult.won || existingResult.gave_up)) {
+            showCompletedChallenge(difficulty, {
+                targetDino: existingResult.target_dino,
+                guessCount: existingResult.guess_count,
+                guesses: existingResult.guesses,
+                revealedClades: existingResult.revealed_clades,
+                hintHistory: existingResult.hint_history,
+                gaveUp: existingResult.gave_up || false
+            });
+            return;
+        }
       
       selectedDifficulty = difficulty;
       const appContent = document.getElementById('app-content');
       
       appContent.innerHTML = `
         <div class="game-card">
-          <div class="stats">
+          <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
             <div class="stat">
               <div class="stat-value" id="attempts">0</div>
               <div class="stat-label">Attempts</div>
@@ -3380,8 +3387,12 @@ body.light-mode .modal-btn-secondary:hover {
               <div class="stat-label">Deepest Node</div>
             </div>
             <div class="stat">
-              <div class="stat-value" id="clades-revealed">0</div>
-              <div class="stat-label">Clades Revealed</div>
+            <div class="stat-value" id="clades-revealed">0</div>
+            <div class="stat-label">Clades Revealed</div>
+            </div>
+            <div class="stat">
+            <div class="stat-value" id="possible-specimens">—</div>
+            <div class="stat-label">Possible</div>
             </div>
           </div>
 
@@ -3564,6 +3575,39 @@ body.light-mode .modal-btn-secondary:hover {
       };
     }
 
+    function countPossibleSpecimens() {
+        if (guesses.length === 0) return database.length;
+        
+        // Find the deepest revealed clade on the target's path
+        const revealedOnPath = [];
+        
+        guesses.forEach(guess => {
+            const mrca = findMRCA(guess.dino.linhagem, targetDino.linhagem);
+            if (mrca) {
+            const idx = targetDino.linhagem.indexOf(mrca.clade);
+            targetDino.linhagem.slice(0, idx + 1).forEach(c => {
+                if (!revealedOnPath.includes(c)) revealedOnPath.push(c);
+            });
+            }
+        });
+
+        revealedClades.forEach(clade => {
+            const idx = targetDino.linhagem.indexOf(clade);
+            if (idx !== -1) {
+            targetDino.linhagem.slice(0, idx + 1).forEach(c => {
+                if (!revealedOnPath.includes(c)) revealedOnPath.push(c);
+            });
+            }
+        });
+
+        if (revealedOnPath.length === 0) return database.length;
+
+        // Count dinosaurs that have ALL revealed clades in their lineage
+        return database.filter(d => 
+            revealedOnPath.every(clade => d.linhagem.includes(clade))
+        ).length;
+        }
+
     async function makeGuess() {
       if (gameWon) return;
       
@@ -3605,6 +3649,7 @@ body.light-mode .modal-btn-secondary:hover {
       document.getElementById('attempts').textContent = guesses.length;
       document.getElementById('best-match').textContent = Math.max(...guesses.map(g => g.proximity.matches));
       document.getElementById('clades-revealed').textContent = revealedClades.size;
+      document.getElementById('possible-specimens').textContent = countPossibleSpecimens();
 
       if (guessDino.nome === targetDino.nome) {
         gameWon = true;
@@ -3683,12 +3728,13 @@ body.light-mode .modal-btn-secondary:hover {
       });
       
       document.getElementById('clades-revealed').textContent = revealedClades.size;
+      document.getElementById('possible-specimens').textContent = countPossibleSpecimens();
 
       guessesSinceLastHint = 0;
       
-    renderEnhancedTree();
-    updateGuessHistory();
-    showCladeInfo(revealClade);
+      renderEnhancedTree();
+      updateGuessHistory();
+      await showCladeInfo(revealClade);
 
     if (currentUser && !isPracticeMode) {
     saveGameProgress(selectedDifficulty);
@@ -3711,7 +3757,18 @@ body.light-mode .modal-btn-secondary:hover {
 
         if (currentUser && !isPracticeMode) {
             await updateStatsAfterGame(false, guesses.length, selectedDifficulty);
-            await markDailyChallengeCompleted(selectedDifficulty);
+            await sb.from('daily_results').upsert({
+                user_id: currentUserId,
+                played_date: getTodayString(),
+                difficulty: selectedDifficulty,
+                target_dino: targetDino.nome,
+                guess_count: guesses.length,
+                won: false,
+                gave_up: true,
+                guesses: guesses.map(g => ({ nome: g.dino.nome, isHint: g.isHint || false })),
+                revealed_clades: Array.from(revealedClades),
+                hint_history: hintHistory
+            }, { onConflict: 'user_id,played_date,difficulty' });
         }
 
         document.getElementById('dino-input').disabled = true;
@@ -4777,16 +4834,43 @@ body.light-mode .modal-btn-secondary:hover {
       });
 
     input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-        makeGuess();
-    } else if (e.key === 'Tab') {
-        e.preventDefault(); // stop Tab from jumping to next field
-        const first = sugDiv.querySelector('.suggestion-item');
-        if (first) {
-        input.value = first.textContent.trim();
-        sugDiv.style.display = 'none';
+        const items = sugDiv.querySelectorAll('.suggestion-item');
+        const current = sugDiv.querySelector('.suggestion-item.highlighted');
+        const currentIndex = Array.from(items).indexOf(current);
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (sugDiv.style.display === 'none' || items.length === 0) return;
+            if (current) current.classList.remove('highlighted');
+            const next = items[currentIndex + 1] || items[0];
+            next.classList.add('highlighted');
+            input.value = next.textContent.trim();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (sugDiv.style.display === 'none' || items.length === 0) return;
+            if (current) current.classList.remove('highlighted');
+            const prev = items[currentIndex - 1] || items[items.length - 1];
+            prev.classList.add('highlighted');
+            input.value = prev.textContent.trim();
+        } else if (e.key === 'Enter') {
+            if (current) {
+                input.value = current.textContent.trim();
+                sugDiv.style.display = 'none';
+                current.classList.remove('highlighted');
+            } else {
+                makeGuess();
+            }
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            const first = sugDiv.querySelector('.suggestion-item');
+            if (first) {
+                input.value = first.textContent.trim();
+                sugDiv.style.display = 'none';
+            }
+        } else if (e.key === 'Escape') {
+            sugDiv.style.display = 'none';
+            if (current) current.classList.remove('highlighted');
         }
-    }
     });
       
       document.addEventListener('click', e => {
