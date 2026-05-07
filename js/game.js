@@ -9,8 +9,8 @@ async function startPracticeChallenge(difficulty) {
     
     appContent.innerHTML = `
 
-    <div style="text-align:center; padding:15px; background:rgba(139,115,85,0.2); border-radius:8px; margin-bottom:20px; border:2px solid #8b7355;">
-        <div style="color:#c9a96e; font-weight:600; letter-spacing:2px; font-size:1.1em;">
+    <div style="text-align:center; padding:15px; background:rgba(139,115,85,0.2); border-radius:8px; margin-bottom:20px; border:2px solid var(--color-muted);">
+        <div style="color:var(--color-accent); font-weight:600; letter-spacing:2px; font-size:1.1em;">
         PRACTICE MODE
         </div>
     </div>
@@ -329,7 +329,7 @@ async function useHint() {
 
     const revealClade = targetDino.linhagem[nextCladeIndex];
     
-    await customAlert('Hint', `The next clade in the lineage is:<br><br><strong style="color:#d4b87e; font-size:1.2em;">${revealClade}</strong>`);
+    await customAlert('Hint', `The next clade in the lineage is:<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${revealClade}</strong>`);
 
     revealedClades.add(revealClade);
 
@@ -396,16 +396,16 @@ async function giveUp() {
     v.style.background = 'linear-gradient(135deg, #3d2318 0%, #2c1a12 100%)';
 
     v.innerHTML = `
-        <h2 style="color:#c06040;">BETTER LUCK TOMORROW</h2>
+        <h2 style="color:var(--color-danger);">BETTER LUCK TOMORROW</h2>
         <div class="victory-dino">${targetDino.nome}</div>
-        <p style="font-size:0.95em; color:#8b7355; margin-top:8px; letter-spacing:1px;">
+        <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
         ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · gave up
         </p>
 
         ${imageUrl ? `
         <div style="max-width:440px; margin:24px auto 0;">
         <img src="${imageUrl}" alt="${targetDino.nome}" 
-            style="width:100%; border:2px solid #5d4a36; 
+            style="width:100%; border:2px solid var(--border-subtle); 
                     border-radius:8px; display:block;
                     box-shadow:0 4px 16px rgba(0,0,0,0.5);
                     cursor:zoom-in;
@@ -413,10 +413,10 @@ async function giveUp() {
             onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.7)'"
             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.5)'"
             onclick="openImageLightbox('${imageUrl}', '${targetDino.nome}', '${commonsPage}')" />
-        <div style="text-align:center; margin-top:8px; font-size:0.78em; color:#5d4a36; font-style:italic; letter-spacing:1px;">
-            Art by <a href="https://totaldino.com" target="_blank" style="color:#8b7355; text-decoration:none;">TotalDino</a>
-            · <a href="https://totaldino.com/dino/${targetDino.nome.toLowerCase()}" target="_blank" style="color:#8b7355; text-decoration:none;">View on TotalDino</a>
-            · <a href="${commonsPage}" target="_blank" style="color:#8b7355; text-decoration:none;">Wikimedia Commons</a>
+        <div style="text-align:center; margin-top:8px; font-size:0.78em; color:var(--border-subtle); font-style:italic; letter-spacing:1px;">
+            Art by <a href="https://totaldino.com" target="_blank" style="color:var(--color-muted); text-decoration:none;">TotalDino</a>
+            · <a href="https://totaldino.com/dino/${targetDino.nome.toLowerCase()}" target="_blank" style="color:var(--color-muted); text-decoration:none;">View on TotalDino</a>
+            · <a href="${commonsPage}" target="_blank" style="color:var(--color-muted); text-decoration:none;">Wikimedia Commons</a>
         </div>
         </div>` : ''}
 
@@ -458,8 +458,8 @@ async function showVictory() {
     let modeHTML = '';
     if (isPracticeMode) {
         modeHTML = `
-        <div style="padding:15px; background:rgba(139,115,85,0.15); border-radius:6px; margin-bottom:20px; border:2px solid #8b7355;">
-            <div style="color:#c9a96e; font-weight:600; letter-spacing:1px; font-size:0.95em;">
+        <div style="padding:15px; background:rgba(139,115,85,0.15); border-radius:6px; margin-bottom:20px; border:2px solid var(--color-muted);">
+            <div style="color:var(--color-accent); font-weight:600; letter-spacing:1px; font-size:0.95em;">
             Practice Mode — Statistics not recorded
             </div>
         </div>
@@ -470,17 +470,17 @@ async function showVictory() {
     if (streakData && !isPracticeMode) {
         if (milestone) {
         streakHTML = `
-            <div style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid #ff9500;">
-            <div style="font-size:2.2em; color:#ff9500; margin-bottom:12px;">◆ ${milestone} DAY MILESTONE! ◆</div>
-            <div style="font-size:1.1em; color:#d4b87e; margin-bottom:8px;">Current Streak: ${streakData.current} days</div>
-            <div style="font-size:0.9em; color:#a68a5a;">Best: ${streakData.best} days</div>
+            <div style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid var(--color-warning);">
+            <div style="font-size:2.2em; color:var(--color-warning); margin-bottom:12px;">◆ ${milestone} DAY MILESTONE! ◆</div>
+            <div style="font-size:1.1em; color:var(--color-primary); margin-bottom:8px;">Current Streak: ${streakData.current} days</div>
+            <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
             </div>
         `;
         } else {
         streakHTML = `
-            <div style="margin-top:25px; padding:20px; background:rgba(61,47,31,0.5); border-radius:8px; border:2px solid #8b7355;">
-            <div style="font-size:1.8em; color:#ff9500; margin-bottom:8px;">◆ ${streakData.current} Day Streak</div>
-            <div style="font-size:0.9em; color:#a68a5a;">Best: ${streakData.best} days</div>
+            <div style="margin-top:25px; padding:20px; background:var(--color-bg-panel); border-radius:8px; border:2px solid var(--color-muted);">
+            <div style="font-size:1.8em; color:var(--color-warning); margin-bottom:8px;">◆ ${streakData.current} Day Streak</div>
+            <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
             </div>
         `;
         }
@@ -492,14 +492,14 @@ async function showVictory() {
             ${modeHTML}
             <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
             <div class="victory-dino">${targetDino.nome}</div>
-            <p style="font-size:0.95em; color:#8b7355; margin-top:8px; letter-spacing:1px;">
+            <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
             ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · ${revealedClades.size} ${revealedClades.size === 1 ? 'clade' : 'clades'} revealed
             </p>
 
             ${imageUrl ? `
             <div style="max-width:440px; margin:24px auto 0;">
             <img src="${imageUrl}" alt="${targetDino.nome}" 
-                style="width:100%; border:2px solid #5d4a36; 
+                style="width:100%; border:2px solid var(--border-subtle); 
                         border-radius:8px; display:block;
                         box-shadow:0 4px 16px rgba(0,0,0,0.5);
                         cursor:zoom-in;
@@ -507,10 +507,10 @@ async function showVictory() {
                 onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.7)'"
                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.5)'"
                 onclick="openImageLightbox('${imageUrl}', '${targetDino.nome}', '${commonsPage}')" />
-            <div style="text-align:center; margin-top:8px; font-size:0.78em; color:#5d4a36; font-style:italic; letter-spacing:1px;">
-                Art by <a href="https://totaldino.com" target="_blank" style="color:#8b7355; text-decoration:none;">TotalDino</a>
-                · <a href="https://totaldino.com/dino/${targetDino.nome.toLowerCase()}" target="_blank" style="color:#8b7355; text-decoration:none;">View on TotalDino</a>
-                · <a href="${commonsPage}" target="_blank" style="color:#8b7355; text-decoration:none;">Wikimedia Commons</a>
+            <div style="text-align:center; margin-top:8px; font-size:0.78em; color:var(--border-subtle); font-style:italic; letter-spacing:1px;">
+                Art by <a href="https://totaldino.com" target="_blank" style="color:var(--color-muted); text-decoration:none;">TotalDino</a>
+                · <a href="https://totaldino.com/dino/${targetDino.nome.toLowerCase()}" target="_blank" style="color:var(--color-muted); text-decoration:none;">View on TotalDino</a>
+                · <a href="${commonsPage}" target="_blank" style="color:var(--color-muted); text-decoration:none;">Wikimedia Commons</a>
             </div>
             </div>` : ''}
 

@@ -8,12 +8,12 @@ async function showDifficultySelection() {
     
     appContent.innerHTML = `            
         <div class="game-card" style="text-align:center;">
-        <h2 style="color:#d4b87e; margin-bottom:12px; font-size:1.8em;">Daily Challenge</h2>
-        <p style="color:#a68a5a; margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
+        <h2 style="color:var(--color-primary); margin-bottom:12px; font-size:1.8em;">Daily Challenge</h2>
+        <p style="color:var(--color-secondary); margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
             ${getCurrentDateFormatted()} — Select Classification Level
         </p>
         <p style="color:#6b5340; font-size:0.82em; font-style:italic; letter-spacing:1px; margin-top:8px;">
-        Next daily challenge in <span id="countdown-timer" style="color:#a68a5a; font-weight:600;">--:--:--</span>
+        Next daily challenge in <span id="countdown-timer" style="color:var(--color-secondary); font-weight:600;">--:--:--</span>
         </p>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin:30px 0;">
@@ -50,8 +50,8 @@ function showPracticeMode() {
     
     appContent.innerHTML = `
     <div class="game-card" style="text-align:center;">
-        <h2 style="color:#d4b87e; margin-bottom:12px; font-size:1.8em;">Practice Mode</h2>
-        <p style="color:#a68a5a; margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
+        <h2 style="color:var(--color-primary); margin-bottom:12px; font-size:1.8em;">Practice Mode</h2>
+        <p style="color:var(--color-secondary); margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
         Train your phylogenetic skills — Select classification level
         </p>
 
@@ -95,7 +95,7 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     }
 
     const statusIndicator = completed 
-        ? '<div style="position:absolute; top:10px; right:10px; width:24px; height:24px; background:#5a9c6b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:bold;">✓</div>'
+        ? '<div style="position:absolute; top:10px; right:10px; width:24px; height:24px; background:var(--color-success); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:bold;">✓</div>'
         : '';
 
     const borderClass = completed ? 'difficulty-completed' : '';
@@ -111,7 +111,7 @@ function generateDifficultyButton(difficulty, name, level, description, complete
         <div style="margin:8px 0;">
             ${tiers}
         </div>
-        ${description ? `<div style="font-size:0.75em; color:#8b7355; font-style:italic;">${description}</div>` : ''}
+        ${description ? `<div style="font-size:0.75em; color:var(--color-muted); font-style:italic;">${description}</div>` : ''}
         </button>
     `;
 }
@@ -125,8 +125,8 @@ function showCompletedChallenge(difficulty, result) {
 
 
     <div class="game-card">
-        <div class="challenge-completed-banner" style="${result.gaveUp ? 'background:rgba(139,58,42,0.2); border-color:#8b3a2a;' : ''}">
-            <h2 style="${result.gaveUp ? 'color:#c06040;' : ''}">${result.gaveUp ? 'You Gave Up' : 'Challenge Completed'}</h2>
+        <div class="challenge-completed-banner" style="${result.gaveUp ? 'background:var(--color-danger-bg); border-color:var(--color-danger-dark);' : ''}">
+            <h2 style="${result.gaveUp ? 'color:var(--color-danger);' : ''}">${result.gaveUp ? 'You Gave Up' : 'Challenge Completed'}</h2>
             <div class="dino-name">${result.targetDino}</div>
             <div class="attempts">${result.gaveUp ? `After ${result.guessCount} attempts` : `Classified in ${result.guessCount} attempts`}</div>
         </div>
@@ -182,12 +182,12 @@ async function showStatsDashboard() {
 
 
     <div class="game-card">
-        <h2 style="color:#d4b87e; margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
+        <h2 style="color:var(--color-primary); margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
         CLASSIFICATION RECORDS
         </h2>
 
-        <div style="text-align:center; margin-bottom:30px; color:#a68a5a; font-size:1.1em; letter-spacing:2px;">
-        Researcher ID: <span style="color:#c9a96e; font-weight:600;">${currentUser}</span>
+        <div style="text-align:center; margin-bottom:30px; color:var(--color-secondary); font-size:1.1em; letter-spacing:2px;">
+        Researcher ID: <span style="color:var(--color-accent); font-weight:600;">${currentUser}</span>
         </div>
 
         <div class="stats" style="grid-template-columns: repeat(2, 1fr); margin-bottom:40px;">
@@ -199,18 +199,18 @@ async function showStatsDashboard() {
 
         ${generateStreakDisplay(streakData)}
 
-        <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
-        <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Classification Level Performance</h3>
+        <div style="background:var(--bg-panel); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid var(--border-subtle);">
+        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Classification Level Performance</h3>
         ${generateDifficultyStats(diffStats)}
         </div>
 
-        <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
-        <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Research Achievements</h3>
+        <div style="background:var(--bg-panel); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid var(--border-subtle);">
+        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Research Achievements</h3>
         ${generateAchievements(unlockedAchievements)}
         </div>
 
-        <div style="background:rgba(61,47,31,0.5); padding:25px; border-radius:8px; border:2px solid #5d4a36;">
-        <h3 style="color:#f4e4c1; margin-bottom:20px; font-size:1.3em; border-bottom:2px solid #5d4a36; padding-bottom:12px;">Recent Classifications</h3>
+        <div style="background:var(--bg-panel); padding:25px; border-radius:8px; border:2px solid var(--border-subtle);">
+        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Recent Classifications</h3>
         ${generateRecentGames(recentGames)}
         </div>
     </div>
@@ -222,19 +222,19 @@ function generateStreakDisplay(streakData) {
 
     if (!streakData || streakData.current === 0) {
     return `
-        <div style="text-align:center; padding:30px; background:rgba(61,47,31,0.3); border-radius:8px; margin-bottom:30px; border:2px solid #5d4a36;">
-        <div style="font-size:1.5em; color:#8b7355; margin-bottom:10px;">◆ Start Your Streak!</div>
-        <div style="color:#a68a5a; font-size:0.95em;">Complete a challenge every day to build your research streak</div>
+        <div style="text-align:center; padding:30px; background:rgba(61,47,31,0.3); border-radius:8px; margin-bottom:30px; border:2px solid var(--border-subtle);">
+        <div style="font-size:1.5em; color:var(--color-muted); margin-bottom:10px;">◆ Start Your Streak!</div>
+        <div style="color:var(--color-secondary); font-size:0.95em;">Complete a challenge every day to build your research streak</div>
         </div>
     `;
     }
 
     return `
-    <div style="text-align:center; padding:30px; background:rgba(255,149,0,0.1); border-radius:8px; margin-bottom:30px; border:2px solid #ff9500;">
-        <div style="font-size:2.5em; color:#ff9500; margin-bottom:15px;">◆ ${streakData.current}</div>
-        <div style="font-size:1.2em; color:#d4b87e; margin-bottom:8px; font-weight:600; letter-spacing:1px;">CURRENT STREAK</div>
-        <div style="color:#a68a5a; font-size:0.95em;">Best: ${streakData.best} days</div>
-        <div style="margin-top:20px; color:#8b7355; font-size:0.85em; font-style:italic;">Last played: ${streakData.lastPlayed || 'Never'}</div>
+    <div style="text-align:center; padding:30px; background:var(--color-warning-bg); border-radius:8px; margin-bottom:30px; border:2px solid var(--color-warning);">
+        <div style="font-size:2.5em; color:var(--color-warning); margin-bottom:15px;">◆ ${streakData.current}</div>
+        <div style="font-size:1.2em; color:var(--color-primary); margin-bottom:8px; font-weight:600; letter-spacing:1px;">CURRENT STREAK</div>
+        <div style="color:var(--color-secondary); font-size:0.95em;">Best: ${streakData.best} days</div>
+        <div style="margin-top:20px; color:var(--color-muted); font-size:0.85em; font-style:italic;">Last played: ${streakData.lastPlayed || 'Never'}</div>
     </div>
     `;
 }
@@ -247,13 +247,13 @@ function showAbout() {
 
     
     <div class="game-card" style="max-width: 900px; margin: 0 auto;">
-        <h2 style="color:#d4b87e; margin-bottom:30px; text-align:center; font-size:2em; letter-spacing:3px;">
+        <h2 style="color:var(--color-primary); margin-bottom:30px; text-align:center; font-size:2em; letter-spacing:3px;">
         About Phylosaur
         </h2>
         
-        <div style="color:#f8f6f3; line-height:2; font-size:1.05em; text-align:justify;">
+        <div style="color:var(--color-text-light); line-height:2; font-size:1.05em; text-align:justify;">
 
-        <p style="margin-bottom:25px; font-style:italic; color:#a68a5a; font-size:0.95em;">
+        <p style="margin-bottom:25px; font-style:italic; color:var(--color-secondary); font-size:0.95em;">
         The name Phylosaur draws from two roots: <em>phylo</em>, evoking both phylogenetics 
         and the Greek φιλέω, to love, and <em>saur</em>, from σαῦρος, the lizard suffix 
         ubiquitous in dinosaur nomenclature. A love of dinosaurs, systematically arranged, 
@@ -268,7 +268,7 @@ function showAbout() {
             common ancestors within the cladistic framework.
         </p>
 
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+        <h3 style="color:var(--color-accent); margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">
             Phylogenetic Foundations
         </h3>
 
@@ -292,16 +292,16 @@ function showAbout() {
             between "dinosaurs" and "birds" paraphyletic and therefore scientifically obsolete.
         </p>
 
-        <p style="margin-bottom:25px; padding:20px; background:rgba(61,47,31,0.3); border-left:4px solid #8b7355; font-style:italic;">
+        <p style="margin-bottom:25px; padding:20px; background:rgba(61,47,31,0.3); border-left:4px solid var(--color-muted); font-style:italic;">
         "The combination of such characters... will, it is presumed, be deemed sufficient ground for establishing 
         a distinct tribe or sub-order of Saurian Reptiles, for which I would propose the name of <em>Dinosauria</em>."
-        <span style="display:block; margin-top:10px; font-style:normal; font-size:0.9em; color:#a68a5a;">
+        <span style="display:block; margin-top:10px; font-style:normal; font-size:0.9em; color:var(--color-secondary);">
             — Richard Owen (1842). Report on British Fossil Reptiles, Part II. <em>Report of the British Association 
             for the Advancement of Science</em>, 11: 60–204.
         </span>
         </p>
 
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+        <h3 style="color:var(--color-accent); margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">
             Game Mechanics and Educational Objectives
         </h3>
 
@@ -324,7 +324,7 @@ function showAbout() {
         classification problems.
         </p>
 
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+        <h3 style="color:var(--color-accent); margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">
             Data Sources and Taxonomic Authority
         </h3>
 
@@ -361,7 +361,7 @@ function showAbout() {
             of Vertebrate Paleontology</em>, and <em>Cladistics</em>) for authoritative systematic information.
         </p>
 
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+        <h3 style="color:var(--color-accent); margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">
             Mathematical Foundations
         </h3>
         <p style="margin-bottom:25px;">
@@ -409,7 +409,7 @@ function showAbout() {
             unrelated subject matter.
         </p>
 
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+        <h3 style="color:var(--color-accent); margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">
             Methodological Considerations and Limitations
         </h3>
 
@@ -431,7 +431,7 @@ function showAbout() {
             insufficient diagnostic material) or taxonomic wastebasket groups subject to ongoing systematic revision. 
         </p>
 
-        <h3 style="color:#c9a96e; margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid #5d4a36; padding-bottom:12px;">
+        <h3 style="color:var(--color-accent); margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">
             Acknowledgments and Further Resources
         </h3>
 
@@ -457,11 +457,11 @@ function showAbout() {
 
         </div>
 
-        <p style="margin-bottom:35px; padding:20px; background:rgba(61,47,31,0.3); border-left:4px solid #8b7355; border-radius:2px;">
+        <p style="margin-bottom:35px; padding:20px; background:rgba(61,47,31,0.3); border-left:4px solid var(--color-muted); border-radius:2px;">
         Phylosaur is currently under active development. Taxonomic inaccuracies, interface issues, 
         missing genera, or any other problems are expected and your feedback is genuinely invaluable. 
         If you encounter anything worth reporting, however small, please write to 
-        <a href="mailto:rodrigo03.villa@gmail.com" style="color:#c9a96e; text-decoration:none; border-bottom:1px solid #8b7355;">rodrigo03.villa@gmail.com</a>. 
+        <a href="mailto:rodrigo03.villa@gmail.com" style="color:var(--color-accent); text-decoration:none; border-bottom:1px solid var(--color-muted);">rodrigo03.villa@gmail.com</a>. 
         Every message is read and deeply appreciated.
         </p>
 
@@ -491,30 +491,30 @@ function showHowToPlay() {
         <p style="margin-bottom:16px;">A mystery dinosaur is hidden each day. Your goal is to identify it through phylogenetic reasoning.</p>
         
         <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
-            <strong style="color:#d4b87e;">1. Guess a genus</strong><br>
+            <strong style="color:var(--color-primary);">1. Guess a genus</strong><br>
             Type any dinosaur name and submit. The tree will reveal how closely related your guess is to the target.
         </div>
 
         <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
-            <strong style="color:#d4b87e;">2. Read the tree</strong><br>
+            <strong style="color:var(--color-primary);">2. Read the tree</strong><br>
             Each guess reveals the deepest clade shared with the mystery dinosaur. The closer on the tree, the warmer you are.
         </div>
 
         <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
-            <strong style="color:#d4b87e;">3. Use hints wisely</strong><br>
+            <strong style="color:var(--color-primary);">3. Use hints wisely</strong><br>
             You have 3 hints per challenge. Each hint reveals the next clade in the target's lineage. You must make 2 guesses between hints.
         </div>
 
         <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
-            <strong style="color:#d4b87e;">4. Five difficulty levels</strong><br>
+            <strong style="color:var(--color-primary);">4. Five difficulty levels</strong><br>
             Level I features well-known genera. Level V features obscure taxa requiring broad taxonomic knowledge.
         </div>
 
         <div style="padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
-            <strong style="color:#d4b87e;">Tip</strong><br>
+            <strong style="color:var(--color-primary);">Tip</strong><br>
             Click any node on the tree to read about that clade. New here? Start with Level I.
             <br><br>
-            <span style="color:#8b7355; font-style:italic; font-size:0.9em;">
+            <span style="color:var(--color-muted); font-style:italic; font-size:0.9em;">
             The game currently has no guess limit while I evaluate what feels most balanced. 
             This may change in future updates.
             </span>
@@ -584,7 +584,7 @@ function generateAchievements(unlockedSet) {
 
 function generateRecentGames(recentGames) {
     if (!recentGames || recentGames.length === 0) {
-    return '<p style="color:#8b7355; font-style:italic; padding:20px; text-align:center;">No recent classifications. Begin your research!</p>';
+    return '<p style="color:var(--color-muted); font-style:italic; padding:20px; text-align:center;">No recent classifications. Begin your research!</p>';
     }
 
     const diffNames = {
@@ -604,11 +604,11 @@ function generateRecentGames(recentGames) {
     const isToday = game.played_date === today;
     const spoiler = isToday && !game.won;
     const dinoDisplay = spoiler 
-        ? '<span style="color:#5d4a36; font-style:italic;">[ classified today — hidden ]</span>' 
-        : `<span style="color:#f8f6f3; font-style:italic;">${game.target_dino}</span>`;
+        ? '<span style="color:var(--border-subtle); font-style:italic;">[ classified today — hidden ]</span>' 
+        : `<span style="color:var(--color-text-light); font-style:italic;">${game.target_dino}</span>`;
 
     html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:rgba(42,31,22,0.4); border-left:4px solid ${game.won ? '#5a9c6b' : '#8b6f47'}; border-radius:4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:rgba(42,31,22,0.4); border-left:4px solid ${game.won ? 'var(--color-success)' : '#8b6f47'}; border-radius:4px;">
         <div style="flex:1;">
             <div style="display:flex; align-items:center; margin-bottom:5px;">
             <span style="color:${game.won ? '#c8e6c9' : '#d4a574'}; font-weight:700; margin-right:12px; font-size:1.1em;">${game.won ? '✓' : '…'}</span>
@@ -616,8 +616,8 @@ function generateRecentGames(recentGames) {
             </div>
         </div>
         <div style="text-align:right;">
-            <div style="color:#c9a96e; font-size:1em; font-weight:600; margin-bottom:3px;">${game.guess_count} guesses</div>
-            <div style="color:#8b7355; font-size:0.8em;">${diffNames[game.difficulty]} • ${date}</div>
+            <div style="color:var(--color-accent); font-size:1em; font-weight:600; margin-bottom:3px;">${game.guess_count} guesses</div>
+            <div style="color:var(--color-muted); font-size:0.8em;">${diffNames[game.difficulty]} • ${date}</div>
         </div>
         </div>
     `;

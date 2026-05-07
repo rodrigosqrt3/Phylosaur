@@ -144,18 +144,18 @@ function openImageLightbox(url, name, commonsPage) {
     overlay.innerHTML = `
     <img src="${url}" alt="${name}"
         style="max-width:90vw; max-height:80vh; border-radius:8px;
-                border:2px solid #5d4a36; box-shadow:0 8px 40px rgba(0,0,0,0.8);" />
+                border:2px solid var(--border-subtle); box-shadow:0 8px 40px rgba(0,0,0,0.8);" />
     <div style="margin-top:16px; font-family:Georgia,serif; font-style:italic;
-                color:#c9a96e; font-size:1.1em; letter-spacing:1px;">${name}</div>
-    <div style="margin-top:8px; font-size:0.82em; color:#5d4a36; letter-spacing:1px;">
+                color:var(--color-accent); font-size:1.1em; letter-spacing:1px;">${name}</div>
+    <div style="margin-top:8px; font-size:0.82em; color:var(--border-subtle); letter-spacing:1px;">
         Art by <a href="https://totaldino.com" target="_blank" 
-                style="color:#8b7355; text-decoration:none;"
+                style="color:var(--color-muted); text-decoration:none;"
                 onclick="event.stopPropagation()">TotalDino</a>
         · <a href="${commonsPage}" target="_blank"
-            style="color:#8b7355; text-decoration:none;"
+            style="color:var(--color-muted); text-decoration:none;"
             onclick="event.stopPropagation()">View on Wikimedia Commons</a>
     </div>
-    <div style="margin-top:16px; color:#5d4a36; font-size:0.8em; letter-spacing:2px;">
+    <div style="margin-top:16px; color:var(--border-subtle); font-size:0.8em; letter-spacing:2px;">
         CLICK ANYWHERE TO CLOSE
     </div>
     `;
