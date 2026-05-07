@@ -260,3 +260,234 @@ function getTodayString() {
     const today = new Date();
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 }
+
+async function loadPracticeDatabase(difficulty) {
+    isPracticeMode = true;
+    
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading practice challenge...</div>';
+    
+    try {
+    const res = await fetch('phylosaur_db.json');
+    if (!res.ok) throw new Error('Failed to load database');
+    
+    fullDatabase = await res.json();
+    database = fullDatabase.filter(d => d.dificuldade === difficulty);
+    
+    console.log(`Loaded ${database.length} specimens for practice mode (${difficulty})`);
+    
+    if (database.length === 0) {
+        throw new Error(`No specimens found for difficulty: ${difficulty}`);
+    }
+    
+    const randomIndex = Math.floor(Math.random() * database.length);
+    targetDino = database[randomIndex];
+    guesses = [];
+    hintsRemaining = 3;
+    isGiveUpMode = false;
+    gameWon = false;
+    guessedNames = new Set();
+    revealedClades = new Set();
+    hintHistory = [];
+    guessesSinceLastHint = 0;
+    
+    console.log('Practice specimen:', targetDino.nome);
+    
+    document.getElementById('attempts').textContent = '0';
+    document.getElementById('hints').textContent = '3';
+    document.getElementById('best-match').textContent = '0';
+    document.getElementById('clades-revealed').textContent = '0';
+    
+    if (wrapper) {
+        wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+    }
+
+    initializeAutocomplete();
+    
+    } catch (err) {
+    console.error('Database error:', err);
+    if (wrapper) {
+        wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
+    }
+  }
+}
+
+async function loadDailyDatabase(difficulty, forceClean = false) {
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading classification database...</div>';
+    
+    try {
+    const res = await fetch('phylosaur_db.json');
+    if (!res.ok) throw new Error('Failed to load database');
+    
+    fullDatabase = await res.json();
+    database = fullDatabase.filter(d => d.dificuldade === difficulty);
+    
+    console.log(`Loaded ${database.length} specimens for difficulty: ${difficulty}`);
+    
+    if (database.length === 0) {
+        throw new Error(`No specimens found for difficulty: ${difficulty}`);
+    }
+    
+    const seed = getDailySeed(difficulty);
+    const hash = hashString(seed);
+    const index = hash % database.length;
+    
+    targetDino = database[index];
+    guesses = [];
+    hintsRemaining = 3;
+    isGiveUpMode = false;
+    gameWon = false;
+    guessedNames = new Set();
+    revealedClades = new Set();
+    hintHistory = [];
+    guessesSinceLastHint = 0;
+    
+    console.log('Daily specimen:', targetDino.nome, 'Seed:', seed);
+    
+    const savedProgress = forceClean ? null : await loadGameProgress(difficulty);
+
+    if (savedProgress && savedProgress.targetDino === targetDino.nome) {
+        console.log('Loading saved progress...');
+        
+        // Reconstruir guesses
+        if (savedProgress.guesses && savedProgress.guesses.length > 0) {
+        guesses = savedProgress.guesses.map(savedGuess => {
+            const dino = database.find(d => d.nome === savedGuess.nome);
+            if (!dino) return null;
+            
+            const proximity = calculateProximity(dino, targetDino);
+            
+            if (proximity.lastCommonClade) {
+            revealedClades.add(proximity.lastCommonClade);
+            }
+            
+            return {
+            dino: dino,
+            proximity: proximity,
+            isHint: savedGuess.isHint || false
+            };
+        }).filter(g => g !== null);
+        }
+        
+        if (savedProgress.revealedClades) {
+        savedProgress.revealedClades.forEach(c => revealedClades.add(c));
+        }
+        hintHistory = savedProgress.hintHistory || [];
+        hintsRemaining = savedProgress.hintsRemaining !== undefined ? savedProgress.hintsRemaining : 3;
+        guessedNames = new Set((savedProgress.guesses || []).map(g => g.nome.toLowerCase()));
+        
+        console.log(`Restored ${guesses.length} guesses, ${hintsRemaining} hints remaining`);
+        
+        setTimeout(() => {
+        const bestMatch = guesses.length > 0 
+            ? Math.max(...guesses.map(g => g.proximity.matches)) 
+            : 0;
+        
+        document.getElementById('attempts').textContent = guesses.length;
+        document.getElementById('hints').textContent = hintsRemaining;
+        document.getElementById('best-match').textContent = bestMatch;
+        document.getElementById('clades-revealed').textContent = revealedClades.size;
+        
+        renderEnhancedTree();
+        updateCladeInfo();
+        updateGuessHistory();
+        document.getElementById('dino-input')?.focus();
+        }, 100);
+        
+    } else {
+        document.getElementById('attempts').textContent = '0';
+        document.getElementById('hints').textContent = '3';
+        document.getElementById('best-match').textContent = '0';
+        document.getElementById('clades-revealed').textContent = '0';
+        
+        if (wrapper) {
+        wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+        }
+    }
+    
+    initializeAutocomplete();
+    document.getElementById('dino-input')?.focus();
+
+    } catch (err) {
+    console.error('Database error:', err);
+    if (wrapper) {
+        wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
+    }
+    }
+}
+
+async function loadCompletedChallengeTree(difficulty, result) {
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    
+    try {
+    const res = await fetch('phylosaur_db.json');
+    if (!res.ok) throw new Error('Failed to load database');
+    
+    fullDatabase = await res.json();
+    database = fullDatabase.filter(d => d.dificuldade === difficulty);
+    
+    const seed = getDailySeed(difficulty);
+    const hash = hashString(seed);
+    const index = hash % database.length;
+    
+    targetDino = database[index];
+    
+    if (targetDino.nome !== result.targetDino) {
+        console.warn('Mismatch between saved and calculated target');
+    }
+    
+    if (result.guesses && result.guesses.length > 0) {
+        guesses = result.guesses.map(savedGuess => {
+        const dino = database.find(d => d.nome === savedGuess.nome);
+        if (!dino) {
+            console.warn(`Dinosaur ${savedGuess.nome} not found in database`);
+            return null;
+        }
+        
+        const proximity = calculateProximity(dino, targetDino);
+        return {
+            dino: dino,
+            proximity: proximity,
+            isHint: savedGuess.isHint || false
+        };
+        }).filter(g => g !== null);
+        
+        revealedClades = new Set(result.revealedClades || []);
+        hintHistory = result.hintHistory || [];
+        
+    } else {
+        wrapper.innerHTML = `
+        <div class="empty-state" style="padding:80px 40px;">
+            <h3 style="color:#c9a96e; margin-bottom:20px; font-size:1.4em;">Challenge Completed</h3>
+            <p style="color:#a68a5a; line-height:1.8; margin-bottom:15px;">
+            This challenge was completed before the detailed save system was implemented.
+            </p>
+            <p style="color:#8b7355; font-size:0.95em; line-height:1.8;">
+            The phylogenetic tree from this session is not available for review.
+            Complete the challenge again to see the full tree visualization.
+            </p>
+            <button class="btn-new-game" onclick="showDifficultySelection()" 
+                    style="margin-top:30px; width:auto; padding:14px 28px;">
+            Return to Level Selection
+            </button>
+        </div>
+        `;
+        return;
+    }
+    
+    gameWon = true;
+    hintsRemaining = 0;
+    guessedNames = new Set(guesses.map(g => g.dino.nome.toLowerCase()));
+    
+    renderEnhancedTree();
+    updateCladeInfo();
+    updateGuessHistory();
+    
+    } catch (err) {
+    console.error('Error loading completed challenge:', err);
+    if (wrapper) {
+        wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading tree</strong><br>${err.message}</div>`;
+    }
+    }
+}
