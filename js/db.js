@@ -224,3 +224,39 @@ function checkStreakMilestone(streak) {
     
     return null;
 }
+
+async function getDailyCompletionStatus() {
+    if (!currentUserId) return { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
+    
+    const today = getTodayString();
+    const { data } = await sb.from('daily_results')
+    .select('difficulty')
+    .eq('user_id', currentUserId)
+    .eq('played_date', today)
+    .eq('won', true);
+    
+    const status = { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
+    if (data) data.forEach(row => { status[row.difficulty] = true; });
+    return status;
+}  
+
+function getDailySeed(difficulty) {
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return `${dateStr}-${difficulty}`;
+}
+
+function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+    }
+    return Math.abs(hash);
+}
+
+function getTodayString() {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
