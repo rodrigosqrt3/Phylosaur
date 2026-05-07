@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════════
+// SCREENS AND INTERFACE LOGIC
+// ═══════════════════════════════════════════════
 async function showDifficultySelection() {
     setHeaderControls('difficulty');
     const appContent = document.getElementById('app-content');
