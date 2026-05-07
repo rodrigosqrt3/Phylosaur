@@ -31,18 +31,14 @@
 <body>
   <div class="container" id="main-container">
     <header>
-      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-          
-          <div style="flex:1;"></div>
-
-          <div style="flex:2; text-align:center;">
-            <h1 style="cursor:pointer;" onclick="showDifficultySelection()">Phylosaur</h1>
-            <p class="subtitle">A phylogenetic classification challenge</p>
+      <div style="display:flex; flex-direction:column; align-items:center; width:100%; gap:12px;">
+          <div style="text-align:center;">
+              <h1 style="cursor:pointer;" onclick="showDifficultySelection()">Phylosaur</h1>
+              <p class="subtitle">A phylogenetic classification challenge</p>
           </div>
-
-          <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:10px;" id="header-controls">
+          <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px;" id="header-controls">
           </div>
-
+      </div>
       </div>
     </header>
 

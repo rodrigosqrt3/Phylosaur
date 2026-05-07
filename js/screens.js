@@ -35,7 +35,6 @@ async function showDifficultySelection() {
             </div>
         </div>
     `;
-    showToast(`Each difficulty level presents a unique specimen for today's date. All players worldwide receive identical classification challenges.`, true);
     startCountdown();
 }
 

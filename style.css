@@ -913,7 +913,6 @@ button:disabled {
   }
   
   #header-controls {
-    display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 6px;
@@ -925,14 +924,6 @@ button:disabled {
     font-size: 11px;
     letter-spacing: 0.5px;
     flex: 0 0 auto;
-  }
-
-  .toast {
-    top: auto;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 85%;
   }
 }
 
@@ -1685,37 +1676,6 @@ min-width: 100%;
     inset 0 1px 0 rgba(255,255,255,0.15),
     0 6px 18px rgba(0,0,0,0.6);
   transform: translateY(-2px);
-}
-
-.toast {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  transform: none;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  color: var(--color-secondary);
-  padding: 12px 24px;
-  border-radius: 6px;
-  font-size: 0.85em;
-  font-style: italic;
-  letter-spacing: 1px;
-  text-align: center;
-  max-width: 300px;
-  width: 90%;
-  z-index: 9999;
-  animation: toastIn 0.4s ease, toastOut 0.4s ease 4s forwards;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-}
-
-@keyframes toastIn {
-  from { opacity: 0; transform: translateX(-20px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes toastOut {
-  from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(-20px); }
 }
 
 .difficulty-very-easy  { border-color: var(--diff-very-easy-border); }

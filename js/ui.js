@@ -320,15 +320,3 @@ function updateGuessHistory() {
     html += '</div>';
     historyDiv.innerHTML = html;
 }
-
-function showToast(message, oncePerSession = false) {
-  if (oncePerSession && sessionStorage.getItem('toast-shown')) return;
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  if (oncePerSession) sessionStorage.setItem('toast-shown', 'true');
-  setTimeout(() => toast.remove(), 4500);
-}
