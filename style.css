@@ -898,6 +898,11 @@ button:disabled {
     gap: 16px;
   }
 
+  header > div {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
   header > div > div:first-child {
     display: none;
   }
@@ -905,13 +910,18 @@ button:disabled {
   header > div > div:nth-child(2) {
     flex: none;
     text-align: center;
+    width: 100%;
   }
 
   header > div > div:last-child {
     flex: none;
-    justify-content: center !important;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
   }
-  
+
   #header-controls {
     flex-wrap: wrap;
     justify-content: center;
@@ -923,7 +933,6 @@ button:disabled {
     padding: 6px 10px;
     font-size: 11px;
     letter-spacing: 0.5px;
-    flex: 0 0 auto;
   }
 }
 
