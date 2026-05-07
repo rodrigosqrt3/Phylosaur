@@ -8,206 +8,53 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <meta name="theme-color" content="#2d2318">
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
- <link rel="stylesheet" href="style.css">
- <script src="js/config.js"></script> 
- <script src="js/state.js"></script>
- <script src="js/api.js"></script>
- <script src="js/autocomplete.js"></script> 
- <script src="js/db.js"></script>
- <script src="js/auth.js"></script>
- <script src="js/ui.js"></script>
- <script src="js/screens.js"></script>
- <script src="js/tree.js"></script>
- <script src="js/game.js"></script>
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Game Scripts -->
+  <script src="js/config.js"></script> 
+  <script src="js/state.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/autocomplete.js"></script> 
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/screens.js"></script>
+  <script src="js/tree.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
 </head>
 <body>
   <div class="container" id="main-container">
     <header>
-    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-        
-        <div style="flex:1;"></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+          
+          <div style="flex:1;"></div>
 
-        <div style="flex:2; text-align:center;">
-        <h1 style="cursor:pointer;" onclick="showDifficultySelection()">Phylosaur</h1>
-        <p class="subtitle">A phylogenetic classification challenge</p>
-        </div>
+          <div style="flex:2; text-align:center;">
+            <h1 style="cursor:pointer;" onclick="showDifficultySelection()">Phylosaur</h1>
+            <p class="subtitle">A phylogenetic classification challenge</p>
+          </div>
 
-        <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:10px;" id="header-controls">
-        </div>
+          <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:10px;" id="header-controls">
+          </div>
 
-    </div>
+      </div>
     </header>
 
     <div id="app-content">
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-  MathJax = {
-    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-    svg: { fontCache: 'global' }
-  };
-</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-  <script>
-   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // INITIALIZATION
-    // ═══════════════════════════════════════════════════════════════════════
-    document.addEventListener('DOMContentLoaded', async function() {
-    const savedTheme = localStorage.getItem('phylosaur-theme');
-    if (savedTheme === 'light') toggleTheme();
-
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.replace('#', ''));
-
-    if (params.get('error')) {
-        await initializeUserSystem();
-        showDifficultySelection();
-        setTimeout(() => {
-        showLoginModal();
-        setTimeout(() => {
-            const el = document.getElementById('signin-global-error');
-            if (el) {
-            el.textContent = 'Your reset link has expired. Please request a new one.';
-            el.classList.add('visible');
-            }
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }, 100);
-        }, 100);
-        return;
-    }
-
-    if (params.get('type') === 'recovery') {
-        await initializeUserSystem();
-        showPasswordUpdateForm();
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return;
-    }
-
-    await initializeUserSystem();
-    showDifficultySelection();
-    });
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // WIKIPEDIA INFO PANEL
-    // ═══════════════════════════════════════════════════════════════════════
-    async function showCladeInfo(cladeName) {
-      const infoDiv = document.getElementById('clade-info');
-      infoDiv.innerHTML = `
-        <div class="clade-info">
-          <div class="loading">Retrieving phylogenetic information for ${cladeName}…</div>
-        </div>
-      `;
-
-      const wikiInfo = await fetchWikipediaInfo(cladeName);
-      
-      if (!wikiInfo) {
-        infoDiv.innerHTML = `
-          <div class="clade-info">
-            <h3>Clade: ${cladeName}</h3>
-            <p style="color:#999;font-style:italic;">No encyclopedia entry found.</p>
-          </div>
-        `;
-        return;
-      }
-
-      let html = `<div class="clade-info"><h3>Clade: ${cladeName}</h3><div class="clade-content">`;
-      
-      if (wikiInfo.image) {
-        html += `<img src="${wikiInfo.image}" alt="${wikiInfo.title}" class="clade-image" />`;
-      }
-      
-      html += `
-        <div class="clade-text">
-          ${wikiInfo.description 
-            ? `<p>${wikiInfo.description}</p>` 
-            : '<p style="color:#999;font-style:italic;">Description unavailable.</p>'
-          }
-          <a href="${wikiInfo.url}" target="_blank" class="clade-link">View Encyclopedia Entry</a>
-        </div>
-      `;
-      
-      html += `</div></div>`;
-      infoDiv.innerHTML = html;
-    }
-
-    async function updateCladeInfo() {
-      const infoDiv = document.getElementById('clade-info');
-      
-      if (guesses.length === 0) {
-        infoDiv.innerHTML = '';
-        return;
-      }
-
-      const bestGuess = guesses.reduce((b, c) => 
-        c.proximity.matches > b.proximity.matches ? c : b
-      );
-      
-      const lastCommonClade = bestGuess.proximity.lastCommonClade;
-      
-      if (!lastCommonClade) {
-        infoDiv.innerHTML = '';
-        return;
-      }
-
-      infoDiv.innerHTML = `
-        <div class="clade-info">
-          <div class="loading">Retrieving phylogenetic information for ${lastCommonClade}…</div>
-        </div>
-      `;
-
-      const wikiInfo = await fetchWikipediaInfo(lastCommonClade);
-      
-      if (!wikiInfo) {
-        infoDiv.innerHTML = `
-          <div class="clade-info">
-            <h3>Most Recent Common Ancestor: ${lastCommonClade}</h3>
-            <p style="color:#999;font-style:italic;">No encyclopedia entry found.</p>
-          </div>
-        `;
-        return;
-      }
-
-      let html = `
-        <div class="clade-info">
-          <h3>Most Recent Common Ancestor: ${lastCommonClade}</h3>
-          <div class="clade-content">
-      `;
-      
-      if (wikiInfo.image) {
-        html += `<img src="${wikiInfo.image}" alt="${wikiInfo.title}" class="clade-image" />`;
-      }
-      
-      html += `
-        <div class="clade-text">
-          ${wikiInfo.description 
-            ? `<p>${wikiInfo.description}</p>` 
-            : '<p style="color:#999;font-style:italic;">Description unavailable.</p>'
-          }
-          <a href="${wikiInfo.url}" target="_blank" class="clade-link">View Encyclopedia Entry</a>
-        </div>
-      `;
-      
-      html += `</div>`;
-
-      html += `<div class="phylo-path"><h4>Revealed Phylogenetic Path to Mystery Taxon:</h4>`;
-      for (let i = 0; i < bestGuess.proximity.matches; i++) {
-        html += `
-          <div class="phylo-step">
-            <span class="phylo-step-name">${targetDino.linhagem[i]}</span>
-          </div>
-        `;
-      }
-      html += `</div></div>`;
-      
-      infoDiv.innerHTML = html;
-    }
+    MathJax = {
+      tex: { inlineMath: [['$', '$'],['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </body>
 </html>
