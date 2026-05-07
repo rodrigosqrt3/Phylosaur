@@ -18,6 +18,8 @@
  <script src="js/autocomplete.js"></script> 
  <script src="js/db.js"></script>
  <script src="js/auth.js"></script>
+ <script src="js/ui.js"></script>
+ <script src="js/screens.js"></script>
 </head>
 <body>
   <div class="container" id="main-container">
@@ -51,143 +53,6 @@
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
   <script>
    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // THEME TOGGLE
-    // ═══════════════════════════════════════════════════════════════════════
-    function setHeaderControls(screen) {
-    const controls = document.getElementById('header-controls');
-    if (!controls) return;
-
-    const themeBtn = `
-      <button class="btn-hint btn-header" onclick="toggleTheme()" id="theme-toggle">
-        <span id="theme-icon">${currentTheme === 'light' ? '🌙' : '☀️'}</span>
-      </button>
-    `;
-
-    const aboutBtn = `<button class="btn-hint btn-header" onclick="showAbout()" style="padding:8px 14px; font-size:12px;">About</button>`;
-    
-    const statsBtn = currentUser 
-      ? `<button class="btn-hint btn-header" onclick="showStatsDashboard()">Stats</button>` 
-      : '';
-
-    const logoutBtn = currentUser 
-      ? `<button class="btn-hint btn-header" onclick="logout()">${currentUser}</button>` 
-      : '';
-
-    const backBtn = `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Levels</button>`;
-
-    const map = {
-      'login':        themeBtn,
-      'difficulty': themeBtn + aboutBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
-      'game': themeBtn + aboutBtn + backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
-      'stats':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'about':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'practice-menu':themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'practice':     themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showPracticeMode()">← Back</button>`,
-    };
-
-    controls.innerHTML = map[screen] || themeBtn;
-    }
-
-    function toggleTheme() {
-    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.body.classList.toggle('light-mode');
-    
-    const icon = document.getElementById('theme-icon');
-    if (icon) icon.textContent = currentTheme === 'light' ? '🌙' : '☀️';
-    
-    localStorage.setItem('phylosaur-theme', currentTheme);
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // CUSTOM MODALS
-    // ═══════════════════════════════════════════════════════════════════════
-    function showModal(options) {
-      return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        
-        const box = document.createElement('div');
-        box.className = 'modal-box';
-        
-        let html = '';
-        
-        if (options.title) {
-          html += `<div class="modal-title">${options.title}</div>`;
-        }
-        
-        if (options.message) {
-          html += `<div class="modal-message">${options.message}</div>`;
-        }
-        
-        if (options.info) {
-          html += '<div class="modal-info">';
-          options.info.forEach(item => {
-            html += `
-              <div class="modal-info-item">
-                <span class="modal-info-label">${item.label}:</span>
-                <span>${item.value}</span>
-              </div>
-            `;
-          });
-          html += '</div>';
-        }
-        
-        html += '<div class="modal-buttons">';
-        
-        if (options.buttons) {
-          options.buttons.forEach((btn, index) => {
-            const btnClass = btn.primary ? 'modal-btn-primary' : 'modal-btn-secondary';
-            html += `<button class="modal-btn ${btnClass}" data-result="${btn.value}">${btn.text}</button>`;
-          });
-        } else {
-          html += '<button class="modal-btn modal-btn-primary" data-result="ok">OK</button>';
-        }
-        
-        html += '</div>';
-        
-        box.innerHTML = html;
-        overlay.appendChild(box);
-        document.body.appendChild(overlay);
-        
-        box.querySelectorAll('.modal-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const result = btn.getAttribute('data-result');
-            document.body.removeChild(overlay);
-            resolve(result);
-          });
-        });
-        
-        overlay.addEventListener('click', (e) => {
-          if (e.target === overlay && options.closeOnOverlay !== false) {
-            document.body.removeChild(overlay);
-            resolve(null);
-          }
-        });
-      });
-    }
-
-    function customAlert(title, message) {
-      return showModal({
-        title: title,
-        message: message,
-        buttons: [{ text: 'OK', value: 'ok', primary: true }]
-      });
-    }
-
-    function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
-      return showModal({
-        title: title,
-        message: message,
-        buttons: [
-          { text: yesText, value: true, primary: true },
-          { text: noText, value: false, primary: false }
-        ]
-      });
-}
 
     // ═══════════════════════════════════════════════════════════════════════
     // INITIALIZATION
@@ -230,48 +95,7 @@
     // ═══════════════════════════════════════════════════════════════════════
     // DIFFICULTY SELECTION SCREEN
     // ═══════════════════════════════════════════════════════════════════════
-    async function showDifficultySelection() {
-        setHeaderControls('difficulty');
-        const appContent = document.getElementById('app-content');
-        const completionStatus = await getDailyCompletionStatus();
-        
-        appContent.innerHTML = `            
-            <div class="game-card" style="text-align:center;">
-            <h2 style="color:#d4b87e; margin-bottom:12px; font-size:1.8em;">Daily Challenge</h2>
-            <p style="color:#a68a5a; margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
-                ${getCurrentDateFormatted()} — Select Classification Level
-            </p>
-            <p style="color:#6b5340; font-size:0.82em; font-style:italic; letter-spacing:1px; margin-top:8px;">
-            Next daily challenge in <span id="countdown-timer" style="color:#a68a5a; font-weight:600;">--:--:--</span>
-            </p>
 
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin:30px 0;">
-                ${generateDifficultyButton('muito_facil', 'LEVEL I', 'I', '', completionStatus.muito_facil)}
-                ${generateDifficultyButton('facil', 'LEVEL II', 'II', '', completionStatus.facil)}
-                ${generateDifficultyButton('normal', 'LEVEL III', 'III', '', completionStatus.normal)}
-                ${generateDifficultyButton('dificil', 'LEVEL IV', 'IV', '', completionStatus.dificil)}
-                ${generateDifficultyButton('muito_dificil', 'LEVEL V', 'V', '', completionStatus.muito_dificil)}
-            </div>
-
-            <div style="margin-top:30px; text-align:center;">
-              <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
-                <button class="btn-hint" onclick="showHowToPlay()" style="padding:18px 40px; font-size:15px;">
-                  How to Play
-                </button>
-                <button class="btn-hint" onclick="showPracticeMode()" style="padding:18px 40px; font-size:15px;">
-                  Practice Mode
-                </button>
-              </div>
-            </div>
-          
-            <div class="difficulty-info-box">
-            <div class="difficulty-info-text">
-                Each difficulty level presents a unique specimen for today's date. All players worldwide receive identical classification challenges. Progress is tracked independently per difficulty level.
-            </div>
-            </div>
-        `;
-        startCountdown();
-        }
 
         function showPracticeMode() {
             setHeaderControls('practice-menu');
@@ -1800,88 +1624,6 @@
         }
         });
     }
-    }
-
-    function openImageLightbox(url, name, commonsPage) {
-      const overlay = document.createElement('div');
-      overlay.style.cssText = `
-        position:fixed; top:0; left:0; right:0; bottom:0;
-        background:rgba(0,0,0,0.92); z-index:99999;
-        display:flex; flex-direction:column;
-        align-items:center; justify-content:center;
-        cursor:zoom-out; animation:fadeIn 0.2s ease;
-        padding:20px;
-      `;
-      
-      overlay.innerHTML = `
-        <img src="${url}" alt="${name}"
-            style="max-width:90vw; max-height:80vh; border-radius:8px;
-                    border:2px solid #5d4a36; box-shadow:0 8px 40px rgba(0,0,0,0.8);" />
-        <div style="margin-top:16px; font-family:Georgia,serif; font-style:italic;
-                    color:#c9a96e; font-size:1.1em; letter-spacing:1px;">${name}</div>
-        <div style="margin-top:8px; font-size:0.82em; color:#5d4a36; letter-spacing:1px;">
-          Art by <a href="https://totaldino.com" target="_blank" 
-                    style="color:#8b7355; text-decoration:none;"
-                    onclick="event.stopPropagation()">TotalDino</a>
-          · <a href="${commonsPage}" target="_blank"
-              style="color:#8b7355; text-decoration:none;"
-              onclick="event.stopPropagation()">View on Wikimedia Commons</a>
-        </div>
-        <div style="margin-top:16px; color:#5d4a36; font-size:0.8em; letter-spacing:2px;">
-          CLICK ANYWHERE TO CLOSE
-        </div>
-      `;
-      
-      overlay.onclick = () => document.body.removeChild(overlay);
-      document.body.appendChild(overlay);
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // GUESS HISTORY
-    // ═══════════════════════════════════════════════════════════════════════
-    function updateGuessHistory() {
-      const historyDiv = document.getElementById('guess-history');
-
-      if (!historyDiv) return;
-      
-      if (guesses.length === 0 && hintHistory.length === 0) {
-        historyDiv.innerHTML = '';
-        return;
-      }
-
-      if (guesses.length === 0 && hintHistory.length === 0) {
-        historyDiv.innerHTML = '';
-        return;
-      }
-      
-      let html = '<div class="guess-history"><h3>Exploration History</h3>';
-      
-      if (hintHistory.length > 0) {
-        hintHistory.slice().reverse().forEach(hint => {
-          html += `
-            <div class="guess-item guess-item-hint">
-              <span class="guess-name">[HINT: ${hint.cladeName}]</span>
-              <span class="guess-match">Revealed clade at depth ${hint.depth}</span>
-            </div>
-          `;
-        });
-      }
-      
-      guesses.slice().reverse().forEach(guess => {
-        const divInfo = guess.proximity.lastCommonClade 
-          ? ` → Last common: ${guess.proximity.lastCommonClade}` 
-          : '';
-        
-        html += `
-          <div class="guess-item">
-            <span class="guess-name">${guess.dino.nome}${divInfo}</span>
-            <span class="guess-match">${guess.proximity.matches}/${targetDino.linhagem.length} nodes (${guess.proximity.percentage}%)</span>
-          </div>
-        `;
-      });
-      
-      html += '</div>';
-      historyDiv.innerHTML = html;
     }
 
     // ═══════════════════════════════════════════════════════════════════════
