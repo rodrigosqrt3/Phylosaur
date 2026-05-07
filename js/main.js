@@ -1,17 +1,21 @@
-// ═══════════════════════════════════════════════
-//  _____ _     _       _____
-// |  __ (_)   | |     / ____|
-// | |__) |  _| |_   | (___   ___ _ ____   _____ _ __       
-// |  ___/ |/ / __|   \___ \ / _ \ '__\ \ / / _ \ '__|
-// | |   |   <| |_    ____) |  __/ |   \ V /  __/ |
-// |_|   |_|\_\\__|  |_____/ \___|_|    \_/ \___|_|
-// ═══════════════════════════════════════════════
-
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 document.addEventListener('DOMContentLoaded', async function() {
-  const savedTheme = localStorage.getItem('phylosaur-theme');
-  if (savedTheme === 'light') toggleTheme();
+    
+  const urlParams = new URLSearchParams(window.location.search);
+  const isTotalDino = urlParams.get('partner') === 'totaldino';
+
+  if (isTotalDino) {
+      document.body.classList.add('totaldino-mode');
+      sessionStorage.setItem('partner', 'totaldino'); 
+  } 
+  else if (sessionStorage.getItem('partner') === 'totaldino') {
+      document.body.classList.add('totaldino-mode');
+  } 
+  else {
+      const savedTheme = localStorage.getItem('phylosaur-theme');
+      if (savedTheme === 'light') toggleTheme();
+  }
 
   const hash = window.location.hash;
   const params = new URLSearchParams(hash.replace('#', ''));
