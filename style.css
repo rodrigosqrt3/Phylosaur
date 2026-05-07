@@ -243,10 +243,10 @@ body.totaldino-mode {
     --tree-circle-guess-stroke:   #009900;
     --tree-circle-hint-fill:      #003300;
     --tree-label:           #00FF00;
-    --tree-label-revealed:  #003300;
-    --tree-label-guess:     #007700;
-    --tree-label-hint:      #005500;
-    --tree-label-ancestor:  #003300;
+    --tree-label-revealed:  #00FF00;
+    --tree-label-guess:     #00cc00;
+    --tree-label-hint:      #009900;
+    --tree-label-ancestor:  #00FF00;
     --tree-ancestor-bg:     #003300;
     --tree-ancestor-border: #009900;
 
@@ -269,7 +269,7 @@ html {
     }
 
 body {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Playfair Display', 'Georgia', serif;
   background: var(--bg-base);
   background-image: 
     radial-gradient(circle at 20% 50%, rgba(139, 115, 85, 0.15) 0%, transparent 50%),
@@ -578,14 +578,6 @@ body.light-mode .difficulty-btn:hover {
   padding: 8px 14px;
   font-size: 12px;
   letter-spacing: 0.5px;
-}
-
-.difficulty-info-box {
-  margin-top: 30px;
-  padding: 20px;
-  background: var(--bg-panel-subtle);
-  border-radius: 6px;
-  border-left: 3px solid var(--tree-leaf-border);
 }
 
 .difficulty-info-text {
@@ -921,15 +913,18 @@ button:disabled {
   }
   
   #header-controls {
+    display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 6px;
+    width: 100%;
   }
 
   #header-controls button {
     padding: 6px 10px;
     font-size: 11px;
     letter-spacing: 0.5px;
+    flex: 0 0 auto;
   }
 }
 
@@ -1682,6 +1677,37 @@ min-width: 100%;
     inset 0 1px 0 rgba(255,255,255,0.15),
     0 6px 18px rgba(0,0,0,0.6);
   transform: translateY(-2px);
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  transform: none;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--color-secondary);
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-style: italic;
+  letter-spacing: 1px;
+  text-align: center;
+  max-width: 300px;
+  width: 90%;
+  z-index: 9999;
+  animation: toastIn 0.4s ease, toastOut 0.4s ease 4s forwards;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-20px); }
 }
 
 .difficulty-very-easy  { border-color: var(--diff-very-easy-border); }

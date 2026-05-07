@@ -34,13 +34,8 @@ async function showDifficultySelection() {
             </button>
             </div>
         </div>
-        
-        <div class="difficulty-info-box">
-        <div class="difficulty-info-text">
-            Each difficulty level presents a unique specimen for today's date. All players worldwide receive identical classification challenges. Progress is tracked independently per difficulty level.
-        </div>
-        </div>
     `;
+    showToast(`Each difficulty level presents a unique specimen for today's date. All players worldwide receive identical classification challenges.`, true);
     startCountdown();
 }
 
