@@ -915,12 +915,9 @@ button:disabled {
     width: 100%;
   }
 
-  #header-controls {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-  }
+#header-controls {
+  border: 2px solid red !important;
+}
 
   #header-controls button {
     padding: 6px 10px;
