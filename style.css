@@ -916,12 +916,10 @@ button:disabled {
   }
 
   #header-controls {
-    flex: none !important;
-    width: 100% !important;
-    display: flex;
+    flex: 1 !important;
+    justify-content: center !important;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
+    width: 100%;
   }
 
   #header-controls button {
