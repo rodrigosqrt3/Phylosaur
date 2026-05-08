@@ -881,20 +881,20 @@ button:disabled {
 }
 
 @media (max-width: 768px) {
-    h1 { font-size: 1.6em; letter-spacing: 4px; }
-    .game-card { padding: 20px; }
-    .stat { padding: 14px; }
-    .stat-value { font-size: 1.8em; }
-    .clade-content { flex-direction: column; }
-    .clade-image { max-width: 100%; }
-    .input-section { flex-wrap: wrap; }
-    .input-section .btn-guess { flex: 1; }
-    .input-section .btn-hint { width: 100%; }
-    header > div { flex-wrap: wrap; gap: 10px; }
-      header > div {
+  h1 { font-size: 1.6em; letter-spacing: 4px; }
+  .game-card { padding: 20px; }
+  .stat { padding: 14px; }
+  .stat-value { font-size: 1.8em; }
+  .clade-content { flex-direction: column; }
+  .clade-image { max-width: 100%; }
+  .input-section { flex-wrap: wrap; }
+  .input-section .btn-guess { flex: 1; }
+  .input-section .btn-hint { width: 100%; }
+
+  header > div {
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
   }
 
   header > div > div:first-child {
@@ -908,11 +908,14 @@ button:disabled {
 
   header > div > div:last-child {
     flex: none;
-    justify-content: center !important;
-  }
-  
-  #header-controls {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  #header-controls {
     flex-wrap: wrap;
     justify-content: center;
     gap: 6px;
@@ -925,19 +928,6 @@ button:disabled {
     letter-spacing: 0.5px;
     flex: 0 0 auto;
   }
-
-  .stats-game {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .stats-game .stat:last-child:nth-child(3n+1) {
-    grid-column: 1 / -1;
-  }
-}
-
-.stats-game {
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
 }
 
 #tree-container {
