@@ -16,7 +16,7 @@ async function startPracticeChallenge(difficulty) {
     </div>
 
     <div class="game-card">
-        <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
+        <div class="stats stats-game">
         <div class="stat">
             <div class="stat-value" id="attempts">0</div>
             <div class="stat-label">Attempts</div>
@@ -96,7 +96,7 @@ async function startDailyChallenge(difficulty) {
     
     appContent.innerHTML = `
     <div class="game-card">
-        <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
+        <div class="stats stats-game">
         <div class="stat">
             <div class="stat-value" id="attempts">0</div>
             <div class="stat-label">Attempts</div>
