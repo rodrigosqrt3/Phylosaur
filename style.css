@@ -892,39 +892,32 @@ button:disabled {
     .input-section .btn-guess { flex: 1; }
     .input-section .btn-hint { width: 100%; }
     header > div { flex-wrap: wrap; gap: 10px; }
-      header > div {
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-
-  header > div > div:first-child {
-    display: none;
-  }
-
-  header > div > div:nth-child(2) {
-    flex: none;
-    text-align: center;
-  }
-
-  header > div > div:last-child {
-    flex: none;
-    justify-content: center !important;
-  }
-  
-  #header-controls {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-  }
-
-  #header-controls button {
-    padding: 6px 10px;
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    flex: 0 0 auto;
-  }
+    header > div {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+    header > div > div:first-child {
+        display: none;
+    }
+    header > div > div:nth-child(2) {
+        flex: none;
+        text-align: center;
+    }
+    header > div > div:last-child {
+        flex: none;
+        justify-content: center !important;
+    }
+    #header-controls {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+    #header-controls button {
+        padding: 6px 10px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
 }
 
 #tree-container {
