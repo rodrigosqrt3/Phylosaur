@@ -1760,13 +1760,6 @@ body.totaldino-mode {
     padding: 10px;
 }
 
-body.totaldino-mode #app-content .difficulty-grid,
-body.totaldino-mode #app-content > div {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
 @media (max-width: 600px) {
     body.totaldino-mode h1 {
         font-size: 1.4em;
