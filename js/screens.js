@@ -16,7 +16,7 @@ async function showDifficultySelection() {
         Next daily challenge in <span id="countdown-timer" style="color:var(--color-secondary); font-weight:600;">--:--:--</span>
         </p>
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin:30px 0;">
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin:30px 0;">
             ${generateDifficultyButton('muito_facil', 'LEVEL I', 'I', '', completionStatus.muito_facil)}
             ${generateDifficultyButton('facil', 'LEVEL II', 'II', '', completionStatus.facil)}
             ${generateDifficultyButton('normal', 'LEVEL III', 'III', '', completionStatus.normal)}
@@ -49,7 +49,7 @@ function showPracticeMode() {
         Train your phylogenetic skills — Select classification level
         </p>
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; margin:30px 0;">
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin:30px 0;">
         ${generatePracticeDifficultyButton('muito_facil', 'LEVEL I', 'I')}
         ${generatePracticeDifficultyButton('facil', 'LEVEL II', 'II')}
         ${generatePracticeDifficultyButton('normal', 'LEVEL III', 'III')}
@@ -70,7 +70,7 @@ function generatePracticeDifficultyButton(difficulty, name, level) {
     return `
     <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]}" 
             onclick="startPracticeChallenge('${difficulty}')" 
-            style="padding:30px; font-size:1.2em;">
+            style="padding:30px; font-size:1.2em; flex:1 1 200px; max-width:260px;"
         <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
         ${name}
         </div>
@@ -97,7 +97,7 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     return `
         <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]} ${borderClass}" 
                 onclick="startDailyChallenge('${difficulty}')" 
-                style="padding:30px; font-size:1.2em; position:relative;">
+                style="padding:30px; font-size:1.2em; position:relative; flex:1 1 200px; max-width:260px;">
         ${statusIndicator}
         <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
             ${name}
