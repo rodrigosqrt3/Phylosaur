@@ -97,7 +97,7 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     return `
         <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]} ${borderClass}" 
                 onclick="startDailyChallenge('${difficulty}')" 
-                style="padding:30px; font-size:1.2em; position:relative; flex:1 1 200px; max-width:260px;">
+                style="padding:30px; font-size:1.2em; position:relative; flex:0 1 260px;">
         ${statusIndicator}
         <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
             ${name}
