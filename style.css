@@ -591,6 +591,10 @@ body.light-mode .difficulty-btn:hover {
 transition: color 0.3s ease;
 }
 
+.game-card div[style*="grid-template-columns"] {
+    justify-content: center;
+}
+
 .container {
   max-width: 1600px;
   margin: 0 auto;
