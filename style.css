@@ -1706,14 +1706,96 @@ min-width: 100%;
    TOTALDINO THEME
    ═══════════════════════════════════════════════════════════════════════ */
 body.totaldino-mode {
-    background-color: #050505 !important;
-    background-image: url('totaldino-bg.jpg') !important;
-    background-size: cover !important;
-    background-attachment: fixed !important;
-    background-position: center !important;
+    background-color: transparent !important;
+    background-image: none !important;
     color: #00FF00 !important;
 }
 
 body.totaldino-mode #theme-toggle {
     display: none !important;
+}
+
+body.totaldino-mode header {
+    padding: 16px 20px;
+    margin-bottom: 16px;
+}
+
+body.totaldino-mode h1 {
+    font-size: 2em;
+    margin-bottom: 4px;
+}
+
+body.totaldino-mode .subtitle {
+    font-size: 0.85em;
+    letter-spacing: 1px;
+}
+
+body.totaldino-mode body {
+    padding: 10px;
+}
+
+body.totaldino-mode .container {
+    max-width: 100%;
+}
+
+body.totaldino-mode .game-card {
+    padding: 20px;
+    margin-bottom: 12px;
+}
+
+body.totaldino-mode .stats {
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+body.totaldino-mode .stat-value {
+    font-size: 1.8em;
+}
+
+body.totaldino-mode #tree-container {
+    max-height: 50vh;
+}
+
+body.totaldino-mode {
+    padding: 10px;
+}
+
+@media (max-width: 600px) {
+    body.totaldino-mode h1 {
+        font-size: 1.4em;
+        letter-spacing: 2px;
+    }
+
+    body.totaldino-mode header {
+        padding: 12px 10px;
+    }
+
+    body.totaldino-mode .game-card {
+        padding: 14px;
+    }
+
+    body.totaldino-mode .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    body.totaldino-mode .stat-value {
+        font-size: 1.5em;
+    }
+
+    body.totaldino-mode .input-section {
+        flex-wrap: wrap;
+    }
+
+    body.totaldino-mode .input-section .btn-guess {
+        flex: 1;
+    }
+
+    body.totaldino-mode .input-section .btn-hint {
+        width: 100%;
+    }
+
+    body.totaldino-mode #tree-container {
+        max-height: 40vh;
+    }
 }
