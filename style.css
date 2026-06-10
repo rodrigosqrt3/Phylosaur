@@ -1771,6 +1771,132 @@ body.totaldino-mode .theme-switch {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   DISCOVERY MUSEUM GALLERY
+   ═══════════════════════════════════════════════════════════════════════ */
+.museum-progress-container {
+    background: var(--bg-panel);
+    border: 2px solid var(--border-panel);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.museum-progress-bar {
+    width: 100%;
+    height: 12px;
+    background: var(--bg-darkest);
+    border-radius: 6px;
+    margin: 12px 0;
+    overflow: hidden;
+    border: 1px solid var(--border-inner);
+}
+
+.museum-progress-fill {
+    height: 100%;
+    background: var(--color-success);
+    width: 0%; /* Adjusted dynamically by JS */
+    transition: width 0.5s ease-out;
+}
+
+/* Responsive Grid */
+.museum-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+/* Individual Specimen Cards */
+.museum-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-base);
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.museum-card.unlocked:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-accent);
+}
+
+.museum-card-art-container {
+    width: 100%;
+    height: 140px;
+    background: var(--bg-darkest);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-inner);
+    position: relative;
+}
+
+.museum-card-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
+
+.museum-card-art.loaded {
+    opacity: 1;
+}
+
+.museum-card-name {
+    font-size: 1.1em;
+    font-weight: bold;
+    font-style: italic;
+    color: var(--color-primary);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.museum-card-clade {
+    font-size: 0.78em;
+    color: var(--color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Locked Card Styling */
+.museum-card.locked {
+    opacity: 0.55;
+    border-style: dashed;
+}
+
+.museum-card-lock-icon {
+    font-size: 2em;
+    color: var(--color-muted);
+}
+
+/* Light Mode Overrides for cards */
+body.light-mode .museum-card.unlocked {
+    background: var(--bg-panel);
+    border-color: var(--border-subtle);
+}
+
+body.light-mode .museum-card.unlocked:hover {
+    border-color: var(--border-hover);
+}
+
+@media (max-width: 600px) {
+    .museum-grid {
+        grid-template-columns: repeat(2, 1fr) !important; /* Forces 2 columns on phones */
+        gap: 10px !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    TOTALDINO THEME
    ═══════════════════════════════════════════════════════════════════════ */
 body.totaldino-mode {
