@@ -461,7 +461,7 @@ function renderEnhancedTree() {
     });
   });
   
-  nodes.forEach((data, clade) => {
+nodes.forEach((data, clade) => {
     const pos = nodePositions.get(clade);
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('class', 'tree-node-group new-node');
@@ -488,17 +488,24 @@ function renderEnhancedTree() {
     label.setAttribute('class', 'tree-node-label tree-node-label-ancestor');
     label.setAttribute('text-anchor', 'middle');
     label.setAttribute('dominant-baseline', 'middle');
-    label.setAttribute('font-size', '15px');
     label.setAttribute('font-weight', '600');
     label.textContent = clade;
+
+    const maxTextWidth = clade === 'Dinosauria' ? 150 : 125; 
+    const fontSize = Math.max(11, Math.min(15, Math.floor(maxTextWidth / (clade.length * 0.52))));
+    
+    if (fontSize < 15) {
+      label.setAttribute('style', `font-size: ${fontSize}px !important;`);
+    } else {
+      label.setAttribute('font-size', '15px');
+    }
     g.appendChild(label);
 
-    // Draw the small interactive toggle box on the right of the node
     if (clade !== 'Dinosauria') {
       const toggleG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       toggleG.style.cursor = 'pointer';
       toggleG.onclick = (e) => {
-        e.stopPropagation(); // Stop from opening the wiki panel below
+        e.stopPropagation();
         toggleCladeCollapse(clade);
       };
       
@@ -544,7 +551,7 @@ function renderEnhancedTree() {
     svg.appendChild(path);
   });
   
-  leafPositions.forEach((leaf, name) => {
+leafPositions.forEach((leaf, name) => {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('class', 'new-node');
     g.style.cursor = 'pointer';
@@ -591,10 +598,21 @@ function renderEnhancedTree() {
     );
     label.setAttribute('text-anchor', 'middle');
     label.setAttribute('dominant-baseline', 'middle');
-    label.setAttribute('font-size', leaf.isTarget ? '20px' : '15px');
     label.setAttribute('font-weight', leaf.isTarget ? '700' : '500');
     label.setAttribute('font-style', 'italic'); 
     label.textContent = leaf.displayName;
+
+    // Scale font size dynamically ONLY for giant leaf names to prevent overlap
+    const maxLeafWidth = 150;
+    const defaultSize = leaf.isTarget ? 20 : 15;
+    let leafFontSize = defaultSize;
+    if (leaf.displayName.length * (defaultSize * 0.55) > maxLeafWidth) {
+      leafFontSize = Math.max(10, Math.floor(maxLeafWidth / leaf.displayName.length * 1.8));
+      label.setAttribute('style', `font-size: ${leafFontSize}px !important;`); // Force override stylesheet
+    } else {
+      label.setAttribute('font-size', defaultSize + 'px');
+    }
+
     g.appendChild(label);
     svg.appendChild(g);
   });
