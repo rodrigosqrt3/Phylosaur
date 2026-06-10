@@ -602,13 +602,12 @@ leafPositions.forEach((leaf, name) => {
     label.setAttribute('font-style', 'italic'); 
     label.textContent = leaf.displayName;
 
-    // Scale font size dynamically ONLY for giant leaf names to prevent overlap
     const maxLeafWidth = 150;
     const defaultSize = leaf.isTarget ? 20 : 15;
-    let leafFontSize = defaultSize;
-    if (leaf.displayName.length * (defaultSize * 0.55) > maxLeafWidth) {
-      leafFontSize = Math.max(10, Math.floor(maxLeafWidth / leaf.displayName.length * 1.8));
-      label.setAttribute('style', `font-size: ${leafFontSize}px !important;`); // Force override stylesheet
+    const leafFontSize = Math.max(11, Math.min(defaultSize, Math.floor(maxLeafWidth / (leaf.displayName.length * 0.52))));
+
+    if (leafFontSize < defaultSize) {
+      label.setAttribute('style', `font-size: ${leafFontSize}px !important;`);
     } else {
       label.setAttribute('font-size', defaultSize + 'px');
     }
