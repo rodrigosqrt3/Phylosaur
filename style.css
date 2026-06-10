@@ -942,6 +942,12 @@ button:disabled {
         font-size: 11px;
         letter-spacing: 0.5px;
     }
+    .game-card div[style*="minmax"] {
+        grid-template-columns: 1fr !important;
+    }
+    .game-card > div[style*="border:2px solid"] {
+        padding: 15px !important;
+    }
 }
 
 #tree-container {
