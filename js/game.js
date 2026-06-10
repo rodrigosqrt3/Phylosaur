@@ -433,6 +433,7 @@ async function giveUp() {
 }
 
 async function showVictory() {
+    registerDiscovery(targetDino.nome);
     if (currentUser && !isPracticeMode) {
         await clearGameProgress(selectedDifficulty);
     }

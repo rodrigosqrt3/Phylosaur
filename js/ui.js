@@ -25,11 +25,12 @@ function setHeaderControls(screen) {
 
     const backBtn = `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Levels</button>`;
 
-    const map = {
+const map = {
       'login':        themeBtn,
-      'difficulty': themeBtn + aboutBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
+      'difficulty': themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showMuseum()">Museum</button>` + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
       'game': themeBtn + aboutBtn + backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
       'stats':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
+      'museum':       themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`, // <-- ADD THIS LINE
       'about':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
       'practice-menu':themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
       'practice':     themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showPracticeMode()">← Back</button>`,

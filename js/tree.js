@@ -5,7 +5,6 @@ if (typeof window.collapsedClades === 'undefined') {
     window.collapsedClades = new Set();
 }
 
-// Helper to toggle collapse and redraw the tree instantly
 function toggleCladeCollapse(clade) {
     if (window.collapsedClades.has(clade)) {
         window.collapsedClades.delete(clade);
@@ -346,7 +345,6 @@ function renderEnhancedTree() {
   const visibleLeaves = leaves.filter(leaf => {
     return !isNodeHidden(leaf.parentNode) && !window.collapsedClades.has(leaf.parentNode);
   });
-  // ─────────────────────────────────────────────────────────────────────
   
   const nodePositions = new Map();
   const leafPositions = new Map();
@@ -482,7 +480,6 @@ nodes.forEach((data, clade) => {
     g.appendChild(rect);
     
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    // Shift text slightly to the left to make room for the expand/collapse button
     label.setAttribute('x', clade === 'Dinosauria' ? pos.x : pos.x - 12);
     label.setAttribute('y', pos.y);
     label.setAttribute('class', 'tree-node-label tree-node-label-ancestor');

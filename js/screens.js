@@ -618,3 +618,129 @@ function generateRecentGames(recentGames) {
     });
     return html;
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// MUSEUM SCREEN CONTROLLER
+// ═══════════════════════════════════════════════════════════════════════
+let selectedMuseumLevel = 'muito_facil';
+
+async function getCachedDinoImage(name) {
+    let cache = JSON.parse(localStorage.getItem('phylosaur-image-cache') || '{}');
+    if (cache[name]) return cache[name];
+    
+    const url = await fetchWikimediaImage(name);
+    if (url) {
+        cache[name] = url;
+        localStorage.setItem('phylosaur-image-cache', JSON.stringify(cache));
+        return url;
+    }
+    return 'dinosaur-footprint-1-svgrepo-com.svg';
+}
+
+async function showMuseum() {
+    setHeaderControls('museum');
+    const appContent = document.getElementById('app-content');
+    
+    appContent.innerHTML = `<div class="game-card"><div class="loading">Opening discovery catalog...</div></div>`;
+    
+    try {
+        if (!fullDatabase || fullDatabase.length === 0) {
+            const res = await fetch('phylosaur_db.json');
+            fullDatabase = await res.json();
+        }
+
+        const unlockedList = await getUnlockedDinos();
+        const unlockedSet = new Set(unlockedList.map(name => name.toLowerCase()));
+
+        const levelDinos = fullDatabase.filter(d => d.dificuldade === selectedMuseumLevel);
+        const levelUnlockedCount = levelDinos.filter(d => unlockedSet.has(d.nome.toLowerCase())).length;
+        
+        const totalCount = fullDatabase.length;
+        const totalUnlocked = unlockedList.length;
+        const totalPercent = totalCount > 0 ? Math.round((totalUnlocked / totalCount) * 100) : 0;
+
+        let html = `
+            <div class="game-card">
+                <h2 style="color:var(--color-primary); margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
+                    RESEARCH MUSEUM
+                </h2>
+                
+                <div class="museum-progress-container">
+                    <div style="font-size:1.1em; color:var(--color-secondary); font-weight:600;">
+                        TOTAL DISCOVERIES: ${totalUnlocked} / ${totalCount} (${totalPercent}%)
+                    </div>
+                    <div class="museum-progress-bar">
+                        <div class="museum-progress-fill" style="width: ${totalPercent}%;"></div>
+                    </div>
+                    <div style="font-size:0.85em; color:var(--color-muted); font-style:italic;">
+                        Complete daily challenges and practice sessions to catalog new species!
+                    </div>
+                </div>
+
+                <!-- Level Tabs -->
+                <div class="tab-row" style="margin-bottom: 24px;">
+                    <button class="tab-btn ${selectedMuseumLevel === 'muito_facil' ? 'active' : ''}" onclick="switchMuseumLevel('muito_facil')">Level I</button>
+                    <button class="tab-btn ${selectedMuseumLevel === 'facil' ? 'active' : ''}" onclick="switchMuseumLevel('facil')">Level II</button>
+                    <button class="tab-btn ${selectedMuseumLevel === 'normal' ? 'active' : ''}" onclick="switchMuseumLevel('normal')">Level III</button>
+                    <button class="tab-btn ${selectedMuseumLevel === 'dificil' ? 'active' : ''}" onclick="switchMuseumLevel('dificil')">Level IV</button>
+                    <button class="tab-btn ${selectedMuseumLevel === 'muito_dificil' ? 'active' : ''}" onclick="switchMuseumLevel('muito_dificil')">Level V</button>
+                </div>
+
+                <div style="font-size:1em; color:var(--color-secondary); text-align:center; margin-bottom:15px; font-weight:600;">
+                    Cataloged in this level: ${levelUnlockedCount} / ${levelDinos.length}
+                </div>
+
+                <div class="museum-grid">
+        `;
+
+        levelDinos.forEach(dino => {
+            const isUnlocked = unlockedSet.has(dino.nome.toLowerCase());
+            const lastClade = dino.linhagem[dino.linhagem.length - 1] || 'Dinosauria';
+
+            if (isUnlocked) {
+                html += `
+                    <div class="museum-card unlocked" onclick="showCladeInfo('${dino.nome}')" style="cursor:pointer;">
+                        <div class="museum-card-art-container">
+                            <img class="museum-card-art" id="art-${dino.nome.replace(/\s+/g, '')}" src="dinosaur-footprint-1-svgrepo-com.svg" alt="${dino.nome}" />
+                        </div>
+                        <div class="museum-card-name">${dino.nome}</div>
+                        <div class="museum-card-clade">${lastClade}</div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="museum-card locked">
+                        <div class="museum-card-art-container">
+                            <span class="museum-card-lock-icon">🔒</span>
+                        </div>
+                        <div class="museum-card-name">???</div>
+                        <div class="museum-card-clade">Locked</div>
+                    </div>
+                `;
+            }
+        });
+
+        html += `</div></div><div id="clade-info"></div>`;
+        appContent.innerHTML = html;
+
+        levelDinos.forEach(async dino => {
+            if (unlockedSet.has(dino.nome.toLowerCase())) {
+                const imgElement = document.getElementById(`art-${dino.nome.replace(/\s+/g, '')}`);
+                if (imgElement) {
+                    const url = await getCachedDinoImage(dino.nome);
+                    imgElement.src = url;
+                    imgElement.classList.add('loaded');
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error('Museum Error:', err);
+        appContent.innerHTML = `<div class="game-card" style="color:var(--color-danger);">Error loading Museum: ${err.message}</div>`;
+    }
+}
+
+function switchMuseumLevel(level) {
+    selectedMuseumLevel = level;
+    showMuseum();
+}

@@ -352,7 +352,6 @@ async function loadDailyDatabase(difficulty, forceClean = false) {
     if (savedProgress && savedProgress.targetDino === targetDino.nome) {
         console.log('Loading saved progress...');
         
-        // Reconstruir guesses
         if (savedProgress.guesses && savedProgress.guesses.length > 0) {
         guesses = savedProgress.guesses.map(savedGuess => {
             const dino = database.find(d => d.nome === savedGuess.nome);
@@ -487,5 +486,52 @@ async function loadCompletedChallengeTree(difficulty, result) {
     if (wrapper) {
         wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading tree</strong><br>${err.message}</div>`;
     }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// DISCOVERY GALLERY / MUSEUM OPERATIONS
+// ═══════════════════════════════════════════════════════════════════════
+
+function registerDiscovery(dinoName) {
+    if (!dinoName) return;
+    
+    let localDiscoveries = JSON.parse(localStorage.getItem('phylosaur-discoveries') || '[]');
+    if (!localDiscoveries.includes(dinoName)) {
+        localDiscoveries.push(dinoName);
+        localStorage.setItem('phylosaur-discoveries', JSON.stringify(localDiscoveries));
+        console.log(`Dinosaur discovered and cataloged: ${dinoName}`);
+    }
+}
+
+async function getUnlockedDinos() {
+    let localDiscoveries = JSON.parse(localStorage.getItem('phylosaur-discoveries') || '[]');
+    let uniqueDinos = new Set(localDiscoveries);
+
+    if (currentUserId) {
+        try {
+            const { data, error } = await sb.from('daily_results')
+                .select('target_dino')
+                .eq('user_id', currentUserId)
+                .eq('won', true);
+
+            if (data && !error) {
+                data.forEach(row => {
+                    uniqueDinos.add(row.target_dino);
+                });
+                
+                localStorage.setItem('phylosaur-discoveries', JSON.stringify(Array.from(uniqueDinos)));
+            }
+        } catch (err) {
+            console.error('Error syncing discoveries from Supabase:', err);
+        }
+    }
+
+    return Array.from(uniqueDinos);
+}
+
+async function syncDiscoveriesOnLogin() {
+    if (currentUserId) {
+        await getUnlockedDinos();
     }
 }
