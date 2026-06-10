@@ -882,9 +882,11 @@ button:disabled {
 
 @media (max-width: 768px) {
     h1 { font-size: 1.6em; letter-spacing: 4px; }
+    h2 { font-size: 1.4em !important; letter-spacing: 1px !important; line-height: 1.4 !important;}
     .game-card { padding: 20px; }
     .stats { 
-        grid-template-columns: repeat(2, 1fr) !important; 
+        width: 100% !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important; 
         gap: 10px !important; 
     }
     .stat { 
@@ -896,6 +898,8 @@ button:disabled {
     .stat-label {
         font-size: 0.65em !important;
         letter-spacing: 1px !important;
+        word-break: break-word !important;
+        hyphens: auto !important;
     }
     .stat:nth-child(5) {
         grid-column: span 2 !important;
