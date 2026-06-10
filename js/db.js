@@ -262,6 +262,7 @@ function getTodayString() {
 }
 
 async function loadPracticeDatabase(difficulty) {
+    window.collapsedClades.clear();
     isPracticeMode = true;
     
     const wrapper = document.getElementById('tree-scroll-wrapper');
@@ -313,6 +314,7 @@ async function loadPracticeDatabase(difficulty) {
 }
 
 async function loadDailyDatabase(difficulty, forceClean = false) {
+    window.collapsedClades.clear();
     const wrapper = document.getElementById('tree-scroll-wrapper');
     if (wrapper) wrapper.innerHTML = '<div class="loading">Loading classification database...</div>';
     
@@ -427,14 +429,10 @@ async function loadCompletedChallengeTree(difficulty, result) {
     fullDatabase = await res.json();
     database = fullDatabase.filter(d => d.dificuldade === difficulty);
     
-    const seed = getDailySeed(difficulty);
-    const hash = hashString(seed);
-    const index = hash % database.length;
+    targetDino = database.find(d => d.nome === result.targetDino);
     
-    targetDino = database[index];
-    
-    if (targetDino.nome !== result.targetDino) {
-        console.warn('Mismatch between saved and calculated target');
+    if (!targetDino) {
+        targetDino = fullDatabase.find(d => d.nome === result.targetDino);
     }
     
     if (result.guesses && result.guesses.length > 0) {

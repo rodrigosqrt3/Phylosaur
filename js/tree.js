@@ -1,6 +1,20 @@
-// ═══════════════════════════════════════════════
-// TREE AND PHYLOGENY LOGIC 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
+// GLOBAL COLLAPSED STATE (Accessible globally)
+// ═══════════════════════════════════════════════════════════════════════
+if (typeof window.collapsedClades === 'undefined') {
+    window.collapsedClades = new Set();
+}
+
+// Helper to toggle collapse and redraw the tree instantly
+function toggleCladeCollapse(clade) {
+    if (window.collapsedClades.has(clade)) {
+        window.collapsedClades.delete(clade);
+    } else {
+        window.collapsedClades.add(clade);
+    }
+    renderEnhancedTree();
+}
+
 function findDinosauriaIndex(lineage) {
   return lineage.findIndex(c => c === 'Dinosauria');
 }
@@ -294,6 +308,45 @@ function renderEnhancedTree() {
         lineage: targetLineage 
     });
   }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // ── COLLAPSE FILTERING LOGIC
+  // ─────────────────────────────────────────────────────────────────────
+  const parentMap = new Map();
+  nodes.forEach((data, clade) => {
+    data.children.forEach(child => parentMap.set(child, clade));
+  });
+
+  function isNodeHidden(nodeName) {
+    let current = nodeName;
+    while (current && current !== 'Dinosauria') {
+      let parent = parentMap.get(current);
+      if (parent && window.collapsedClades.has(parent)) {
+        return true;
+      }
+      current = parent;
+    }
+    return false;
+  }
+
+  nodes.forEach((data, clade) => {
+    if (clade !== 'Dinosauria' && isNodeHidden(clade)) {
+      nodes.delete(clade);
+    }
+  });
+
+  nodes.forEach((data, clade) => {
+    if (window.collapsedClades.has(clade)) {
+      data.children = [];
+    } else {
+      data.children = data.children.filter(child => !isNodeHidden(child));
+    }
+  });
+
+  const visibleLeaves = leaves.filter(leaf => {
+    return !isNodeHidden(leaf.parentNode) && !window.collapsedClades.has(leaf.parentNode);
+  });
+  // ─────────────────────────────────────────────────────────────────────
   
   const nodePositions = new Map();
   const leafPositions = new Map();
@@ -303,7 +356,7 @@ function renderEnhancedTree() {
     const nd = nodes.get(clade);
     if (!nd) return 1;
     
-    const dl = leaves.filter(l => l.parentNode === clade).length;
+    const dl = visibleLeaves.filter(l => l.parentNode === clade).length;
     let cs = 0;
     nd.children.forEach(ch => { cs += countSlots(ch); });
     
@@ -323,7 +376,7 @@ function renderEnhancedTree() {
     const intChildren = nd.children.slice().sort((a, b) => 
       nodes.get(a).lineageIndex - nodes.get(b).lineageIndex
     );
-    const dirLeaves = leaves.filter(l => l.parentNode === clade);
+    const dirLeaves = visibleLeaves.filter(l => l.parentNode === clade);
     
     const slots =[];
     intChildren.forEach(ch => slots.push({ 
@@ -401,10 +454,7 @@ function renderEnhancedTree() {
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', `M ${pos.x} ${pos.y + nodeHeight / 2} C ${pos.x} ${midY}, ${cp.x} ${midY}, ${cp.x} ${cp.y - nodeHeight / 2}`);
       path.setAttribute('class', 'tree-line tree-line-revealed new-line');
-      
-      // 👉 SWAPPED TO VARIABLE
       path.setAttribute('stroke', 'var(--color-accent)'); 
-      
       path.setAttribute('stroke-width', '3');
       path.setAttribute('fill', 'none');
       svg.appendChild(path);
@@ -428,12 +478,12 @@ function renderEnhancedTree() {
     
     rect.setAttribute('fill', isHinted ? 'var(--tree-hint-bg)' : 'var(--tree-ancestor-bg)');
     rect.setAttribute('stroke', isHinted ? 'var(--tree-hint-border)' : 'var(--tree-ancestor-border)');
-    
     rect.setAttribute('stroke-width', '2.5');
     g.appendChild(rect);
     
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    label.setAttribute('x', pos.x);
+    // Shift text slightly to the left to make room for the expand/collapse button
+    label.setAttribute('x', clade === 'Dinosauria' ? pos.x : pos.x - 12);
     label.setAttribute('y', pos.y);
     label.setAttribute('class', 'tree-node-label tree-node-label-ancestor');
     label.setAttribute('text-anchor', 'middle');
@@ -442,6 +492,39 @@ function renderEnhancedTree() {
     label.setAttribute('font-weight', '600');
     label.textContent = clade;
     g.appendChild(label);
+
+    // Draw the small interactive toggle box on the right of the node
+    if (clade !== 'Dinosauria') {
+      const toggleG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      toggleG.style.cursor = 'pointer';
+      toggleG.onclick = (e) => {
+        e.stopPropagation(); // Stop from opening the wiki panel below
+        toggleCladeCollapse(clade);
+      };
+      
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', pos.x + nodeWidth / 2 - 25);
+      line.setAttribute('y1', pos.y - nodeHeight / 2);
+      line.setAttribute('x2', pos.x + nodeWidth / 2 - 25);
+      line.setAttribute('y2', pos.y + nodeHeight / 2);
+      line.setAttribute('stroke', isHinted ? 'var(--tree-hint-border)' : 'var(--tree-ancestor-border)');
+      line.setAttribute('stroke-width', '1.5');
+      toggleG.appendChild(line);
+
+      const sym = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      sym.setAttribute('x', pos.x + nodeWidth / 2 - 12);
+      sym.setAttribute('y', pos.y);
+      sym.setAttribute('text-anchor', 'middle');
+      sym.setAttribute('dominant-baseline', 'middle');
+      sym.setAttribute('font-size', '14px');
+      sym.setAttribute('font-weight', 'bold');
+      sym.setAttribute('fill', '#fff');
+      sym.textContent = window.collapsedClades.has(clade) ? '+' : '−';
+      toggleG.appendChild(sym);
+      
+      g.appendChild(toggleG);
+    }
+
     svg.appendChild(g);
   });
   
@@ -466,8 +549,8 @@ function renderEnhancedTree() {
     g.setAttribute('class', 'new-node');
     g.style.cursor = 'pointer';
     g.onclick = () => {
-    if (leaf.displayName === '?') return;
-    showCladeInfo(leaf.displayName);
+      if (leaf.displayName === '?') return;
+      showCladeInfo(leaf.displayName);
     };
     
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
