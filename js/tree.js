@@ -364,7 +364,7 @@ function renderEnhancedTree() {
   }
   
   const totalSlots = countSlots('Dinosauria');
-  const dynH = Math.max(100, 200 - Math.max(0, (totalSlots - 3) * 8));
+    const dynH = Math.max(180, 240 - Math.max(0, (totalSlots - 3) * 8));
   const maxDepth = Math.max(...Array.from(nodes.values()).map(n => n.depth));
   const dynV = Math.max(80, Math.floor(120 * Math.max(0.7, 1 - (totalSlots - 15) * 0.02)));
   
