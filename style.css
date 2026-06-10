@@ -151,15 +151,20 @@ body.light-mode {
     --border-inner:         #e8dcc8;
     --border-hover:         #8b6f47;
 
-    --color-text-light:     #2d2318;
-    --color-text-warm:      #5a3e1b;
-    --color-text-dim:       #6b5340;
-    --color-text-dark:      #5a3e1b;
-    --color-primary:        #8b6f47;
-    --color-muted:          #8b7355;
-    --color-accent:         #c9a96e;
+    /* High Contrast Typography Overrides */
+    --color-text-light:     #2d2318;       /* Very dark coffee brown */
+    --color-text-warm:      #4a3829;       /* Rich dark chocolate brown */
+    --color-text-dim:       #4a3829;       
+    --color-text-dark:      #2d2318;      
+    --color-primary:        #4a3829;       /* Deep coffee tone for titles */
+    --color-secondary:      #5c4033;       /* Dark warm wood tone for subtitles */
+    --color-muted:          #5c4033;       /* Dark wood tone for muted labels */
+    --color-accent:         #8b5e3c;       /* Rich dark caramel for highlights & rows */
+    --text-value:           #4a3829;       /* FIXES: Microscopic white/gold numbers! */
 
-    --color-success-deeper: #2d6b3f;
+    /* Success & Achievements Contrast */
+    --color-success-deeper: #1b4d22;       /* Dark forest green */
+    --color-success-text:   #1b4d22;       /* FIXES: Microscopic light green achievement titles! */
     --color-success-bg:     rgba(144, 238, 144, 0.15);
     --color-success-bg-alt: rgba(144, 238, 144, 0.15);
 
@@ -167,6 +172,9 @@ body.light-mode {
     --tree-label-guess:     #4a2c10;
     --tree-label-hint:      #5a4a30;
     --tree-label-ancestor:  #2d5016;
+    --tree-line-revealed:         #8b5e3c; 
+    --tree-line-hint:             #6b5340; 
+    --tree-circle-revealed-fill:  #8b5e3c;
 
     --diff-very-easy-border:      #2d8a5a;
     --diff-easy-border:           #4a9a6a;

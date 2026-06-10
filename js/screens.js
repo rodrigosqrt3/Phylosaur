@@ -365,7 +365,7 @@ function showAbout() {
             longest common prefix , equivalently, the depth of their most recent common ancestor 
             (MRCA). The phylogenetic distance between any two taxa is then formally defined as:
         </p>
-        <p style="margin-bottom:25px; padding:20px; background:rgba(61,47,31,0.3); border-radius:4px; text-align:center;">
+        <p style="margin-bottom:25px; padding:20px; background:rgba(61,47,31,0.3); border-radius:4px; text-align:center; overflow-x:auto; -webkit-overflow-scrolling:touch;">
             $$d(A, B) = \\text{depth}(A) + \\text{depth}(B) - 2 \\cdot \\text{depth}(\\text{MRCA}(A, B))$$
         </p>
         <p style="margin-bottom:25px;">
@@ -544,7 +544,7 @@ function generateDifficultyStats(diffStats) {
         <div class="diff-stats">
             <span class="diff-record">${stat.won}/${stat.played}</span>
             <span class="diff-winrate">${winRate}%</span>
-            <span class="diff-avg">Avg: ${Math.round(stat.avg_guesses)} guesses</span>
+            <span class="diff-avg">Avg: ${Math.round(stat.avg_guesses)} ${Math.round(stat.avg_guesses) === 1 ? 'guess' : 'guesses'}</span>
         </div>
         </div>
     `;
@@ -602,7 +602,7 @@ function generateRecentGames(recentGames) {
         : `<span style="color:var(--color-text-light); font-style:italic;">${game.target_dino}</span>`;
 
     html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:rgba(42,31,22,0.4); border-left:4px solid ${game.won ? 'var(--color-success)' : '#8b6f47'}; border-radius:4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:var(--bg-panel-darker); border-left:4px solid ${game.won ? 'var(--color-success)' : 'var(--color-border)'}; border-radius:4px;">
         <div style="flex:1;">
             <div style="display:flex; align-items:center; margin-bottom:5px;">
             <span style="color:${game.won ? '#c8e6c9' : '#d4a574'}; font-weight:700; margin-right:12px; font-size:1.1em;">${game.won ? '✓' : '…'}</span>
@@ -610,7 +610,7 @@ function generateRecentGames(recentGames) {
             </div>
         </div>
         <div style="text-align:right;">
-            <div style="color:var(--color-accent); font-size:1em; font-weight:600; margin-bottom:3px;">${game.guess_count} guesses</div>
+            <div style="color:var(--color-accent); font-size:1em; font-weight:600; margin-bottom:3px;">${game.guess_count} ${game.guess_count === 1 ? 'guess' : 'guesses'}</div>
             <div style="color:var(--color-muted); font-size:0.8em;">${diffNames[game.difficulty]} • ${date}</div>
         </div>
         </div>
