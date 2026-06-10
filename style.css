@@ -902,9 +902,15 @@ button:disabled {
     }
     .clade-content { flex-direction: column; }
     .clade-image { max-width: 100%; }
-    .input-section { flex-wrap: wrap; }
-    .input-section .btn-guess { flex: 1; }
-    .input-section .btn-hint { width: 100%; }
+    .input-section { 
+        flex-direction: column !important; 
+        gap: 10px !important; 
+    }
+    .input-section button {
+        width: 100% !important;
+        flex: none !important;
+        box-sizing: border-box !important;
+    }
     header > div { flex-wrap: wrap; gap: 10px; }
     header > div {
         flex-direction: column;
