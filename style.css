@@ -1708,6 +1708,60 @@ min-width: 100%;
   animation: branchGrow 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+.theme-switch {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 24px;
+    position: relative;
+}
+
+.theme-switch::before,
+.theme-switch::after {
+    display: none !important;
+}
+
+.theme-switch-track {
+    display: block;
+    width: 36px;
+    height: 18px;
+    border-radius: 9px;
+    border: 1.5px solid var(--color-muted);
+    position: relative;
+    transition: border-color 0.25s ease;
+}
+
+.theme-switch-thumb {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--color-muted);
+    position: absolute;
+    top: 2.5px;
+    left: 3px; 
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease;
+}
+
+body.light-mode .theme-switch-track {
+    border-color: var(--color-primary);
+}
+
+body.light-mode .theme-switch-thumb {
+    background-color: var(--color-primary);
+    transform: translateX(17px);
+}
+
+body.totaldino-mode .theme-switch {
+    display: none !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    TOTALDINO THEME
    ═══════════════════════════════════════════════════════════════════════ */

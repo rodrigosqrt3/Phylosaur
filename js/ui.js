@@ -6,8 +6,10 @@ function setHeaderControls(screen) {
     if (!controls) return;
 
     const themeBtn = `
-      <button class="btn-hint btn-header" onclick="toggleTheme()" id="theme-toggle">
-        <span id="theme-icon">${currentTheme === 'light' ? '🌙' : '☀️'}</span>
+      <button class="theme-switch" onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle theme">
+        <span class="theme-switch-track">
+          <span class="theme-switch-thumb"></span>
+        </span>
       </button>
     `;
 
@@ -36,15 +38,11 @@ function setHeaderControls(screen) {
     controls.innerHTML = map[screen] || themeBtn;
 }
 
-function toggleTheme() { 
-    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.body.classList.toggle('light-mode');
-
-    const icon = document.getElementById('theme-icon');
-    if (icon) icon.textContent = currentTheme === 'light' ? '🌙' : '☀️';
-
-    localStorage.setItem('phylosaur-theme', currentTheme);
-}
+function toggleTheme() {
+        currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('phylosaur-theme', currentTheme);
+    }
 
 function showModal(options) {
     return new Promise((resolve) => {
