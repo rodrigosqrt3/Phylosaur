@@ -459,6 +459,7 @@ async function logout() {
 
   if (confirm === 'true') {
     await sb.auth.signOut();
+    localStorage.removeItem('phylosaur-discoveries');
     currentUser = null;
     currentUserId = null;
     userStats = {
