@@ -678,7 +678,7 @@ async function showMuseum() {
                 </div>
 
                 <!-- Level Tabs -->
-                <div class="tab-row" style="margin-bottom: 24px;">
+                <div class="tab-row museum-tabs" style="margin-bottom: 24px;">
                     <button class="tab-btn ${selectedMuseumLevel === 'muito_facil' ? 'active' : ''}" onclick="switchMuseumLevel('muito_facil')">Level I</button>
                     <button class="tab-btn ${selectedMuseumLevel === 'facil' ? 'active' : ''}" onclick="switchMuseumLevel('facil')">Level II</button>
                     <button class="tab-btn ${selectedMuseumLevel === 'normal' ? 'active' : ''}" onclick="switchMuseumLevel('normal')">Level III</button>
