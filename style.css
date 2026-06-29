@@ -1896,6 +1896,25 @@ body.light-mode .museum-card.unlocked:hover {
     }
 }
 
+.museum-tabs {
+    grid-template-columns: repeat(5, 1fr) !important; /* Aligns all 5 levels in one row on desktop */
+    margin: 0 0 24px !important; /* Resets the login modal's negative margins */
+    border-bottom: 2px solid var(--border-base) !important;
+}
+
+@media (max-width: 900px) {
+    .museum-tabs {
+        grid-template-columns: repeat(3, 1fr) !important; /* Adapts to tablet screens */
+    }
+}
+
+@media (max-width: 600px) {
+    .museum-tabs {
+        grid-template-columns: repeat(2, 1fr) !important; /* Stacks cleanly on phones */
+        font-size: 0.8em !important;
+    }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    TOTALDINO THEME
    ═══════════════════════════════════════════════════════════════════════ */
