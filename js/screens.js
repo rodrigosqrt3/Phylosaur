@@ -681,6 +681,169 @@ async function getCachedDinoMedia(name) {
     return null;
 }
 
+let activeMuseumEntryMedia = null;
+let museumEntryEscapeHandler = null;
+
+function getMuseumMediaCredit(name, media) {
+    if (!media) {
+        return '<span>No illustration is currently available for this entry.</span>';
+    }
+
+    if (media.source === 'wikimedia') {
+        const license = media.license_url
+            ? `<a href="${media.license_url}" target="_blank" rel="noopener">${media.license}</a>`
+            : media.license;
+        return `
+            Image by ${media.artist || 'Wikimedia Commons contributor'} · ${license}
+            · <a href="${media.file_page}" target="_blank" rel="noopener">Source</a>
+        `;
+    }
+
+    const commonsPage = `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(name + ' TD.png')}`;
+    return `
+        Art by <a href="https://totaldino.com" target="_blank" rel="noopener">TotalDino</a>
+        · <a href="${commonsPage}" target="_blank" rel="noopener">Wikimedia Commons</a>
+    `;
+}
+
+function closeMuseumEntry() {
+    document.getElementById('museum-image-viewer')?.remove();
+    document.getElementById('museum-entry-overlay')?.remove();
+    document.body.style.overflow = '';
+    activeMuseumEntryMedia = null;
+
+    if (museumEntryEscapeHandler) {
+        document.removeEventListener('keydown', museumEntryEscapeHandler);
+        museumEntryEscapeHandler = null;
+    }
+}
+
+function openMuseumImageViewer() {
+    if (!activeMuseumEntryMedia?.url) return;
+
+    document.getElementById('museum-image-viewer')?.remove();
+    const viewer = document.createElement('div');
+    viewer.id = 'museum-image-viewer';
+    viewer.className = 'museum-image-viewer';
+    viewer.innerHTML = `
+        <button class="museum-image-viewer-close" type="button" aria-label="Close image">×</button>
+        <img src="${activeMuseumEntryMedia.url}" alt="${activeMuseumEntryMedia.name}">
+        <div class="museum-image-viewer-caption">
+            <em>${activeMuseumEntryMedia.name}</em>
+            <div>${activeMuseumEntryMedia.credit}</div>
+        </div>
+    `;
+
+    viewer.addEventListener('click', event => {
+        if (event.target === viewer || event.target.closest('.museum-image-viewer-close')) {
+            viewer.remove();
+        }
+    });
+
+    document.body.appendChild(viewer);
+}
+
+async function showMuseumEntry(name) {
+    closeMuseumEntry();
+
+    const dino = fullDatabase.find(item => item.nome === name);
+    if (!dino) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'museum-entry-overlay';
+    overlay.className = 'museum-entry-overlay';
+    overlay.innerHTML = `
+        <article class="museum-entry-dialog" role="dialog" aria-modal="true" aria-label="${name}">
+            <button class="museum-entry-close" type="button" onclick="closeMuseumEntry()" aria-label="Close">×</button>
+            <div class="museum-entry-loading">Opening ${name}…</div>
+        </article>
+    `;
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) closeMuseumEntry();
+    });
+
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    museumEntryEscapeHandler = event => {
+        if (event.key !== 'Escape') return;
+        const viewer = document.getElementById('museum-image-viewer');
+        if (viewer) viewer.remove();
+        else closeMuseumEntry();
+    };
+    document.addEventListener('keydown', museumEntryEscapeHandler);
+
+    const [media, wikiInfo] = await Promise.all([
+        getCachedDinoMedia(name),
+        fetchWikipediaInfo(name)
+    ]);
+
+    if (!document.body.contains(overlay)) return;
+
+    const imageUrl = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
+    const credit = getMuseumMediaCredit(name, media);
+    const levelNames = {
+        muito_facil: 'Level I',
+        facil: 'Level II',
+        normal: 'Level III',
+        dificil: 'Level IV',
+        muito_dificil: 'Level V'
+    };
+    const lineage = (dino.linhagem || [])
+        .map(clade => `<span>${clade}</span>`)
+        .join('<b>›</b>');
+
+    activeMuseumEntryMedia = {
+        name,
+        url: media?.url || null,
+        credit
+    };
+
+    overlay.querySelector('.museum-entry-dialog').innerHTML = `
+        <button class="museum-entry-close" type="button" onclick="closeMuseumEntry()" aria-label="Close">×</button>
+
+        <header class="museum-entry-header">
+            <div class="museum-entry-kicker">Museum record</div>
+            <h2>${name}</h2>
+            <div class="museum-entry-meta">
+                ${levelNames[dino.dificuldade] || dino.dificuldade}
+                · ${(dino.linhagem || []).at(-1) || 'Dinosauria'}
+            </div>
+        </header>
+
+        <div class="museum-entry-layout">
+            <figure class="museum-entry-figure">
+                <button class="museum-entry-image-button" type="button"
+                        onclick="openMuseumImageViewer()"
+                        ${media?.url ? '' : 'disabled'}
+                        aria-label="View larger image of ${name}">
+                    <img src="${imageUrl}" alt="${name}">
+                    ${media?.url ? '<span>Click to enlarge</span>' : ''}
+                </button>
+                <figcaption>${credit}</figcaption>
+            </figure>
+
+            <section class="museum-entry-copy">
+                <div class="museum-entry-ornament">◆</div>
+                <p class="museum-entry-description">
+                    ${wikiInfo?.description || 'No encyclopedia summary is available for this genus yet.'}
+                </p>
+
+                <h3>Classification</h3>
+                <div class="museum-entry-lineage">${lineage || '<span>Dinosauria</span>'}</div>
+
+                ${wikiInfo?.url ? `
+                    <a class="museum-entry-read-more" href="${wikiInfo.url}"
+                       target="_blank" rel="noopener">
+                        Read the full Wikipedia article ↗
+                    </a>
+                ` : ''}
+            </section>
+        </div>
+    `;
+}
+
 async function showMuseum() {
     setHeaderControls('museum');
     const appContent = document.getElementById('app-content');
@@ -743,7 +906,7 @@ async function showMuseum() {
 
             if (isUnlocked) {
                 html += `
-                    <div class="museum-card unlocked" onclick="showCladeInfo('${dino.nome}')" style="cursor:pointer;">
+                    <div class="museum-card unlocked" onclick="showMuseumEntry('${dino.nome}')" style="cursor:pointer;">
                         <div class="museum-card-art-container">
                             <img class="museum-card-art" id="art-${dino.nome.replace(/\s+/g, '')}" src="dinosaur-footprint-1-svgrepo-com.svg" alt="${dino.nome}" />
                         </div>
