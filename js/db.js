@@ -292,8 +292,6 @@ async function loadPracticeDatabase(difficulty) {
     hintHistory = [];
     guessesSinceLastHint = 0;
     
-    console.log('Practice specimen:', targetDino.nome);
-    
     document.getElementById('attempts').textContent = '0';
     document.getElementById('hints').textContent = '3';
     document.getElementById('best-match').textContent = '0';
@@ -344,8 +342,6 @@ async function loadDailyDatabase(difficulty, forceClean = false) {
     revealedClades = new Set();
     hintHistory = [];
     guessesSinceLastHint = 0;
-    
-    console.log('Daily specimen:', targetDino.nome, 'Seed:', seed);
     
     const savedProgress = forceClean ? null : await loadGameProgress(difficulty);
 

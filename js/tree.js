@@ -35,7 +35,9 @@ function findMRCA(lineage1, lineage2) {
 
 function initTreePanning() {
   const container = document.getElementById('tree-container');
-  if (!container) return;
+  if (!container || container.dataset.panInitialized === 'true') return;
+
+  container.dataset.panInitialized = 'true';
 
   let isDown = false;
   let startX, startY, scrollLeft, scrollTop;
