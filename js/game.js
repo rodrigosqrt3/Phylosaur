@@ -141,7 +141,7 @@ async function startDailyChallenge(difficulty) {
     </div>
     `;
 
-const savedProgress = loadGameProgress(difficulty);
+const savedProgress = await loadGameProgress(difficulty);
 let continueGame = true;
 
 if (savedProgress && savedProgress.guesses && savedProgress.guesses.length > 0) {
