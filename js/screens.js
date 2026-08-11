@@ -624,17 +624,61 @@ function generateRecentGames(recentGames) {
 // ═══════════════════════════════════════════════════════════════════════
 let selectedMuseumLevel = 'muito_facil';
 
-async function getCachedDinoImage(name) {
-    let cache = JSON.parse(localStorage.getItem('phylosaur-image-cache') || '{}');
-    if (cache[name]) return cache[name];
-    
-    const url = await fetchWikimediaImage(name);
-    if (url) {
-        cache[name] = url;
-        localStorage.setItem('phylosaur-image-cache', JSON.stringify(cache));
-        return url;
+let museumFallbackCatalogPromise = null;
+
+async function loadMuseumFallbackCatalog() {
+    if (!museumFallbackCatalogPromise) {
+        museumFallbackCatalogPromise = fetch('phylosaur_media_fallback.json')
+            .then(response => {
+                if (!response.ok) throw new Error(`Media catalog HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(catalog => catalog.taxa || {})
+            .catch(error => {
+                console.warn('Museum fallback catalog unavailable:', error);
+                return {};
+            });
     }
-    return 'dinosaur-footprint-1-svgrepo-com.svg';
+
+    return museumFallbackCatalogPromise;
+}
+
+async function getCachedDinoMedia(name) {
+    let cache = JSON.parse(localStorage.getItem('phylosaur-image-cache-v3') || '{}');
+    const cached = cache[name];
+
+    // Older versions stored TotalDino URLs as plain strings.
+    if (typeof cached === 'string') {
+        return { url: cached, source: 'totaldino' };
+    }
+    if (cached?.url) return cached;
+
+    // Preserve the current behavior: the exact TotalDino file always wins.
+    const totalDinoUrl = await fetchWikimediaImage(name);
+    if (totalDinoUrl) {
+        const media = {
+            url: totalDinoUrl,
+            source: 'totaldino'
+        };
+        cache[name] = media;
+        localStorage.setItem('phylosaur-image-cache-v3', JSON.stringify(cache));
+        return media;
+    }
+
+    // Only taxa without the current image reach this Wikimedia fallback.
+    const fallbackCatalog = await loadMuseumFallbackCatalog();
+    const fallback = fallbackCatalog[name];
+    if (fallback?.url) {
+        const media = {
+            ...fallback,
+            source: 'wikimedia'
+        };
+        cache[name] = media;
+        localStorage.setItem('phylosaur-image-cache-v3', JSON.stringify(cache));
+        return media;
+    }
+
+    return null;
 }
 
 async function showMuseum() {
@@ -705,6 +749,8 @@ async function showMuseum() {
                         </div>
                         <div class="museum-card-name">${dino.nome}</div>
                         <div class="museum-card-clade">${lastClade}</div>
+                        <div id="source-${dino.nome.replace(/\s+/g, '')}"
+                             style="font-size:0.68em; line-height:1.3; margin-top:6px;"></div>
                     </div>
                 `;
             } else {
@@ -727,9 +773,22 @@ async function showMuseum() {
             if (unlockedSet.has(dino.nome.toLowerCase())) {
                 const imgElement = document.getElementById(`art-${dino.nome.replace(/\s+/g, '')}`);
                 if (imgElement) {
-                    const url = await getCachedDinoImage(dino.nome);
-                    imgElement.src = url;
+                    const media = await getCachedDinoMedia(dino.nome);
+                    imgElement.src = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
                     imgElement.classList.add('loaded');
+
+                    if (media?.source === 'wikimedia') {
+                        const sourceElement = document.getElementById(`source-${dino.nome.replace(/\s+/g, '')}`);
+                        if (sourceElement) {
+                            sourceElement.innerHTML = `
+                                <a href="${media.file_page}" target="_blank"
+                                   onclick="event.stopPropagation()"
+                                   style="color:var(--color-muted); text-decoration:none;">
+                                    ${media.artist} · ${media.license}
+                                </a>
+                            `;
+                        }
+                    }
                 }
             }
         });
