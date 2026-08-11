@@ -2623,7 +2623,9 @@
   },
   {
     "nome": "Pisanosaurus",
-    "linhagem": "Dinosauria",
+    "linhagem": [
+      "Dinosauria"
+    ],
     "profundidade": 1,
     "dificuldade": "normal"
   },
@@ -3235,7 +3237,9 @@
   },
   {
     "nome": "Notoceratops",
-    "linhagem": "Dinosauria",
+    "linhagem": [
+      "Dinosauria"
+    ],
     "profundidade": 1,
     "dificuldade": "dificil"
   },
@@ -3787,7 +3791,9 @@
   },
   {
     "nome": "Eocursor",
-    "linhagem": "Dinosauria",
+    "linhagem": [
+      "Dinosauria"
+    ],
     "profundidade": 1,
     "dificuldade": "dificil"
   }
