@@ -31,16 +31,16 @@ async function startPracticeChallenge(difficulty) {
         </div>
         <div class="stat">
         <div class="stat-value" id="clades-revealed">0</div>
-        <div class="stat-label">Clades Revealed</div>
+        <div class="stat-label">Clades Shown</div>
         </div>
         <div class="stat">
         <div class="stat-value" id="possible-specimens">—</div>
-        <div class="stat-label">Possible</div>
+        <div class="stat-label">Possible Answers</div>
         </div>
         </div>
 
         <div class="input-section">
-        <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
+        <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" />
         <button class="btn-guess" onclick="makeGuess()">Submit</button>
         <button class="btn-hint" onclick="useHint()">Hint</button>
         <button class="btn-hint btn-giveup" onclick="giveUp()" 
@@ -111,16 +111,16 @@ async function startDailyChallenge(difficulty) {
         </div>
         <div class="stat">
         <div class="stat-value" id="clades-revealed">0</div>
-        <div class="stat-label">Clades Revealed</div>
+        <div class="stat-label">Clades Shown</div>
         </div>
         <div class="stat">
         <div class="stat-value" id="possible-specimens">—</div>
-        <div class="stat-label">Possible</div>
+        <div class="stat-label">Possible Answers</div>
         </div>
         </div>
 
         <div class="input-section">
-        <input type="text" id="dino-input" placeholder="Enter specimen name..." autocomplete="off" />
+        <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" />
         <button class="btn-guess" onclick="makeGuess()">Submit</button>
         <button class="btn-hint" onclick="useHint()">Hint</button>
         <button class="btn-hint btn-giveup" onclick="giveUp()" 
@@ -132,7 +132,7 @@ async function startDailyChallenge(difficulty) {
 
         <div id="tree-container">
         <div id="tree-scroll-wrapper">
-            <div class="empty-state">Loading classification challenge...</div>
+            <div class="empty-state">Loading daily challenge...</div>
         </div>
         </div>
 
@@ -147,14 +147,14 @@ let continueGame = true;
 if (savedProgress && savedProgress.guesses && savedProgress.guesses.length > 0) {
     continueGame = await showModal({
     title: 'Progress Found',
-    message: 'You have unfinished research for this classification challenge.',
+    message: 'You have an unfinished game at this level.',
     info: [
         { label: 'Attempts made', value: savedProgress.guesses.length },
         { label: 'Hints remaining', value: savedProgress.hintsRemaining },
         { label: 'Clades revealed', value: savedProgress.revealedClades?.length || 0 }
     ],
     buttons: [
-        { text: 'Continue Research', value: 'continue', primary: true },
+        { text: 'Continue Game', value: 'continue', primary: true },
         { text: 'Start Fresh', value: 'fresh', primary: false }
     ]
     });
@@ -226,19 +226,19 @@ async function makeGuess() {
     const guessName = input.value.trim();
 
     if (!guessName) {
-        await customAlert('Input Required', 'Please enter a specimen name to classify.');
+        await customAlert('Enter a Name', 'Choose a dinosaur from the suggestions.');
         return;
     }
 
     const guessDino = database.find(d => d.nome.toLowerCase() === guessName.toLowerCase());
 
     if (!guessDino) {
-        await customAlert('Taxon Not Found', 'This specimen is not in the classification database. Please use the autocomplete suggestions.');
+        await customAlert('Dinosaur Not Found', 'Choose a name from the autocomplete suggestions.');
         return;
     }
 
     if (guessedNames.has(guessDino.nome.toLowerCase())) {
-        await customAlert('Duplicate Classification', 'This specimen has already been classified in this session.');
+        await customAlert('Already Guessed', 'You have already tried this dinosaur.');
         return;
     }
 
@@ -292,8 +292,8 @@ async function useHint() {
     const requiredGuesses = 2;
     if (guessesSinceLastHint < requiredGuesses && guesses.length > 0) {
         await customAlert(
-        'Hint Cooldown', 
-        `You must make <strong>${requiredGuesses - guessesSinceLastHint}</strong> more classification attempt(s) before requesting another hint.`
+        'Hint Not Ready', 
+        `Make <strong>${requiredGuesses - guessesSinceLastHint}</strong> more guess(es) before using another hint.`
         );
         return;
     }
@@ -320,7 +320,7 @@ async function useHint() {
     });
     const nextCladeIndex = maxRevealedIndex + 1;
     if (nextCladeIndex >= targetDino.linhagem.length) {
-    await customAlert('Lineage Complete', 'The complete phylogenetic path has been revealed. No additional hints available.');
+    await customAlert('No More Hints', 'The full lineage has already been revealed.');
     return;
     }
 
@@ -396,7 +396,7 @@ async function giveUp() {
     v.style.background = 'linear-gradient(135deg, #3d2318 0%, #2c1a12 100%)';
 
     v.innerHTML = `
-        <h2 style="color:var(--color-danger);">BETTER LUCK TOMORROW</h2>
+        <h2 style="color:var(--color-danger);">ANSWER REVEALED</h2>
         <div class="victory-dino">${targetDino.nome}</div>
         <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
         ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · gave up
@@ -421,7 +421,7 @@ async function giveUp() {
         </div>` : ''}
 
         <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
-        ${isPracticeMode ? 'Practice Another' : 'Return to Level Selection'}
+        ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
         </button>
     `;
 
@@ -480,7 +480,7 @@ async function showVictory() {
         `;
         } else {
         streakHTML = `
-            <div style="margin-top:25px; padding:20px; background:var(--color-bg-panel); border-radius:8px; border:2px solid var(--color-muted);">
+            <div style="margin-top:25px; padding:20px; background:var(--bg-panel); border-radius:8px; border:2px solid var(--color-muted);">
             <div style="font-size:1.8em; color:var(--color-warning); margin-bottom:8px;">◆ ${streakData.current} Day Streak</div>
             <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
             </div>
@@ -492,7 +492,7 @@ async function showVictory() {
     const commonsPage = `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(targetDino.nome + ' TD.png')}`;
         v.innerHTML = `
             ${modeHTML}
-            <h2>PHYLOGENETIC CLASSIFICATION COMPLETE</h2>
+            <h2>CHALLENGE COMPLETE</h2>
             <div class="victory-dino">${targetDino.nome}</div>
             <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
             ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · ${revealedClades.size} ${revealedClades.size === 1 ? 'clade' : 'clades'} revealed
@@ -523,7 +523,7 @@ async function showVictory() {
             Share Result
             </button>
             <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
-            ${isPracticeMode ? 'Practice Another' : 'Return to Level Selection'}
+            ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
             </button>
         `;
 

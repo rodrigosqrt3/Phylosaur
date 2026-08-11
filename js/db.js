@@ -67,6 +67,15 @@ async function checkAchievements(won, guessCount) {
 }
 
 function showAchievementNotification(name) {
+    const achievementNames = {
+        first_win: 'First Win',
+        perfect_game: 'Three Guesses',
+        ten_wins: '10 Wins',
+        fifty_wins: '50 Wins',
+        hard_win: 'Level IV',
+        very_hard_win: 'Level V'
+    };
+    const displayName = achievementNames[name] || name;
     const notif = document.createElement('div');
     notif.style.cssText = `
         position: fixed;
@@ -84,7 +93,7 @@ function showAchievementNotification(name) {
       `;
       notif.innerHTML = `
         <div style="font-size:0.9em; color:#a68a5a; margin-bottom:5px;">Achievement Unlocked!</div>
-        <div style="font-size:1.2em; font-weight:600; letter-spacing:1px;">◆ ${name}</div>
+        <div style="font-size:1.2em; font-weight:600; letter-spacing:1px;">${displayName}</div>
       `;
       document.body.appendChild(notif);
       
@@ -266,7 +275,7 @@ async function loadPracticeDatabase(difficulty) {
     isPracticeMode = true;
     
     const wrapper = document.getElementById('tree-scroll-wrapper');
-    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading practice challenge...</div>';
+    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading practice game...</div>';
     
     try {
     const res = await fetch('phylosaur_db.json');
@@ -296,9 +305,10 @@ async function loadPracticeDatabase(difficulty) {
     document.getElementById('hints').textContent = '3';
     document.getElementById('best-match').textContent = '0';
     document.getElementById('clades-revealed').textContent = '0';
+    document.getElementById('possible-specimens').textContent = database.length;
     
     if (wrapper) {
-        wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+        wrapper.innerHTML = '<div class="empty-state">The tree will appear after your first guess.</div>';
     }
 
     initializeAutocomplete();
@@ -314,7 +324,7 @@ async function loadPracticeDatabase(difficulty) {
 async function loadDailyDatabase(difficulty, forceClean = false) {
     window.collapsedClades.clear();
     const wrapper = document.getElementById('tree-scroll-wrapper');
-    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading classification database...</div>';
+    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading daily challenge...</div>';
     
     try {
     const res = await fetch('phylosaur_db.json');
@@ -385,6 +395,7 @@ async function loadDailyDatabase(difficulty, forceClean = false) {
         document.getElementById('hints').textContent = hintsRemaining;
         document.getElementById('best-match').textContent = bestMatch;
         document.getElementById('clades-revealed').textContent = revealedClades.size;
+        document.getElementById('possible-specimens').textContent = countPossibleSpecimens();
         
         renderEnhancedTree();
         updateCladeInfo();
@@ -397,9 +408,10 @@ async function loadDailyDatabase(difficulty, forceClean = false) {
         document.getElementById('hints').textContent = '3';
         document.getElementById('best-match').textContent = '0';
         document.getElementById('clades-revealed').textContent = '0';
+        document.getElementById('possible-specimens').textContent = database.length;
         
         if (wrapper) {
-        wrapper.innerHTML = '<div class="empty-state">The phylogenetic tree will progressively reveal as you explore the evolutionary landscape through your classification attempts.</div>';
+        wrapper.innerHTML = '<div class="empty-state">The tree will appear after your first guess.</div>';
         }
     }
     
@@ -430,7 +442,7 @@ async function loadCompletedChallengeTree(difficulty, result) {
         targetDino = fullDatabase.find(d => d.nome === result.targetDino);
     }
     
-    if (result.guesses && result.guesses.length > 0) {
+    if (Array.isArray(result.guesses)) {
         guesses = result.guesses.map(savedGuess => {
         const dino = database.find(d => d.nome === savedGuess.nome);
         if (!dino) {
@@ -470,6 +482,7 @@ async function loadCompletedChallengeTree(difficulty, result) {
     }
     
     gameWon = true;
+    isGiveUpMode = Boolean(result.gaveUp);
     hintsRemaining = 0;
     guessedNames = new Set(guesses.map(g => g.dino.nome.toLowerCase()));
     

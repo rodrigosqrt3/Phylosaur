@@ -167,7 +167,7 @@ async function showCladeInfo(cladeName) {
     const infoDiv = document.getElementById('clade-info');
     infoDiv.innerHTML = `
     <div class="clade-info">
-        <div class="loading">Retrieving phylogenetic information for ${cladeName}…</div>
+        <div class="loading">Loading information about ${cladeName}…</div>
     </div>
     `;
 
@@ -224,7 +224,7 @@ async function updateCladeInfo() {
 
     infoDiv.innerHTML = `
     <div class="clade-info">
-        <div class="loading">Retrieving phylogenetic information for ${lastCommonClade}…</div>
+        <div class="loading">Loading information about ${lastCommonClade}…</div>
     </div>
     `;
 

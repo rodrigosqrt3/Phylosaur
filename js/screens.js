@@ -10,7 +10,7 @@ async function showDifficultySelection() {
         <div class="game-card" style="text-align:center;">
         <h2 style="color:var(--color-primary); margin-bottom:12px; font-size:1.8em;">Daily Challenge</h2>
         <p style="color:var(--color-secondary); margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
-            ${getCurrentDateFormatted()} — Select Classification Level
+            ${getCurrentDateFormatted()} — Choose a level
         </p>
         <p style="color:#6b5340; font-size:0.82em; font-style:italic; letter-spacing:1px; margin-top:8px;">
         Next daily challenge in <span id="countdown-timer" style="color:var(--color-secondary); font-weight:600;">--:--:--</span>
@@ -46,7 +46,7 @@ function showPracticeMode() {
     <div class="game-card" style="text-align:center;">
         <h2 style="color:var(--color-primary); margin-bottom:12px; font-size:1.8em;">Practice Mode</h2>
         <p style="color:var(--color-secondary); margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
-        Train your phylogenetic skills — Select classification level
+        Choose a level and play as often as you like
         </p>
 
         <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin:30px 0;">
@@ -122,7 +122,7 @@ function showCompletedChallenge(difficulty, result) {
         <div class="challenge-completed-banner" style="${result.gaveUp ? 'background:var(--color-danger-bg); border-color:var(--color-danger-dark);' : ''}">
             <h2 style="${result.gaveUp ? 'color:var(--color-danger);' : ''}">${result.gaveUp ? 'You Gave Up' : 'Challenge Completed'}</h2>
             <div class="dino-name">${result.targetDino}</div>
-            <div class="attempts">${result.gaveUp ? `After ${result.guessCount} attempts` : `Classified in ${result.guessCount} attempts`}</div>
+            <div class="attempts">${result.gaveUp ? `After ${result.guessCount} attempts` : `Found in ${result.guessCount} attempts`}</div>
         </div>
         </div>
 
@@ -177,16 +177,16 @@ async function showStatsDashboard() {
 
     <div class="game-card">
         <h2 style="color:var(--color-primary); margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
-        CLASSIFICATION RECORDS
+        STATISTICS
         </h2>
 
         <div style="text-align:center; margin-bottom:30px; color:var(--color-secondary); font-size:1.1em; letter-spacing:2px;">
-        Researcher ID: <span style="color:var(--color-accent); font-weight:600;">${currentUser}</span>
+        Player: <span style="color:var(--color-accent); font-weight:600;">${currentUser}</span>
         </div>
 
         <div class="stats" style="grid-template-columns: repeat(2, 1fr); margin-bottom:40px;">
-        <div class="stat"><div class="stat-value">${gamesPlayed}</div><div class="stat-label">Total Classifications</div></div>
-        <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">Successful IDs</div></div>
+        <div class="stat"><div class="stat-value">${gamesPlayed}</div><div class="stat-label">Games Played</div></div>
+        <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">Games Won</div></div>
         <div class="stat"><div class="stat-value">${winRate}%</div><div class="stat-label">Success Rate</div></div>
         <div class="stat"><div class="stat-value">${stats?.best_score || '—'}</div><div class="stat-label">Best Score</div></div>
         </div>
@@ -194,17 +194,17 @@ async function showStatsDashboard() {
         ${generateStreakDisplay(streakData)}
 
         <div style="background:var(--bg-panel); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid var(--border-subtle);">
-        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Classification Level Performance</h3>
+        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Performance by Level</h3>
         ${generateDifficultyStats(diffStats)}
         </div>
 
         <div style="background:var(--bg-panel); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid var(--border-subtle);">
-        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Research Achievements</h3>
+        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Achievements</h3>
         ${generateAchievements(unlockedAchievements)}
         </div>
 
         <div style="background:var(--bg-panel); padding:25px; border-radius:8px; border:2px solid var(--border-subtle);">
-        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Recent Classifications</h3>
+        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Recent Games</h3>
         ${generateRecentGames(recentGames)}
         </div>
     </div>
@@ -217,8 +217,8 @@ function generateStreakDisplay(streakData) {
     if (!streakData || streakData.current === 0) {
     return `
         <div style="text-align:center; padding:30px; background:rgba(61,47,31,0.3); border-radius:8px; margin-bottom:30px; border:2px solid var(--border-subtle);">
-        <div style="font-size:1.5em; color:var(--color-muted); margin-bottom:10px;">◆ Start Your Streak!</div>
-        <div style="color:var(--color-secondary); font-size:0.95em;">Complete a challenge every day to build your research streak</div>
+        <div style="font-size:1.5em; color:var(--color-muted); margin-bottom:10px;">No streak yet</div>
+        <div style="color:var(--color-secondary); font-size:0.95em;">Play a daily challenge to start one.</div>
         </div>
     `;
     }
@@ -495,7 +495,7 @@ function showHowToPlay() {
         </div>
 
         <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
-            <strong style="color:var(--color-primary);">3. Use hints wisely</strong><br>
+            <strong style="color:var(--color-primary);">3. Hints</strong><br>
             You have 3 hints per challenge. Each hint reveals the next clade in the target's lineage. You must make 2 guesses between hints.
         </div>
 
@@ -516,7 +516,7 @@ function showHowToPlay() {
         </div>
     `,
     buttons: [
-        { text: 'Start Classifying', value: 'ok', primary: true }
+        { text: 'Got It', value: 'ok', primary: true }
     ],
     closeOnOverlay: true
     });
@@ -532,7 +532,7 @@ function generateDifficultyStats(diffStats) {
     };
 
     if (!diffStats || diffStats.length === 0) {
-    return '<p class="empty-stats">No classifications completed yet. Begin your research!</p>';
+    return '<p class="empty-stats">No games completed yet.</p>';
     }
 
     let html = '';
@@ -554,12 +554,12 @@ function generateDifficultyStats(diffStats) {
 
 function generateAchievements(unlockedSet) {
     const allAchievements = [
-    { id: 'first_win', name: 'First Discovery', desc: 'Complete your first classification' },
-    { id: 'perfect_game', name: 'Phylogenetic Prodigy', desc: 'Classify species in 3 guesses or fewer' },
-    { id: 'ten_wins', name: 'Taxonomist', desc: 'Successfully classify 10 species' },
-    { id: 'fifty_wins', name: 'Paleontologist', desc: 'Successfully classify 50 species' },
-    { id: 'hard_win', name: 'Specialist', desc: 'Complete Level IV classification' },
-    { id: 'very_hard_win', name: 'Master Classifier', desc: 'Complete Level V classification' }
+    { id: 'first_win', name: 'First Win', desc: 'Complete your first challenge' },
+    { id: 'perfect_game', name: 'Three Guesses', desc: 'Find the answer in 3 guesses or fewer' },
+    { id: 'ten_wins', name: '10 Wins', desc: 'Complete 10 challenges' },
+    { id: 'fifty_wins', name: '50 Wins', desc: 'Complete 50 challenges' },
+    { id: 'hard_win', name: 'Level IV', desc: 'Complete a Level IV challenge' },
+    { id: 'very_hard_win', name: 'Level V', desc: 'Complete a Level V challenge' }
     ];
 
     let html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:15px;">';
@@ -578,7 +578,7 @@ function generateAchievements(unlockedSet) {
 
 function generateRecentGames(recentGames) {
     if (!recentGames || recentGames.length === 0) {
-    return '<p style="color:var(--color-muted); font-style:italic; padding:20px; text-align:center;">No recent classifications. Begin your research!</p>';
+    return '<p style="color:var(--color-muted); font-style:italic; padding:20px; text-align:center;">No recent games.</p>';
     }
 
     const diffNames = {
@@ -598,11 +598,11 @@ function generateRecentGames(recentGames) {
     const isToday = game.played_date === today;
     const spoiler = isToday && !game.won;
     const dinoDisplay = spoiler 
-        ? '<span style="color:var(--border-subtle); font-style:italic;">[ classified today — hidden ]</span>' 
+        ? '<span style="color:var(--border-subtle); font-style:italic;">[ today\'s answer is hidden ]</span>' 
         : `<span style="color:var(--color-text-light); font-style:italic;">${game.target_dino}</span>`;
 
     html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:var(--bg-panel-darker); border-left:4px solid ${game.won ? 'var(--color-success)' : 'var(--color-border)'}; border-radius:4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:var(--bg-panel-darker); border-left:4px solid ${game.won ? 'var(--color-success)' : 'var(--border-base)'}; border-radius:4px;">
         <div style="flex:1;">
             <div style="display:flex; align-items:center; margin-bottom:5px;">
             <span style="color:${game.won ? '#c8e6c9' : '#d4a574'}; font-weight:700; margin-right:12px; font-size:1.1em;">${game.won ? '✓' : '…'}</span>
@@ -641,7 +641,7 @@ async function showMuseum() {
     setHeaderControls('museum');
     const appContent = document.getElementById('app-content');
     
-    appContent.innerHTML = `<div class="game-card"><div class="loading">Opening discovery catalog...</div></div>`;
+    appContent.innerHTML = `<div class="game-card"><div class="loading">Loading museum...</div></div>`;
     
     try {
         if (!fullDatabase || fullDatabase.length === 0) {
@@ -662,18 +662,18 @@ async function showMuseum() {
         let html = `
             <div class="game-card">
                 <h2 style="color:var(--color-primary); margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
-                    RESEARCH MUSEUM
+                    MUSEUM
                 </h2>
                 
                 <div class="museum-progress-container">
                     <div style="font-size:1.1em; color:var(--color-secondary); font-weight:600;">
-                        TOTAL DISCOVERIES: ${totalUnlocked} / ${totalCount} (${totalPercent}%)
+                        UNLOCKED: ${totalUnlocked} / ${totalCount} (${totalPercent}%)
                     </div>
                     <div class="museum-progress-bar">
                         <div class="museum-progress-fill" style="width: ${totalPercent}%;"></div>
                     </div>
                     <div style="font-size:0.85em; color:var(--color-muted); font-style:italic;">
-                        Complete daily challenges and practice sessions to catalog new species!
+                        Complete challenges or practice games to unlock dinosaurs.
                     </div>
                 </div>
 
@@ -687,7 +687,7 @@ async function showMuseum() {
                 </div>
 
                 <div style="font-size:1em; color:var(--color-secondary); text-align:center; margin-bottom:15px; font-weight:600;">
-                    Cataloged in this level: ${levelUnlockedCount} / ${levelDinos.length}
+                    Unlocked in this level: ${levelUnlockedCount} / ${levelDinos.length}
                 </div>
 
                 <div class="museum-grid">

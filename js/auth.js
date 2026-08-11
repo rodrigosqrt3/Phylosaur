@@ -76,7 +76,7 @@ function showLoginScreen() {
         </div>
         <span class="login-forgot" onclick="loginShowReset()">Forgot password?</span>
         <button class="btn-guess" id="signin-btn" onclick="handleSignIn()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
-          Begin Classification
+          Sign In
         </button>
       </div>
 
@@ -452,7 +452,7 @@ function continueAsGuest() {
 async function logout() {
   const confirm = await customConfirm(
     'Confirm Logout',
-    'Are you sure you want to end your research session?',
+    'Are you sure you want to sign out?',
     'Logout',
     'Cancel'
   );
