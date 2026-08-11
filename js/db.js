@@ -19,7 +19,7 @@ async function updateStatsAfterGame(won, guessCount, difficulty) {
     const newPlayed  = base.games_played + 1;
     const newWon     = base.games_won + (won ? 1 : 0);
     const newTotal   = base.total_guesses + guessCount;
-    const newBest    = (base.best_score === null || guessCount < base.best_score)
+    const newBest    = won && (base.best_score === null || guessCount < base.best_score)
                         ? guessCount
                         : base.best_score;
 
