@@ -502,41 +502,169 @@ async function loadCompletedChallengeTree(difficulty, result) {
 // DISCOVERY GALLERY / MUSEUM OPERATIONS
 // ═══════════════════════════════════════════════════════════════════════
 
-function registerDiscovery(dinoName) {
-    if (!dinoName) return;
-    
-    let localDiscoveries = JSON.parse(localStorage.getItem('phylosaur-discoveries') || '[]');
-    if (!localDiscoveries.includes(dinoName)) {
-        localDiscoveries.push(dinoName);
-        localStorage.setItem('phylosaur-discoveries', JSON.stringify(localDiscoveries));
-        console.log(`Dinosaur discovered and cataloged: ${dinoName}`);
+const DISCOVERY_EVENTS_KEY = 'phylosaur-discovery-events-v1';
+
+function readLocalDiscoveryNames() {
+    try {
+        const names = JSON.parse(localStorage.getItem('phylosaur-discoveries') || '[]');
+        return Array.isArray(names) ? names.filter(Boolean) : [];
+    } catch (error) {
+        console.warn('Could not read the legacy discovery list:', error);
+        return [];
     }
 }
 
-async function getUnlockedDinos() {
-    let localDiscoveries = JSON.parse(localStorage.getItem('phylosaur-discoveries') || '[]');
-    let uniqueDinos = new Set(localDiscoveries);
+function readLocalDiscoveryEvents() {
+    try {
+        const events = JSON.parse(localStorage.getItem(DISCOVERY_EVENTS_KEY) || '[]');
+        return Array.isArray(events) ? events : [];
+    } catch (error) {
+        console.warn('Could not read discovery history:', error);
+        return [];
+    }
+}
+
+function registerDiscovery(dinoName) {
+    if (!dinoName) return;
+
+    const localDiscoveries = readLocalDiscoveryNames();
+    const wasAlreadyUnlocked = localDiscoveries.some(
+        name => name.toLowerCase() === dinoName.toLowerCase()
+    );
+
+    if (!wasAlreadyUnlocked) {
+        localDiscoveries.push(dinoName);
+        localStorage.setItem('phylosaur-discoveries', JSON.stringify(localDiscoveries));
+    }
+
+    const discoveredAt = new Date().toISOString();
+    const source = isPracticeMode ? 'practice' : 'daily';
+    const eventKey = isPracticeMode
+        ? `practice:${discoveredAt}:${Math.random().toString(36).slice(2, 9)}`
+        : `daily:${getTodayString()}:${selectedDifficulty}`;
+    const events = readLocalDiscoveryEvents();
+
+    if (!events.some(event => event.eventKey === eventKey)) {
+        events.push({
+            eventKey,
+            dinoName,
+            discoveredAt,
+            source,
+            difficulty: selectedDifficulty,
+            firstKnownUnlock: !wasAlreadyUnlocked
+        });
+        localStorage.setItem(DISCOVERY_EVENTS_KEY, JSON.stringify(events));
+    }
+
+    console.log(`Dinosaur discovery recorded: ${dinoName} (${source})`);
+}
+
+async function getDiscoveryRecords() {
+    const legacyNames = readLocalDiscoveryNames();
+    const localEvents = readLocalDiscoveryEvents();
+    const allEvents = new Map();
+    const serverDinoNames = new Set();
+
+    localEvents.forEach((event, index) => {
+        if (!event?.dinoName) return;
+        const eventKey = event.eventKey || `local:${index}:${event.dinoName}`;
+        allEvents.set(eventKey, {
+            eventKey,
+            dinoName: event.dinoName,
+            discoveredAt: event.discoveredAt || null,
+            source: event.source || 'local',
+            firstKnownUnlock: event.firstKnownUnlock === true
+        });
+    });
 
     if (currentUserId) {
         try {
             const { data, error } = await sb.from('daily_results')
-                .select('target_dino')
+                .select('target_dino, played_date, created_at, difficulty')
                 .eq('user_id', currentUserId)
                 .eq('won', true);
 
-            if (data && !error) {
-                data.forEach(row => {
-                    uniqueDinos.add(row.target_dino);
+            if (error) throw error;
+
+            (data || []).forEach((row, index) => {
+                if (!row.target_dino) return;
+                const eventKey = `daily:${row.played_date || index}:${row.difficulty || 'unknown'}`;
+                serverDinoNames.add(row.target_dino.toLowerCase());
+                allEvents.set(eventKey, {
+                    eventKey,
+                    dinoName: row.target_dino,
+                    discoveredAt: row.created_at || row.played_date || null,
+                    source: 'daily',
+                    firstKnownUnlock: true
                 });
-                
-                localStorage.setItem('phylosaur-discoveries', JSON.stringify(Array.from(uniqueDinos)));
-            }
+            });
         } catch (err) {
-            console.error('Error syncing discoveries from Supabase:', err);
+            console.error('Error syncing discovery history from Supabase:', err);
         }
     }
 
-    return Array.from(uniqueDinos);
+    const records = {};
+    const ensureRecord = dinoName => {
+        const key = dinoName.toLowerCase();
+        if (!records[key]) {
+            records[key] = {
+                name: dinoName,
+                count: 0,
+                firstDiscoveredAt: null,
+                lastDiscoveredAt: null,
+                firstDateUnknown: false
+            };
+        }
+        return records[key];
+    };
+
+    allEvents.forEach(event => {
+        const record = ensureRecord(event.dinoName);
+        record.count += 1;
+
+        if (event.discoveredAt) {
+            const timestamp = new Date(event.discoveredAt).getTime();
+            if (!Number.isNaN(timestamp)) {
+                if (!record.firstDiscoveredAt || timestamp < new Date(record.firstDiscoveredAt).getTime()) {
+                    record.firstDiscoveredAt = event.discoveredAt;
+                }
+                if (!record.lastDiscoveredAt || timestamp > new Date(record.lastDiscoveredAt).getTime()) {
+                    record.lastDiscoveredAt = event.discoveredAt;
+                }
+            }
+        }
+    });
+
+    legacyNames.forEach(dinoName => {
+        const key = dinoName.toLowerCase();
+        const matchingLocalEvents = localEvents.filter(
+            event => event?.dinoName?.toLowerCase() === key
+        );
+        const hasKnownFirstUnlock = matchingLocalEvents.some(
+            event => event.firstKnownUnlock === true
+        );
+
+        // The old list had neither dates nor counts. Preserve it as one
+        // undated discovery only when newer data cannot already explain it.
+        if (!serverDinoNames.has(key) && !hasKnownFirstUnlock) {
+            const record = ensureRecord(dinoName);
+            record.count += 1;
+            record.firstDateUnknown = true;
+        } else if (!records[key]) {
+            const record = ensureRecord(dinoName);
+            record.count = 1;
+            record.firstDateUnknown = true;
+        }
+    });
+
+    const unlockedNames = Object.values(records).map(record => record.name);
+    localStorage.setItem('phylosaur-discoveries', JSON.stringify(unlockedNames));
+    return records;
+}
+
+async function getUnlockedDinos() {
+    const records = await getDiscoveryRecords();
+    return Object.values(records).map(record => record.name);
 }
 
 async function syncDiscoveriesOnLogin() {

@@ -644,7 +644,7 @@ async function loadMuseumFallbackCatalog() {
 }
 
 async function getCachedDinoMedia(name) {
-    let cache = JSON.parse(localStorage.getItem('phylosaur-image-cache-v3') || '{}');
+    let cache = JSON.parse(localStorage.getItem('phylosaur-image-cache-v4') || '{}');
     const cached = cache[name];
 
     // Older versions stored TotalDino URLs as plain strings.
@@ -661,20 +661,20 @@ async function getCachedDinoMedia(name) {
             source: 'totaldino'
         };
         cache[name] = media;
-        localStorage.setItem('phylosaur-image-cache-v3', JSON.stringify(cache));
+        localStorage.setItem('phylosaur-image-cache-v4', JSON.stringify(cache));
         return media;
     }
 
-    // Only taxa without the current image reach this Wikimedia fallback.
+    // Only taxa without the current image reach the licensed media fallback.
     const fallbackCatalog = await loadMuseumFallbackCatalog();
     const fallback = fallbackCatalog[name];
     if (fallback?.url) {
         const media = {
             ...fallback,
-            source: 'wikimedia'
+            source: fallback.source || 'wikimedia'
         };
         cache[name] = media;
-        localStorage.setItem('phylosaur-image-cache-v3', JSON.stringify(cache));
+        localStorage.setItem('phylosaur-image-cache-v4', JSON.stringify(cache));
         return media;
     }
 
@@ -683,19 +683,69 @@ async function getCachedDinoMedia(name) {
 
 let activeMuseumEntryMedia = null;
 let museumEntryEscapeHandler = null;
+let museumDiscoveryRecords = {};
+
+function formatMuseumDiscoveryDate(value) {
+    if (!value) return '';
+
+    let date;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const [year, month, day] = value.split('-').map(Number);
+        date = new Date(year, month - 1, day);
+    } else {
+        date = new Date(value);
+    }
+
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+function getMuseumDiscoverySummary(record) {
+    if (!record) {
+        return {
+            firstLabel: 'Discovery date unavailable',
+            countLabel: 'Discovered once',
+            lastLabel: ''
+        };
+    }
+
+    const firstDate = formatMuseumDiscoveryDate(record.firstDiscoveredAt);
+    const lastDate = formatMuseumDiscoveryDate(record.lastDiscoveredAt);
+    const firstLabel = record.firstDateUnknown
+        ? 'Discovered before date tracking'
+        : firstDate
+            ? `First discovered ${firstDate}`
+            : 'Discovery date unavailable';
+
+    return {
+        firstLabel,
+        countLabel: record.count === 1
+            ? 'Discovered once'
+            : `Discovered ${record.count} times`,
+        lastLabel: record.count > 1 && lastDate
+            ? `Most recently ${lastDate}`
+            : ''
+    };
+}
 
 function getMuseumMediaCredit(name, media) {
     if (!media) {
         return '<span>No illustration is currently available for this entry.</span>';
     }
 
-    if (media.source === 'wikimedia') {
+    if (media.source === 'wikimedia' || media.source === 'dinopedia') {
         const license = media.license_url
             ? `<a href="${media.license_url}" target="_blank" rel="noopener">${media.license}</a>`
             : media.license;
+        const sourceName = media.source === 'dinopedia' ? 'Dinopedia' : 'Wikimedia Commons';
+        const contributor = media.artist || `${sourceName} contributor`;
         return `
-            Image by ${media.artist || 'Wikimedia Commons contributor'} · ${license}
-            · <a href="${media.file_page}" target="_blank" rel="noopener">Source</a>
+            Image by ${contributor} · ${license}
+            · <a href="${media.file_page}" target="_blank" rel="noopener">${sourceName}</a>
         `;
     }
 
@@ -793,6 +843,9 @@ async function showMuseumEntry(name) {
     const lineage = (dino.linhagem || [])
         .map(clade => `<span>${clade}</span>`)
         .join('<b>›</b>');
+    const discovery = getMuseumDiscoverySummary(
+        museumDiscoveryRecords[name.toLowerCase()]
+    );
 
     activeMuseumEntryMedia = {
         name,
@@ -809,6 +862,11 @@ async function showMuseumEntry(name) {
             <div class="museum-entry-meta">
                 ${levelNames[dino.dificuldade] || dino.dificuldade}
                 · ${(dino.linhagem || []).at(-1) || 'Dinosauria'}
+            </div>
+            <div class="museum-entry-discovery">
+                <span>${discovery.firstLabel}</span>
+                <strong>${discovery.countLabel}</strong>
+                ${discovery.lastLabel ? `<span>${discovery.lastLabel}</span>` : ''}
             </div>
         </header>
 
@@ -856,7 +914,9 @@ async function showMuseum() {
             fullDatabase = await res.json();
         }
 
-        const unlockedList = await getUnlockedDinos();
+        museumDiscoveryRecords = await getDiscoveryRecords();
+        const unlockedList = Object.values(museumDiscoveryRecords)
+            .map(record => record.name);
         const unlockedSet = new Set(unlockedList.map(name => name.toLowerCase()));
 
         const levelDinos = fullDatabase.filter(d => d.dificuldade === selectedMuseumLevel);
@@ -905,6 +965,9 @@ async function showMuseum() {
             const lastClade = dino.linhagem[dino.linhagem.length - 1] || 'Dinosauria';
 
             if (isUnlocked) {
+                const discovery = getMuseumDiscoverySummary(
+                    museumDiscoveryRecords[dino.nome.toLowerCase()]
+                );
                 html += `
                     <div class="museum-card unlocked" onclick="showMuseumEntry('${dino.nome}')" style="cursor:pointer;">
                         <div class="museum-card-art-container">
@@ -912,6 +975,12 @@ async function showMuseum() {
                         </div>
                         <div class="museum-card-name">${dino.nome}</div>
                         <div class="museum-card-clade">${lastClade}</div>
+                        <div class="museum-card-discovery">
+                            <span>${discovery.firstLabel}</span>
+                            ${museumDiscoveryRecords[dino.nome.toLowerCase()]?.count > 1
+                                ? `<strong>${discovery.countLabel}</strong>`
+                                : ''}
+                        </div>
                         <div id="source-${dino.nome.replace(/\s+/g, '')}"
                              style="font-size:0.68em; line-height:1.3; margin-top:6px;"></div>
                     </div>
@@ -940,14 +1009,15 @@ async function showMuseum() {
                     imgElement.src = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
                     imgElement.classList.add('loaded');
 
-                    if (media?.source === 'wikimedia') {
+                    if (media?.source === 'wikimedia' || media?.source === 'dinopedia') {
                         const sourceElement = document.getElementById(`source-${dino.nome.replace(/\s+/g, '')}`);
                         if (sourceElement) {
+                            const sourceName = media.source === 'dinopedia' ? 'Dinopedia' : 'Commons';
                             sourceElement.innerHTML = `
                                 <a href="${media.file_page}" target="_blank"
                                    onclick="event.stopPropagation()"
                                    style="color:var(--color-muted); text-decoration:none;">
-                                    ${media.artist} · ${media.license}
+                                    ${media.artist || sourceName} · ${media.license}
                                 </a>
                             `;
                         }

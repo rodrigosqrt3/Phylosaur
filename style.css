@@ -1869,6 +1869,25 @@ body.totaldino-mode .theme-switch {
     letter-spacing: 1px;
 }
 
+.museum-card-discovery {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-height: 32px;
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-inner);
+    color: var(--color-muted);
+    font-size: 0.7em;
+    line-height: 1.3;
+}
+
+.museum-card-discovery strong {
+    color: var(--color-secondary);
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
 /* Locked Card Styling */
 .museum-card.locked {
     opacity: 0.55;
@@ -1991,6 +2010,35 @@ body.light-mode .museum-card.unlocked:hover {
     font-size: 0.8em;
     letter-spacing: 1.8px;
     text-transform: uppercase;
+}
+
+.museum-entry-discovery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px 16px;
+    margin-top: 14px;
+    color: var(--color-muted);
+    font-size: 0.76em;
+    letter-spacing: 0.5px;
+}
+
+.museum-entry-discovery strong {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.museum-entry-discovery span + strong,
+.museum-entry-discovery strong + span {
+    position: relative;
+}
+
+.museum-entry-discovery span + strong::before,
+.museum-entry-discovery strong + span::before {
+    content: '◆';
+    margin-right: 16px;
+    color: var(--border-subtle);
+    font-size: 0.65em;
 }
 
 .museum-entry-layout {
