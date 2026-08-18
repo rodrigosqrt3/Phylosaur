@@ -129,7 +129,7 @@ function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
     });
 }
 
-function openImageLightbox(url, name, commonsPage) {
+function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
     const overlay = document.createElement('div');
     overlay.style.cssText = `
     position:fixed; top:0; left:0; right:0; bottom:0;
@@ -140,6 +140,13 @@ function openImageLightbox(url, name, commonsPage) {
     padding:20px;
     `;
     
+    const fallbackCredit = `
+        Art by <a href="https://totaldino.com" target="_blank" 
+                style="color:var(--color-muted); text-decoration:none;">TotalDino</a>
+        ${sourcePage ? `· <a href="${sourcePage}" target="_blank"
+            style="color:var(--color-muted); text-decoration:none;">View source</a>` : ''}
+    `;
+
     overlay.innerHTML = `
     <img src="${url}" alt="${name}"
         style="max-width:90vw; max-height:80vh; border-radius:8px;
@@ -147,19 +154,17 @@ function openImageLightbox(url, name, commonsPage) {
     <div style="margin-top:16px; font-family:Georgia,serif; font-style:italic;
                 color:var(--color-accent); font-size:1.1em; letter-spacing:1px;">${name}</div>
     <div style="margin-top:8px; font-size:0.82em; color:var(--border-subtle); letter-spacing:1px;">
-        Art by <a href="https://totaldino.com" target="_blank" 
-                style="color:var(--color-muted); text-decoration:none;"
-                onclick="event.stopPropagation()">TotalDino</a>
-        · <a href="${commonsPage}" target="_blank"
-            style="color:var(--color-muted); text-decoration:none;"
-            onclick="event.stopPropagation()">View on Wikimedia Commons</a>
+        ${creditHtml || fallbackCredit}
     </div>
     <div style="margin-top:16px; color:var(--border-subtle); font-size:0.8em; letter-spacing:2px;">
         CLICK ANYWHERE TO CLOSE
     </div>
     `;
     
-    overlay.onclick = () => document.body.removeChild(overlay);
+    overlay.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', event => event.stopPropagation());
+    });
+    overlay.onclick = () => overlay.remove();
     document.body.appendChild(overlay);
 }
 
@@ -263,10 +268,13 @@ async function updateCladeInfo() {
     html += `</div>`;
 
     html += `<div class="phylo-path"><h4>Revealed Phylogenetic Path to Mystery Taxon:</h4>`;
-    for (let i = 0; i < bestGuess.proximity.matches; i++) {
+    const visiblePath = serverBackedGame
+    ? Array.from(revealedClades)
+    : targetDino.linhagem.slice(0, bestGuess.proximity.matches);
+    for (const clade of visiblePath) {
     html += `
         <div class="phylo-step">
-        <span class="phylo-step-name">${targetDino.linhagem[i]}</span>
+        <span class="phylo-step-name">${clade}</span>
         </div>
     `;
     }
@@ -311,7 +319,7 @@ function updateGuessHistory() {
     html += `
         <div class="guess-item">
         <span class="guess-name">${guess.dino.nome}${divInfo}</span>
-        <span class="guess-match">${guess.proximity.matches}/${targetDino.linhagem.length} nodes (${guess.proximity.percentage}%)</span>
+        <span class="guess-match">${guess.proximity.matches}/${serverBackedGame ? currentTargetDepth : targetDino.linhagem.length} nodes (${guess.proximity.percentage}%)</span>
         </div>
     `;
     });

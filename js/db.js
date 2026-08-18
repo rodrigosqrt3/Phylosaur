@@ -270,6 +270,82 @@ function getTodayString() {
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 }
 
+function getServerSessionKey(mode, difficulty) {
+    const suffix = mode === 'daily' ? new Date().toISOString().slice(0, 10) : 'current';
+    return `phylosaur-session-v1:${mode}:${difficulty}:${suffix}`;
+}
+
+function applyServerGameState(data) {
+    serverBackedGame = true;
+    currentSessionId = data.sessionId;
+    currentPossibleSpecimens = Number(data.possibleSpecimens || 0);
+    currentTargetDepth = Number(data.targetDepth || 0);
+
+    database = (data.availableNames || []).map(nome => ({ nome }));
+    fullDatabase = database;
+    targetDino = data.target || null;
+    guesses = (data.guesses || []).map(guess => ({
+        dino: { nome: guess.nome },
+        proximity: {
+            matches: Number(guess.matches || 0),
+            percentage: Number(guess.percentage || 0),
+            lastCommonClade: guess.lastCommonClade || null,
+            divergenceDepth: Number(guess.matches || 0)
+        },
+        isHint: Boolean(guess.isHint)
+    }));
+    hintsRemaining = Number(data.hintsRemaining ?? 3);
+    guessesSinceLastHint = Number(data.guessesSinceHint || 0);
+    revealedClades = new Set(data.revealedClades || []);
+    hintHistory = data.hintHistory || [];
+    guessedNames = new Set(guesses.map(guess => guess.dino.nome.toLowerCase()));
+    isGiveUpMode = Boolean(data.gaveUp);
+    gameWon = Boolean(data.complete);
+
+    document.getElementById('attempts').textContent = String(guesses.length);
+    document.getElementById('hints').textContent = String(hintsRemaining);
+    document.getElementById('best-match').textContent = String(
+        guesses.length ? Math.max(...guesses.map(guess => guess.proximity.matches)) : 0
+    );
+    document.getElementById('clades-revealed').textContent = String(revealedClades.size);
+    document.getElementById('possible-specimens').textContent = String(currentPossibleSpecimens);
+}
+
+async function openServerGame(mode, difficulty, forceClean = false) {
+    const storageKey = getServerSessionKey(mode, difficulty);
+    let data = null;
+
+    if (!forceClean) {
+        const savedSessionId = localStorage.getItem(storageKey);
+        if (savedSessionId) {
+            try {
+                data = await loadPhylosaurSession(savedSessionId);
+                if (data.complete) data = null;
+            } catch (error) {
+                console.warn('Could not restore server game:', error);
+                localStorage.removeItem(storageKey);
+            }
+        }
+    } else {
+        localStorage.removeItem(storageKey);
+    }
+
+    if (!data) {
+        data = await startPhylosaurSession(mode, difficulty);
+        data.guesses = [];
+        data.revealedClades = [];
+        data.hintHistory = [];
+        data.hintsRemaining = 3;
+        data.guessesSinceHint = 0;
+        data.targetDepth = 0;
+        data.complete = false;
+        localStorage.setItem(storageKey, data.sessionId);
+    }
+
+    applyServerGameState(data);
+    return data;
+}
+
 async function loadPracticeDatabase(difficulty) {
     window.collapsedClades.clear();
     isPracticeMode = true;
@@ -278,34 +354,8 @@ async function loadPracticeDatabase(difficulty) {
     if (wrapper) wrapper.innerHTML = '<div class="loading">Loading practice game...</div>';
     
     try {
-    const res = await fetch('phylosaur_db.json');
-    if (!res.ok) throw new Error('Failed to load database');
-    
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-    
-    console.log(`Loaded ${database.length} specimens for practice mode (${difficulty})`);
-    
-    if (database.length === 0) {
-        throw new Error(`No specimens found for difficulty: ${difficulty}`);
-    }
-    
-    const randomIndex = Math.floor(Math.random() * database.length);
-    targetDino = database[randomIndex];
-    guesses = [];
-    hintsRemaining = 3;
-    isGiveUpMode = false;
-    gameWon = false;
-    guessedNames = new Set();
-    revealedClades = new Set();
-    hintHistory = [];
-    guessesSinceLastHint = 0;
-    
-    document.getElementById('attempts').textContent = '0';
-    document.getElementById('hints').textContent = '3';
-    document.getElementById('best-match').textContent = '0';
-    document.getElementById('clades-revealed').textContent = '0';
-    document.getElementById('possible-specimens').textContent = database.length;
+    const data = await openServerGame('practice', difficulty, true);
+    console.log(`Started server practice game with ${data.possibleSpecimens} specimens (${difficulty})`);
     
     if (wrapper) {
         wrapper.innerHTML = '<div class="empty-state">The tree will appear after your first guess.</div>';
@@ -327,92 +377,15 @@ async function loadDailyDatabase(difficulty, forceClean = false) {
     if (wrapper) wrapper.innerHTML = '<div class="loading">Loading daily challenge...</div>';
     
     try {
-    const res = await fetch('phylosaur_db.json');
-    if (!res.ok) throw new Error('Failed to load database');
-    
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-    
-    console.log(`Loaded ${database.length} specimens for difficulty: ${difficulty}`);
-    
-    if (database.length === 0) {
-        throw new Error(`No specimens found for difficulty: ${difficulty}`);
-    }
-    
-    const seed = getDailySeed(difficulty);
-    const hash = hashString(seed);
-    const index = hash % database.length;
-    
-    targetDino = database[index];
-    guesses = [];
-    hintsRemaining = 3;
-    isGiveUpMode = false;
-    gameWon = false;
-    guessedNames = new Set();
-    revealedClades = new Set();
-    hintHistory = [];
-    guessesSinceLastHint = 0;
-    
-    const savedProgress = forceClean ? null : await loadGameProgress(difficulty);
+    const data = await openServerGame('daily', difficulty, forceClean);
+    console.log(`Opened server daily game with ${data.possibleSpecimens} specimens (${difficulty})`);
 
-    if (savedProgress && savedProgress.targetDino === targetDino.nome) {
-        console.log('Loading saved progress...');
-        
-        if (savedProgress.guesses && savedProgress.guesses.length > 0) {
-        guesses = savedProgress.guesses.map(savedGuess => {
-            const dino = database.find(d => d.nome === savedGuess.nome);
-            if (!dino) return null;
-            
-            const proximity = calculateProximity(dino, targetDino);
-            
-            if (proximity.lastCommonClade) {
-            revealedClades.add(proximity.lastCommonClade);
-            }
-            
-            return {
-            dino: dino,
-            proximity: proximity,
-            isHint: savedGuess.isHint || false
-            };
-        }).filter(g => g !== null);
-        }
-        
-        if (savedProgress.revealedClades) {
-        savedProgress.revealedClades.forEach(c => revealedClades.add(c));
-        }
-        hintHistory = savedProgress.hintHistory || [];
-        hintsRemaining = savedProgress.hintsRemaining !== undefined ? savedProgress.hintsRemaining : 3;
-        guessedNames = new Set((savedProgress.guesses || []).map(g => g.nome.toLowerCase()));
-        
-        console.log(`Restored ${guesses.length} guesses, ${hintsRemaining} hints remaining`);
-        
-        setTimeout(() => {
-        const bestMatch = guesses.length > 0 
-            ? Math.max(...guesses.map(g => g.proximity.matches)) 
-            : 0;
-        
-        document.getElementById('attempts').textContent = guesses.length;
-        document.getElementById('hints').textContent = hintsRemaining;
-        document.getElementById('best-match').textContent = bestMatch;
-        document.getElementById('clades-revealed').textContent = revealedClades.size;
-        document.getElementById('possible-specimens').textContent = countPossibleSpecimens();
-        
+    if (guesses.length > 0 || hintHistory.length > 0) {
         renderEnhancedTree();
         updateCladeInfo();
         updateGuessHistory();
-        document.getElementById('dino-input')?.focus();
-        }, 100);
-        
-    } else {
-        document.getElementById('attempts').textContent = '0';
-        document.getElementById('hints').textContent = '3';
-        document.getElementById('best-match').textContent = '0';
-        document.getElementById('clades-revealed').textContent = '0';
-        document.getElementById('possible-specimens').textContent = database.length;
-        
-        if (wrapper) {
+    } else if (wrapper) {
         wrapper.innerHTML = '<div class="empty-state">The tree will appear after your first guess.</div>';
-        }
     }
     
     initializeAutocomplete();
@@ -427,6 +400,7 @@ async function loadDailyDatabase(difficulty, forceClean = false) {
 }
 
 async function loadCompletedChallengeTree(difficulty, result) {
+    serverBackedGame = false;
     const wrapper = document.getElementById('tree-scroll-wrapper');
     
     try {

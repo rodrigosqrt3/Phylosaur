@@ -677,7 +677,7 @@ async function loadMuseumFallbackCatalog() {
 }
 
 async function getCachedDinoMedia(name) {
-    let cache = JSON.parse(localStorage.getItem('phylosaur-image-cache-v4') || '{}');
+    let cache = JSON.parse(localStorage.getItem('phylosaur-image-cache-v5') || '{}');
     const cached = cache[name];
 
     // Older versions stored TotalDino URLs as plain strings.
@@ -694,7 +694,7 @@ async function getCachedDinoMedia(name) {
             source: 'totaldino'
         };
         cache[name] = media;
-        localStorage.setItem('phylosaur-image-cache-v4', JSON.stringify(cache));
+        localStorage.setItem('phylosaur-image-cache-v5', JSON.stringify(cache));
         return media;
     }
 
@@ -707,7 +707,7 @@ async function getCachedDinoMedia(name) {
             source: fallback.source || 'wikimedia'
         };
         cache[name] = media;
-        localStorage.setItem('phylosaur-image-cache-v4', JSON.stringify(cache));
+        localStorage.setItem('phylosaur-image-cache-v5', JSON.stringify(cache));
         return media;
     }
 

@@ -82,6 +82,11 @@ function initTreePanning() {
 }
 
 function renderEnhancedTree() {
+  if (serverBackedGame) {
+    renderServerBackedTree();
+    return;
+  }
+
   const container = document.getElementById('tree-container');
   const wrapper   = document.getElementById('tree-scroll-wrapper');
   
@@ -644,4 +649,59 @@ leafPositions.forEach((leaf, name) => {
   });
 
   initTreePanning();
+}
+
+function renderServerBackedTree() {
+  const wrapper = document.getElementById('tree-scroll-wrapper');
+  if (!wrapper) return;
+
+  if (guesses.length === 0 && hintHistory.length === 0) {
+    wrapper.innerHTML = '<div class="empty-state">The tree will appear after your first guess.</div>';
+    return;
+  }
+
+  const depthByClade = new Map();
+  guesses.forEach(guess => {
+    const clade = guess.proximity.lastCommonClade;
+    if (clade) depthByClade.set(clade, guess.proximity.matches);
+  });
+  hintHistory.forEach(hint => {
+    if (hint.cladeName) depthByClade.set(hint.cladeName, Number(hint.depth) || 0);
+  });
+
+  if (targetDino?.linhagem?.length && gameWon) {
+    targetDino.linhagem.forEach((clade, index) => depthByClade.set(clade, index + 1));
+  }
+
+  const path = Array.from(depthByClade.entries())
+    .filter(([, depth]) => depth > 0)
+    .sort((a, b) => a[1] - b[1]);
+
+  const pathHtml = path.map(([clade, depth], index) => `
+    ${index > 0 ? '<div style="width:2px;height:18px;background:var(--color-muted);margin:auto;"></div>' : ''}
+    <div class="phylo-step" style="max-width:360px;margin:0 auto;justify-content:center;">
+      <span class="phylo-step-name">${clade}</span>
+      <span style="margin-left:10px;color:var(--color-muted);font-size:0.8em;">depth ${depth}</span>
+    </div>
+  `).join('');
+
+  const guessesHtml = guesses.map(guess => `
+    <div class="guess-item" style="max-width:520px;margin:8px auto;">
+      <span class="guess-name">${guess.dino.nome}</span>
+      <span class="guess-match">
+        branches at ${guess.proximity.lastCommonClade || 'unknown'} · ${guess.proximity.matches}/${currentTargetDepth}
+      </span>
+    </div>
+  `).join('');
+
+  wrapper.innerHTML = `
+    <div style="min-width:320px;padding:28px 18px;text-align:center;">
+      <div style="color:var(--color-accent);letter-spacing:2px;font-weight:600;margin-bottom:20px;">
+        ${gameWon && targetDino?.nome ? targetDino.nome : 'MYSTERY LINEAGE'}
+      </div>
+      ${pathHtml || '<div class="empty-state">No clade has been revealed yet.</div>'}
+      <div style="margin:28px auto 14px;color:var(--color-muted);letter-spacing:1px;">SPECIMEN BRANCHES</div>
+      ${guessesHtml}
+    </div>
+  `;
 }

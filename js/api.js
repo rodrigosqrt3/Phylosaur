@@ -47,3 +47,56 @@ async function fetchWikimediaImage(taxonName) {
     return null;
   }
 }
+
+// ═══════════════════════════════════════════════
+// PHYLOSAUR GAME SERVER
+// ═══════════════════════════════════════════════
+const PHYLOSAUR_GAME_URL = `${SUPABASE_URL}/functions/v1/phylosaur-game`;
+
+async function callPhylosaurGame(action, payload = {}) {
+  const response = await fetch(PHYLOSAUR_GAME_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify({ action, ...payload })
+  });
+
+  let data;
+  try {
+    data = await response.json();
+  } catch (error) {
+    throw new Error('The game server returned an invalid response.');
+  }
+
+  if (!response.ok || !data?.ok) {
+    const error = new Error(data?.error || 'The game server request failed.');
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
+
+  return data;
+}
+
+function startPhylosaurSession(mode, difficulty) {
+  return callPhylosaurGame('start', { mode, difficulty });
+}
+
+function loadPhylosaurSession(sessionId) {
+  return callPhylosaurGame('state', { sessionId });
+}
+
+function submitPhylosaurGuess(sessionId, guess) {
+  return callPhylosaurGame('guess', { sessionId, guess });
+}
+
+function requestPhylosaurHint(sessionId) {
+  return callPhylosaurGame('hint', { sessionId });
+}
+
+function giveUpPhylosaurSession(sessionId) {
+  return callPhylosaurGame('give_up', { sessionId });
+}
