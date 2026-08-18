@@ -268,13 +268,10 @@ async function updateCladeInfo() {
     html += `</div>`;
 
     html += `<div class="phylo-path"><h4>Revealed Phylogenetic Path to Mystery Taxon:</h4>`;
-    const visiblePath = serverBackedGame
-    ? Array.from(revealedClades)
-    : targetDino.linhagem.slice(0, bestGuess.proximity.matches);
-    for (const clade of visiblePath) {
+    for (let i = 0; i < bestGuess.proximity.matches; i++) {
     html += `
         <div class="phylo-step">
-        <span class="phylo-step-name">${clade}</span>
+        <span class="phylo-step-name">${targetDino.linhagem[i]}</span>
         </div>
     `;
     }
@@ -319,7 +316,7 @@ function updateGuessHistory() {
     html += `
         <div class="guess-item">
         <span class="guess-name">${guess.dino.nome}${divInfo}</span>
-        <span class="guess-match">${guess.proximity.matches}/${serverBackedGame ? currentTargetDepth : targetDino.linhagem.length} nodes (${guess.proximity.percentage}%)</span>
+        <span class="guess-match">${guess.proximity.matches}/${targetDino.linhagem.length} nodes (${guess.proximity.percentage}%)</span>
         </div>
     `;
     });

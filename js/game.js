@@ -189,7 +189,6 @@ function calculateProximity(guess, target) {
 }
 
 function countPossibleSpecimens() {
-    if (serverBackedGame) return currentPossibleSpecimens;
     if (guesses.length === 0) return database.length;
     
     const revealedOnPath = [];
@@ -243,58 +242,6 @@ async function makeGuess() {
         return;
     }
 
-    if (serverBackedGame) {
-        const submitButton = document.querySelector('.btn-guess');
-        if (submitButton) submitButton.disabled = true;
-
-        try {
-            const result = await submitPhylosaurGuess(currentSessionId, guessDino.nome);
-            const proximity = result.guess;
-
-            guessedNames.add(guessDino.nome.toLowerCase());
-            guessesSinceLastHint++;
-            currentTargetDepth = Number(proximity.targetDepth || currentTargetDepth);
-            currentPossibleSpecimens = Number(result.possibleSpecimens || 0);
-            revealedClades = new Set(result.revealedClades || []);
-            guesses.push({
-                dino: { nome: proximity.nome },
-                proximity: {
-                    matches: proximity.matches,
-                    percentage: proximity.percentage,
-                    lastCommonClade: proximity.lastCommonClade,
-                    divergenceDepth: proximity.divergenceDepth
-                },
-                isHint: false
-            });
-
-            document.getElementById('attempts').textContent = String(result.attempts);
-            document.getElementById('best-match').textContent = String(
-                Math.max(...guesses.map(guess => guess.proximity.matches))
-            );
-            document.getElementById('clades-revealed').textContent = String(revealedClades.size);
-            document.getElementById('possible-specimens').textContent = String(currentPossibleSpecimens);
-
-            input.value = '';
-            document.getElementById('suggestions').style.display = 'none';
-
-            if (result.won) {
-                targetDino = result.target;
-                gameWon = true;
-                showVictory();
-                return;
-            }
-
-            renderEnhancedTree();
-            updateCladeInfo();
-            updateGuessHistory();
-        } catch (error) {
-            await customAlert('Guess Not Accepted', error.message);
-        } finally {
-            if (submitButton && !gameWon) submitButton.disabled = false;
-        }
-        return;
-    }
-
     guessedNames.add(guessDino.nome.toLowerCase());
     guessesSinceLastHint++; 
 
@@ -329,48 +276,12 @@ async function makeGuess() {
     input.value = '';
     document.getElementById('suggestions').style.display = 'none';
 
-    if (currentUser && !gameWon && !isPracticeMode && !serverBackedGame) {
+    if (currentUser && !gameWon && !isPracticeMode) {
         saveGameProgress(selectedDifficulty);
     }
 }
 
 async function useHint() {
-    if (serverBackedGame) {
-    if (gameWon) return;
-
-    try {
-        const result = await requestPhylosaurHint(currentSessionId);
-        hintsRemaining = Number(result.hintsRemaining);
-        guessesSinceLastHint = 0;
-        currentPossibleSpecimens = Number(result.possibleSpecimens || 0);
-        revealedClades = new Set(result.revealedClades || []);
-        hintHistory.push(result.hint);
-
-        document.getElementById('hints').textContent = String(hintsRemaining);
-        document.getElementById('clades-revealed').textContent = String(revealedClades.size);
-        document.getElementById('possible-specimens').textContent = String(currentPossibleSpecimens);
-
-        await customAlert(
-            'Hint',
-            `The next clade in the lineage is:<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${result.hint.cladeName}</strong>`
-        );
-
-        renderEnhancedTree();
-        updateGuessHistory();
-        await showCladeInfo(result.hint.cladeName);
-    } catch (error) {
-        if (error.data?.guessesRequired) {
-            await customAlert(
-                'Hint Not Ready',
-                `Make <strong>${error.data.guessesRequired}</strong> more guess(es) before using another hint.`
-            );
-        } else {
-            await customAlert('Hint Unavailable', error.message);
-        }
-    }
-    return;
-    }
-
     if (hintsRemaining <= 0) {
     await customAlert('No Hints Available', 'You have exhausted all hints for this challenge.');
     return;
@@ -529,20 +440,6 @@ async function giveUp() {
     );
 
     if (confirm !== 'true') return;
-
-    if (serverBackedGame) {
-        try {
-            const result = await giveUpPhylosaurSession(currentSessionId);
-            targetDino = result.target;
-            currentTargetDepth = Number(result.target?.profundidade || currentTargetDepth);
-            revealedClades = new Set(result.revealedClades || []);
-            hintHistory = result.hintHistory || [];
-            isGiveUpMode = true;
-        } catch (error) {
-            await customAlert('Could Not Give Up', error.message);
-            return;
-        }
-    }
 
     gameWon = false;
 
