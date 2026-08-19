@@ -49,6 +49,8 @@ function showModal(options) {
     return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
     
     const box = document.createElement('div');
     box.className = 'modal-box';
@@ -92,19 +94,51 @@ function showModal(options) {
     box.innerHTML = html;
     overlay.appendChild(box);
     document.body.appendChild(overlay);
+
+    let closed = false;
+    let keyHandlerAttached = false;
+
+    const closeModal = result => {
+        if (closed) return;
+        closed = true;
+        clearTimeout(keyHandlerTimer);
+        if (keyHandlerAttached) {
+            document.removeEventListener('keydown', modalKeyHandler, true);
+        }
+        overlay.remove();
+        resolve(result);
+    };
+
+    const modalKeyHandler = event => {
+        const buttons = box.querySelectorAll('.modal-btn');
+
+        if (event.key === 'Enter' && buttons.length === 1) {
+            event.preventDefault();
+            event.stopPropagation();
+            closeModal(buttons[0].getAttribute('data-result'));
+        } else if (event.key === 'Escape' && options.closeOnOverlay !== false) {
+            event.preventDefault();
+            event.stopPropagation();
+            closeModal(null);
+        }
+    };
+
+    // Attach after the event that opened the modal has finished propagating.
+    const keyHandlerTimer = setTimeout(() => {
+        if (closed) return;
+        document.addEventListener('keydown', modalKeyHandler, true);
+        keyHandlerAttached = true;
+    }, 0);
     
     box.querySelectorAll('.modal-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-        const result = btn.getAttribute('data-result');
-        document.body.removeChild(overlay);
-        resolve(result);
+        closeModal(btn.getAttribute('data-result'));
         });
     });
     
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay && options.closeOnOverlay !== false) {
-        document.body.removeChild(overlay);
-        resolve(null);
+        closeModal(null);
         }
     });
     });

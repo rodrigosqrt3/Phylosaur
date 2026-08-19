@@ -54,6 +54,9 @@ function initializeAutocomplete() {
       prev.classList.add('highlighted');
       input.value = prev.textContent.trim();
     } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (document.querySelector('.modal-overlay')) return;
+
       if (current) {
         input.value = current.textContent.trim();
         sugDiv.style.display = 'none';
