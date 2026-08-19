@@ -103,48 +103,6 @@ function showAchievementNotification(name) {
       }, 3000);
 }
 
-async function saveGameProgress(difficulty) {
-    if (!currentUserId || isPracticeMode) return;
-    const today = getTodayString();
-    const { error } = await sb.from('daily_results').upsert({
-        user_id: currentUserId,
-        played_date: today,
-        difficulty: difficulty,
-        target_dino: targetDino.nome,
-        guess_count: guesses.length,
-        won: gameWon,
-        guesses: guesses.map(g => ({ nome: g.dino.nome, isHint: g.isHint || false })),
-        revealed_clades: Array.from(revealedClades),
-        hint_history: hintHistory
-      }, { onConflict: 'user_id,played_date,difficulty' });
-      
-    if (error) console.error('Error saving progress:', error);
-}
-
-async function loadGameProgress(difficulty) {
-    if (!currentUserId) return null;
-    
-    const today = getTodayString();
-    
-    const { data, error } = await sb.from('daily_results')
-    .select('*')
-    .eq('user_id', currentUserId)
-    .eq('played_date', today)
-    .eq('difficulty', difficulty)
-    .single();
-    
-    if (error || !data) return null;
-    
-    return {
-    guesses: data.guesses,
-    revealedClades: data.revealed_clades,
-    hintHistory: data.hint_history,
-    hintsRemaining: 3 - (data.hint_history?.length || 0),
-    guessedNames: data.guesses?.map(g => g.nome) || [],
-    targetDino: data.target_dino
-    };
-}
-
 async function clearGameProgress(difficulty) {
     if (!currentUserId) return;
     const today = getTodayString();
@@ -203,9 +161,16 @@ async function updateStreak() {
 
     if (streakData.lastPlayed === today) return streakData;
 
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    const yesterdayStr = getUtcDateOffsetString(-1);
+    const tomorrowStr = getUtcDateOffsetString(1);
+
+    // Compatibility with streaks saved by the old local-date system in
+    // time zones that were already on the following calendar day.
+    if (streakData.lastPlayed === tomorrowStr) {
+        streakData.lastPlayed = today;
+        await saveStreakData(streakData);
+        return streakData;
+    }
 
     if (streakData.lastPlayed === yesterdayStr) {
     streakData.current++;
@@ -249,29 +214,17 @@ async function getDailyCompletionStatus() {
     return status;
 }  
 
-function getDailySeed(difficulty) {
-    const today = new Date();
-    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    return `${dateStr}-${difficulty}`;
-}
-
-function hashString(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-    }
-    return Math.abs(hash);
-}
-
 function getTodayString() {
-    const today = new Date();
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return new Date().toISOString().slice(0, 10);
+}
+
+function getUtcDateOffsetString(dayOffset) {
+    const date = new Date();
+    date.setUTCDate(date.getUTCDate() + dayOffset);
+    return date.toISOString().slice(0, 10);
 }
 
 function applyServerGamePayload(data) {
-    serverBackedGame = true;
     gameSessionId = data.sessionId || gameSessionId;
     currentTargetDepth = Number(
         data.targetDepth || data.guess?.targetDepth || data.target?.profundidade || currentTargetDepth || 0
@@ -381,7 +334,6 @@ function showRestoredServerCompletion(data) {
 async function loadServerDatabase(mode, difficulty, forceClean = false) {
     window.collapsedClades.clear();
     window.currentTreeSnapshot = null;
-    serverBackedGame = true;
     isPracticeMode = mode === 'practice';
     gameSessionId = null;
     targetDino = null;
@@ -452,252 +404,22 @@ async function loadServerDatabase(mode, difficulty, forceClean = false) {
 }
 
 async function loadPracticeDatabase(difficulty) {
-    if (SERVER_GAME_ENABLED) {
-        try {
-            await loadServerDatabase('practice', difficulty, true);
-        } catch (error) {
-            console.error('Server practice game error:', error);
-            const wrapper = document.getElementById('tree-scroll-wrapper');
-            if (wrapper) wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${error.message}</div>`;
-        }
-        return;
-    }
-
-    window.collapsedClades.clear();
-    isPracticeMode = true;
-    
-    const wrapper = document.getElementById('tree-scroll-wrapper');
-    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading practice game...</div>';
-    
     try {
-    const res = await fetch('phylosaur_db.json');
-    if (!res.ok) throw new Error('Failed to load database');
-    
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-    
-    console.log(`Loaded ${database.length} specimens for practice mode (${difficulty})`);
-    
-    if (database.length === 0) {
-        throw new Error(`No specimens found for difficulty: ${difficulty}`);
+        await loadServerDatabase('practice', difficulty, true);
+    } catch (error) {
+        console.error('Server practice game error:', error);
+        const wrapper = document.getElementById('tree-scroll-wrapper');
+        if (wrapper) wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${error.message}</div>`;
     }
-    
-    const randomIndex = Math.floor(Math.random() * database.length);
-    targetDino = database[randomIndex];
-    guesses = [];
-    hintsRemaining = 3;
-    isGiveUpMode = false;
-    gameWon = false;
-    guessedNames = new Set();
-    revealedClades = new Set();
-    hintHistory = [];
-    guessesSinceLastHint = 0;
-    
-    document.getElementById('attempts').textContent = '0';
-    document.getElementById('hints').textContent = '3';
-    document.getElementById('best-match').textContent = '0';
-    document.getElementById('clades-revealed').textContent = '0';
-    document.getElementById('possible-specimens').textContent = database.length;
-    
-    if (wrapper) {
-        wrapper.innerHTML = '<div class="empty-state">The tree will appear after your first guess.</div>';
-    }
-
-    initializeAutocomplete();
-    
-    } catch (err) {
-    console.error('Database error:', err);
-    if (wrapper) {
-        wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
-    }
-  }
 }
 
 async function loadDailyDatabase(difficulty, forceClean = false) {
-    if (SERVER_GAME_ENABLED) {
-        try {
-            await loadServerDatabase('daily', difficulty, forceClean);
-        } catch (error) {
-            console.error('Server daily game error:', error);
-            const wrapper = document.getElementById('tree-scroll-wrapper');
-            if (wrapper) wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${error.message}</div>`;
-        }
-        return;
-    }
-
-    window.collapsedClades.clear();
-    const wrapper = document.getElementById('tree-scroll-wrapper');
-    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading daily challenge...</div>';
-    
     try {
-    const res = await fetch('phylosaur_db.json');
-    if (!res.ok) throw new Error('Failed to load database');
-    
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-    
-    console.log(`Loaded ${database.length} specimens for difficulty: ${difficulty}`);
-    
-    if (database.length === 0) {
-        throw new Error(`No specimens found for difficulty: ${difficulty}`);
-    }
-    
-    const seed = getDailySeed(difficulty);
-    const hash = hashString(seed);
-    const index = hash % database.length;
-    
-    targetDino = database[index];
-    guesses = [];
-    hintsRemaining = 3;
-    isGiveUpMode = false;
-    gameWon = false;
-    guessedNames = new Set();
-    revealedClades = new Set();
-    hintHistory = [];
-    guessesSinceLastHint = 0;
-    
-    const savedProgress = forceClean ? null : await loadGameProgress(difficulty);
-
-    if (savedProgress && savedProgress.targetDino === targetDino.nome) {
-        console.log('Loading saved progress...');
-        
-        if (savedProgress.guesses && savedProgress.guesses.length > 0) {
-        guesses = savedProgress.guesses.map(savedGuess => {
-            const dino = database.find(d => d.nome === savedGuess.nome);
-            if (!dino) return null;
-            
-            const proximity = calculateProximity(dino, targetDino);
-            
-            if (proximity.lastCommonClade) {
-            revealedClades.add(proximity.lastCommonClade);
-            }
-            
-            return {
-            dino: dino,
-            proximity: proximity,
-            isHint: savedGuess.isHint || false
-            };
-        }).filter(g => g !== null);
-        }
-        
-        if (savedProgress.revealedClades) {
-        savedProgress.revealedClades.forEach(c => revealedClades.add(c));
-        }
-        hintHistory = savedProgress.hintHistory || [];
-        hintsRemaining = savedProgress.hintsRemaining !== undefined ? savedProgress.hintsRemaining : 3;
-        guessedNames = new Set((savedProgress.guesses || []).map(g => g.nome.toLowerCase()));
-        
-        console.log(`Restored ${guesses.length} guesses, ${hintsRemaining} hints remaining`);
-        
-        setTimeout(() => {
-        const bestMatch = guesses.length > 0 
-            ? Math.max(...guesses.map(g => g.proximity.matches)) 
-            : 0;
-        
-        document.getElementById('attempts').textContent = guesses.length;
-        document.getElementById('hints').textContent = hintsRemaining;
-        document.getElementById('best-match').textContent = bestMatch;
-        document.getElementById('clades-revealed').textContent = revealedClades.size;
-        document.getElementById('possible-specimens').textContent = countPossibleSpecimens();
-        
-        renderEnhancedTree();
-        updateCladeInfo();
-        updateGuessHistory();
-        document.getElementById('dino-input')?.focus();
-        }, 100);
-        
-    } else {
-        document.getElementById('attempts').textContent = '0';
-        document.getElementById('hints').textContent = '3';
-        document.getElementById('best-match').textContent = '0';
-        document.getElementById('clades-revealed').textContent = '0';
-        document.getElementById('possible-specimens').textContent = database.length;
-        
-        if (wrapper) {
-        wrapper.innerHTML = '<div class="empty-state">The tree will appear after your first guess.</div>';
-        }
-    }
-    
-    initializeAutocomplete();
-    document.getElementById('dino-input')?.focus();
-
-    } catch (err) {
-    console.error('Database error:', err);
-    if (wrapper) {
-        wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${err.message}</div>`;
-    }
-    }
-}
-
-async function loadCompletedChallengeTree(difficulty, result) {
-    const wrapper = document.getElementById('tree-scroll-wrapper');
-    
-    try {
-    const res = await fetch('phylosaur_db.json');
-    if (!res.ok) throw new Error('Failed to load database');
-    
-    fullDatabase = await res.json();
-    database = fullDatabase.filter(d => d.dificuldade === difficulty);
-    
-    targetDino = database.find(d => d.nome === result.targetDino);
-    
-    if (!targetDino) {
-        targetDino = fullDatabase.find(d => d.nome === result.targetDino);
-    }
-    
-    if (Array.isArray(result.guesses)) {
-        guesses = result.guesses.map(savedGuess => {
-        const dino = database.find(d => d.nome === savedGuess.nome);
-        if (!dino) {
-            console.warn(`Dinosaur ${savedGuess.nome} not found in database`);
-            return null;
-        }
-        
-        const proximity = calculateProximity(dino, targetDino);
-        return {
-            dino: dino,
-            proximity: proximity,
-            isHint: savedGuess.isHint || false
-        };
-        }).filter(g => g !== null);
-        
-        revealedClades = new Set(result.revealedClades || []);
-        hintHistory = result.hintHistory || [];
-        
-    } else {
-        wrapper.innerHTML = `
-        <div class="empty-state" style="padding:80px 40px;">
-            <h3 style="color:#c9a96e; margin-bottom:20px; font-size:1.4em;">Challenge Completed</h3>
-            <p style="color:#a68a5a; line-height:1.8; margin-bottom:15px;">
-            This challenge was completed before the detailed save system was implemented.
-            </p>
-            <p style="color:#8b7355; font-size:0.95em; line-height:1.8;">
-            The phylogenetic tree from this session is not available for review.
-            Complete the challenge again to see the full tree visualization.
-            </p>
-            <button class="btn-new-game" onclick="showDifficultySelection()" 
-                    style="margin-top:30px; width:auto; padding:14px 28px;">
-            Return to Level Selection
-            </button>
-        </div>
-        `;
-        return;
-    }
-    
-    gameWon = true;
-    isGiveUpMode = Boolean(result.gaveUp);
-    hintsRemaining = 0;
-    guessedNames = new Set(guesses.map(g => g.dino.nome.toLowerCase()));
-    
-    renderEnhancedTree();
-    updateCladeInfo();
-    updateGuessHistory();
-    
-    } catch (err) {
-    console.error('Error loading completed challenge:', err);
-    if (wrapper) {
-        wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading tree</strong><br>${err.message}</div>`;
-    }
+        await loadServerDatabase('daily', difficulty, forceClean);
+    } catch (error) {
+        console.error('Server daily game error:', error);
+        const wrapper = document.getElementById('tree-scroll-wrapper');
+        if (wrapper) wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${error.message}</div>`;
     }
 }
 

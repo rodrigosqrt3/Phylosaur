@@ -15,7 +15,6 @@ let guessesSinceLastHint = 0;
 let isPracticeMode = false;
 let isGiveUpMode = false;
 let currentTheme = 'dark';
-let serverBackedGame = false;
 let gameSessionId = null;
 let currentTargetDepth = 0;
 let serverPossibleSpecimens = 0;

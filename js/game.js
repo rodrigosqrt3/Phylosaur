@@ -66,31 +66,6 @@ async function startPracticeChallenge(difficulty) {
 async function startDailyChallenge(difficulty) {
     setHeaderControls('game');
     isPracticeMode = false;
-    const today = getTodayString();
-    let existingResult = null;
-
-    if (currentUserId && !SERVER_GAME_ENABLED) {
-    const { data } = await sb.from('daily_results')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .eq('played_date', today)
-        .eq('difficulty', difficulty)
-        .single();
-    existingResult = data;
-    }
-
-    if (existingResult && (existingResult.won || existingResult.gave_up)) {
-        showCompletedChallenge(difficulty, {
-            targetDino: existingResult.target_dino,
-            guessCount: existingResult.guess_count,
-            guesses: existingResult.guesses,
-            revealedClades: existingResult.revealed_clades,
-            hintHistory: existingResult.hint_history,
-            gaveUp: existingResult.gave_up || false
-        });
-        return;
-    }
-    
     selectedDifficulty = difficulty;
     const appContent = document.getElementById('app-content');
     
@@ -141,70 +116,11 @@ async function startDailyChallenge(difficulty) {
     </div>
     `;
 
-if (SERVER_GAME_ENABLED) {
-    loadDailyDatabase(difficulty, false);
-    return;
-}
-
-const savedProgress = await loadGameProgress(difficulty);
-let continueGame = true;
-
-if (savedProgress && savedProgress.guesses && savedProgress.guesses.length > 0) {
-    continueGame = await showModal({
-    title: 'Progress Found',
-    message: 'You have an unfinished game at this level.',
-    info: [
-        { label: 'Attempts made', value: savedProgress.guesses.length },
-        { label: 'Hints remaining', value: savedProgress.hintsRemaining },
-        { label: 'Clades revealed', value: savedProgress.revealedClades?.length || 0 }
-    ],
-    buttons: [
-        { text: 'Continue Game', value: 'continue', primary: true },
-        { text: 'Start Fresh', value: 'fresh', primary: false }
-    ]
-    });
-    
-    if (continueGame === 'fresh') {
-    clearGameProgress(difficulty);
-    loadDailyDatabase(difficulty, true);
-    return;
-    }
-}
-loadDailyDatabase(difficulty, false);
-}
-
-function calculateProximity(guess, target) {
-    let matches = 0;
-    const minLength = Math.min(guess.linhagem.length, target.linhagem.length);
-    
-    for (let i = 0; i < minLength; i++) {
-    if (guess.linhagem[i] === target.linhagem[i]) {
-        matches++;
-    } else {
-        break;
-    }
-    }
-    
-    return {
-    matches,
-    percentage: Math.round((matches / target.linhagem.length) * 100),
-    lastCommonClade: matches > 0 ? guess.linhagem[matches - 1] : null,
-    divergenceDepth: matches
-    };
+    await loadDailyDatabase(difficulty, false);
 }
 
 function redrawGameTree() {
-    if (typeof renderCurrentGameTree === 'function') {
-        renderCurrentGameTree();
-    } else if (
-        serverBackedGame &&
-        window.currentTreeSnapshot &&
-        typeof renderTreeSnapshot === 'function'
-    ) {
-        renderTreeSnapshot(window.currentTreeSnapshot);
-    } else {
-        renderEnhancedTree();
-    }
+    renderCurrentGameTree();
 }
 
 function setGuessRequestPending(pending) {
@@ -219,102 +135,9 @@ function setGuessRequestPending(pending) {
     if (input) input.disabled = pending || gameWon;
 }
 
-function countPossibleSpecimens() {
-    if (guesses.length === 0) return database.length;
-    
-    const revealedOnPath = [];
-    
-    guesses.forEach(guess => {
-        const mrca = findMRCA(guess.dino.linhagem, targetDino.linhagem);
-        if (mrca) {
-        const idx = targetDino.linhagem.indexOf(mrca.clade);
-        targetDino.linhagem.slice(0, idx + 1).forEach(c => {
-            if (!revealedOnPath.includes(c)) revealedOnPath.push(c);
-        });
-        }
-    });
-
-    revealedClades.forEach(clade => {
-        const idx = targetDino.linhagem.indexOf(clade);
-        if (idx !== -1) {
-        targetDino.linhagem.slice(0, idx + 1).forEach(c => {
-            if (!revealedOnPath.includes(c)) revealedOnPath.push(c);
-        });
-        }
-    });
-
-    if (revealedOnPath.length === 0) return database.length;
-
-    return database.filter(d => 
-        revealedOnPath.every(clade => d.linhagem.includes(clade))
-    ).length;
-}
-
 async function makeGuess() {
     if (gameWon) return;
-
-    if (serverBackedGame) {
-        await makeServerGuess();
-        return;
-    }
-
-    const input = document.getElementById('dino-input');
-    const guessName = input.value.trim();
-
-    if (!guessName) {
-        await customAlert('Enter a Name', 'Choose a dinosaur from the suggestions.');
-        return;
-    }
-
-    const guessDino = database.find(d => d.nome.toLowerCase() === guessName.toLowerCase());
-
-    if (!guessDino) {
-        await customAlert('Dinosaur Not Found', 'Choose a name from the autocomplete suggestions.');
-        return;
-    }
-
-    if (guessedNames.has(guessDino.nome.toLowerCase())) {
-        await customAlert('Already Guessed', 'You have already tried this dinosaur.');
-        return;
-    }
-
-    guessedNames.add(guessDino.nome.toLowerCase());
-    guessesSinceLastHint++; 
-
-    const proximity = calculateProximity(guessDino, targetDino);
-
-    if (proximity.lastCommonClade) {
-        revealedClades.add(proximity.lastCommonClade);
-    }
-
-    guesses.push({ 
-        dino: guessDino, 
-        proximity, 
-        isHint: false 
-    });
-
-    document.getElementById('attempts').textContent = guesses.length;
-    document.getElementById('best-match').textContent = Math.max(...guesses.map(g => g.proximity.matches));
-    document.getElementById('clades-revealed').textContent = revealedClades.size;
-    document.getElementById('possible-specimens').textContent = countPossibleSpecimens();
-
-    if (guessDino.nome === targetDino.nome) {
-        gameWon = true;
-        showVictory();
-        input.value = '';
-        document.getElementById('suggestions').style.display = 'none';
-        return; 
-    }
-    renderEnhancedTree();
-    updateCladeInfo();
-    updateGuessHistory();
-
-    input.value = '';
-    document.getElementById('suggestions').style.display = 'none';
-
-    if (currentUser && !gameWon && !isPracticeMode) {
-        saveGameProgress(selectedDifficulty);
-    }
+    await makeServerGuess();
 }
 
 async function makeServerGuess() {
@@ -389,79 +212,7 @@ async function makeServerGuess() {
 }
 
 async function useHint() {
-    if (serverBackedGame) {
-        await useServerHint();
-        return;
-    }
-
-    if (hintsRemaining <= 0) {
-    await customAlert('No Hints Available', 'You have exhausted all hints for this challenge.');
-    return;
-    }
-    
-    if (gameWon) return;
-
-    const requiredGuesses = 2;
-    if (guessesSinceLastHint < requiredGuesses && guesses.length > 0) {
-        await customAlert(
-        'Hint Not Ready', 
-        `Make <strong>${requiredGuesses - guessesSinceLastHint}</strong> more guess(es) before using another hint.`
-        );
-        return;
-    }
-
-    const dinosauriaIndex = targetDino.linhagem.indexOf('Dinosauria');
-    let maxRevealedIndex = dinosauriaIndex;
-    
-    if (guesses.length > 0) {
-    guesses.forEach(guess => {
-        const guessDepth = guess.proximity.matches - 1;
-        if (guessDepth > maxRevealedIndex) {
-        maxRevealedIndex = guessDepth;
-        }
-    });
-    }
-    
-    revealedClades.forEach(clade => {
-    if (targetDino.linhagem.includes(clade)) {
-        const cladeIndex = targetDino.linhagem.indexOf(clade);
-        if (cladeIndex > maxRevealedIndex) {
-        maxRevealedIndex = cladeIndex;
-        }
-    }
-    });
-    const nextCladeIndex = maxRevealedIndex + 1;
-    if (nextCladeIndex >= targetDino.linhagem.length) {
-    await customAlert('No More Hints', 'The full lineage has already been revealed.');
-    return;
-    }
-
-    hintsRemaining--;
-    document.getElementById('hints').textContent = hintsRemaining;
-
-    const revealClade = targetDino.linhagem[nextCladeIndex];
-    
-    await customAlert('Hint', `The next clade in the lineage is:<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${revealClade}</strong>`);
-
-    revealedClades.add(revealClade);
-
-    hintHistory.push({
-    cladeName: revealClade,
-    depth: nextCladeIndex + 1
-    });
-    
-    document.getElementById('clades-revealed').textContent = revealedClades.size;
-    document.getElementById('possible-specimens').textContent = countPossibleSpecimens();
-
-    guessesSinceLastHint = 0;
-    
-    renderEnhancedTree();
-    updateGuessHistory();
-    await showCladeInfo(revealClade);
-
-if (currentUser && !isPracticeMode) {
-saveGameProgress(selectedDifficulty);
-}
+    await useServerHint();
 }
 
 async function useServerHint() {
@@ -580,14 +331,12 @@ async function giveUp() {
 
     if (confirm !== 'true') return;
 
-    if (serverBackedGame) {
-        try {
-            const data = await callGameApi('give_up', { sessionId: gameSessionId });
-            applyServerGamePayload(data);
-        } catch (error) {
-            await customAlert('Could Not Give Up', error.message);
-            return;
-        }
+    try {
+        const data = await callGameApi('give_up', { sessionId: gameSessionId });
+        applyServerGamePayload(data);
+    } catch (error) {
+        await customAlert('Could Not Give Up', error.message);
+        return;
     }
 
     gameWon = false;
@@ -804,7 +553,12 @@ function shareResult() {
 
 function getCurrentDateFormatted() {
     const today = new Date();
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'UTC'
+    };
     return today.toLocaleDateString('en-US', options);
 }
 
@@ -814,10 +568,13 @@ function startCountdown() {
         if (!timer) return;
 
         const now = new Date();
-        const midnight = new Date();
-        midnight.setHours(24, 0, 0, 0);
+        const nextUtcMidnight = Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate() + 1
+        );
 
-        const diff = midnight - now;
+        const diff = nextUtcMidnight - now.getTime();
 
         const h = String(Math.floor(diff / 1000 / 60 / 60)).padStart(2, '0');
         const m = String(Math.floor(diff / 1000 / 60) % 60).padStart(2, '0');

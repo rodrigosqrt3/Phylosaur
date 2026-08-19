@@ -110,34 +110,6 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     `;
 }
 
-function showCompletedChallenge(difficulty, result) {
-    setHeaderControls('game');
-    selectedDifficulty = difficulty;
-    const appContent = document.getElementById('app-content');
-    
-    appContent.innerHTML = `
-
-
-    <div class="game-card">
-        <div class="challenge-completed-banner" style="${result.gaveUp ? 'background:var(--color-danger-bg); border-color:var(--color-danger-dark);' : ''}">
-            <h2 style="${result.gaveUp ? 'color:var(--color-danger);' : ''}">${result.gaveUp ? 'You Gave Up' : 'Challenge Completed'}</h2>
-            <div class="dino-name">${result.targetDino}</div>
-            <div class="attempts">${result.gaveUp ? `After ${result.guessCount} attempts` : `Found in ${result.guessCount} attempts`}</div>
-        </div>
-        </div>
-
-        <div id="tree-container">
-        <div id="tree-scroll-wrapper">
-            <div class="loading">Loading phylogenetic tree...</div>
-        </div>
-        </div>
-
-        <div id="clade-info"></div>
-    </div>
-    `;
-    loadCompletedChallengeTree(difficulty, result);
-}
-
 async function showStatsDashboard() {
     setHeaderControls('stats');
     if (!currentUser) {
