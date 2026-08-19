@@ -1,6 +1,26 @@
 // ═══════════════════════════════════════════════
 // WIKIPEDIA & WIKIMEDIA API
 // ═══════════════════════════════════════════════
+function getAnalyticsVisitorId() {
+  const storageKey = 'phylosaur-visitor-id';
+  let visitorId = localStorage.getItem(storageKey);
+  if (visitorId && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(visitorId)) {
+    return visitorId;
+  }
+
+  if (crypto.randomUUID) {
+    visitorId = crypto.randomUUID();
+  } else {
+    visitorId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, character => {
+      const random = Math.floor(Math.random() * 16);
+      const value = character === 'x' ? random : (random & 0x3) | 0x8;
+      return value.toString(16);
+    });
+  }
+  localStorage.setItem(storageKey, visitorId);
+  return visitorId;
+}
+
 async function callGameApi(action, payload = {}) {
   const { data: { session } } = await sb.auth.getSession();
   const accessToken = session?.access_token || SUPABASE_ANON_KEY;
@@ -12,7 +32,7 @@ async function callGameApi(action, payload = {}) {
       'apikey': SUPABASE_ANON_KEY,
       'Authorization': `Bearer ${accessToken}`
     },
-    body: JSON.stringify({ action, ...payload })
+    body: JSON.stringify({ action, visitorId: getAnalyticsVisitorId(), ...payload })
   });
 
   let data = null;
@@ -30,6 +50,22 @@ async function callGameApi(action, payload = {}) {
   }
 
   return data;
+}
+
+async function initializeAnalyticsAccess() {
+  analyticsAccessChecked = true;
+  if (!currentUserId) {
+    isAnalyticsAdmin = false;
+    return false;
+  }
+
+  try {
+    const data = await callGameApi('analytics_access');
+    isAnalyticsAdmin = data.allowed === true;
+  } catch (error) {
+    isAnalyticsAdmin = false;
+  }
+  return isAnalyticsAdmin;
 }
 
 function getStoredGameSessionIds() {

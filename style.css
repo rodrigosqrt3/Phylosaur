@@ -2935,3 +2935,226 @@ body.light-mode .stat-label {
         text-align: left;
     }
 }
+
+/* Private analytics dashboard */
+.analytics-dashboard {
+    max-width: 1280px;
+    margin-inline: auto;
+}
+
+.analytics-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.analytics-header h2 {
+    margin: 5px 0 8px;
+    color: var(--color-primary);
+    font-size: clamp(1.8rem, 5vw, 2.7rem);
+}
+
+.analytics-header p {
+    max-width: 700px;
+    color: var(--color-secondary);
+    line-height: 1.6;
+}
+
+.analytics-range {
+    display: flex;
+    gap: 6px;
+}
+
+.analytics-range button.active {
+    color: var(--btn-guess-color);
+    background: var(--color-accent);
+    border-color: var(--color-primary);
+}
+
+.analytics-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.analytics-metric {
+    min-height: 125px;
+    padding: 18px 14px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    text-align: center;
+}
+
+.analytics-metric-value {
+    color: var(--color-primary);
+    font-size: 2em;
+}
+
+.analytics-metric-label {
+    margin-top: 7px;
+    color: var(--color-text-light);
+    font-size: 0.75em;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.analytics-metric-detail {
+    margin-top: 6px;
+    color: var(--color-muted);
+    font-size: 0.7em;
+    line-height: 1.35;
+}
+
+.analytics-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--bg-panel-subtle);
+    border: 1px solid var(--border-inner);
+    border-radius: 7px;
+}
+
+.analytics-section h3 {
+    margin-bottom: 18px;
+    color: var(--color-text-warm);
+    font-size: 0.9em;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.analytics-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 230px;
+    padding-top: 24px;
+    overflow-x: auto;
+}
+
+.analytics-chart-column {
+    display: grid;
+    grid-template-rows: 20px minmax(0, 1fr) 32px;
+    align-items: end;
+    flex: 1 0 22px;
+    min-width: 22px;
+    height: 100%;
+    text-align: center;
+}
+
+.analytics-chart-value {
+    color: var(--color-muted);
+    font-size: 0.65em;
+}
+
+.analytics-chart-bar {
+    width: 100%;
+    min-height: 3px;
+    background: linear-gradient(180deg, var(--color-primary), var(--color-muted));
+    border-radius: 3px 3px 0 0;
+}
+
+.analytics-chart-date {
+    padding-top: 7px;
+    color: var(--color-muted);
+    font-size: 0.58em;
+    white-space: nowrap;
+    transform: rotate(-45deg);
+}
+
+.analytics-two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.analytics-breakdown,
+.analytics-activity {
+    display: grid;
+    gap: 7px;
+}
+
+.analytics-breakdown-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 55px 110px;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    background: var(--bg-panel);
+    border-radius: 4px;
+    color: var(--color-secondary);
+    font-size: 0.82em;
+}
+
+.analytics-breakdown-row strong {
+    color: var(--color-primary);
+    text-align: center;
+}
+
+.analytics-activity-row {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-inner);
+}
+
+.analytics-activity-row > span {
+    color: var(--color-muted);
+}
+
+.analytics-activity-row strong {
+    display: block;
+    color: var(--color-text-light);
+    font-size: 0.82em;
+}
+
+.analytics-activity-row small,
+.analytics-activity-row time,
+.analytics-generated {
+    color: var(--color-muted);
+    font-size: 0.7em;
+}
+
+.analytics-activity-row small {
+    display: block;
+    margin-top: 3px;
+}
+
+.analytics-generated {
+    margin-top: 22px;
+    text-align: right;
+    font-style: italic;
+}
+
+@media (max-width: 720px) {
+    .analytics-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .analytics-range button {
+        flex: 1;
+        min-height: 44px;
+    }
+
+    .analytics-two-column {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .analytics-breakdown-row {
+        grid-template-columns: minmax(0, 1fr) 42px 92px;
+    }
+
+    .analytics-activity-row {
+        grid-template-columns: 20px minmax(0, 1fr);
+    }
+
+    .analytics-activity-row time {
+        grid-column: 2;
+    }
+}

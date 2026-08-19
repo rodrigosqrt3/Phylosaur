@@ -9,6 +9,7 @@ function escapeChallengeHtml(value) {
 
 async function showDifficultySelection() {
     if (typeof stopChallengeStatusPolling === 'function') stopChallengeStatusPolling();
+    await initializeAnalyticsAccess();
     setHeaderControls('difficulty');
     const appContent = document.getElementById('app-content');
     const completionStatus = await getDailyCompletionStatus();
@@ -1176,4 +1177,129 @@ async function showMuseum() {
 function switchMuseumLevel(level) {
     selectedMuseumLevel = level;
     showMuseum();
+}
+
+function analyticsLabel(value) {
+    const labels = {
+        daily: 'Daily', practice: 'Practice', challenge: 'Friends',
+        muito_facil: 'Level I', facil: 'Level II', normal: 'Level III',
+        dificil: 'Level IV', muito_dificil: 'Level V',
+        challenge_created: 'Challenge created', challenge_joined: 'Challenge joined',
+        museum_opened: 'Museum specimen viewed', game_started: 'Game started',
+        game_won: 'Game won', game_gave_up: 'Game abandoned', hint_used: 'Hint used'
+    };
+    return labels[value] || String(value || 'Unknown');
+}
+
+function analyticsMetricCard(label, value, detail = '') {
+    return `<div class="analytics-metric">
+        <div class="analytics-metric-value">${escapeChallengeHtml(value)}</div>
+        <div class="analytics-metric-label">${escapeChallengeHtml(label)}</div>
+        ${detail ? `<div class="analytics-metric-detail">${escapeChallengeHtml(detail)}</div>` : ''}
+    </div>`;
+}
+
+async function showAnalyticsDashboard(days = 30) {
+    setHeaderControls('analytics');
+    const appContent = document.getElementById('app-content');
+
+    if (!isAnalyticsAdmin) {
+        appContent.innerHTML = '<div class="game-card empty-state">Analytics access is restricted.</div>';
+        return;
+    }
+
+    appContent.innerHTML = '<div class="game-card loading">Loading private analytics…</div>';
+
+    let data;
+    try {
+        data = await callGameApi('analytics_dashboard', { days });
+    } catch (error) {
+        appContent.innerHTML = `<div class="game-card empty-state" style="color:var(--color-danger-light);">Could not load analytics.<br>${escapeChallengeHtml(error.message)}</div>`;
+        return;
+    }
+
+    const summary = data.summary || {};
+    const maxStarted = Math.max(1, ...data.byDay.map(day => Number(day.started || 0)));
+    const chart = data.byDay.map(day => {
+        const height = Math.max(3, Math.round((Number(day.started || 0) / maxStarted) * 100));
+        const date = new Date(`${day.date}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+        return `<div class="analytics-chart-column" title="${escapeChallengeHtml(date)}: ${day.started} games, ${day.visitors} visitors">
+            <div class="analytics-chart-value">${day.started || ''}</div>
+            <div class="analytics-chart-bar" style="height:${height}%"></div>
+            <div class="analytics-chart-date">${escapeChallengeHtml(date)}</div>
+        </div>`;
+    }).join('');
+
+    const difficultyRows = Object.entries(data.byDifficulty || {}).map(([difficulty, values]) => {
+        const completionRate = values.started ? Math.round((values.completed / values.started) * 100) : 0;
+        return `<div class="analytics-breakdown-row">
+            <span>${escapeChallengeHtml(analyticsLabel(difficulty))}</span>
+            <strong>${values.started}</strong>
+            <span>${completionRate}% complete</span>
+        </div>`;
+    }).join('');
+
+    const modeRows = Object.entries(data.byMode || {}).map(([mode, count]) => `
+        <div class="analytics-breakdown-row"><span>${escapeChallengeHtml(analyticsLabel(mode))}</span><strong>${count}</strong><span>sessions</span></div>
+    `).join('');
+
+    const activityRows = (data.recentActivity || []).map(event => {
+        const when = new Date(event.createdAt).toLocaleString();
+        const context = [analyticsLabel(event.mode), analyticsLabel(event.difficulty)].filter(value => value && value !== 'Unknown').join(' · ');
+        return `<div class="analytics-activity-row">
+            <span>◆</span>
+            <div><strong>${escapeChallengeHtml(analyticsLabel(event.type))}</strong>${context ? `<small>${escapeChallengeHtml(context)}</small>` : ''}</div>
+            <time>${escapeChallengeHtml(when)}</time>
+        </div>`;
+    }).join('');
+
+    appContent.innerHTML = `
+    <div class="game-card analytics-dashboard">
+        <div class="analytics-header">
+            <div>
+                <div class="friends-kicker">Private Observatory</div>
+                <h2>Phylosaur Analytics</h2>
+                <p>Aggregated usage only. No emails, usernames, IP addresses or fingerprints are displayed.</p>
+            </div>
+            <div class="analytics-range" role="group" aria-label="Analytics period">
+                ${[7, 30, 90].map(period => `<button class="btn-hint btn-header ${period === data.days ? 'active' : ''}" onclick="showAnalyticsDashboard(${period})">${period}d</button>`).join('')}
+            </div>
+        </div>
+
+        <div class="analytics-metrics">
+            ${analyticsMetricCard('Unique visitors', summary.uniqueVisitors, `${summary.untrackedSessions || 0} older sessions untracked`)}
+            ${analyticsMetricCard('Games started', summary.totalSessions)}
+            ${analyticsMetricCard('Games completed', summary.completedGames, `${summary.completionRate}% completion`)}
+            ${analyticsMetricCard('Wins', summary.wins, `${summary.winRate}% of completed games`)}
+            ${analyticsMetricCard('Average guesses', summary.averageGuesses)}
+            ${analyticsMetricCard('Average hints', summary.averageHints)}
+            ${analyticsMetricCard('New accounts', summary.newAccounts)}
+            ${analyticsMetricCard('Anonymous sessions', summary.anonymousSessions)}
+            ${analyticsMetricCard('Friend challenges', summary.challengesCreated, `${summary.challengeJoins} joins`)}
+            ${analyticsMetricCard('Museum views', summary.museumViews)}
+        </div>
+
+        <section class="analytics-section">
+            <h3>Games by day</h3>
+            <div class="analytics-chart">${chart}</div>
+        </section>
+
+        <div class="analytics-two-column">
+            <section class="analytics-section">
+                <h3>By level</h3>
+                <div class="analytics-breakdown">${difficultyRows || '<p class="empty-state">No games in this period.</p>'}</div>
+            </section>
+            <section class="analytics-section">
+                <h3>By mode</h3>
+                <div class="analytics-breakdown">${modeRows || '<p class="empty-state">No games in this period.</p>'}</div>
+            </section>
+        </div>
+
+        <section class="analytics-section">
+            <h3>Recent activity</h3>
+            <div class="analytics-activity">${activityRows || '<p class="empty-state">New tracked events will appear here.</p>'}</div>
+        </section>
+
+        <p class="analytics-generated">Generated ${escapeChallengeHtml(new Date(data.generatedAt).toLocaleString())}</p>
+    </div>`;
 }
