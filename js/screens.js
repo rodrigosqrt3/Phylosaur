@@ -859,7 +859,12 @@ async function showMuseumEntry(name) {
 
     if (!Array.isArray(dino.linhagem)) {
         try {
-            const entry = await callGameApi('museum_entry', { name });
+            const discoveryRecord = museumDiscoveryRecords[name.toLowerCase()];
+            const entry = await callGameApi('museum_entry', {
+                name,
+                museumProof: discoveryRecord?.museumProof || null,
+                proofSessionIds: getStoredGameSessionIds()
+            });
             Object.assign(dino, entry.dinosaur);
         } catch (error) {
             overlay.querySelector('.museum-entry-dialog').innerHTML = `

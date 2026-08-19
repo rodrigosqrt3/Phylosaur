@@ -644,7 +644,7 @@ async function giveUp() {
 }
 
 async function showVictory() {
-    registerDiscovery(targetDino.nome);
+    registerDiscovery(targetDino.nome, currentMuseumProof);
     if (currentUser && !isPracticeMode) {
         await clearGameProgress(selectedDifficulty);
     }

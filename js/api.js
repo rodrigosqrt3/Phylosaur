@@ -2,12 +2,15 @@
 // WIKIPEDIA & WIKIMEDIA API
 // ═══════════════════════════════════════════════
 async function callGameApi(action, payload = {}) {
+  const { data: { session } } = await sb.auth.getSession();
+  const accessToken = session?.access_token || SUPABASE_ANON_KEY;
+
   const response = await fetch(GAME_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      'Authorization': `Bearer ${accessToken}`
     },
     body: JSON.stringify({ action, ...payload })
   });
@@ -27,6 +30,22 @@ async function callGameApi(action, payload = {}) {
   }
 
   return data;
+}
+
+function getStoredGameSessionIds() {
+  const sessionIds = [];
+
+  for (let index = 0; index < localStorage.length; index++) {
+    const key = localStorage.key(index);
+    if (!key?.startsWith('phylosaur-session:')) continue;
+
+    const sessionId = localStorage.getItem(key);
+    if (sessionId && !sessionIds.includes(sessionId)) {
+      sessionIds.push(sessionId);
+    }
+  }
+
+  return sessionIds.slice(0, 10);
 }
 
 function getGameSessionStorageKey(mode, difficulty) {

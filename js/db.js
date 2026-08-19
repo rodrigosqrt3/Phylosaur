@@ -305,6 +305,7 @@ function applyServerGamePayload(data) {
     guessedNames = new Set(guesses.map(guess => guess.dino.nome.toLowerCase()));
     gameWon = Boolean(data.won || data.complete);
     isGiveUpMode = Boolean(data.gaveUp);
+    if (data.museumProof) currentMuseumProof = data.museumProof;
 
     if (data.target) {
         targetDino = {
@@ -393,6 +394,8 @@ async function loadServerDatabase(mode, difficulty, forceClean = false) {
     guessesSinceLastHint = 0;
     currentTargetDepth = 0;
     serverPossibleSpecimens = 0;
+    gameRequestPending = false;
+    currentMuseumProof = null;
 
     const wrapper = document.getElementById('tree-scroll-wrapper');
     if (wrapper) wrapper.innerHTML = '<div class="loading">Loading challenge...</div>';
@@ -701,7 +704,7 @@ function readLocalDiscoveryEvents() {
     }
 }
 
-function registerDiscovery(dinoName) {
+function registerDiscovery(dinoName, museumProof = null) {
     if (!dinoName) return;
 
     const localDiscoveries = readLocalDiscoveryNames();
@@ -728,9 +731,16 @@ function registerDiscovery(dinoName) {
             discoveredAt,
             source,
             difficulty: selectedDifficulty,
-            firstKnownUnlock: !wasAlreadyUnlocked
+            firstKnownUnlock: !wasAlreadyUnlocked,
+            museumProof: museumProof || null
         });
         localStorage.setItem(DISCOVERY_EVENTS_KEY, JSON.stringify(events));
+    } else if (museumProof) {
+        const matchingEvent = events.find(event => event.eventKey === eventKey);
+        if (matchingEvent && !matchingEvent.museumProof) {
+            matchingEvent.museumProof = museumProof;
+            localStorage.setItem(DISCOVERY_EVENTS_KEY, JSON.stringify(events));
+        }
     }
 
     console.log(`Dinosaur discovery recorded: ${dinoName} (${source})`);
@@ -750,7 +760,8 @@ async function getDiscoveryRecords() {
             dinoName: event.dinoName,
             discoveredAt: event.discoveredAt || null,
             source: event.source || 'local',
-            firstKnownUnlock: event.firstKnownUnlock === true
+            firstKnownUnlock: event.firstKnownUnlock === true,
+            museumProof: event.museumProof || null
         });
     });
 
@@ -789,7 +800,8 @@ async function getDiscoveryRecords() {
                 count: 0,
                 firstDiscoveredAt: null,
                 lastDiscoveredAt: null,
-                firstDateUnknown: false
+                firstDateUnknown: false,
+                museumProof: null
             };
         }
         return records[key];
@@ -798,6 +810,7 @@ async function getDiscoveryRecords() {
     allEvents.forEach(event => {
         const record = ensureRecord(event.dinoName);
         record.count += 1;
+        if (event.museumProof) record.museumProof = event.museumProof;
 
         if (event.discoveredAt) {
             const timestamp = new Date(event.discoveredAt).getTime();
