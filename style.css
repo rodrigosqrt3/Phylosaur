@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════
    GLOBAL COLOR PALETTE (CSS VARIABLES)
-   Dark mode = default. Light/totaldino modes only override what changes.
+   Dark mode = default. Light mode only overrides what changes.
    ═══════════════════════════════════════════════════════════════════════ */
 :root {
     /* ── Accent & text ── */
@@ -191,79 +191,6 @@ body.light-mode {
     --color-accent-faint:   rgba(201, 169, 110, 0.05);
     --color-accent-subtle:  rgba(201, 169, 110, 0.15);
     --color-bg-panel-login: rgba(201, 169, 110, 0.15);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   TOTALDINO MODE — only overrides what changes
-   ═══════════════════════════════════════════════════════════════════════ */
-body.totaldino-mode {
-    /* backgrounds */
-    --bg-base:              #050505;
-    --bg-deep:              #030803;
-    --bg-deeper:            #051005;
-    --bg-darkest:           #020502;
-    --bg-card:              rgba(10, 10, 10, 0.85);
-    --bg-card-dark:         rgba(5, 15, 5, 0.90);
-    --bg-inset:             #0a150a;
-    --bg-raised:            #0f1f0f;
-    --bg-victory:           #0a1f0a;
-    --bg-panel:             rgba(0, 40, 0, 0.50);
-    --bg-panel-medium:      rgba(0, 40, 0, 0.40);
-    --bg-panel-strong:      rgba(0, 40, 0, 0.60);
-    --bg-panel-subtle:      rgba(0, 30, 0, 0.30);
-    --bg-panel-dark:        rgba(0, 20, 0, 0.30);
-    --bg-panel-darker:      rgba(0, 20, 0, 0.60);
-    --bg-panel-darkest:     rgba(0, 20, 0, 0.70);
-    --bg-input:             rgba(0, 30, 0, 0.80);
-    --bg-input-hover:       rgba(0, 50, 0, 0.90);
-
-    /* borders */
-    --border-base:          rgba(0, 255, 0, 0.30);
-    --border-subtle:        rgba(0, 255, 0, 0.25);
-    --border-inner:         rgba(0, 255, 0, 0.15);
-    --border-hover:         rgba(0, 255, 0, 0.60);
-
-    /* text & accents */
-    --color-primary:        #00FF00;
-    --color-secondary:      #00cc00;
-    --color-muted:          #009900;
-    --color-accent:         #00FF00;
-    --color-text-light:     #00FF00;
-    --color-text-warm:      #00FF00;
-    --color-text-dim:       #007700;
-
-    /* status */
-    --color-success:        #00FF00;
-    --color-success-dark:   #00aa00;
-    --color-success-text:   #00FF00;
-    --color-success-bg:     rgba(0, 255, 0, 0.10);
-    --color-success-bg-alt: rgba(0, 255, 0, 0.15);
-
-    /* tree */
-    --tree-line:            rgba(0, 255, 0, 0.60);
-    --tree-line-revealed:   #00FF00;
-    --tree-line-guess:      #009900;
-    --tree-line-hint:       #007700;
-    --tree-circle-bg:       #0a150a;
-    --tree-circle-revealed-fill:  #00FF00;
-    --tree-circle-revealed-stroke:#00FF00;
-    --tree-circle-guess-fill:     #005500;
-    --tree-circle-guess-stroke:   #009900;
-    --tree-circle-hint-fill:      #003300;
-    --tree-label:           #00FF00;
-    --tree-label-revealed:  #00FF00;
-    --tree-label-guess:     #00cc00;
-    --tree-label-hint:      #009900;
-    --tree-label-ancestor:  #00FF00;
-    --tree-ancestor-bg:     #003300;
-    --tree-ancestor-border: #009900;
-
-    /* buttons */
-    --btn-new-game-bg:      linear-gradient(180deg, #003300 0%, #001a00 100%);
-    --btn-new-game-bg-hover:linear-gradient(180deg, #005500 0%, #003300 100%);
-    --btn-new-game-color:   #00FF00;
-    --btn-new-game-border:  #00aa00;
-    --btn-guess-color:      #000000;
 }
 
 * {
@@ -673,8 +600,27 @@ display: none;
   position: relative;
 }
 
+.guess-primary-row {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 10px;
+}
+
+.guess-field {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.guess-secondary-row {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+}
+
 #dino-input {
-  flex: 1;
+  width: 100%;
   padding: 14px 18px;
   font-size: 16px;
   font-family: 'Georgia', serif;
@@ -762,6 +708,24 @@ box-shadow: 0 1px 3px rgba(0,0,0,0.3);
   border-color: var(--color-muted);
 }
 
+.btn-giveup {
+  padding: 10px 16px;
+  color: var(--color-danger-light);
+  background: var(--bg-panel-dark);
+  border-color: var(--color-danger-dark);
+  box-shadow: none;
+  font-size: 12px;
+  letter-spacing: 1px;
+  opacity: 0.62;
+}
+
+.btn-giveup:hover:not(:disabled) {
+  color: var(--color-danger-light);
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  opacity: 1;
+}
+
 .btn-new-game {
   background: var(--btn-new-game-bg);
   color: var(--btn-new-game-color);
@@ -795,7 +759,7 @@ button:disabled {
   position: absolute;
   top: 100%;
   left: 0;
-  right: 140px;
+  right: 0;
   background: var(--bg-inset);
   border: 2px solid var(--border-subtle);
   border-top: none;
@@ -918,10 +882,51 @@ button:disabled {
         flex-direction: column !important; 
         gap: 10px !important; 
     }
-    .input-section button {
-        width: 100% !important;
-        flex: none !important;
-        box-sizing: border-box !important;
+
+    .guess-primary-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+    }
+
+    .guess-primary-row .btn-guess {
+        width: auto !important;
+        padding: 13px 16px;
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+    .guess-secondary-row {
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .guess-secondary-row .btn-game-hint {
+        flex: 1 1 auto;
+        width: auto !important;
+    }
+
+    .guess-secondary-row .btn-giveup {
+        flex: 0 0 auto;
+        width: auto !important;
+        padding: 9px 4px;
+        color: var(--color-danger-light);
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+        opacity: 0.58;
+        text-decoration: underline;
+        text-decoration-color: transparent;
+        text-underline-offset: 4px;
+    }
+
+    .guess-secondary-row .btn-giveup:hover:not(:disabled),
+    .guess-secondary-row .btn-giveup:focus-visible {
+        background: transparent;
+        border-color: transparent;
+        opacity: 1;
+        text-decoration-color: currentColor;
     }
     header > div { flex-wrap: wrap; gap: 10px; }
     header > div {
@@ -1909,10 +1914,6 @@ body.light-mode .theme-switch-thumb {
     transform: translateX(17px);
 }
 
-body.totaldino-mode .theme-switch {
-    display: none !important;
-}
-
 /* ═══════════════════════════════════════════════════════════════════════
    DISCOVERY MUSEUM GALLERY
    ═══════════════════════════════════════════════════════════════════════ */
@@ -2410,104 +2411,6 @@ body.light-mode .museum-entry-overlay {
     .museum-tabs {
         grid-template-columns: repeat(2, 1fr) !important; /* Stacks cleanly on phones */
         font-size: 0.8em !important;
-    }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   TOTALDINO THEME
-   ═══════════════════════════════════════════════════════════════════════ */
-body.totaldino-mode {
-    background-color: transparent !important;
-    background-image: none !important;
-    color: #00FF00 !important;
-}
-
-body.totaldino-mode #theme-toggle {
-    display: none !important;
-}
-
-body.totaldino-mode header {
-    padding: 16px 20px;
-    margin-bottom: 16px;
-}
-
-body.totaldino-mode h1 {
-    font-size: 2em;
-    margin-bottom: 4px;
-}
-
-body.totaldino-mode .subtitle {
-    font-size: 0.85em;
-    letter-spacing: 1px;
-}
-
-body.totaldino-mode body {
-    padding: 10px;
-}
-
-body.totaldino-mode .container {
-    max-width: 100%;
-}
-
-body.totaldino-mode .game-card {
-    padding: 20px;
-    margin-bottom: 12px;
-}
-
-body.totaldino-mode .stats {
-    gap: 10px;
-    margin-bottom: 16px;
-}
-
-body.totaldino-mode .stat-value {
-    font-size: 1.8em;
-}
-
-body.totaldino-mode #tree-container {
-    max-height: 50vh;
-}
-
-body.totaldino-mode {
-    padding: 10px;
-}
-
-@media (max-width: 600px) {
-    body.totaldino-mode h1 {
-        font-size: 1.4em;
-        letter-spacing: 2px;
-    }
-
-    body.totaldino-mode header {
-        padding: 12px 10px;
-    }
-
-    body.totaldino-mode .game-card {
-        padding: 14px;
-    }
-
-    body.totaldino-mode .stats {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
-
-    body.totaldino-mode .stat-value {
-        font-size: 1.5em;
-    }
-
-    body.totaldino-mode .input-section {
-        flex-wrap: wrap;
-    }
-
-    body.totaldino-mode .input-section .btn-guess {
-        flex: 1;
-    }
-
-    body.totaldino-mode .input-section .btn-hint {
-        width: 100%;
-    }
-
-    body.totaldino-mode #tree-container {
-        max-height: 40vh;
     }
 }
 

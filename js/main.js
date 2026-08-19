@@ -1,21 +1,8 @@
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 document.addEventListener('DOMContentLoaded', async function() {
-    
-  const urlParams = new URLSearchParams(window.location.search);
-  const isTotalDino = urlParams.get('partner') === 'totaldino';
-
-  if (isTotalDino) {
-      document.body.classList.add('totaldino-mode');
-      sessionStorage.setItem('partner', 'totaldino'); 
-  } 
-  else if (sessionStorage.getItem('partner') === 'totaldino') {
-      document.body.classList.add('totaldino-mode');
-  } 
-  else {
-      const savedTheme = localStorage.getItem('phylosaur-theme');
-      if (savedTheme === 'light') toggleTheme();
-  }
+  const savedTheme = localStorage.getItem('phylosaur-theme');
+  if (savedTheme === 'light') toggleTheme();
 
   const hash = window.location.hash;
   const params = new URLSearchParams(hash.replace('#', ''));
