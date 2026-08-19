@@ -34,6 +34,8 @@ const map = {
       'about':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
       'practice-menu':themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
       'practice':     themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showPracticeMode()">← Back</button>`,
+      'friends':      themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
+      'challenge':    themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showFriendChallenges()">← Friends</button>`,
     };
 
     controls.innerHTML = map[screen] || themeBtn;

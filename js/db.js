@@ -226,6 +226,15 @@ function getUtcDateOffsetString(dayOffset) {
 
 function applyServerGamePayload(data) {
     gameSessionId = data.sessionId || gameSessionId;
+    if (data.mode) {
+        currentGameMode = data.mode;
+        isPracticeMode = data.mode === 'practice';
+    }
+    if (data.challenge) {
+        currentChallengeCode = data.challenge.code || currentChallengeCode;
+        currentChallengePlayerName = data.challenge.playerName || currentChallengePlayerName;
+        currentChallengeCreatorName = data.challenge.creatorName || currentChallengeCreatorName;
+    }
     currentTargetDepth = Number(
         data.targetDepth || data.guess?.targetDepth || data.target?.profundidade || currentTargetDepth || 0
     );
@@ -348,9 +357,12 @@ async function showRestoredServerCompletion(data) {
 
         ${buildResultMediaMarkup(targetName, resultMedia)}
 
+        ${currentGameMode === 'challenge' ? `
+        <button class="btn-hint" onclick="showChallengeStandings()" style="width:100%; margin-top:20px;">View Standings</button>
+        <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
         <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
             ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
-        </button>
+        </button>`}
     `;
     container.insertBefore(panel, container.firstChild);
     bindResultMedia(panel, targetName, resultMedia);
@@ -361,6 +373,10 @@ async function loadServerDatabase(mode, difficulty, forceClean = false) {
     window.currentTreeSnapshot = null;
     if (typeof resetTreeAnimationState === 'function') resetTreeAnimationState();
     isPracticeMode = mode === 'practice';
+    currentGameMode = mode;
+    currentChallengeCode = null;
+    currentChallengePlayerName = null;
+    currentChallengeCreatorName = null;
     gameSessionId = null;
     targetDino = null;
     guesses = [];
@@ -429,6 +445,36 @@ async function loadServerDatabase(mode, difficulty, forceClean = false) {
     if (data.complete) await showRestoredServerCompletion(data);
 }
 
+async function loadChallengeDatabase(code, playerName) {
+    const normalizedCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    const storageKey = getChallengeSessionStorageKey(normalizedCode);
+    let data = null;
+    const storedSessionId = localStorage.getItem(storageKey);
+
+    if (storedSessionId) {
+        try {
+            const restored = await callGameApi('state', { sessionId: storedSessionId });
+            if (restored.mode === 'challenge' && restored.challenge?.code === normalizedCode) {
+                data = restored;
+            } else {
+                localStorage.removeItem(storageKey);
+            }
+        } catch (error) {
+            localStorage.removeItem(storageKey);
+        }
+    }
+
+    if (!data) {
+        data = await callGameApi('join_challenge', {
+            code: normalizedCode,
+            playerName
+        });
+        localStorage.setItem(storageKey, data.sessionId);
+    }
+
+    await startFriendChallengeFromPayload(data);
+}
+
 async function loadPracticeDatabase(difficulty) {
     try {
         await loadServerDatabase('practice', difficulty, true);
@@ -489,10 +535,12 @@ function registerDiscovery(dinoName, museumProof = null) {
     }
 
     const discoveredAt = new Date().toISOString();
-    const source = isPracticeMode ? 'practice' : 'daily';
-    const eventKey = isPracticeMode
-        ? `practice:${discoveredAt}:${Math.random().toString(36).slice(2, 9)}`
-        : `daily:${getTodayString()}:${selectedDifficulty}`;
+    const source = currentGameMode;
+    const eventKey = currentGameMode === 'daily'
+        ? `daily:${getTodayString()}:${selectedDifficulty}`
+        : currentGameMode === 'challenge'
+            ? `challenge:${currentChallengeCode}:${dinoName}`
+            : `practice:${discoveredAt}:${Math.random().toString(36).slice(2, 9)}`;
     const events = readLocalDiscoveryEvents();
 
     if (!events.some(event => event.eventKey === eventKey)) {

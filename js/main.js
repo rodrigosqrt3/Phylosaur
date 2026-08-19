@@ -46,5 +46,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   await initializeUserSystem();
-  showDifficultySelection();
+  const challengeCode = new URLSearchParams(window.location.search).get('challenge');
+  if (challengeCode) {
+    showFriendChallenges(challengeCode);
+  } else {
+    showDifficultySelection();
+  }
 });

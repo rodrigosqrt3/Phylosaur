@@ -1,6 +1,12 @@
 // ═══════════════════════════════════════════════
 // SCREENS AND INTERFACE LOGIC
 // ═══════════════════════════════════════════════
+function escapeChallengeHtml(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[character]);
+}
+
 async function showDifficultySelection() {
     setHeaderControls('difficulty');
     const appContent = document.getElementById('app-content');
@@ -32,10 +38,113 @@ async function showDifficultySelection() {
             <button class="btn-hint" onclick="showPracticeMode()" style="padding:18px 40px; font-size:15px;">
                 Practice Mode
             </button>
+            <button class="btn-hint btn-friends" onclick="showFriendChallenges()" style="padding:18px 40px; font-size:15px;">
+                Play with Friends
+            </button>
             </div>
         </div>
     `;
     startCountdown();
+}
+
+function showFriendChallenges(prefilledCode = '') {
+    setHeaderControls('friends');
+    const appContent = document.getElementById('app-content');
+    const suggestedName = currentChallengePlayerName || currentUser || '';
+    const code = String(prefilledCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+
+    appContent.innerHTML = `
+    <div class="game-card friends-hub">
+        <div class="friends-heading">
+            <div class="friends-kicker">Shared Field Challenge</div>
+            <h2>Play with Friends</h2>
+            <p>Create a private challenge or enter a six-character field code. Everyone receives the same hidden dinosaur and plays on their own tree.</p>
+        </div>
+
+        <div class="friends-grid">
+            <section class="friend-panel">
+                <h3>Create a Challenge</h3>
+                <label class="friend-label" for="challenge-create-name">Your name</label>
+                <input class="friend-input" id="challenge-create-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="Explorer name">
+
+                <label class="friend-label" for="challenge-difficulty">Level</label>
+                <select class="friend-input" id="challenge-difficulty">
+                    <option value="muito_facil">Level I</option>
+                    <option value="facil">Level II</option>
+                    <option value="normal" selected>Level III</option>
+                    <option value="dificil">Level IV</option>
+                    <option value="muito_dificil">Level V</option>
+                </select>
+
+                <button class="btn-guess friend-action" id="create-challenge-btn" onclick="createFriendChallenge()">Create Code</button>
+            </section>
+
+            <div class="friends-divider" aria-hidden="true"><span>or</span></div>
+
+            <section class="friend-panel">
+                <h3>Join a Challenge</h3>
+                <label class="friend-label" for="challenge-join-name">Your name</label>
+                <input class="friend-input" id="challenge-join-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="Explorer name">
+
+                <label class="friend-label" for="challenge-code">Field code</label>
+                <input class="friend-input challenge-code-input" id="challenge-code" maxlength="6" value="${escapeChallengeHtml(code)}" placeholder="RAPTOR" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                       oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)"
+                       onkeydown="if(event.key==='Enter') joinFriendChallenge()">
+
+                <button class="btn-hint friend-action" id="join-challenge-btn" onclick="joinFriendChallenge()">Enter Challenge</button>
+            </section>
+        </div>
+
+        <p class="friends-note">Codes expire after seven days. Friend challenges unlock Museum specimens, but do not affect Daily streaks or statistics.</p>
+    </div>`;
+
+    if (code) document.getElementById('challenge-join-name')?.focus();
+}
+
+async function createFriendChallenge() {
+    const nameInput = document.getElementById('challenge-create-name');
+    const difficultyInput = document.getElementById('challenge-difficulty');
+    const button = document.getElementById('create-challenge-btn');
+    const playerName = nameInput?.value.trim().slice(0, 24) || 'Explorer';
+
+    button.disabled = true;
+    button.textContent = 'Creating…';
+    try {
+        const data = await callGameApi('create_challenge', {
+            difficulty: difficultyInput.value,
+            playerName
+        });
+        localStorage.setItem(getChallengeSessionStorageKey(data.challenge.code), data.sessionId);
+        await startFriendChallengeFromPayload(data);
+    } catch (error) {
+        await customAlert('Could Not Create Challenge', error.message);
+        button.disabled = false;
+        button.textContent = 'Create Code';
+    }
+}
+
+async function joinFriendChallenge() {
+    const nameInput = document.getElementById('challenge-join-name');
+    const codeInput = document.getElementById('challenge-code');
+    const button = document.getElementById('join-challenge-btn');
+    const playerName = nameInput?.value.trim().slice(0, 24) || 'Explorer';
+    const code = codeInput?.value.toUpperCase().replace(/[^A-Z0-9]/g, '') || '';
+
+    if (code.length !== 6) {
+        await customAlert('Invalid Code', 'Enter the complete six-character challenge code.');
+        codeInput?.focus();
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Entering…';
+    try {
+        await loadChallengeDatabase(code, playerName);
+    } catch (error) {
+        await customAlert('Could Not Enter Challenge', error.message);
+        button.disabled = false;
+        button.textContent = 'Enter Challenge';
+    }
 }
 
 function showPracticeMode() {

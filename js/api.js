@@ -53,6 +53,11 @@ function getGameSessionStorageKey(mode, difficulty) {
   return `phylosaur-session:${mode}:${difficulty}:${mode === 'daily' ? date : 'current'}`;
 }
 
+function getChallengeSessionStorageKey(code) {
+  const normalizedCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return `phylosaur-session:challenge:${normalizedCode}`;
+}
+
 async function fetchWikipediaInfo(cladeName) {
   try {
     const searchRes = await fetch(

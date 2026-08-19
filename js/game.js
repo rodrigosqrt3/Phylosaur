@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════
 async function startPracticeChallenge(difficulty) {
     setHeaderControls('practice');
+    currentGameMode = 'practice';
     selectedDifficulty = difficulty;
     
     const appContent = document.getElementById('app-content');
@@ -69,6 +70,7 @@ async function startPracticeChallenge(difficulty) {
 async function startDailyChallenge(difficulty) {
     setHeaderControls('game');
     isPracticeMode = false;
+    currentGameMode = 'daily';
     selectedDifficulty = difficulty;
     const appContent = document.getElementById('app-content');
     
@@ -123,6 +125,112 @@ async function startDailyChallenge(difficulty) {
     `;
 
     await loadDailyDatabase(difficulty, false);
+}
+
+async function startFriendChallengeFromPayload(data) {
+    setHeaderControls('challenge');
+    window.collapsedClades.clear();
+    window.currentTreeSnapshot = null;
+    if (typeof resetTreeAnimationState === 'function') resetTreeAnimationState();
+    targetDino = null;
+    guesses = [];
+    hintsRemaining = 3;
+    gameWon = false;
+    guessedNames = new Set();
+    revealedClades = new Set();
+    hintHistory = [];
+    guessesSinceLastHint = 0;
+    currentTargetDepth = 0;
+    serverPossibleSpecimens = 0;
+    gameRequestPending = false;
+    currentMuseumProof = null;
+    currentGameMode = 'challenge';
+    isPracticeMode = false;
+    selectedDifficulty = data.difficulty;
+    currentChallengeCode = data.challenge?.code || currentChallengeCode;
+    currentChallengePlayerName = data.challenge?.playerName || currentChallengePlayerName || 'Explorer';
+    currentChallengeCreatorName = data.challenge?.creatorName || currentChallengeCreatorName;
+
+    const appContent = document.getElementById('app-content');
+    appContent.innerHTML = `
+    <div class="challenge-banner">
+        <div>
+            <span>Friend Challenge</span>
+            <strong>${escapeChallengeHtml(currentChallengeCode)}</strong>
+        </div>
+        <div class="challenge-banner-actions">
+            <button class="btn-hint btn-header" onclick="copyChallengeCode()">Copy Code</button>
+            <button class="btn-hint btn-header" onclick="showChallengeStandings()">Standings</button>
+        </div>
+    </div>
+    <div class="game-card">
+        <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
+            <div class="stat"><div class="stat-value" id="attempts">0</div><div class="stat-label">Attempts</div></div>
+            <div class="stat"><div class="stat-value" id="hints">3</div><div class="stat-label">Hints</div></div>
+            <div class="stat"><div class="stat-value" id="best-match">0</div><div class="stat-label">Deepest Node</div></div>
+            <div class="stat"><div class="stat-value" id="clades-revealed">0</div><div class="stat-label">Clades Shown</div></div>
+            <div class="stat"><div class="stat-value" id="possible-specimens">—</div><div class="stat-label">Possible Answers</div></div>
+        </div>
+        <div class="input-section">
+            <div class="guess-primary-row">
+                <div class="guess-field">
+                    <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off">
+                    <div id="suggestions"></div>
+                </div>
+                <button class="btn-guess" onclick="makeGuess()">Submit</button>
+            </div>
+            <div class="guess-secondary-row">
+                <button class="btn-hint btn-game-hint" onclick="useHint()">Hint</button>
+                <button class="btn-giveup" onclick="giveUp()">Give Up</button>
+            </div>
+        </div>
+        <div id="tree-container"><div id="tree-scroll-wrapper"><div class="empty-state">Loading friend challenge...</div></div></div>
+        <div id="clade-info"></div>
+        <div id="guess-history"></div>
+    </div>`;
+
+    applyServerGamePayload(data);
+    updateServerGameDisplay(data);
+    initializeAutocomplete();
+    document.getElementById('dino-input')?.focus();
+    if (data.complete) await showRestoredServerCompletion(data);
+}
+
+async function copyChallengeCode() {
+    if (!currentChallengeCode) return;
+    try {
+        await navigator.clipboard.writeText(currentChallengeCode);
+        await customAlert('Code Copied', `<strong class="challenge-code-inline">${escapeChallengeHtml(currentChallengeCode)}</strong><br><br>Send this code to your friends.`);
+    } catch (error) {
+        await customAlert('Challenge Code', `<strong class="challenge-code-inline">${escapeChallengeHtml(currentChallengeCode)}</strong>`);
+    }
+}
+
+async function showChallengeStandings() {
+    if (!currentChallengeCode || !gameSessionId) return;
+    try {
+        const data = await callGameApi('challenge_status', {
+            code: currentChallengeCode,
+            sessionId: gameSessionId
+        });
+        const rows = data.participants.map((participant, index) => {
+            const status = participant.status === 'solved' ? 'Solved' : participant.status === 'gave_up' ? 'Gave up' : 'Playing';
+            const details = data.requesterComplete
+                ? `${participant.attempts} attempts · ${participant.hintsUsed} hints`
+                : status;
+            return `<div class="standing-row ${participant.isYou ? 'is-you' : ''}">
+                <span class="standing-rank">${data.requesterComplete ? index + 1 : '◆'}</span>
+                <span class="standing-name">${escapeChallengeHtml(participant.name)}${participant.isYou ? ' (you)' : ''}</span>
+                <span class="standing-result">${escapeChallengeHtml(details)}</span>
+            </div>`;
+        }).join('');
+        await customAlert(
+            `Challenge ${escapeChallengeHtml(currentChallengeCode)}`,
+            `<div class="standings-list">${rows || '<p>No explorers have joined yet.</p>'}</div>${data.requesterComplete ? '' : '<p class="standings-lock">Detailed scores appear after you finish, preventing outside information from influencing your game.</p>'}`
+        );
+    } catch (error) {
+        await customAlert('Could Not Load Standings', error.message);
+    }
 }
 
 function redrawGameTree() {
@@ -361,7 +469,7 @@ async function giveUp() {
 
     gameWon = false;
 
-    if (currentUser && !isPracticeMode) {
+    if (currentUser && currentGameMode === 'daily') {
         await updateStatsAfterGame(false, guesses.length, selectedDifficulty);
         await sb.from('daily_results').upsert({
             user_id: currentUserId,
@@ -398,9 +506,12 @@ async function giveUp() {
 
         ${buildResultMediaMarkup(targetDino.nome, resultMedia)}
 
+        ${currentGameMode === 'challenge' ? `
+        <button class="btn-hint" onclick="showChallengeStandings()" style="width:100%; margin-top:20px;">View Standings</button>
+        <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
         <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
         ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
-        </button>
+        </button>`}
     `;
 
     container.insertBefore(v, container.firstChild);
@@ -415,14 +526,14 @@ async function giveUp() {
 
 async function showVictory() {
     registerDiscovery(targetDino.nome, currentMuseumProof);
-    if (currentUser && !isPracticeMode) {
+    if (currentUser && currentGameMode === 'daily') {
         await clearGameProgress(selectedDifficulty);
     }
 
     let streakData = null;
     let milestone = null;
 
-    if (currentUser && !isPracticeMode) {
+    if (currentUser && currentGameMode === 'daily') {
         streakData = await updateStreak();
         milestone = checkStreakMilestone(streakData.current);
         await updateStatsAfterGame(true, guesses.length, selectedDifficulty);
@@ -448,9 +559,15 @@ async function showVictory() {
         </div>
         `;
     }
+    if (currentGameMode === 'challenge') {
+        modeHTML = `
+        <div class="challenge-result-note">
+            Friend Challenge <strong>${escapeChallengeHtml(currentChallengeCode)}</strong> — Daily statistics not affected
+        </div>`;
+    }
 
     let streakHTML = '';
-    if (streakData && !isPracticeMode) {
+    if (streakData && currentGameMode === 'daily') {
         if (milestone) {
         streakHTML = `
             <div class="streak-celebration" style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid var(--color-warning);">
@@ -486,9 +603,12 @@ async function showVictory() {
                     style="width:100%; padding:15px; font-size:14px; letter-spacing:2px; margin-top:24px; margin-bottom:12px;">
             Share Result
             </button>
+            ${currentGameMode === 'challenge' ? `
+            <button class="btn-hint" onclick="showChallengeStandings()" style="width:100%; padding:15px; margin-bottom:12px;">View Standings</button>
+            <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
             <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
             ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
-            </button>
+            </button>`}
         `;
 
     container.insertBefore(v, container.firstChild);
@@ -523,7 +643,9 @@ function shareResult() {
 
     const today = getCurrentDateFormatted();
     const diff  = diffNames[selectedDifficulty] || '';
-    const mode  = isPracticeMode ? ' (Practice)' : '';
+    const mode  = currentGameMode === 'challenge'
+        ? ` (Friend Challenge ${currentChallengeCode})`
+        : isPracticeMode ? ' (Practice)' : '';
 
     const text = [
         `Phylosaur — ${diff}${mode}`,
