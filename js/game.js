@@ -133,6 +133,12 @@ function setGuessRequestPending(pending) {
         button.disabled = pending || gameWon;
     }
     if (input) input.disabled = pending || gameWon;
+
+    if (!pending && !gameWon && input) {
+        requestAnimationFrame(() => {
+            input.focus();
+        });
+    }
 }
 
 async function makeGuess() {
@@ -193,6 +199,10 @@ async function makeServerGuess() {
         guessesSinceLastHint++;
 
         applyServerGamePayload(data);
+        setTreeAnimationMode(
+            data.won ? 'victory' : 'guess',
+            data.guess?.nome ? `display:${data.guess.nome}` : null
+        );
         updateServerGameDisplay(data);
 
         if (input) input.value = '';
@@ -221,11 +231,11 @@ async function useServerHint() {
     try {
         const data = await callGameApi('hint', { sessionId: gameSessionId });
         applyServerGamePayload(data);
-        hintHistory.push({
-            cladeName: data.hint.cladeName,
-            depth: data.hint.depth
-        });
         guessesSinceLastHint = 0;
+        setTreeAnimationMode(
+            'hint',
+            data.hint?.cladeName ? `node:${data.hint.cladeName}` : null
+        );
         updateServerGameDisplay(data);
 
         await customAlert(
@@ -387,6 +397,7 @@ async function giveUp() {
     bindResultMedia(v, targetDino.nome, resultMedia);
     isGiveUpMode = true;
     gameWon = true;
+    setTreeAnimationMode('reveal');
     redrawGameTree();
     updateCladeInfo();
     revealResultPanel(container, v);

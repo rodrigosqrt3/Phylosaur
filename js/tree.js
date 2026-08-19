@@ -9,6 +9,35 @@ if (typeof window.currentTreeSnapshot === 'undefined') {
     window.currentTreeSnapshot = null;
 }
 
+if (typeof window.treeAnimationState === 'undefined') {
+    window.treeAnimationState = {
+        nodeKeys: new Set(),
+        edgeKeys: new Set(),
+        hasRendered: false,
+        mode: 'restore',
+        focusKey: null
+    };
+}
+
+function resetTreeAnimationState() {
+    window.treeAnimationState = {
+        nodeKeys: new Set(),
+        edgeKeys: new Set(),
+        hasRendered: false,
+        mode: 'restore',
+        focusKey: null
+    };
+}
+
+function setTreeAnimationMode(mode, focusKey = null) {
+    window.treeAnimationState.mode = mode || 'default';
+    window.treeAnimationState.focusKey = focusKey;
+}
+
+function getTreeAnimationMode() {
+    return window.treeAnimationState?.mode || 'default';
+}
+
 function toggleCladeCollapse(clade) {
     if (window.collapsedClades.has(clade)) {
         window.collapsedClades.delete(clade);
@@ -101,13 +130,52 @@ function renderTreeSnapshot(treeSnapshot) {
     .filter(leaf => leaf && typeof leaf.name === 'string')
     .map(leaf => ({ ...leaf }));
 
-  renderTreeModel(nodes, leaves);
+  const animationState = window.treeAnimationState;
+  const currentNodeKeys = new Set();
+  const currentEdgeKeys = new Set();
+
+  nodes.forEach((data, clade) => {
+    currentNodeKeys.add(`node:${clade}`);
+    data.children.forEach(child => currentEdgeKeys.add(`edge:${clade}->${child}`));
+  });
+  leaves.forEach(leaf => {
+    currentNodeKeys.add(`leaf:${leaf.name}`);
+    currentEdgeKeys.add(`edge:${leaf.parentNode}->${leaf.name}`);
+  });
+
+  const animationMode = animationState.mode || 'default';
+  const shouldAnimateArrivals = ['guess', 'hint', 'victory', 'reveal'].includes(animationMode);
+  const animation = {
+    mode: animationMode,
+    focusKey: animationState.focusKey || null,
+    newNodeKeys: shouldAnimateArrivals
+      ? new Set([...currentNodeKeys].filter(key => !animationState.nodeKeys.has(key)))
+      : new Set(),
+    newEdgeKeys: shouldAnimateArrivals
+      ? new Set([...currentEdgeKeys].filter(key => !animationState.edgeKeys.has(key)))
+      : new Set()
+  };
+
+  renderTreeModel(nodes, leaves, animation);
+
+  animationState.nodeKeys = currentNodeKeys;
+  animationState.edgeKeys = currentEdgeKeys;
+  animationState.hasRendered = true;
+  animationState.mode = 'default';
+  animationState.focusKey = null;
 }
 
-function renderTreeModel(nodes, leaves) {
+function renderTreeModel(nodes, leaves, animation = {}) {
   const container = document.getElementById('tree-container');
   const wrapper = document.getElementById('tree-scroll-wrapper');
   if (!container || !wrapper || !nodes.has('Dinosauria')) return;
+
+  const savedScrollLeft = container.scrollLeft;
+  const savedScrollTop = container.scrollTop;
+  const animationMode = animation.mode || 'default';
+  const focusKey = animation.focusKey || null;
+  const newNodeKeys = animation.newNodeKeys || new Set();
+  const newEdgeKeys = animation.newEdgeKeys || new Set();
 
   const nodeWidth = 200;
   const nodeHeight = 45;
@@ -149,6 +217,23 @@ function renderTreeModel(nodes, leaves) {
   const visibleLeaves = leaves.filter(leaf => {
     return !isNodeHidden(leaf.parentNode) && !window.collapsedClades.has(leaf.parentNode);
   });
+
+  const victoryNodeKeys = new Set();
+  const victoryEdgeKeys = new Set();
+  const targetLeaf = visibleLeaves.find(leaf => leaf.isTarget && !leaf.isGiveUp);
+
+  if (animationMode === 'victory' && targetLeaf) {
+    victoryNodeKeys.add(`leaf:${targetLeaf.name}`);
+    victoryEdgeKeys.add(`edge:${targetLeaf.parentNode}->${targetLeaf.name}`);
+
+    let current = targetLeaf.parentNode;
+    while (current) {
+      victoryNodeKeys.add(`node:${current}`);
+      const parent = parentMap.get(current);
+      if (parent) victoryEdgeKeys.add(`edge:${parent}->${current}`);
+      current = parent;
+    }
+  }
   
   const nodePositions = new Map();
   const leafPositions = new Map();
@@ -254,8 +339,14 @@ function renderTreeModel(nodes, leaves) {
       
       const midY = (pos.y + nodeHeight / 2 + cp.y - nodeHeight / 2) / 2;
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const edgeKey = `edge:${clade}->${child}`;
       path.setAttribute('d', `M ${pos.x} ${pos.y + nodeHeight / 2} C ${pos.x} ${midY}, ${cp.x} ${midY}, ${cp.x} ${cp.y - nodeHeight / 2}`);
-      path.setAttribute('class', 'tree-line tree-line-revealed new-line');
+      path.setAttribute('class', [
+        'tree-line',
+        'tree-line-revealed',
+        newEdgeKeys.has(edgeKey) ? 'new-line' : '',
+        victoryEdgeKeys.has(edgeKey) ? 'tree-victory-path' : ''
+      ].filter(Boolean).join(' '));
       path.setAttribute('stroke', 'var(--color-accent)'); 
       path.setAttribute('stroke-width', '3');
       path.setAttribute('fill', 'none');
@@ -266,7 +357,18 @@ function renderTreeModel(nodes, leaves) {
 nodes.forEach((data, clade) => {
     const pos = nodePositions.get(clade);
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('class', 'tree-node-group new-node');
+    const nodeKey = `node:${clade}`;
+    const isNewNode = newNodeKeys.has(nodeKey);
+    const isFocusedNode = focusKey === nodeKey;
+    const isHintArrival = animationMode === 'hint' && data.isHinted === true && isFocusedNode;
+    g.setAttribute('class', [
+      'tree-node-group',
+      isNewNode ? 'new-node' : '',
+      isNewNode || isFocusedNode ? 'tree-new-focus' : '',
+      isFocusedNode ? 'tree-primary-focus' : '',
+      isHintArrival ? 'tree-hint-arrival' : '',
+      victoryNodeKeys.has(nodeKey) ? 'tree-victory-node' : ''
+    ].filter(Boolean).join(' '));
     g.style.cursor = 'pointer';
     g.onclick = () => showCladeInfo(clade);
     
@@ -342,11 +444,17 @@ nodes.forEach((data, clade) => {
     
     const midY = (pp.y + nodeHeight / 2 + leaf.y - nodeHeight / 2) / 2;
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const edgeKey = `edge:${leaf.parentNode}->${name}`;
+    const lineType = leaf.isTarget
+      ? 'tree-line-revealed'
+      : (leaf.isHint ? 'tree-line-hint' : 'tree-line-guess');
     path.setAttribute('d', `M ${pp.x} ${pp.y + nodeHeight / 2} C ${pp.x} ${midY}, ${leaf.x} ${midY}, ${leaf.x} ${leaf.y - nodeHeight / 2}`);
-    path.setAttribute('class', leaf.isTarget 
-      ? 'tree-line tree-line-revealed new-line' 
-      : (leaf.isHint ? 'tree-line tree-line-hint new-line' : 'tree-line tree-line-guess new-line')
-    );
+    path.setAttribute('class', [
+      'tree-line',
+      lineType,
+      newEdgeKeys.has(edgeKey) ? 'new-line' : '',
+      victoryEdgeKeys.has(edgeKey) ? 'tree-victory-path' : ''
+    ].filter(Boolean).join(' '));
     path.setAttribute('stroke-width', leaf.isTarget ? '3' : '2');
     path.setAttribute('fill', 'none');
     svg.appendChild(path);
@@ -354,7 +462,17 @@ nodes.forEach((data, clade) => {
   
 leafPositions.forEach((leaf, name) => {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('class', 'new-node');
+    const nodeKey = `leaf:${name}`;
+    const isNewNode = newNodeKeys.has(nodeKey);
+    const isFocusedNode = focusKey === nodeKey || focusKey === `display:${leaf.displayName}`;
+    g.setAttribute('class', [
+      isNewNode ? 'new-node' : '',
+      isNewNode || isFocusedNode ? 'tree-new-focus' : '',
+      isFocusedNode ? 'tree-primary-focus' : '',
+      animationMode === 'hint' && leaf.isHint && isFocusedNode ? 'tree-hint-arrival' : '',
+      victoryNodeKeys.has(nodeKey) ? 'tree-victory-node' : '',
+      animationMode === 'reveal' && leaf.isTarget ? 'tree-reveal-target' : ''
+    ].filter(Boolean).join(' '));
     g.style.cursor = 'pointer';
     g.onclick = () => {
       if (leaf.displayName === '?') return;
@@ -442,6 +560,44 @@ leafPositions.forEach((leaf, name) => {
       wrapper.style.width = naturalW + 'px';
       wrapper.style.height = naturalH + 'px';
       container.style.overflowX = 'auto';
+    }
+
+    container.scrollLeft = savedScrollLeft;
+    container.scrollTop = savedScrollTop;
+
+    if (animationMode === 'guess' || animationMode === 'hint') {
+      const focusTargets = svg.querySelectorAll('.tree-new-focus');
+      const focusTarget = svg.querySelector('.tree-primary-focus')
+        || focusTargets[focusTargets.length - 1];
+
+      if (focusTarget) {
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = focusTarget.getBoundingClientRect();
+        const margin = 32;
+        let deltaX = 0;
+        let deltaY = 0;
+
+        if (targetRect.left < containerRect.left + margin) {
+          deltaX = targetRect.left - containerRect.left - margin;
+        } else if (targetRect.right > containerRect.right - margin) {
+          deltaX = targetRect.right - containerRect.right + margin;
+        }
+
+        if (targetRect.top < containerRect.top + margin) {
+          deltaY = targetRect.top - containerRect.top - margin;
+        } else if (targetRect.bottom > containerRect.bottom - margin) {
+          deltaY = targetRect.bottom - containerRect.bottom + margin;
+        }
+
+        if (deltaX || deltaY) {
+          const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+          container.scrollBy({
+            left: deltaX,
+            top: deltaY,
+            behavior: reduceMotion ? 'auto' : 'smooth'
+          });
+        }
+      }
     }
   });
 

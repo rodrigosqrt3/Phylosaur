@@ -273,6 +273,20 @@ function applyServerGamePayload(data) {
     if (data.tree) window.currentTreeSnapshot = data.tree;
 }
 
+function setServerStatValue(element, value, animate) {
+    if (!element) return;
+
+    const nextValue = String(value);
+    const changed = element.textContent !== nextValue;
+    element.textContent = nextValue;
+
+    if (animate && changed) {
+        element.classList.remove('stat-value-updated');
+        void element.getBoundingClientRect();
+        element.classList.add('stat-value-updated');
+    }
+}
+
 function updateServerGameDisplay(data) {
     const bestMatch = guesses.length > 0
         ? Math.max(...guesses.map(guess => guess.proximity.matches))
@@ -283,12 +297,16 @@ function updateServerGameDisplay(data) {
     const best = document.getElementById('best-match');
     const clades = document.getElementById('clades-revealed');
     const possible = document.getElementById('possible-specimens');
+    const animationMode = typeof getTreeAnimationMode === 'function'
+        ? getTreeAnimationMode()
+        : 'default';
+    const animateStats = animationMode === 'guess' || animationMode === 'hint';
 
-    if (attempts) attempts.textContent = guesses.length;
-    if (hints) hints.textContent = hintsRemaining;
-    if (best) best.textContent = bestMatch;
-    if (clades) clades.textContent = revealedClades.size;
-    if (possible) possible.textContent = serverPossibleSpecimens;
+    setServerStatValue(attempts, guesses.length, animateStats);
+    setServerStatValue(hints, hintsRemaining, animateStats);
+    setServerStatValue(best, bestMatch, animateStats);
+    setServerStatValue(clades, revealedClades.size, animateStats);
+    setServerStatValue(possible, serverPossibleSpecimens, animateStats);
 
     const wrapper = document.getElementById('tree-scroll-wrapper');
     if (data.tree && (guesses.length > 0 || hintHistory.length > 0 || data.complete)) {
@@ -341,6 +359,7 @@ async function showRestoredServerCompletion(data) {
 async function loadServerDatabase(mode, difficulty, forceClean = false) {
     window.collapsedClades.clear();
     window.currentTreeSnapshot = null;
+    if (typeof resetTreeAnimationState === 'function') resetTreeAnimationState();
     isPracticeMode = mode === 'practice';
     gameSessionId = null;
     targetDino = null;
