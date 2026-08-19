@@ -454,7 +454,7 @@ function showAbout() {
             $m(A,B)$, then:
         </p>
         <p style="margin-bottom:25px; padding:20px; background:rgba(61,47,31,0.3); border-radius:4px; text-align:center; overflow-x:auto; -webkit-overflow-scrolling:touch;">
-            $$m(A,B)=\\max\\left\\{k: L_A[i]=L_B[i]\\;\\text{for every}\\;0\\le i<k\\right\\}$$
+            $$m(A,B)=\\max\\left\\{k: L_A[i]=L_B[i]\\;\\text{for every}\\;0\\le i&lt;k\\right\\}$$
         </p>
         <p style="margin-bottom:25px;">
             The final clade inside this common prefix is the deepest named common ancestor represented by the game. 

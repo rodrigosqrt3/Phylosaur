@@ -1001,6 +1001,68 @@ a:focus-visible,
   cursor: grabbing;
 }
 
+.tree-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+}
+
+.tree-toolbar-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.tree-toolbar-kicker {
+  color: var(--color-muted);
+  font-size: 0.66em;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.tree-toolbar-clade {
+  overflow: hidden;
+  color: var(--color-primary);
+  font-size: 1em;
+  font-style: italic;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.tree-toolbar-btn {
+  min-height: 38px;
+  padding: 8px 11px;
+  color: var(--color-secondary);
+  background: var(--bg-panel-darker);
+  border: 1px solid var(--border-subtle);
+  box-shadow: none;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+}
+
+.tree-toolbar-btn:hover:not(:disabled) {
+  color: var(--color-primary);
+  background: var(--bg-panel-strong);
+  border-color: var(--color-accent);
+}
+
+.tree-toolbar-btn::before {
+  display: none;
+}
+
 .clade-content { flex-direction: column; }
 .clade-image   { max-width: 100%; }
 
@@ -1051,6 +1113,36 @@ min-width: 100%;
 .tree-line-revealed {
   stroke: var(--tree-line-revealed);
   stroke-width: 3;
+}
+
+.tree-line.tree-line-best {
+  stroke: var(--tree-circle-revealed-stroke);
+  stroke-width: 4.5;
+  filter: drop-shadow(0 0 4px var(--tree-line-revealed));
+}
+
+.tree-node-best rect,
+.tree-best-destination rect {
+  stroke: var(--tree-circle-revealed-stroke);
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 5px var(--tree-line-revealed));
+}
+
+.tree-node-best text,
+.tree-best-destination text {
+  font-weight: 700;
+}
+
+/* Dark mode: keep the best-trail cue warm and restrained, not neon. */
+body:not(.light-mode) .tree-node-best rect,
+body:not(.light-mode) .tree-best-destination rect {
+  stroke: var(--tree-line-revealed);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 2px rgba(201, 169, 110, 0.32));
+}
+
+body:not(.light-mode) .tree-node-group:hover rect {
+  filter: drop-shadow(0 0 5px rgba(201, 169, 110, 0.38));
 }
 
 .tree-line-guess {
@@ -3157,4 +3249,27 @@ body.light-mode .stat-label {
     .analytics-activity-row time {
         grid-column: 2;
     }
+}
+
+@media (max-width: 720px) {
+  .tree-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .tree-toolbar-copy {
+    text-align: center;
+  }
+
+  .tree-toolbar-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tree-toolbar-btn {
+    width: 100%;
+    min-height: 42px;
+    padding-inline: 6px;
+  }
 }
