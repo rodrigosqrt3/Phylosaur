@@ -1,6 +1,39 @@
 // ═══════════════════════════════════════════════
 // WIKIPEDIA & WIKIMEDIA API
 // ═══════════════════════════════════════════════
+async function callGameApi(action, payload = {}) {
+  const response = await fetch(GAME_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify({ action, ...payload })
+  });
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (error) {
+    data = { ok: false, error: 'The game server returned an invalid response.' };
+  }
+
+  if (!response.ok || !data?.ok) {
+    const apiError = new Error(data?.error || 'The game server is unavailable.');
+    apiError.status = response.status;
+    apiError.data = data;
+    throw apiError;
+  }
+
+  return data;
+}
+
+function getGameSessionStorageKey(mode, difficulty) {
+  const date = new Date().toISOString().slice(0, 10);
+  return `phylosaur-session:${mode}:${difficulty}:${mode === 'daily' ? date : 'current'}`;
+}
+
 async function fetchWikipediaInfo(cladeName) {
   try {
     const searchRes = await fetch(

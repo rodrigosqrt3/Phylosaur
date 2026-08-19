@@ -857,6 +857,21 @@ async function showMuseumEntry(name) {
     };
     document.addEventListener('keydown', museumEntryEscapeHandler);
 
+    if (!Array.isArray(dino.linhagem)) {
+        try {
+            const entry = await callGameApi('museum_entry', { name });
+            Object.assign(dino, entry.dinosaur);
+        } catch (error) {
+            overlay.querySelector('.museum-entry-dialog').innerHTML = `
+                <button class="museum-entry-close" type="button" onclick="closeMuseumEntry()" aria-label="Close">×</button>
+                <div class="museum-entry-loading" style="color:var(--color-danger);">
+                    Could not open ${name}.<br>${error.message}
+                </div>
+            `;
+            return;
+        }
+    }
+
     const [media, wikiInfo] = await Promise.all([
         getCachedDinoMedia(name),
         fetchWikipediaInfo(name)
@@ -943,8 +958,8 @@ async function showMuseum() {
     
     try {
         if (!fullDatabase || fullDatabase.length === 0) {
-            const res = await fetch('phylosaur_db.json');
-            fullDatabase = await res.json();
+            const catalog = await callGameApi('catalog');
+            fullDatabase = catalog.dinosaurs || [];
         }
 
         museumDiscoveryRecords = await getDiscoveryRecords();
@@ -995,7 +1010,7 @@ async function showMuseum() {
 
         levelDinos.forEach(dino => {
             const isUnlocked = unlockedSet.has(dino.nome.toLowerCase());
-            const lastClade = dino.linhagem[dino.linhagem.length - 1] || 'Dinosauria';
+            const lastClade = dino.terminalClade || dino.linhagem?.at(-1) || 'Dinosauria';
 
             if (isUnlocked) {
                 const discovery = getMuseumDiscoverySummary(

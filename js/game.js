@@ -69,7 +69,7 @@ async function startDailyChallenge(difficulty) {
     const today = getTodayString();
     let existingResult = null;
 
-    if (currentUserId) {
+    if (currentUserId && !SERVER_GAME_ENABLED) {
     const { data } = await sb.from('daily_results')
         .select('*')
         .eq('user_id', currentUserId)
@@ -141,6 +141,11 @@ async function startDailyChallenge(difficulty) {
     </div>
     `;
 
+if (SERVER_GAME_ENABLED) {
+    loadDailyDatabase(difficulty, false);
+    return;
+}
+
 const savedProgress = await loadGameProgress(difficulty);
 let continueGame = true;
 
@@ -188,6 +193,32 @@ function calculateProximity(guess, target) {
     };
 }
 
+function redrawGameTree() {
+    if (typeof renderCurrentGameTree === 'function') {
+        renderCurrentGameTree();
+    } else if (
+        serverBackedGame &&
+        window.currentTreeSnapshot &&
+        typeof renderTreeSnapshot === 'function'
+    ) {
+        renderTreeSnapshot(window.currentTreeSnapshot);
+    } else {
+        renderEnhancedTree();
+    }
+}
+
+function setGuessRequestPending(pending) {
+    gameRequestPending = pending;
+    const input = document.getElementById('dino-input');
+    const button = document.querySelector('.btn-guess');
+
+    if (button) {
+        button.textContent = pending ? 'Analyzing…' : 'Submit';
+        button.disabled = pending || gameWon;
+    }
+    if (input) input.disabled = pending || gameWon;
+}
+
 function countPossibleSpecimens() {
     if (guesses.length === 0) return database.length;
     
@@ -221,6 +252,11 @@ function countPossibleSpecimens() {
 
 async function makeGuess() {
     if (gameWon) return;
+
+    if (serverBackedGame) {
+        await makeServerGuess();
+        return;
+    }
 
     const input = document.getElementById('dino-input');
     const guessName = input.value.trim();
@@ -281,7 +317,83 @@ async function makeGuess() {
     }
 }
 
+async function makeServerGuess() {
+    if (gameRequestPending) return;
+
+    const input = document.getElementById('dino-input');
+    const guessName = input?.value.trim() || '';
+
+    if (!guessName) {
+        await customAlert('Enter a Name', 'Choose a dinosaur from the suggestions.');
+        return;
+    }
+
+    const available = database.find(
+        dinosaur => dinosaur.nome.toLowerCase() === guessName.toLowerCase()
+    );
+    if (!available) {
+        await customAlert('Dinosaur Not Found', 'Choose a name from the autocomplete suggestions.');
+        return;
+    }
+
+    if (guessedNames.has(available.nome.toLowerCase())) {
+        await customAlert('Already Guessed', 'You have already tried this dinosaur.');
+        return;
+    }
+
+    setGuessRequestPending(true);
+
+    let data;
+    try {
+        data = await callGameApi('guess', {
+            sessionId: gameSessionId,
+            guess: available.nome
+        });
+    } catch (error) {
+        setGuessRequestPending(false);
+        await customAlert('Guess Not Accepted', error.message);
+        return;
+    }
+
+    try {
+        guesses.push({
+            dino: { nome: data.guess.nome },
+            proximity: {
+                matches: Number(data.guess.matches || 0),
+                percentage: Number(data.guess.percentage || 0),
+                lastCommonClade: data.guess.lastCommonClade || null,
+                divergenceDepth: Number(data.guess.divergenceDepth || data.guess.matches || 0)
+            },
+            isHint: false
+        });
+        guessedNames.add(data.guess.nome.toLowerCase());
+        guessesSinceLastHint++;
+
+        applyServerGamePayload(data);
+        updateServerGameDisplay(data);
+
+        if (input) input.value = '';
+        const suggestions = document.getElementById('suggestions');
+        if (suggestions) suggestions.style.display = 'none';
+
+        if (data.won) await showVictory();
+    } catch (error) {
+        console.error('Error displaying accepted guess:', error);
+        await customAlert(
+            'Display Error',
+            'Your guess was accepted and saved, but part of the result screen could not be displayed. Reloading the challenge will restore it.'
+        );
+    } finally {
+        setGuessRequestPending(false);
+    }
+}
+
 async function useHint() {
+    if (serverBackedGame) {
+        await useServerHint();
+        return;
+    }
+
     if (hintsRemaining <= 0) {
     await customAlert('No Hints Available', 'You have exhausted all hints for this challenge.');
     return;
@@ -350,6 +462,33 @@ async function useHint() {
 if (currentUser && !isPracticeMode) {
 saveGameProgress(selectedDifficulty);
 }
+}
+
+async function useServerHint() {
+    if (gameWon) return;
+
+    try {
+        const data = await callGameApi('hint', { sessionId: gameSessionId });
+        applyServerGamePayload(data);
+        hintHistory.push({
+            cladeName: data.hint.cladeName,
+            depth: data.hint.depth
+        });
+        guessesSinceLastHint = 0;
+        updateServerGameDisplay(data);
+
+        await customAlert(
+            'Hint',
+            `The next clade in the lineage is:<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${data.hint.cladeName}</strong>`
+        );
+        await showCladeInfo(data.hint.cladeName);
+    } catch (error) {
+        const missing = Number(error.data?.guessesRequired || 0);
+        const message = missing > 0
+            ? `Make <strong>${missing}</strong> more guess(es) before using another hint.`
+            : error.message;
+        await customAlert('Hint Not Available', message);
+    }
 }
 
 async function loadResultMedia(dinoName) {
@@ -441,6 +580,16 @@ async function giveUp() {
 
     if (confirm !== 'true') return;
 
+    if (serverBackedGame) {
+        try {
+            const data = await callGameApi('give_up', { sessionId: gameSessionId });
+            applyServerGamePayload(data);
+        } catch (error) {
+            await customAlert('Could Not Give Up', error.message);
+            return;
+        }
+    }
+
     gameWon = false;
 
     if (currentUser && !isPracticeMode) {
@@ -489,7 +638,7 @@ async function giveUp() {
     bindResultMedia(v, targetDino.nome, resultMedia);
     isGiveUpMode = true;
     gameWon = true;
-    renderEnhancedTree();
+    redrawGameTree();
     updateCladeInfo();
     revealResultPanel(container, v);
 }
@@ -574,7 +723,7 @@ async function showVictory() {
 
     container.insertBefore(v, container.firstChild);
     bindResultMedia(v, targetDino.nome, resultMedia);
-    renderEnhancedTree();
+    redrawGameTree();
     updateCladeInfo();
     revealResultPanel(container, v);
 }

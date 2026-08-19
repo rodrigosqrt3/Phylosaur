@@ -270,7 +270,173 @@ function getTodayString() {
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 }
 
+function applyServerGamePayload(data) {
+    serverBackedGame = true;
+    gameSessionId = data.sessionId || gameSessionId;
+    currentTargetDepth = Number(
+        data.targetDepth || data.guess?.targetDepth || data.target?.profundidade || currentTargetDepth || 0
+    );
+    serverPossibleSpecimens = Number(data.possibleSpecimens ?? serverPossibleSpecimens ?? 0);
+
+    if (Array.isArray(data.availableNames)) {
+        database = data.availableNames.map(nome => ({ nome }));
+    }
+
+    if (Array.isArray(data.guesses)) {
+        guesses = data.guesses.map(record => ({
+            dino: { nome: record.nome },
+            proximity: {
+                matches: Number(record.matches || 0),
+                percentage: Number(record.percentage || 0),
+                lastCommonClade: record.lastCommonClade || null,
+                divergenceDepth: Number(record.matches || 0)
+            },
+            isHint: record.isHint === true
+        }));
+    }
+
+    if (Array.isArray(data.revealedClades)) {
+        revealedClades = new Set(data.revealedClades);
+    }
+    if (Array.isArray(data.hintHistory)) hintHistory = data.hintHistory;
+    if (data.hintsRemaining !== undefined) hintsRemaining = Number(data.hintsRemaining);
+    if (data.guessesSinceHint !== undefined) guessesSinceLastHint = Number(data.guessesSinceHint);
+
+    guessedNames = new Set(guesses.map(guess => guess.dino.nome.toLowerCase()));
+    gameWon = Boolean(data.won || data.complete);
+    isGiveUpMode = Boolean(data.gaveUp);
+
+    if (data.target) {
+        targetDino = {
+            nome: data.target.nome,
+            linhagem: Array.isArray(data.target.linhagem) ? data.target.linhagem : [],
+            profundidade: data.target.profundidade
+        };
+    } else {
+        targetDino = null;
+    }
+
+    if (data.tree) window.currentTreeSnapshot = data.tree;
+}
+
+function updateServerGameDisplay(data) {
+    const bestMatch = guesses.length > 0
+        ? Math.max(...guesses.map(guess => guess.proximity.matches))
+        : 0;
+
+    const attempts = document.getElementById('attempts');
+    const hints = document.getElementById('hints');
+    const best = document.getElementById('best-match');
+    const clades = document.getElementById('clades-revealed');
+    const possible = document.getElementById('possible-specimens');
+
+    if (attempts) attempts.textContent = guesses.length;
+    if (hints) hints.textContent = hintsRemaining;
+    if (best) best.textContent = bestMatch;
+    if (clades) clades.textContent = revealedClades.size;
+    if (possible) possible.textContent = serverPossibleSpecimens;
+
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    if (data.tree && (guesses.length > 0 || hintHistory.length > 0 || data.complete)) {
+        renderTreeSnapshot(data.tree);
+    } else if (wrapper) {
+        wrapper.innerHTML = '<div class="empty-state">The tree will appear after your first guess or hint.</div>';
+    }
+
+    updateCladeInfo();
+    updateGuessHistory();
+}
+
+function showRestoredServerCompletion(data) {
+    const input = document.getElementById('dino-input');
+    if (input) input.disabled = true;
+    document.querySelector('.btn-guess')?.setAttribute('disabled', true);
+    document.querySelector('.btn-hint')?.setAttribute('disabled', true);
+    document.querySelector('.btn-giveup')?.setAttribute('disabled', true);
+
+    const container = document.getElementById('tree-container');
+    if (!container || container.querySelector('.victory')) return;
+
+    const panel = document.createElement('div');
+    panel.className = 'victory';
+    if (data.gaveUp) {
+        panel.style.background = 'linear-gradient(135deg, #3d2318 0%, #2c1a12 100%)';
+    }
+    panel.innerHTML = `
+        <h2 style="${data.gaveUp ? 'color:var(--color-danger);' : ''}">
+            ${data.gaveUp ? 'ANSWER REVEALED' : 'CHALLENGE COMPLETE'}
+        </h2>
+        <div class="victory-dino">${data.target?.nome || ''}</div>
+        <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
+            ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}
+        </p>
+        <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+            ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
+        </button>
+    `;
+    container.insertBefore(panel, container.firstChild);
+}
+
+async function loadServerDatabase(mode, difficulty, forceClean = false) {
+    window.collapsedClades.clear();
+    window.currentTreeSnapshot = null;
+    serverBackedGame = true;
+    isPracticeMode = mode === 'practice';
+    gameSessionId = null;
+    targetDino = null;
+    guesses = [];
+    hintsRemaining = 3;
+    gameWon = false;
+    guessedNames = new Set();
+    revealedClades = new Set();
+    hintHistory = [];
+    guessesSinceLastHint = 0;
+    currentTargetDepth = 0;
+    serverPossibleSpecimens = 0;
+
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading challenge...</div>';
+
+    const storageKey = getGameSessionStorageKey(mode, difficulty);
+    if (forceClean) localStorage.removeItem(storageKey);
+
+    let data = null;
+    const storedSessionId = forceClean ? null : localStorage.getItem(storageKey);
+
+    if (storedSessionId) {
+        try {
+            data = await callGameApi('state', { sessionId: storedSessionId });
+        } catch (error) {
+            console.warn('Stored game session could not be restored:', error);
+            localStorage.removeItem(storageKey);
+        }
+    }
+
+    if (!data) {
+        data = await callGameApi('start', { mode, difficulty });
+        localStorage.setItem(storageKey, data.sessionId);
+    }
+
+    applyServerGamePayload(data);
+    updateServerGameDisplay(data);
+    initializeAutocomplete();
+    document.getElementById('dino-input')?.focus();
+
+    if (data.complete) showRestoredServerCompletion(data);
+}
+
 async function loadPracticeDatabase(difficulty) {
+    if (SERVER_GAME_ENABLED) {
+        try {
+            await loadServerDatabase('practice', difficulty, true);
+        } catch (error) {
+            console.error('Server practice game error:', error);
+            const wrapper = document.getElementById('tree-scroll-wrapper');
+            if (wrapper) wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${error.message}</div>`;
+        }
+        return;
+    }
+
     window.collapsedClades.clear();
     isPracticeMode = true;
     
@@ -322,6 +488,17 @@ async function loadPracticeDatabase(difficulty) {
 }
 
 async function loadDailyDatabase(difficulty, forceClean = false) {
+    if (SERVER_GAME_ENABLED) {
+        try {
+            await loadServerDatabase('daily', difficulty, forceClean);
+        } catch (error) {
+            console.error('Server daily game error:', error);
+            const wrapper = document.getElementById('tree-scroll-wrapper');
+            if (wrapper) wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${error.message}</div>`;
+        }
+        return;
+    }
+
     window.collapsedClades.clear();
     const wrapper = document.getElementById('tree-scroll-wrapper');
     if (wrapper) wrapper.innerHTML = '<div class="loading">Loading daily challenge...</div>';

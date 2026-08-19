@@ -5,13 +5,21 @@ if (typeof window.collapsedClades === 'undefined') {
     window.collapsedClades = new Set();
 }
 
+if (typeof window.currentTreeSnapshot === 'undefined') {
+    window.currentTreeSnapshot = null;
+}
+
 function toggleCladeCollapse(clade) {
     if (window.collapsedClades.has(clade)) {
         window.collapsedClades.delete(clade);
     } else {
         window.collapsedClades.add(clade);
     }
-    renderEnhancedTree();
+    if (window.currentTreeSnapshot) {
+        renderTreeSnapshot(window.currentTreeSnapshot);
+    } else {
+        renderEnhancedTree();
+    }
 }
 
 function findDinosauriaIndex(lineage) {
@@ -82,6 +90,7 @@ function initTreePanning() {
 }
 
 function renderEnhancedTree() {
+  window.currentTreeSnapshot = null;
   const container = document.getElementById('tree-container');
   const wrapper   = document.getElementById('tree-scroll-wrapper');
   
@@ -310,6 +319,47 @@ function renderEnhancedTree() {
     });
   }
 
+  renderTreeModel(nodes, leaves);
+}
+
+function renderTreeSnapshot(treeSnapshot) {
+  if (!treeSnapshot || !Array.isArray(treeSnapshot.nodes) || !Array.isArray(treeSnapshot.leaves)) {
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    if (wrapper) wrapper.innerHTML = '<div class="empty-state">No tree data.</div>';
+    return;
+  }
+
+  window.currentTreeSnapshot = treeSnapshot;
+
+  const nodes = new Map();
+  treeSnapshot.nodes.forEach(node => {
+    if (!node || typeof node.name !== 'string') return;
+    nodes.set(node.name, {
+      depth: Number(node.depth) || 0,
+      children: Array.isArray(node.children) ? [...node.children] : [],
+      type: node.type === 'root' ? 'root' : 'internal',
+      lineageIndex: Number.isFinite(Number(node.lineageIndex))
+        ? Number(node.lineageIndex)
+        : 0,
+      isHinted: node.isHinted === true
+    });
+  });
+
+  const leaves = treeSnapshot.leaves
+    .filter(leaf => leaf && typeof leaf.name === 'string')
+    .map(leaf => ({ ...leaf }));
+
+  renderTreeModel(nodes, leaves);
+}
+
+function renderTreeModel(nodes, leaves) {
+  const container = document.getElementById('tree-container');
+  const wrapper = document.getElementById('tree-scroll-wrapper');
+  if (!container || !wrapper || !nodes.has('Dinosauria')) return;
+
+  const nodeWidth = 160;
+  const nodeHeight = 45;
+
   // ─────────────────────────────────────────────────────────────────────
   // ── COLLAPSE FILTERING LOGIC
   // ─────────────────────────────────────────────────────────────────────
@@ -474,7 +524,7 @@ nodes.forEach((data, clade) => {
     rect.setAttribute('width', nodeWidth);
     rect.setAttribute('height', nodeHeight);
     rect.setAttribute('rx', '6');
-    const isHinted = hintHistory.some(h => h.cladeName === clade);
+    const isHinted = data.isHinted === true || hintHistory.some(h => h.cladeName === clade);
     
     rect.setAttribute('fill', isHinted ? 'var(--tree-hint-bg)' : 'var(--tree-ancestor-bg)');
     rect.setAttribute('stroke', isHinted ? 'var(--tree-hint-border)' : 'var(--tree-ancestor-border)');
