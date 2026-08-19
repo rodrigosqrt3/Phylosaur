@@ -1,11 +1,23 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v1";
+const CACHE_VERSION = "phylosaur-shell-v2";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
+  "./style.css",
+  "./js/config.js",
+  "./js/state.js",
+  "./js/api.js",
+  "./js/autocomplete.js",
+  "./js/db.js",
+  "./js/auth.js",
+  "./js/ui.js",
+  "./js/screens.js",
+  "./js/tree.js",
+  "./js/game.js",
+  "./js/main.js",
   "./pwa-icon-192.png",
   "./pwa-icon-512.png",
   "./apple-touch-icon.png",
@@ -93,11 +105,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  const needsFreshVersion = ["style", "script"].includes(request.destination)
+  const isApplicationCode = ["style", "script"].includes(request.destination)
     || /\.(?:css|js)$/i.test(url.pathname);
 
-  if (needsFreshVersion) {
-    event.respondWith(freshStaticAsset(request));
+  if (isApplicationCode) {
+    event.respondWith(cachedStaticAsset(request));
     return;
   }
 

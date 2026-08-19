@@ -1,6 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════
 // DATABSE OPERATIONS
 // ═══════════════════════════════════════════════════════════════════════
+let dailyCompletionCache = null;
+
 async function updateStatsAfterGame(won, guessCount, difficulty) {
   if (!currentUserId) return;
 
@@ -128,6 +130,7 @@ async function markDailyChallengeCompleted(difficulty) {
     revealed_clades: Array.from(revealedClades),
     hint_history: hintHistory
     }, { onConflict: 'user_id,played_date,difficulty' });
+    dailyCompletionCache = null;
 }
 
 async function getStreakData() {
@@ -203,6 +206,10 @@ async function getDailyCompletionStatus() {
     if (!currentUserId) return { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
     
     const today = getTodayString();
+    const cacheKey = `${currentUserId}:${today}`;
+    if (dailyCompletionCache?.key === cacheKey) {
+        return { ...dailyCompletionCache.status };
+    }
     const { data } = await sb.from('daily_results')
     .select('difficulty')
     .eq('user_id', currentUserId)
@@ -211,6 +218,7 @@ async function getDailyCompletionStatus() {
     
     const status = { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
     if (data) data.forEach(row => { status[row.difficulty] = true; });
+    dailyCompletionCache = { key: cacheKey, status: { ...status } };
     return status;
 }  
 

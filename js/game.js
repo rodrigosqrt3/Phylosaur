@@ -148,7 +148,7 @@ async function startFriendChallengeFromPayload(data) {
     isPracticeMode = false;
     selectedDifficulty = data.difficulty;
     currentChallengeCode = data.challenge?.code || currentChallengeCode;
-    currentChallengePlayerName = data.challenge?.playerName || currentChallengePlayerName || 'Explorer';
+    currentChallengePlayerName = data.challenge?.playerName || currentChallengePlayerName || 'Player';
     currentChallengeCreatorName = data.challenge?.creatorName || currentChallengeCreatorName;
     currentChallengePlacement = data.challenge?.placement ?? null;
     currentChallengeTotalPlayers = Number(data.challenge?.totalPlayers || 0);
@@ -166,7 +166,7 @@ async function startFriendChallengeFromPayload(data) {
             <button class="btn-hint btn-header" onclick="copyChallengeCode()">Copy Code</button>
             <button class="btn-hint btn-header" onclick="showChallengeStandings()">Standings</button>
         </div>
-        <div class="challenge-race-progress" id="challenge-race-status">Checking the field…</div>
+        <div class="challenge-race-progress" id="challenge-race-status">Updating challenge…</div>
     </div>
     <div class="game-card">
         <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
@@ -220,8 +220,8 @@ function updateChallengeRaceStatus(data) {
         const total = Number(data.race.totalPlayers || 0);
         const completed = Number(data.race.completedPlayers || 0);
         status.textContent = total < 2
-            ? 'Waiting for another explorer to join'
-            : `${total} explorers · ${completed} finished`;
+            ? 'Waiting for another player to join'
+            : `${total} players · ${completed} finished`;
     }
 }
 
@@ -331,7 +331,7 @@ async function showChallengeStandings() {
         }).join('');
         await customAlert(
             `Challenge ${escapeChallengeHtml(currentChallengeCode)}`,
-            `<div class="standings-list">${rows || '<p>No explorers have joined yet.</p>'}</div>${data.requesterComplete ? '' : '<p class="standings-lock">Detailed scores appear after you finish, preventing outside information from influencing your game.</p>'}`
+            `<div class="standings-list">${rows || '<p>No players have joined yet.</p>'}</div>${data.requesterComplete ? '' : '<p class="standings-lock">Detailed scores appear after you finish, preventing outside information from influencing your game.</p>'}`
         );
     } catch (error) {
         await customAlert('Could Not Load Standings', error.message);
@@ -516,6 +516,29 @@ function buildResultMediaMarkup(dinoName, media) {
     `;
 }
 
+function buildResultMediaSlotMarkup() {
+    return `
+        <div class="victory-media-slot" aria-live="polite">
+            <div class="victory-media-loading">Loading image…</div>
+        </div>
+    `;
+}
+
+async function hydrateResultMedia(panel, dinoName, mediaPromise) {
+    const slot = panel.querySelector('.victory-media-slot');
+    if (!slot) return;
+
+    const media = await mediaPromise;
+    if (!slot.isConnected) return;
+    if (!media?.url) {
+        slot.remove();
+        return;
+    }
+
+    slot.innerHTML = buildResultMediaMarkup(dinoName, media);
+    bindResultMedia(slot, dinoName, media);
+}
+
 function bindResultMedia(panel, dinoName, media) {
     if (!media?.url) return;
 
@@ -600,7 +623,7 @@ async function giveUp() {
     document.querySelector('.btn-game-hint').disabled = true;
     document.querySelector('.btn-giveup')?.setAttribute('disabled', true);
 
-    const resultMedia = await loadResultMedia(targetDino.nome);
+    const resultMediaPromise = loadResultMedia(targetDino.nome);
 
     const container = document.getElementById('tree-container');
     const v = document.createElement('div');
@@ -614,7 +637,7 @@ async function giveUp() {
         ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · gave up
         </p>
 
-        ${buildResultMediaMarkup(targetDino.nome, resultMedia)}
+        ${buildResultMediaSlotMarkup()}
 
         ${currentGameMode === 'challenge' && currentChallengePlacement ? `
         <div class="race-placement-card">
@@ -636,7 +659,7 @@ async function giveUp() {
     `;
 
     container.insertBefore(v, container.firstChild);
-    bindResultMedia(v, targetDino.nome, resultMedia);
+    hydrateResultMedia(v, targetDino.nome, resultMediaPromise);
     isGiveUpMode = true;
     gameWon = true;
     setTreeAnimationMode('reveal');
@@ -645,16 +668,32 @@ async function giveUp() {
     revealResultPanel(container, v);
 }
 
-async function showVictory() {
-    registerDiscovery(targetDino.nome, currentMuseumProof);
-    if (currentUser && currentGameMode === 'daily') {
-        await clearGameProgress(selectedDifficulty);
+function buildVictoryStreakMarkup(streakData, milestone) {
+    if (!streakData) return '';
+    if (milestone) {
+        return `
+            <div class="streak-celebration" style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid var(--color-warning);">
+            <div class="streak-milestone-title" style="font-size:2.2em; color:var(--color-warning); margin-bottom:12px;">◆ ${milestone} DAY MILESTONE! ◆</div>
+            <div style="font-size:1.1em; color:var(--color-primary); margin-bottom:8px;">Current Streak: ${streakData.current} days</div>
+            <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
+            </div>
+        `;
     }
 
+    return `
+        <div class="streak-celebration" style="margin-top:25px; padding:20px; background:var(--bg-panel); border-radius:8px; border:2px solid var(--color-muted);">
+        <div class="streak-title" style="font-size:1.8em; color:var(--color-warning); margin-bottom:8px;">◆ ${streakData.current} Day Streak</div>
+        <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
+        </div>
+    `;
+}
+
+async function persistVictoryResult() {
     let streakData = null;
     let milestone = null;
 
     if (currentUser && currentGameMode === 'daily') {
+        await clearGameProgress(selectedDifficulty);
         streakData = await updateStreak();
         milestone = checkStreakMilestone(streakData.current);
         await updateStatsAfterGame(true, guesses.length, selectedDifficulty);
@@ -665,6 +704,39 @@ async function showVictory() {
         currentChallengeEliminated = false;
         await refreshCurrentChallengePlacement();
     }
+
+    return { streakData, milestone, placement: currentChallengePlacement };
+}
+
+async function hydrateVictoryMetadata(panel, persistencePromise) {
+    const status = panel.querySelector('.victory-save-status');
+    try {
+        const result = await persistencePromise;
+        const streakSlot = panel.querySelector('.victory-streak-slot');
+        const placementSlot = panel.querySelector('.challenge-placement-slot');
+        if (streakSlot) streakSlot.innerHTML = buildVictoryStreakMarkup(result.streakData, result.milestone);
+        if (placementSlot && result.placement) {
+            placementSlot.innerHTML = `
+                <div class="race-placement-card">
+                    <strong>#${result.placement}</strong>
+                    <span>Your finishing position</span>
+                </div>
+            `;
+        }
+        status?.remove();
+    } catch (error) {
+        console.error('Victory result persistence error:', error);
+        if (status) status.textContent = 'Result saved locally; online statistics will retry on your next visit.';
+    } finally {
+        panel.querySelectorAll('[data-victory-action]').forEach(button => {
+            button.disabled = false;
+        });
+    }
+}
+
+async function showVictory() {
+    registerDiscovery(targetDino.nome, currentMuseumProof);
+    const persistencePromise = persistVictoryResult();
 
     document.getElementById('dino-input').disabled = true;
     document.querySelector('.btn-guess').disabled = true;
@@ -690,34 +762,14 @@ async function showVictory() {
         <div class="challenge-result-note">
             Friend Challenge <strong>${escapeChallengeHtml(currentChallengeCode)}</strong> — Daily statistics not affected
         </div>
-        ${currentChallengePlacement ? `
-        <div class="race-placement-card">
-            <strong>#${currentChallengePlacement}</strong>
-            <span>Your finishing position</span>
-        </div>` : ''}`;
+        <div class="challenge-placement-slot"></div>`;
     }
 
-    let streakHTML = '';
-    if (streakData && currentGameMode === 'daily') {
-        if (milestone) {
-        streakHTML = `
-            <div class="streak-celebration" style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid var(--color-warning);">
-            <div class="streak-milestone-title" style="font-size:2.2em; color:var(--color-warning); margin-bottom:12px;">◆ ${milestone} DAY MILESTONE! ◆</div>
-            <div style="font-size:1.1em; color:var(--color-primary); margin-bottom:8px;">Current Streak: ${streakData.current} days</div>
-            <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
-            </div>
-        `;
-        } else {
-        streakHTML = `
-            <div class="streak-celebration" style="margin-top:25px; padding:20px; background:var(--bg-panel); border-radius:8px; border:2px solid var(--color-muted);">
-            <div class="streak-title" style="font-size:1.8em; color:var(--color-warning); margin-bottom:8px;">◆ ${streakData.current} Day Streak</div>
-            <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
-            </div>
-        `;
-        }
-    }
+    const streakHTML = currentUser && currentGameMode === 'daily'
+        ? '<div class="victory-streak-slot"></div>'
+        : '';
 
-    const resultMedia = await loadResultMedia(targetDino.nome);
+    const resultMediaPromise = loadResultMedia(targetDino.nome);
         v.innerHTML = `
             ${modeHTML}
             <h2>CHALLENGE COMPLETE</h2>
@@ -726,26 +778,26 @@ async function showVictory() {
             ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · ${revealedClades.size} ${revealedClades.size === 1 ? 'clade' : 'clades'} revealed
             </p>
 
-            ${buildResultMediaMarkup(targetDino.nome, resultMedia)}
+            ${buildResultMediaSlotMarkup()}
 
             ${streakHTML}
+            <div class="victory-save-status">Saving result…</div>
 
-            <button class="btn-hint" onclick="shareResult()" id="share-btn" 
+            <button class="btn-hint" data-victory-action onclick="shareResult()" id="share-btn" disabled
                     style="width:100%; padding:15px; font-size:14px; letter-spacing:2px; margin-top:24px; margin-bottom:12px;">
             Share Result
             </button>
             ${currentGameMode === 'challenge' ? `
-            <button class="btn-hint" onclick="showChallengeStandings()" style="width:100%; padding:15px; margin-bottom:12px;">View Standings</button>
-            <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
-            <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+            <button class="btn-hint" data-victory-action onclick="showChallengeStandings()" disabled style="width:100%; padding:15px; margin-bottom:12px;">View Standings</button>
+            <button class="btn-new-game" data-victory-action disabled onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
+            <button class="btn-new-game" data-victory-action disabled onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
             ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
             </button>`}
         `;
 
     container.insertBefore(v, container.firstChild);
-    bindResultMedia(v, targetDino.nome, resultMedia);
-    redrawGameTree();
-    updateCladeInfo();
+    hydrateResultMedia(v, targetDino.nome, resultMediaPromise);
+    hydrateVictoryMetadata(v, persistencePromise);
     revealResultPanel(container, v);
 }
 

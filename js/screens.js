@@ -9,10 +9,12 @@ function escapeChallengeHtml(value) {
 
 async function showDifficultySelection() {
     if (typeof stopChallengeStatusPolling === 'function') stopChallengeStatusPolling();
-    await initializeAnalyticsAccess();
+    const [completionStatus] = await Promise.all([
+        getDailyCompletionStatus(),
+        initializeAnalyticsAccess()
+    ]);
     setHeaderControls('difficulty');
     const appContent = document.getElementById('app-content');
-    const completionStatus = await getDailyCompletionStatus();
     
     appContent.innerHTML = `            
         <div class="game-card" style="text-align:center;">
@@ -59,16 +61,16 @@ function showFriendChallenges(prefilledCode = '') {
     appContent.innerHTML = `
     <div class="game-card friends-hub">
         <div class="friends-heading">
-            <div class="friends-kicker">Shared Field Challenge</div>
+            <div class="friends-kicker">Private Challenge</div>
             <h2>Play with Friends</h2>
-            <p>Create a private challenge or enter a six-character field code. Everyone receives the same hidden dinosaur and plays on their own tree.</p>
+            <p>Create a private challenge or enter a six-character code. Everyone receives the same hidden dinosaur and plays on their own tree.</p>
         </div>
 
         <div class="friends-grid">
             <section class="friend-panel">
                 <h3>Create a Challenge</h3>
                 <label class="friend-label" for="challenge-create-name">Your name</label>
-                <input class="friend-input" id="challenge-create-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="Explorer name">
+                <input class="friend-input" id="challenge-create-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="Player name">
 
                 <label class="friend-label" for="challenge-difficulty">Level</label>
                 <select class="friend-input" id="challenge-difficulty">
@@ -87,9 +89,9 @@ function showFriendChallenges(prefilledCode = '') {
             <section class="friend-panel">
                 <h3>Join a Challenge</h3>
                 <label class="friend-label" for="challenge-join-name">Your name</label>
-                <input class="friend-input" id="challenge-join-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="Explorer name">
+                <input class="friend-input" id="challenge-join-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="Player name">
 
-                <label class="friend-label" for="challenge-code">Field code</label>
+                <label class="friend-label" for="challenge-code">Challenge code</label>
                 <input class="friend-input challenge-code-input" id="challenge-code" maxlength="6" value="${escapeChallengeHtml(code)}" placeholder="RAPTOR" autocomplete="off" autocapitalize="characters" spellcheck="false"
                        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)"
                        onkeydown="if(event.key==='Enter') joinFriendChallenge()">
@@ -98,7 +100,7 @@ function showFriendChallenges(prefilledCode = '') {
             </section>
         </div>
 
-        <p class="friends-note">Codes expire after seven days. Friend challenges unlock Museum specimens, but do not affect Daily streaks or statistics.</p>
+        <p class="friends-note">Codes expire after seven days. Friend challenges can unlock Museum entries, but do not affect Daily streaks or statistics.</p>
     </div>`;
 
     if (code) document.getElementById('challenge-join-name')?.focus();
@@ -108,7 +110,7 @@ async function createFriendChallenge() {
     const nameInput = document.getElementById('challenge-create-name');
     const difficultyInput = document.getElementById('challenge-difficulty');
     const button = document.getElementById('create-challenge-btn');
-    const playerName = nameInput?.value.trim().slice(0, 24) || 'Explorer';
+    const playerName = nameInput?.value.trim().slice(0, 24) || 'Player';
 
     button.disabled = true;
     button.textContent = 'Creating…';
@@ -130,7 +132,7 @@ async function joinFriendChallenge() {
     const nameInput = document.getElementById('challenge-join-name');
     const codeInput = document.getElementById('challenge-code');
     const button = document.getElementById('join-challenge-btn');
-    const playerName = nameInput?.value.trim().slice(0, 24) || 'Explorer';
+    const playerName = nameInput?.value.trim().slice(0, 24) || 'Player';
     const code = codeInput?.value.toUpperCase().replace(/[^A-Z0-9]/g, '') || '';
 
     if (code.length !== 6) {
@@ -229,24 +231,17 @@ async function showStatsDashboard() {
     return;
     }
 
-    const { data: stats } = await sb.from('statistics')
-    .select('*')
-    .eq('user_id', currentUserId)
-    .single();
-
-    const { data: diffStats } = await sb.from('difficulty_stats')
-    .select('*')
-    .eq('user_id', currentUserId);
-
-    const { data: recentGames } = await sb.from('daily_results')
-    .select('*')
-    .eq('user_id', currentUserId)
-    .order('created_at', { ascending: false })
-    .limit(10);
-
-    const { data: achievements } = await sb.from('achievements')
-    .select('achievement_id')
-    .eq('user_id', currentUserId);
+    const [statsResult, diffStatsResult, recentGamesResult, achievementsResult] = await Promise.all([
+        sb.from('statistics').select('*').eq('user_id', currentUserId).single(),
+        sb.from('difficulty_stats').select('*').eq('user_id', currentUserId),
+        sb.from('daily_results').select('*').eq('user_id', currentUserId)
+            .order('created_at', { ascending: false }).limit(10),
+        sb.from('achievements').select('achievement_id').eq('user_id', currentUserId)
+    ]);
+    const stats = statsResult.data;
+    const diffStats = diffStatsResult.data;
+    const recentGames = recentGamesResult.data;
+    const achievements = achievementsResult.data;
 
     const gamesPlayed = stats?.games_played || 0;
     const gamesWon = stats?.games_won || 0;
@@ -315,6 +310,52 @@ function generateStreakDisplay(streakData) {
         <div style="margin-top:20px; color:var(--color-muted); font-size:0.85em; font-style:italic;">Last played: ${streakData.lastPlayed || 'Never'}</div>
     </div>
     `;
+}
+
+let mathRendererPromise = null;
+
+function loadPhylosaurScript(src) {
+    return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) {
+            if (existing.dataset.loaded === 'true') resolve();
+            else {
+                existing.addEventListener('load', resolve, { once: true });
+                existing.addEventListener('error', reject, { once: true });
+            }
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = src;
+        script.addEventListener('load', () => {
+            script.dataset.loaded = 'true';
+            resolve();
+        }, { once: true });
+        script.addEventListener('error', reject, { once: true });
+        document.head.appendChild(script);
+    });
+}
+
+function ensureMathRenderer() {
+    if (window.renderMathInElement) return Promise.resolve();
+    if (mathRendererPromise) return mathRendererPromise;
+
+    if (!document.querySelector('link[data-phylosaur-katex]')) {
+        const stylesheet = document.createElement('link');
+        stylesheet.rel = 'stylesheet';
+        stylesheet.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css';
+        stylesheet.dataset.phylosaurKatex = 'true';
+        document.head.appendChild(stylesheet);
+    }
+
+    mathRendererPromise = loadPhylosaurScript('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js')
+        .then(() => loadPhylosaurScript('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js'))
+        .catch(error => {
+            mathRendererPromise = null;
+            throw error;
+        });
+    return mathRendererPromise;
 }
 
 function showAbout() {
@@ -581,17 +622,17 @@ function showAbout() {
         </button>
     </div>
     `;
-    setTimeout(() => {
-    if (window.renderMathInElement) {
-        renderMathInElement(document.querySelector('.game-card'), {
-        delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$', right: '$', display: false }
-        ],
-        throwOnError: false
+    const aboutCard = appContent.querySelector('.game-card');
+    ensureMathRenderer().then(() => {
+        if (!aboutCard?.isConnected || !window.renderMathInElement) return;
+        renderMathInElement(aboutCard, {
+            delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
         });
-    }
-    }, 50);
+    }).catch(error => console.warn('Math renderer could not be loaded:', error));
 }
 
 async function showHowToPlay() {
@@ -599,7 +640,7 @@ async function showHowToPlay() {
     title: 'How to Play',
     message: `
         <div style="text-align:left; line-height:2;">
-        <p style="margin-bottom:16px;">A mystery dinosaur is hidden each day. Your goal is to identify it through phylogenetic reasoning.</p>
+        <p style="margin-bottom:16px;">A mystery dinosaur is hidden each day. Your goal is to identify it using the clues revealed by each guess.</p>
         
         <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
             <strong style="color:var(--color-primary);">1. Guess a genus</strong><br>
@@ -651,7 +692,7 @@ let tutorialPreviousBodyOverflow = '';
 
 const INTERACTIVE_TUTORIAL_STEPS = [
     {
-        kicker: 'Welcome, Explorer',
+        kicker: 'How Phylosaur Works',
         title: 'Find the hidden dinosaur',
         copy: 'Phylosaur is a deduction game. Every guess teaches you where the mystery genus belongs on the evolutionary tree.',
         visual: `
@@ -700,7 +741,7 @@ const INTERACTIVE_TUTORIAL_STEPS = [
     },
     {
         kicker: 'Step 3',
-        title: 'Use hints with intention',
+        title: 'Using hints',
         copy: 'A hint reveals the next clade in the hidden lineage. You have three, and must make two guesses before requesting another.',
         visual: `
             <div class="tutorial-hint-demo">
@@ -710,7 +751,7 @@ const INTERACTIVE_TUTORIAL_STEPS = [
         `
     },
     {
-        kicker: 'You Are Ready',
+        kicker: 'Choose a Level',
         title: 'Begin with Level I',
         copy: 'Daily levels share the same rules but use different pools of dinosaurs. Start familiar, then work toward the obscure taxa in Level V.',
         visual: `
@@ -1056,8 +1097,8 @@ function formatMuseumDiscoveryDate(value) {
 function getMuseumDiscoverySummary(record) {
     if (!record) {
         return {
-            firstLabel: 'Discovery date unavailable',
-            countLabel: 'Discovered once',
+            firstLabel: 'Unlock date unavailable',
+            countLabel: 'Unlocked once',
             lastLabel: ''
         };
     }
@@ -1065,18 +1106,18 @@ function getMuseumDiscoverySummary(record) {
     const firstDate = formatMuseumDiscoveryDate(record.firstDiscoveredAt);
     const lastDate = formatMuseumDiscoveryDate(record.lastDiscoveredAt);
     const firstLabel = record.firstDateUnknown
-        ? 'Discovered before date tracking'
+        ? 'Unlocked before date tracking'
         : firstDate
-            ? `First discovered ${firstDate}`
-            : 'Discovery date unavailable';
+            ? `First unlocked ${firstDate}`
+            : 'Unlock date unavailable';
 
     return {
         firstLabel,
         countLabel: record.count === 1
-            ? 'Discovered once'
-            : `Discovered ${record.count} times`,
+            ? 'Unlocked once'
+            : `Unlocked ${record.count} times`,
         lastLabel: record.count > 1 && lastDate
-            ? `Most recently ${lastDate}`
+            ? `Last unlocked ${lastDate}`
             : ''
     };
 }
@@ -1225,7 +1266,7 @@ async function showMuseumEntry(name) {
         <button class="museum-entry-close" type="button" onclick="closeMuseumEntry()" aria-label="Close">×</button>
 
         <header class="museum-entry-header">
-            <div class="museum-entry-kicker">Museum record</div>
+            <div class="museum-entry-kicker">Museum entry</div>
             <h2>${name}</h2>
             <div class="museum-entry-meta">
                 ${levelNames[dino.dificuldade] || dino.dificuldade}
@@ -1417,7 +1458,7 @@ function analyticsLabel(value) {
         muito_facil: 'Level I', facil: 'Level II', normal: 'Level III',
         dificil: 'Level IV', muito_dificil: 'Level V',
         challenge_created: 'Challenge created', challenge_joined: 'Challenge joined',
-        museum_opened: 'Museum specimen viewed', game_started: 'Game started',
+        museum_opened: 'Museum entry viewed', game_started: 'Game started',
         game_won: 'Game won', game_gave_up: 'Game abandoned', hint_used: 'Hint used'
     };
     return labels[value] || String(value || 'Unknown');
@@ -1489,7 +1530,7 @@ async function showAnalyticsDashboard(days = 30) {
     <div class="game-card analytics-dashboard">
         <div class="analytics-header">
             <div>
-                <div class="friends-kicker">Private Observatory</div>
+                <div class="friends-kicker">Private Analytics</div>
                 <h2>Phylosaur Analytics</h2>
                 <p>Aggregated usage only. No emails, usernames, IP addresses or fingerprints are displayed.</p>
             </div>

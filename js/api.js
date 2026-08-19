@@ -1,6 +1,37 @@
 // ═══════════════════════════════════════════════
 // WIKIPEDIA & WIKIMEDIA API
 // ═══════════════════════════════════════════════
+const wikipediaInfoCache = new Map();
+const wikimediaImageCache = new Map();
+window.phylosaurPerformance = window.phylosaurPerformance || [];
+
+function recordGameApiPerformance(action, durationMs, ok) {
+  const entry = {
+    action,
+    durationMs: Math.round(durationMs),
+    ok,
+    recordedAt: new Date().toISOString()
+  };
+  window.phylosaurPerformance.push(entry);
+  if (window.phylosaurPerformance.length > 100) window.phylosaurPerformance.shift();
+  console.debug(`[Phylosaur performance] ${action}: ${entry.durationMs} ms${ok ? '' : ' (failed)'}`);
+}
+
+window.getPhylosaurPerformanceSummary = function() {
+  const groups = new Map();
+  window.phylosaurPerformance.forEach(entry => {
+    if (!groups.has(entry.action)) groups.set(entry.action, []);
+    groups.get(entry.action).push(entry.durationMs);
+  });
+  return Array.from(groups, ([action, durations]) => ({
+    action,
+    requests: durations.length,
+    averageMs: Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length),
+    fastestMs: Math.min(...durations),
+    slowestMs: Math.max(...durations)
+  }));
+};
+
 function getAnalyticsVisitorId() {
   const storageKey = 'phylosaur-visitor-id';
   let visitorId = localStorage.getItem(storageKey);
@@ -22,6 +53,7 @@ function getAnalyticsVisitorId() {
 }
 
 async function callGameApi(action, payload = {}) {
+  const requestStartedAt = performance.now();
   const { data: { session } } = await sb.auth.getSession();
   const accessToken = session?.access_token || SUPABASE_ANON_KEY;
 
@@ -42,6 +74,8 @@ async function callGameApi(action, payload = {}) {
     data = { ok: false, error: 'The game server returned an invalid response.' };
   }
 
+  recordGameApiPerformance(action, performance.now() - requestStartedAt, response.ok && data?.ok);
+
   if (!response.ok || !data?.ok) {
     const apiError = new Error(data?.error || 'The game server is unavailable.');
     apiError.status = response.status;
@@ -53,6 +87,7 @@ async function callGameApi(action, payload = {}) {
 }
 
 async function initializeAnalyticsAccess() {
+  if (analyticsAccessChecked) return isAnalyticsAdmin;
   analyticsAccessChecked = true;
   if (!currentUserId) {
     isAnalyticsAdmin = false;
@@ -95,7 +130,12 @@ function getChallengeSessionStorageKey(code) {
 }
 
 async function fetchWikipediaInfo(cladeName) {
-  try {
+  const cacheKey = String(cladeName || '').trim().toLowerCase();
+  if (!cacheKey) return null;
+  if (wikipediaInfoCache.has(cacheKey)) return wikipediaInfoCache.get(cacheKey);
+
+  const request = (async () => {
+    try {
     const searchRes = await fetch(
       `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cladeName)}&format=json&origin=*`
     );
@@ -119,14 +159,24 @@ async function fetchWikipediaInfo(cladeName) {
       image: page.thumbnail?.source || null,
       description: page.extract || null
     };
-  } catch (e) {
-    console.error('Wiki info error:', e);
-    return null;
-  }
+    } catch (e) {
+      console.error('Wiki info error:', e);
+      wikipediaInfoCache.delete(cacheKey);
+      return null;
+    }
+  })();
+
+  wikipediaInfoCache.set(cacheKey, request);
+  return request;
 }
 
 async function fetchWikimediaImage(taxonName) {
-  try {
+  const cacheKey = String(taxonName || '').trim().toLowerCase();
+  if (!cacheKey) return null;
+  if (wikimediaImageCache.has(cacheKey)) return wikimediaImageCache.get(cacheKey);
+
+  const request = (async () => {
+    try {
     const fileName = `${taxonName} TD.png`;
     const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=File:${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
     const res = await fetch(url);
@@ -135,8 +185,13 @@ async function fetchWikimediaImage(taxonName) {
     const page = pages[Object.keys(pages)[0]];
     if (page['-1']) return null;
     return page?.imageinfo?.[0]?.url || null;
-  } catch (e) {
-    console.error('Wikimedia image error:', e);
-    return null;
-  }
+    } catch (e) {
+      console.error('Wikimedia image error:', e);
+      wikimediaImageCache.delete(cacheKey);
+      return null;
+    }
+  })();
+
+  wikimediaImageCache.set(cacheKey, request);
+  return request;
 }

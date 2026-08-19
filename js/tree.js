@@ -293,16 +293,20 @@ function renderTreeModel(nodes, leaves, animation = {}) {
   nodes.forEach((data, clade) => {
     data.children.forEach(child => parentMap.set(child, clade));
   });
+  const hiddenNodeCache = new Map();
 
   function isNodeHidden(nodeName) {
+    if (hiddenNodeCache.has(nodeName)) return hiddenNodeCache.get(nodeName);
     let current = nodeName;
     while (current && current !== 'Dinosauria') {
       let parent = parentMap.get(current);
       if (parent && window.collapsedClades.has(parent)) {
+        hiddenNodeCache.set(nodeName, true);
         return true;
       }
       current = parent;
     }
+    hiddenNodeCache.set(nodeName, false);
     return false;
   }
 
@@ -322,6 +326,13 @@ function renderTreeModel(nodes, leaves, animation = {}) {
 
   const visibleLeaves = leaves.filter(leaf => {
     return !isNodeHidden(leaf.parentNode) && !window.collapsedClades.has(leaf.parentNode);
+  });
+  const visibleLeavesByParent = new Map();
+  visibleLeaves.forEach(leaf => {
+    if (!visibleLeavesByParent.has(leaf.parentNode)) {
+      visibleLeavesByParent.set(leaf.parentNode, []);
+    }
+    visibleLeavesByParent.get(leaf.parentNode).push(leaf);
   });
 
   const bestPathNodeKeys = new Set();
@@ -380,15 +391,18 @@ function renderTreeModel(nodes, leaves, animation = {}) {
   const leafPositions = new Map();
   const startY = 60;
   
+  const slotCountCache = new Map();
   function countSlots(clade) {
+    if (slotCountCache.has(clade)) return slotCountCache.get(clade);
     const nd = nodes.get(clade);
     if (!nd) return 1;
     
-    const dl = visibleLeaves.filter(l => l.parentNode === clade).length;
+    const dl = (visibleLeavesByParent.get(clade) || []).length;
     let cs = 0;
     nd.children.forEach(ch => { cs += countSlots(ch); });
-    
-    return Math.max(1, dl + cs);
+    const total = Math.max(1, dl + cs);
+    slotCountCache.set(clade, total);
+    return total;
   }
   
   const totalSlots = countSlots('Dinosauria');
@@ -403,7 +417,7 @@ function renderTreeModel(nodes, leaves, animation = {}) {
     const intChildren = nd.children.slice().sort((a, b) => 
       nodes.get(a).lineageIndex - nodes.get(b).lineageIndex
     );
-    const dirLeaves = visibleLeaves.filter(l => l.parentNode === clade);
+    const dirLeaves = visibleLeavesByParent.get(clade) || [];
     
     const slots =[];
     intChildren.forEach(ch => slots.push({ 

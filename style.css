@@ -1285,6 +1285,32 @@ body:not(.light-mode) .tree-node-group:hover rect {
   margin: 24px auto 0;
 }
 
+.victory-media-loading,
+.victory-save-status {
+  margin: 18px auto 0;
+  color: var(--color-muted);
+  font-size: 0.76em;
+  font-style: italic;
+  letter-spacing: 0.8px;
+}
+
+.victory-media-loading::after {
+  content: '';
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-left: 8px;
+  vertical-align: -1px;
+  border: 2px solid var(--border-inner);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: resultMediaSpin 0.8s linear infinite;
+}
+
+@keyframes resultMediaSpin {
+  to { transform: rotate(360deg); }
+}
+
 .victory-media-image {
   display: block;
   width: 100%;

@@ -6,26 +6,23 @@ async function initializeUserSystem() {
   
   if (session) {
     currentUserId = session.user.id;
-    
-    const { data: profile } = await sb.from('profiles')
-      .select('username')
-      .eq('id', currentUserId)
-      .single();
+    analyticsAccessChecked = false;
+    const [profileResult, statsResult] = await Promise.all([
+      sb.from('profiles').select('username').eq('id', currentUserId).single(),
+      sb.from('statistics').select('*').eq('user_id', currentUserId).single()
+    ]);
+    const profile = profileResult.data;
+    const stats = statsResult.data;
     
     if (profile) {
       currentUser = profile.username;
-      
-      const { data: stats } = await sb.from('statistics')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .single();
-      
-      if (stats) {
-        userStats.gamesPlayed = stats.games_played;
-        userStats.gamesWon = stats.games_won;
-        userStats.totalGuesses = stats.total_guesses;
-        userStats.bestScore = stats.best_score;
-      }
+    }
+
+    if (stats) {
+      userStats.gamesPlayed = stats.games_played;
+      userStats.gamesWon = stats.games_won;
+      userStats.totalGuesses = stats.total_guesses;
+      userStats.bestScore = stats.best_score;
     }
   }
 }
@@ -249,6 +246,7 @@ async function handleSignInModal() {
 
   currentUser   = profile?.username || email.split('@')[0];
   currentUserId = data.user.id;
+  analyticsAccessChecked = false;
   await initUserStatsRow();
 
   closeLoginModal();
@@ -386,6 +384,7 @@ async function handleSignIn() {
 
   currentUser   = profile?.username || email.split('@')[0];
   currentUserId = data.user.id;
+  analyticsAccessChecked = false;
   await initUserStatsRow();
 
   document.removeEventListener('keydown', loginEnterHandler);
@@ -446,6 +445,9 @@ async function handleReset() {
 
 function continueAsGuest() {
   currentUser = null;
+  currentUserId = null;
+  isAnalyticsAdmin = false;
+  analyticsAccessChecked = true;
   showDifficultySelection();
 }
 
@@ -462,6 +464,8 @@ async function logout() {
     localStorage.removeItem('phylosaur-discoveries');
     currentUser = null;
     currentUserId = null;
+    isAnalyticsAdmin = false;
+    analyticsAccessChecked = true;
     userStats = {
       gamesPlayed: 0,
       gamesWon: 0,

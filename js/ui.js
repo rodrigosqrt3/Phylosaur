@@ -366,7 +366,7 @@ async function updateCladeInfo() {
     
     html += `</div>`;
 
-    html += `<div class="phylo-path"><h4>Revealed Phylogenetic Path to Mystery Taxon:</h4>`;
+    html += `<div class="phylo-path"><h4>Revealed path to the target:</h4>`;
     const visiblePath = Array.from(revealedClades);
     for (const clade of visiblePath) {
     html += `
