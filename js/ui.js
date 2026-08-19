@@ -20,7 +20,7 @@ function setHeaderControls(screen) {
       : '';
 
     const logoutBtn = currentUser 
-      ? `<button class="btn-hint btn-header" onclick="logout()">${currentUser}</button>` 
+      ? `<button class="btn-hint btn-header btn-account" onclick="logout()" title="Sign out: ${currentUser}">${currentUser}</button>` 
       : '';
 
     const backBtn = `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Levels</button>`;
@@ -49,11 +49,17 @@ function showModal(options) {
     return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
+    overlay.dataset.appModal = 'true';
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', options.title || 'Dialog');
     
     const box = document.createElement('div');
     box.className = 'modal-box';
+    box.tabIndex = -1;
+
+    const previouslyFocused = document.activeElement;
+    const previousBodyOverflow = document.body.style.overflow;
     
     let html = '';
     
@@ -94,6 +100,7 @@ function showModal(options) {
     box.innerHTML = html;
     overlay.appendChild(box);
     document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
 
     let closed = false;
     let keyHandlerAttached = false;
@@ -106,13 +113,37 @@ function showModal(options) {
             document.removeEventListener('keydown', modalKeyHandler, true);
         }
         overlay.remove();
+        document.body.style.overflow = previousBodyOverflow;
+        if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+            previouslyFocused.focus();
+        }
         resolve(result);
     };
 
     const modalKeyHandler = event => {
         const buttons = box.querySelectorAll('.modal-btn');
 
-        if (event.key === 'Enter' && buttons.length === 1) {
+        if (event.key === 'Tab') {
+            const focusable = Array.from(box.querySelectorAll(
+                'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            ));
+
+            if (!focusable.length) {
+                event.preventDefault();
+                box.focus();
+                return;
+            }
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        } else if (event.key === 'Enter' && buttons.length === 1) {
             event.preventDefault();
             event.stopPropagation();
             closeModal(buttons[0].getAttribute('data-result'));
@@ -128,6 +159,9 @@ function showModal(options) {
         if (closed) return;
         document.addEventListener('keydown', modalKeyHandler, true);
         keyHandlerAttached = true;
+        const firstButton = box.querySelector('.modal-btn');
+        if (firstButton) firstButton.focus();
+        else box.focus();
     }, 0);
     
     box.querySelectorAll('.modal-btn').forEach(btn => {
@@ -164,7 +198,13 @@ function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
 }
 
 function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
+    const previouslyFocused = document.activeElement;
+    const previousBodyOverflow = document.body.style.overflow;
     const overlay = document.createElement('div');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', `${name} image viewer`);
+    overlay.tabIndex = -1;
     overlay.style.cssText = `
     position:fixed; top:0; left:0; right:0; bottom:0;
     background:rgba(0,0,0,0.92); z-index:99999;
@@ -181,7 +221,7 @@ function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
 
     overlay.innerHTML = `
     <img src="${url}" alt="${name}"
-        style="max-width:90vw; max-height:80vh; border-radius:8px;
+        style="max-width:90vw; max-height:min(80vh, calc(100dvh - 150px)); border-radius:8px;
                 border:2px solid var(--border-subtle); box-shadow:0 8px 40px rgba(0,0,0,0.8);" />
     <div style="margin-top:16px; font-family:Georgia,serif; font-style:italic;
                 color:var(--color-accent); font-size:1.1em; letter-spacing:1px;">${name}</div>
@@ -196,8 +236,28 @@ function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
     overlay.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', event => event.stopPropagation());
     });
-    overlay.onclick = () => overlay.remove();
+
+    const closeLightbox = () => {
+        document.removeEventListener('keydown', lightboxKeyHandler, true);
+        overlay.remove();
+        document.body.style.overflow = previousBodyOverflow;
+        if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+            previouslyFocused.focus();
+        }
+    };
+
+    const lightboxKeyHandler = event => {
+        if (event.key !== 'Escape') return;
+        event.preventDefault();
+        event.stopPropagation();
+        closeLightbox();
+    };
+
+    overlay.onclick = closeLightbox;
     document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', lightboxKeyHandler, true);
+    overlay.focus();
 }
 
 async function showCladeInfo(cladeName) {
@@ -318,11 +378,6 @@ function updateGuessHistory() {
 
     if (!historyDiv) return;
     
-    if (guesses.length === 0 && hintHistory.length === 0) {
-    historyDiv.innerHTML = '';
-    return;
-    }
-
     if (guesses.length === 0 && hintHistory.length === 0) {
     historyDiv.innerHTML = '';
     return;

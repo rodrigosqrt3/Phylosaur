@@ -79,22 +79,7 @@ function initTreePanning() {
     container.scrollTop  = scrollTop  - (y - startY);
   });
 
-  container.addEventListener('touchstart', e => {
-    if (e.touches.length === 1) {
-      startX = e.touches[0].pageX;
-      startY = e.touches[0].pageY;
-      scrollLeft = container.scrollLeft;
-      scrollTop  = container.scrollTop;
-    }
-  }, { passive: true });
-
-  container.addEventListener('touchmove', e => {
-    if (e.touches.length !== 1) return;
-    const x = e.touches[0].pageX;
-    const y = e.touches[0].pageY;
-    container.scrollLeft = scrollLeft - (x - startX);
-    container.scrollTop  = scrollTop  - (y - startY);
-  }, { passive: true });
+  // Touch devices use the container's native momentum scrolling.
 }
 
 function renderCurrentGameTree() {

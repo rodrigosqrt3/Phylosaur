@@ -995,7 +995,11 @@ async function showMuseum() {
                     museumDiscoveryRecords[dino.nome.toLowerCase()]
                 );
                 html += `
-                    <div class="museum-card unlocked" onclick="showMuseumEntry('${dino.nome}')" style="cursor:pointer;">
+                    <div class="museum-card unlocked" role="button" tabindex="0"
+                         aria-label="Open museum entry for ${dino.nome}"
+                         onclick="showMuseumEntry('${dino.nome}')"
+                         onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); showMuseumEntry('${dino.nome}'); }"
+                         style="cursor:pointer;">
                         <div class="museum-card-art-container">
                             <img class="museum-card-art" id="art-${dino.nome.replace(/\s+/g, '')}" src="dinosaur-footprint-1-svgrepo-com.svg" alt="${dino.nome}" />
                         </div>

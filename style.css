@@ -212,6 +212,7 @@ body {
     repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px),
     repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
   min-height: 100vh;
+  min-height: 100dvh;
   padding: 20px;
   color: var(--color-text-light);
   transition: all 0.3s ease;
@@ -755,6 +756,13 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
 #suggestions {
   position: absolute;
   top: 100%;
@@ -984,6 +992,8 @@ button:disabled {
     0 4px 12px rgba(0,0,0,0.6);
   transition: all 0.3s ease;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
   cursor: grab;
 }
 
@@ -1443,6 +1453,7 @@ min-width: 100%;
   z-index: 10000;
   animation: fadeIn 0.2s ease;
   backdrop-filter: blur(4px);
+  padding: 12px;
 }
 
 .modal-box {
@@ -1458,6 +1469,7 @@ min-width: 100%;
   animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   max-height: 85vh;
+  max-height: calc(100dvh - 24px);
   overflow-y: auto;
 }
 
@@ -1503,6 +1515,7 @@ min-width: 100%;
 
 .modal-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
   justify-content: center;
   margin-top: 25px;
@@ -1877,7 +1890,7 @@ min-width: 100%;
     align-items: center;
     justify-content: center;
     width: 44px;
-    height: 24px;
+    height: 44px;
     position: relative;
 }
 
@@ -1922,7 +1935,7 @@ body.light-mode .theme-switch-thumb {
    ═══════════════════════════════════════════════════════════════════════ */
 .museum-progress-container {
     background: var(--bg-panel);
-    border: 2px solid var(--border-panel);
+    border: 2px solid var(--border-base);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 24px;
@@ -1969,6 +1982,11 @@ body.light-mode .theme-switch-thumb {
 .museum-card.unlocked:hover {
     transform: translateY(-2px);
     border-color: var(--color-accent);
+}
+
+.museum-card.unlocked:focus-visible {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
 }
 
 .museum-card-art-container {
@@ -2102,8 +2120,8 @@ body.light-mode .museum-card.unlocked:hover {
     z-index: 2;
     top: 13px;
     right: 16px;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     color: var(--color-secondary);
     background: var(--bg-panel-darker);
@@ -2331,6 +2349,7 @@ body.light-mode .museum-card.unlocked:hover {
     justify-content: center;
     padding: 28px;
     background: rgba(0, 0, 0, 0.96);
+    overflow-y: auto;
 }
 
 .museum-image-viewer img {
@@ -2369,6 +2388,7 @@ body.light-mode .museum-entry-overlay {
     .museum-entry-dialog {
         width: 100%;
         max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
         padding: 28px 18px;
     }
 
@@ -2398,6 +2418,12 @@ body.light-mode .museum-entry-overlay {
     }
 }
 
+@media (max-width: 380px) {
+    .museum-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 .museum-tabs {
     grid-template-columns: repeat(5, 1fr) !important; /* Aligns all 5 levels in one row on desktop */
     margin: 0 0 24px !important; /* Resets the login modal's negative margins */
@@ -2414,6 +2440,123 @@ body.light-mode .museum-entry-overlay {
     .museum-tabs {
         grid-template-columns: repeat(2, 1fr) !important; /* Stacks cleanly on phones */
         font-size: 0.8em !important;
+    }
+}
+
+/* Small-screen usability refinements */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    header {
+        margin-bottom: 20px;
+        padding: 24px 14px;
+    }
+
+    .game-card {
+        padding: 18px;
+    }
+
+    #header-controls {
+        justify-content: center;
+    }
+
+    #header-controls button:not(.theme-switch),
+    .guess-secondary-row button {
+        min-height: 44px;
+    }
+
+    #header-controls .btn-account {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .stat-label {
+        font-size: clamp(0.7rem, 3vw, 0.78rem) !important;
+        letter-spacing: 0.6px !important;
+    }
+
+    #tree-container {
+        padding: 12px;
+        max-height: 65vh;
+        max-height: 65dvh;
+    }
+
+    .tree-legend {
+        grid-template-columns: 1fr;
+    }
+
+    .guess-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        overflow-wrap: anywhere;
+    }
+
+    .guess-match {
+        align-self: flex-end;
+        text-align: right;
+    }
+
+    .modal-box {
+        width: 100%;
+        padding: 24px 18px;
+    }
+
+    .modal-title {
+        font-size: clamp(1.25rem, 7vw, 1.65rem);
+        letter-spacing: 1.5px;
+        overflow-wrap: anywhere;
+    }
+
+    .modal-message {
+        font-size: 1em;
+        line-height: 1.6;
+    }
+
+    .modal-info-item {
+        flex-wrap: wrap;
+        gap: 4px 12px;
+    }
+
+    .modal-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .modal-btn {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 420px) {
+    body {
+        padding: 6px;
+    }
+
+    header {
+        padding: 18px 10px;
+    }
+
+    .game-card {
+        padding: 14px;
+    }
+
+    .difficulty-btn {
+        flex-basis: 100% !important;
+        padding: 22px 16px !important;
+    }
+
+    .museum-entry-dialog {
+        padding: 24px 12px;
+    }
+
+    .museum-entry-header {
+        margin: 10px 34px 22px 10px;
     }
 }
 

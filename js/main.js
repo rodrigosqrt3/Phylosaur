@@ -1,5 +1,19 @@
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+let lastTreeViewportWidth = window.innerWidth;
+let treeResizeTimer = null;
+
+window.addEventListener('resize', () => {
+  const nextWidth = window.innerWidth;
+  if (nextWidth === lastTreeViewportWidth) return;
+  lastTreeViewportWidth = nextWidth;
+
+  clearTimeout(treeResizeTimer);
+  treeResizeTimer = setTimeout(() => {
+    if (document.getElementById('tree-svg')) renderCurrentGameTree();
+  }, 150);
+});
+
 document.addEventListener('DOMContentLoaded', async function() {
   const savedTheme = localStorage.getItem('phylosaur-theme');
   if (savedTheme === 'light') toggleTheme();

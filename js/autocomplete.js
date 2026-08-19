@@ -7,11 +7,33 @@ function initializeAutocomplete() {
   
   if (!input || !sugDiv) return;
 
+  input.setAttribute('role', 'combobox');
+  input.setAttribute('aria-autocomplete', 'list');
+  input.setAttribute('aria-controls', 'suggestions');
+  input.setAttribute('aria-expanded', 'false');
+  sugDiv.setAttribute('role', 'listbox');
+
+  const hideSuggestions = () => {
+    sugDiv.style.display = 'none';
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+    sugDiv.querySelector('.suggestion-item.highlighted')?.classList.remove('highlighted');
+  };
+
+  const highlightSuggestion = item => {
+    sugDiv.querySelectorAll('.suggestion-item').forEach(suggestion => {
+      suggestion.classList.toggle('highlighted', suggestion === item);
+      suggestion.setAttribute('aria-selected', suggestion === item ? 'true' : 'false');
+    });
+    input.setAttribute('aria-activedescendant', item.id);
+    input.value = item.textContent.trim();
+  };
+
   input.addEventListener('input', function() {
     const text = this.value.toLowerCase().trim();
     
     if (text.length < 2) {
-      sugDiv.style.display = 'none';
+      hideSuggestions();
       return;
     }
     
@@ -23,15 +45,16 @@ function initializeAutocomplete() {
       .slice(0, 8);
     
     if (!matches.length) {
-      sugDiv.style.display = 'none';
+      hideSuggestions();
       return;
     }
     
     sugDiv.innerHTML = matches
-      .map(d => `<div class="suggestion-item" onclick="selectSuggestion('${d.nome}')">${d.nome}</div>`)
+      .map((d, index) => `<div class="suggestion-item" id="dino-suggestion-${index}" role="option" aria-selected="false" onclick="selectSuggestion('${d.nome}')">${d.nome}</div>`)
       .join('');
     
     sugDiv.style.display = 'block';
+    input.setAttribute('aria-expanded', 'true');
   });
 
   input.addEventListener('keydown', e => {
@@ -42,44 +65,46 @@ function initializeAutocomplete() {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (sugDiv.style.display === 'none' || items.length === 0) return;
-      if (current) current.classList.remove('highlighted');
       const next = items[currentIndex + 1] || items[0];
-      next.classList.add('highlighted');
-      input.value = next.textContent.trim();
+      highlightSuggestion(next);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (sugDiv.style.display === 'none' || items.length === 0) return;
-      if (current) current.classList.remove('highlighted');
       const prev = items[currentIndex - 1] || items[items.length - 1];
-      prev.classList.add('highlighted');
-      input.value = prev.textContent.trim();
+      highlightSuggestion(prev);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (document.querySelector('.modal-overlay')) return;
 
       if (current) {
         input.value = current.textContent.trim();
-        sugDiv.style.display = 'none';
-        current.classList.remove('highlighted');
+        hideSuggestions();
       } else {
         makeGuess();
       }
     } else if (e.key === 'Tab') {
-      e.preventDefault();
       const first = sugDiv.querySelector('.suggestion-item');
-      if (first) {
+      if (sugDiv.style.display !== 'none' && first) {
+        e.preventDefault();
         input.value = first.textContent.trim();
-        sugDiv.style.display = 'none';
+        hideSuggestions();
       }
     } else if (e.key === 'Escape') {
-      sugDiv.style.display = 'none';
-      if (current) current.classList.remove('highlighted');
+      hideSuggestions();
     }
   });
-  
-  document.addEventListener('click', e => {
-    if (e.target !== input) sugDiv.style.display = 'none';
-  });
+
+  if (window.phylosaurAutocompleteCleanup) {
+    window.phylosaurAutocompleteCleanup();
+  }
+
+  const outsideClickHandler = e => {
+    if (e.target !== input && !sugDiv.contains(e.target)) hideSuggestions();
+  };
+  document.addEventListener('click', outsideClickHandler);
+  window.phylosaurAutocompleteCleanup = () => {
+    document.removeEventListener('click', outsideClickHandler);
+  };
 }
 
 function selectSuggestion(name) {
@@ -89,6 +114,8 @@ function selectSuggestion(name) {
   if (input && sugDiv) {
     input.value = name;
     sugDiv.style.display = 'none';
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
     input.focus();
   }
 }

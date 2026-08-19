@@ -148,12 +148,12 @@ function setGuessRequestPending(pending) {
 }
 
 async function makeGuess() {
-    if (gameWon) return;
+    if (gameWon || document.querySelector('[data-app-modal="true"]')) return;
     await makeServerGuess();
 }
 
 async function makeServerGuess() {
-    if (gameRequestPending) return;
+    if (gameRequestPending || document.querySelector('[data-app-modal="true"]')) return;
 
     const input = document.getElementById('dino-input');
     const guessName = input?.value.trim() || '';
@@ -214,6 +214,10 @@ async function makeServerGuess() {
         if (input) input.value = '';
         const suggestions = document.getElementById('suggestions');
         if (suggestions) suggestions.style.display = 'none';
+        if (input) {
+            input.setAttribute('aria-expanded', 'false');
+            input.removeAttribute('aria-activedescendant');
+        }
 
         if (data.won) await showVictory();
     } catch (error) {
