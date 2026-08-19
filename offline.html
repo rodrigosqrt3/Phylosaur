@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2d2318">
+  <title>Phylosaur — Offline</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: #f8f6f3;
+      background: #1f1812;
+      font-family: Georgia, serif;
+      text-align: center;
+    }
+    main {
+      width: min(520px, 100%);
+      padding: 38px 28px;
+      background: #2c2318;
+      border: 2px solid #4a3829;
+      border-radius: 8px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
+    }
+    img { width: 112px; height: 112px; border-radius: 24px; }
+    h1 { margin: 22px 0 12px; color: #d4b87e; }
+    p { margin: 0 0 26px; color: #a68a5a; line-height: 1.7; }
+    button {
+      min-height: 48px;
+      padding: 12px 24px;
+      color: #1a1410;
+      background: #c9a96e;
+      border: 2px solid #8b7355;
+      border-radius: 4px;
+      font: 600 14px Georgia, serif;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="pwa-icon-192.png" alt="Phylosaur footprint">
+    <h1>The trail went offline</h1>
+    <p>Phylosaur needs an internet connection to create and validate challenges. Reconnect and try again.</p>
+    <button type="button" onclick="window.location.reload()">Try again</button>
+  </main>
+</body>
+</html>
