@@ -3419,11 +3419,44 @@ body.light-mode .stat-label {
   border-radius: 7px;
 }
 
-.tutorial-welcome-mark {
-  color: var(--color-primary);
-  font-size: 5em;
-  line-height: 1;
-  text-shadow: 0 0 22px var(--color-accent-subtle);
+.tutorial-welcome-tree {
+  display: block;
+  width: min(300px, 88%);
+  overflow: visible;
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.24));
+}
+
+.tutorial-welcome-branch {
+  fill: none;
+  stroke: var(--tree-line-revealed);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tutorial-welcome-node {
+  fill: var(--bg-inset);
+  stroke: var(--tree-circle-guess-stroke);
+  stroke-width: 3;
+}
+
+.tutorial-welcome-node.is-target {
+  fill: var(--tree-target-bg);
+  stroke: var(--tree-target-border);
+  stroke-width: 4;
+}
+
+.tutorial-welcome-root {
+  fill: var(--tree-circle-revealed-fill);
+  stroke: var(--tree-circle-revealed-stroke);
+  stroke-width: 3;
+}
+
+.tutorial-welcome-question {
+  fill: var(--color-text-light);
+  font: 700 20px Georgia, serif;
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .tutorial-welcome-line {

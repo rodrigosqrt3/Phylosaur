@@ -655,7 +655,15 @@ const INTERACTIVE_TUTORIAL_STEPS = [
         title: 'Find the hidden dinosaur',
         copy: 'Phylosaur is a deduction game. Every guess teaches you where the mystery genus belongs on the evolutionary tree.',
         visual: `
-            <div class="tutorial-welcome-mark" aria-hidden="true">◆</div>
+            <svg class="tutorial-welcome-tree" viewBox="0 0 280 150" aria-hidden="true">
+                <path class="tutorial-welcome-branch" d="M140 132V98M140 98H62V62M140 98H218V62M62 62H30V28M62 62H94V28M218 62H186V28M218 62H250V28"></path>
+                <circle class="tutorial-welcome-node" cx="30" cy="28" r="8"></circle>
+                <circle class="tutorial-welcome-node" cx="94" cy="28" r="8"></circle>
+                <circle class="tutorial-welcome-node" cx="186" cy="28" r="8"></circle>
+                <circle class="tutorial-welcome-node is-target" cx="250" cy="28" r="15"></circle>
+                <text class="tutorial-welcome-question" x="250" y="29">?</text>
+                <circle class="tutorial-welcome-root" cx="140" cy="132" r="7"></circle>
+            </svg>
             <div class="tutorial-welcome-line">Guess → compare → follow the branches</div>
         `
     },
