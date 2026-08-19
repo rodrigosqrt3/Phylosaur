@@ -141,10 +141,8 @@ function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
     `;
     
     const fallbackCredit = `
-        Art by <a href="https://totaldino.com" target="_blank" 
-                style="color:var(--color-muted); text-decoration:none;">TotalDino</a>
-        ${sourcePage ? `· <a href="${sourcePage}" target="_blank"
-            style="color:var(--color-muted); text-decoration:none;">View source</a>` : ''}
+        ${sourcePage ? `Image source: <a href="${sourcePage}" target="_blank"
+            style="color:var(--color-muted); text-decoration:none;">Wikimedia Commons</a>` : 'Image source: Wikimedia Commons'}
     `;
 
     overlay.innerHTML = `

@@ -325,7 +325,7 @@ function showAbout() {
 
         <p style="margin-bottom:25px;">
             Museum summaries are requested from Wikipedia for accessible orientation. Illustrations come from 
-            TotalDino and reusable files identified through Wikimedia Commons or explicitly licensed Dinopedia pages. 
+            reusable files identified through Wikimedia Commons or explicitly licensed Dinopedia pages. 
             Existing reviewed choices are preserved, while new fallback images must pass checks for subject relevance, 
             file type, reusable licensing, attribution, and minimum quality. Creator, source, and licence information 
             accompanies each available image so that visitors can follow it back to its original record.
@@ -756,8 +756,7 @@ function getMuseumMediaCredit(name, media) {
 
     const commonsPage = `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(name + ' TD.png')}`;
     return `
-        Art by <a href="https://totaldino.com" target="_blank" rel="noopener">TotalDino</a>
-        · <a href="${commonsPage}" target="_blank" rel="noopener">Wikimedia Commons</a>
+        Image source: <a href="${commonsPage}" target="_blank" rel="noopener">Wikimedia Commons</a>
     `;
 }
 
