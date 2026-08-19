@@ -8,6 +8,7 @@ function escapeChallengeHtml(value) {
 }
 
 async function showDifficultySelection() {
+    if (typeof stopChallengeStatusPolling === 'function') stopChallengeStatusPolling();
     setHeaderControls('difficulty');
     const appContent = document.getElementById('app-content');
     const completionStatus = await getDailyCompletionStatus();
@@ -48,6 +49,7 @@ async function showDifficultySelection() {
 }
 
 function showFriendChallenges(prefilledCode = '') {
+    if (typeof stopChallengeStatusPolling === 'function') stopChallengeStatusPolling();
     setHeaderControls('friends');
     const appContent = document.getElementById('app-content');
     const suggestedName = currentChallengePlayerName || currentUser || '';

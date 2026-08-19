@@ -234,6 +234,9 @@ function applyServerGamePayload(data) {
         currentChallengeCode = data.challenge.code || currentChallengeCode;
         currentChallengePlayerName = data.challenge.playerName || currentChallengePlayerName;
         currentChallengeCreatorName = data.challenge.creatorName || currentChallengeCreatorName;
+        currentChallengePlacement = data.challenge.placement ?? currentChallengePlacement;
+        currentChallengeTotalPlayers = Number(data.challenge.totalPlayers ?? currentChallengeTotalPlayers ?? 0);
+        currentChallengeEliminated = Boolean(data.challenge.eliminated);
     }
     currentTargetDepth = Number(
         data.targetDepth || data.guess?.targetDepth || data.target?.profundidade || currentTargetDepth || 0
@@ -343,17 +346,26 @@ async function showRestoredServerCompletion(data) {
 
     const panel = document.createElement('div');
     panel.className = 'victory';
-    if (data.gaveUp) {
+    const wasRaceEliminated = currentGameMode === 'challenge' &&
+        Boolean(data.challenge?.eliminated || currentChallengeEliminated);
+    if (data.gaveUp || wasRaceEliminated) {
         panel.style.background = 'linear-gradient(135deg, #3d2318 0%, #2c1a12 100%)';
     }
     panel.innerHTML = `
-        <h2 style="${data.gaveUp ? 'color:var(--color-danger);' : ''}">
-            ${data.gaveUp ? 'ANSWER REVEALED' : 'CHALLENGE COMPLETE'}
+        <h2 style="${data.gaveUp || wasRaceEliminated ? 'color:var(--color-danger);' : ''}">
+            ${wasRaceEliminated ? 'RACE COMPLETE' : data.gaveUp ? 'ANSWER REVEALED' : 'CHALLENGE COMPLETE'}
         </h2>
         <div class="victory-dino">${targetName}</div>
         <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
             ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}
         </p>
+
+        ${wasRaceEliminated ? `
+        <div class="race-placement-card">
+            <strong>#${currentChallengePlacement || currentChallengeTotalPlayers}</strong>
+            <span>The other finishing positions were secured, so your race ended automatically.</span>
+        </div>` : currentGameMode === 'challenge' && currentChallengePlacement ? `
+        <div class="race-placement-card"><strong>#${currentChallengePlacement}</strong><span>Your current finishing position</span></div>` : ''}
 
         ${buildResultMediaMarkup(targetName, resultMedia)}
 
@@ -377,6 +389,10 @@ async function loadServerDatabase(mode, difficulty, forceClean = false) {
     currentChallengeCode = null;
     currentChallengePlayerName = null;
     currentChallengeCreatorName = null;
+    currentChallengePlacement = null;
+    currentChallengeTotalPlayers = 0;
+    currentChallengeEliminated = false;
+    challengeRaceClosing = false;
     gameSessionId = null;
     targetDino = null;
     guesses = [];

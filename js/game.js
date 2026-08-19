@@ -150,6 +150,10 @@ async function startFriendChallengeFromPayload(data) {
     currentChallengeCode = data.challenge?.code || currentChallengeCode;
     currentChallengePlayerName = data.challenge?.playerName || currentChallengePlayerName || 'Explorer';
     currentChallengeCreatorName = data.challenge?.creatorName || currentChallengeCreatorName;
+    currentChallengePlacement = data.challenge?.placement ?? null;
+    currentChallengeTotalPlayers = Number(data.challenge?.totalPlayers || 0);
+    currentChallengeEliminated = Boolean(data.challenge?.eliminated);
+    challengeRaceClosing = false;
 
     const appContent = document.getElementById('app-content');
     appContent.innerHTML = `
@@ -162,6 +166,7 @@ async function startFriendChallengeFromPayload(data) {
             <button class="btn-hint btn-header" onclick="copyChallengeCode()">Copy Code</button>
             <button class="btn-hint btn-header" onclick="showChallengeStandings()">Standings</button>
         </div>
+        <div class="challenge-race-progress" id="challenge-race-status">Checking the field…</div>
     </div>
     <div class="game-card">
         <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
@@ -193,7 +198,96 @@ async function startFriendChallengeFromPayload(data) {
     updateServerGameDisplay(data);
     initializeAutocomplete();
     document.getElementById('dino-input')?.focus();
-    if (data.complete) await showRestoredServerCompletion(data);
+    if (data.complete) {
+        stopChallengeStatusPolling();
+        await showRestoredServerCompletion(data);
+    } else {
+        startChallengeStatusPolling();
+    }
+}
+
+function stopChallengeStatusPolling() {
+    if (challengeStatusPollTimer) clearInterval(challengeStatusPollTimer);
+    challengeStatusPollTimer = null;
+}
+
+function updateChallengeRaceStatus(data) {
+    if (!data?.race) return;
+    currentChallengePlacement = data.race.requesterPlacement ?? currentChallengePlacement;
+    currentChallengeTotalPlayers = Number(data.race.totalPlayers || currentChallengeTotalPlayers || 0);
+    const status = document.getElementById('challenge-race-status');
+    if (status) {
+        const total = Number(data.race.totalPlayers || 0);
+        const completed = Number(data.race.completedPlayers || 0);
+        status.textContent = total < 2
+            ? 'Waiting for another explorer to join'
+            : `${total} explorers · ${completed} finished`;
+    }
+}
+
+async function handleChallengeRaceClosure(statusData) {
+    if (challengeRaceClosing || currentGameMode !== 'challenge') return;
+    challengeRaceClosing = true;
+    stopChallengeStatusPolling();
+    updateChallengeRaceStatus(statusData);
+    currentChallengeEliminated = true;
+
+    try {
+        const state = await callGameApi('state', { sessionId: gameSessionId });
+        applyServerGamePayload(state);
+        currentChallengeEliminated = true;
+        currentChallengePlacement = statusData.race?.requesterPlacement ||
+            state.challenge?.placement || currentChallengeTotalPlayers;
+        setTreeAnimationMode('reveal');
+        updateServerGameDisplay(state);
+        await showRestoredServerCompletion(state);
+    } catch (error) {
+        await customAlert('Race Complete', 'The remaining positions have been decided. Reload the challenge to see the final result.');
+    }
+}
+
+async function pollChallengeRaceStatus() {
+    if (currentGameMode !== 'challenge' || !currentChallengeCode || !gameSessionId || challengeRaceClosing) {
+        stopChallengeStatusPolling();
+        return;
+    }
+
+    try {
+        const data = await callGameApi('challenge_status', {
+            code: currentChallengeCode,
+            sessionId: gameSessionId
+        });
+        updateChallengeRaceStatus(data);
+        if (data.race?.closedRequester) {
+            await handleChallengeRaceClosure(data);
+        } else if (data.requesterComplete) {
+            stopChallengeStatusPolling();
+        }
+    } catch (error) {
+        console.warn('Challenge race status unavailable:', error);
+    }
+}
+
+function startChallengeStatusPolling() {
+    stopChallengeStatusPolling();
+    pollChallengeRaceStatus();
+    challengeStatusPollTimer = setInterval(pollChallengeRaceStatus, 4000);
+}
+
+async function refreshCurrentChallengePlacement() {
+    if (currentGameMode !== 'challenge' || !currentChallengeCode || !gameSessionId) return null;
+    stopChallengeStatusPolling();
+    try {
+        const data = await callGameApi('challenge_status', {
+            code: currentChallengeCode,
+            sessionId: gameSessionId
+        });
+        updateChallengeRaceStatus(data);
+        return data;
+    } catch (error) {
+        console.warn('Could not refresh challenge placement:', error);
+        return null;
+    }
 }
 
 async function copyChallengeCode() {
@@ -213,13 +307,24 @@ async function showChallengeStandings() {
             code: currentChallengeCode,
             sessionId: gameSessionId
         });
+        updateChallengeRaceStatus(data);
+        if (data.race?.closedRequester) {
+            await handleChallengeRaceClosure(data);
+            return;
+        }
         const rows = data.participants.map((participant, index) => {
-            const status = participant.status === 'solved' ? 'Solved' : participant.status === 'gave_up' ? 'Gave up' : 'Playing';
+            const status = participant.status === 'solved'
+                ? 'Finished'
+                : participant.status === 'eliminated'
+                ? 'Race closed'
+                : participant.status === 'gave_up'
+                ? 'Gave up'
+                : 'Playing';
             const details = data.requesterComplete
-                ? `${participant.attempts} attempts · ${participant.hintsUsed} hints`
+                ? `${participant.attempts} attempts · ${participant.hintsUsed} hints${participant.status === 'playing' ? ' · Playing' : ''}`
                 : status;
             return `<div class="standing-row ${participant.isYou ? 'is-you' : ''}">
-                <span class="standing-rank">${data.requesterComplete ? index + 1 : '◆'}</span>
+                <span class="standing-rank">${data.requesterComplete ? (participant.placement ? `#${participant.placement}` : '…') : '◆'}</span>
                 <span class="standing-name">${escapeChallengeHtml(participant.name)}${participant.isYou ? ' (you)' : ''}</span>
                 <span class="standing-result">${escapeChallengeHtml(details)}</span>
             </div>`;
@@ -485,6 +590,11 @@ async function giveUp() {
         }, { onConflict: 'user_id,played_date,difficulty' });
     }
 
+    if (currentGameMode === 'challenge') {
+        currentChallengeEliminated = false;
+        await refreshCurrentChallengePlacement();
+    }
+
     document.getElementById('dino-input').disabled = true;
     document.querySelector('.btn-guess').disabled = true;
     document.querySelector('.btn-game-hint').disabled = true;
@@ -505,6 +615,12 @@ async function giveUp() {
         </p>
 
         ${buildResultMediaMarkup(targetDino.nome, resultMedia)}
+
+        ${currentGameMode === 'challenge' && currentChallengePlacement ? `
+        <div class="race-placement-card">
+            <strong>#${currentChallengePlacement}</strong>
+            <span>Your current race position. It becomes final when the race closes.</span>
+        </div>` : ''}
 
         ${currentGameMode === 'challenge' ? `
         <button class="btn-hint" onclick="showChallengeStandings()" style="width:100%; margin-top:20px;">View Standings</button>
@@ -540,6 +656,11 @@ async function showVictory() {
         await markDailyChallengeCompleted(selectedDifficulty);
     }
 
+    if (currentGameMode === 'challenge') {
+        currentChallengeEliminated = false;
+        await refreshCurrentChallengePlacement();
+    }
+
     document.getElementById('dino-input').disabled = true;
     document.querySelector('.btn-guess').disabled = true;
     document.querySelector('.btn-game-hint').disabled = true;
@@ -563,7 +684,12 @@ async function showVictory() {
         modeHTML = `
         <div class="challenge-result-note">
             Friend Challenge <strong>${escapeChallengeHtml(currentChallengeCode)}</strong> — Daily statistics not affected
-        </div>`;
+        </div>
+        ${currentChallengePlacement ? `
+        <div class="race-placement-card">
+            <strong>#${currentChallengePlacement}</strong>
+            <span>Your finishing position</span>
+        </div>` : ''}`;
     }
 
     let streakHTML = '';

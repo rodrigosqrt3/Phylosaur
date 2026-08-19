@@ -2747,6 +2747,7 @@ body.light-mode .stat-label {
     background: var(--bg-panel-strong);
     border: 2px solid var(--color-accent);
     border-radius: 7px;
+    flex-wrap: wrap;
 }
 
 .challenge-banner > div:first-child {
@@ -2774,6 +2775,17 @@ body.light-mode .stat-label {
     gap: 8px;
 }
 
+.challenge-race-progress {
+    flex: 1 0 100%;
+    padding-top: 10px;
+    color: var(--color-muted);
+    border-top: 1px solid var(--border-inner);
+    font-size: 0.75em;
+    letter-spacing: 1px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
 .challenge-result-note {
     margin-bottom: 20px;
     padding: 14px;
@@ -2783,6 +2795,33 @@ body.light-mode .stat-label {
     border-radius: 6px;
     font-size: 0.9em;
     letter-spacing: 0.8px;
+}
+
+.race-placement-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    max-width: 480px;
+    margin: 20px auto;
+    padding: 16px 20px;
+    color: var(--color-secondary);
+    background: var(--bg-panel-strong);
+    border: 2px solid var(--color-accent);
+    border-radius: 7px;
+    line-height: 1.45;
+    text-align: left;
+}
+
+.race-placement-card strong {
+    color: var(--color-primary);
+    font-size: 2.3em;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.race-placement-card span {
+    max-width: 320px;
 }
 
 .standings-list {
@@ -2862,6 +2901,12 @@ body.light-mode .stat-label {
     .challenge-banner-actions button {
         flex: 1;
         min-height: 44px;
+    }
+
+    .race-placement-card {
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
     }
 }
 
