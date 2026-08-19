@@ -40,14 +40,17 @@ async function startPracticeChallenge(difficulty) {
         </div>
 
         <div class="input-section">
-        <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" />
-        <button class="btn-guess" onclick="makeGuess()">Submit</button>
-        <button class="btn-hint" onclick="useHint()">Hint</button>
-        <button class="btn-hint btn-giveup" onclick="giveUp()" 
-                style="opacity:0.6; font-size:12px; padding:10px 16px; letter-spacing:1px;">
-        Give Up
-        </button>
-        <div id="suggestions"></div>
+        <div class="guess-primary-row">
+            <div class="guess-field">
+            <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" />
+            <div id="suggestions"></div>
+            </div>
+            <button class="btn-guess" onclick="makeGuess()">Submit</button>
+        </div>
+        <div class="guess-secondary-row">
+            <button class="btn-hint btn-game-hint" onclick="useHint()">Hint</button>
+            <button class="btn-giveup" onclick="giveUp()">Give Up</button>
+        </div>
         </div>
 
         <div id="tree-container">
@@ -95,14 +98,17 @@ async function startDailyChallenge(difficulty) {
         </div>
 
         <div class="input-section">
-        <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" />
-        <button class="btn-guess" onclick="makeGuess()">Submit</button>
-        <button class="btn-hint" onclick="useHint()">Hint</button>
-        <button class="btn-hint btn-giveup" onclick="giveUp()" 
-                style="opacity:0.6; font-size:12px; padding:10px 16px; letter-spacing:1px;">
-        Give Up
-        </button>
-        <div id="suggestions"></div>
+        <div class="guess-primary-row">
+            <div class="guess-field">
+            <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" />
+            <div id="suggestions"></div>
+            </div>
+            <button class="btn-guess" onclick="makeGuess()">Submit</button>
+        </div>
+        <div class="guess-secondary-row">
+            <button class="btn-hint btn-game-hint" onclick="useHint()">Hint</button>
+            <button class="btn-giveup" onclick="giveUp()">Give Up</button>
+        </div>
         </div>
 
         <div id="tree-container">
@@ -369,7 +375,7 @@ async function giveUp() {
 
     document.getElementById('dino-input').disabled = true;
     document.querySelector('.btn-guess').disabled = true;
-    document.querySelector('.btn-hint').disabled = true;
+    document.querySelector('.btn-game-hint').disabled = true;
     document.querySelector('.btn-giveup')?.setAttribute('disabled', true);
 
     const resultMedia = await loadResultMedia(targetDino.nome);
@@ -421,7 +427,7 @@ async function showVictory() {
 
     document.getElementById('dino-input').disabled = true;
     document.querySelector('.btn-guess').disabled = true;
-    document.querySelector('.btn-hint').disabled = true;
+    document.querySelector('.btn-game-hint').disabled = true;
     document.querySelector('.btn-giveup')?.setAttribute('disabled', true);
 
     const container = document.getElementById('tree-container');

@@ -323,7 +323,7 @@ async function showRestoredServerCompletion(data) {
     const input = document.getElementById('dino-input');
     if (input) input.disabled = true;
     document.querySelector('.btn-guess')?.setAttribute('disabled', true);
-    document.querySelector('.btn-hint')?.setAttribute('disabled', true);
+    document.querySelector('.btn-game-hint')?.setAttribute('disabled', true);
     document.querySelector('.btn-giveup')?.setAttribute('disabled', true);
 
     const container = document.getElementById('tree-container');
