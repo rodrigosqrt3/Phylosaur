@@ -622,8 +622,13 @@ async function giveUp() {
             <span>Your current race position. It becomes final when the race closes.</span>
         </div>` : ''}
 
+        <button class="btn-hint" onclick="shareResult()" id="share-btn"
+                style="width:100%; padding:15px; font-size:14px; letter-spacing:2px; margin-top:24px; margin-bottom:12px;">
+        Share Result
+        </button>
+
         ${currentGameMode === 'challenge' ? `
-        <button class="btn-hint" onclick="showChallengeStandings()" style="width:100%; margin-top:20px;">View Standings</button>
+        <button class="btn-hint" onclick="showChallengeStandings()" style="width:100%;">View Standings</button>
         <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
         <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
         ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
@@ -744,79 +749,145 @@ async function showVictory() {
     revealResultPanel(container, v);
 }
 
-function shareResult() {
+function getShareResultData() {
     const diffNames = {
         'muito_facil': 'Level I',
-        'facil':       'Level II',
-        'normal':      'Level III',
-        'dificil':     'Level IV',
+        'facil': 'Level II',
+        'normal': 'Level III',
+        'dificil': 'Level IV',
         'muito_dificil': 'Level V'
     };
-
-    const blocks = guesses.map(g => {
-        const pct = g.proximity.percentage;
-        if (pct === 100)  return '🟩'; 
-        if (pct >= 75)    return '🟨'; 
-        if (pct >= 50)    return '🟧'; 
-        if (pct >= 25)    return '🟥'; 
-        return '⬛';                   
+    const actualGuesses = guesses.filter(guess => guess.isHint !== true);
+    const blocks = actualGuesses.map(guess => {
+        const percentage = Number(guess.proximity?.percentage || 0);
+        if (percentage === 100) return '🟩';
+        if (percentage >= 75) return '🟨';
+        if (percentage >= 50) return '🟧';
+        if (percentage >= 25) return '🟥';
+        return '⬛';
     });
-
     const rows = [];
-    for (let i = 0; i < blocks.length; i += 8) {
-        rows.push(blocks.slice(i, i + 8).join(''));
+    for (let index = 0; index < blocks.length; index += 8) {
+        rows.push(blocks.slice(index, index + 8).join(''));
     }
 
-    const today = getCurrentDateFormatted();
-    const diff  = diffNames[selectedDifficulty] || '';
-    const mode  = currentGameMode === 'challenge'
-        ? ` (Friend Challenge ${currentChallengeCode})`
-        : isPracticeMode ? ' (Practice)' : '';
+    const appUrl = new URL(window.location.href);
+    appUrl.hash = '';
+    appUrl.search = '';
+    if (currentGameMode === 'challenge' && currentChallengeCode) {
+        appUrl.searchParams.set('challenge', currentChallengeCode);
+    }
 
-    const text = [
-        `Phylosaur — ${diff}${mode}`,
-        `${today}`,
-        ``,
-        rows.join('\n'),
-        ``,
-        `${guesses.length} attempts • ${revealedClades.size} clades revealed`,
-        ``,
-        `https://rodrigosqrt3.github.io/Phylosaur/`
+    const modeLabel = currentGameMode === 'challenge'
+        ? `Friend Challenge ${currentChallengeCode}`
+        : isPracticeMode ? 'Practice' : 'Daily Challenge';
+    const hintCount = Array.isArray(hintHistory) ? hintHistory.length : 0;
+    const attemptLabel = `${actualGuesses.length} ${actualGuesses.length === 1 ? 'guess' : 'guesses'}`;
+    const hintLabel = `${hintCount} ${hintCount === 1 ? 'hint' : 'hints'}`;
+    const placementLabel = currentGameMode === 'challenge' && currentChallengePlacement
+        ? ` • #${currentChallengePlacement} place`
+        : '';
+
+    return {
+        title: `Phylosaur — ${diffNames[selectedDifficulty] || 'Challenge'}`,
+        modeLabel,
+        difficultyLabel: diffNames[selectedDifficulty] || 'Challenge',
+        dateLabel: getCurrentDateFormatted(),
+        rows,
+        attemptLabel,
+        hintLabel,
+        placementLabel,
+        outcomeLabel: isGiveUpMode ? `Answer revealed after ${attemptLabel}` : `Solved in ${attemptLabel}`,
+        url: appUrl.toString()
+    };
+}
+
+function buildShareResultText(result = getShareResultData()) {
+    return [
+        `PHYLOSAUR 🦖`,
+        `${result.modeLabel} • ${result.difficultyLabel}`,
+        result.dateLabel,
+        '',
+        result.rows.join('\n'),
+        '',
+        `${result.outcomeLabel} • ${result.hintLabel}${result.placementLabel}`,
+        '',
+        result.url
     ].join('\n');
+}
 
-    if (navigator.share) {
-        navigator.share({ text }).catch(() => {});
-    } else {
-        navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('share-btn');
-        if (!btn) return;
-        const original = btn.textContent;
-        btn.textContent = 'Copied to clipboard!';
-        btn.disabled = true;
-        setTimeout(() => {
-            btn.textContent = original;
-            btn.disabled = false;
-        }, 2000);
-        }).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
+function escapeShareResultHtml(value) {
+    return String(value).replace(/[&<>]/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;'
+    })[character]);
+}
 
-        const btn = document.getElementById('share-btn');
-        if (btn) {
-            btn.textContent = 'Copied!';
-            btn.disabled = true;
-            setTimeout(() => {
-            btn.textContent = 'Share Result';
-            btn.disabled = false;
-            }, 2000);
+async function copyShareResult(text) {
+    if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand('copy');
+    textarea.remove();
+    if (!copied) throw new Error('Copy command was not accepted.');
+}
+
+function showShareButtonFeedback(message) {
+    const button = document.getElementById('share-btn');
+    if (!button) return;
+    const original = button.textContent;
+    button.textContent = message;
+    button.disabled = true;
+    setTimeout(() => {
+        if (!button.isConnected) return;
+        button.textContent = original;
+        button.disabled = false;
+    }, 2000);
+}
+
+async function shareResult() {
+    const result = getShareResultData();
+    const text = buildShareResultText(result);
+    const action = await showModal({
+        title: 'Share Your Result',
+        message: `
+            <div class="share-result-intro">Spoiler-free: dinosaur and clade names stay hidden.</div>
+            <pre class="share-result-preview">${escapeShareResultHtml(text)}</pre>
+            <div class="share-result-legend">
+                <span>⬛ distant</span><span>🟥 warmer</span><span>🟧 close</span><span>🟨 very close</span><span>🟩 solved</span>
+            </div>
+        `,
+        buttons: [
+            { text: navigator.share ? 'Share' : 'Copy Result', value: 'share', primary: true },
+            ...(navigator.share ? [{ text: 'Copy', value: 'copy', primary: false }] : []),
+            { text: 'Cancel', value: 'cancel', primary: false }
+        ],
+        closeOnOverlay: true
+    });
+
+    if (action === 'cancel' || action === null) return;
+
+    try {
+        if (action === 'share' && navigator.share) {
+            await navigator.share({ title: result.title, text });
+            showShareButtonFeedback('Shared!');
+            return;
         }
-        });
+
+        await copyShareResult(text);
+        showShareButtonFeedback('Copied to Clipboard!');
+    } catch (error) {
+        if (error?.name === 'AbortError') return;
+        console.error('Result sharing error:', error);
+        await customAlert('Could Not Share', 'Your result could not be copied. Please try again.');
     }
 }
 

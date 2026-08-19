@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (challengeCode) {
     showFriendChallenges(challengeCode);
   } else {
-    showDifficultySelection();
+    await showDifficultySelection();
+    maybeShowFirstRunTutorial();
   }
 });
