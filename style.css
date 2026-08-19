@@ -91,7 +91,7 @@
     --tree-label-revealed:  #2d5016;
     --tree-label-guess:     #8b4513;
     --tree-label-hint:      #8b7355;
-    --tree-label-ancestor:  #2d5016;
+    --tree-label-ancestor:  #f4e4c1;
 
     /* ── Difficulty buttons ── */
     --diff-very-easy-border:        #3d9c6b;
@@ -171,7 +171,7 @@ body.light-mode {
     --tree-label:           #2d2318;
     --tree-label-guess:     #4a2c10;
     --tree-label-hint:      #5a4a30;
-    --tree-label-ancestor:  #2d5016;
+    --tree-label-ancestor:  #f4e4c1;
     --tree-line-revealed:         #8b5e3c; 
     --tree-line-hint:             #6b5340; 
     --tree-circle-revealed-fill:  #8b5e3c;
@@ -1014,7 +1014,7 @@ min-width: 100%;
 }
 
 .tree-node-group:hover text {
-  fill: var(--color-text-warm);
+  fill: var(--tree-label-ancestor);
 }
 
 .tree-node-group:hover .tree-node-circle {
@@ -1107,7 +1107,10 @@ min-width: 100%;
 
 .tree-node-label-ancestor {
   fill: var(--tree-label-ancestor);
-  font-weight: 500;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: rgba(20, 12, 8, 0.65);
+  stroke-width: 1px;
 }
 
 .empty-state {
@@ -1214,6 +1217,21 @@ min-width: 100%;
 @media (max-width: 600px) {
   .victory {
     padding: 24px 14px;
+  }
+
+  .streak-celebration {
+    padding: 16px 10px !important;
+  }
+
+  .streak-milestone-title {
+    font-size: clamp(1.05rem, 5.5vw, 1.4rem) !important;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .streak-title {
+    font-size: clamp(1.15rem, 6vw, 1.45rem) !important;
+    line-height: 1.25;
   }
 
   .victory-media-image {

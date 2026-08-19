@@ -409,6 +409,29 @@ async function loadServerDatabase(mode, difficulty, forceClean = false) {
     if (storedSessionId) {
         try {
             data = await callGameApi('state', { sessionId: storedSessionId });
+
+            const hasSavedProgress = !data.complete && Number(data.attempts || 0) > 0;
+            if (hasSavedProgress) {
+                const savedGameChoice = await showModal({
+                    title: 'Progress Found',
+                    message: 'You have an unfinished game at this level.',
+                    info: [
+                        { label: 'Attempts made', value: Number(data.attempts || 0) },
+                        { label: 'Hints remaining', value: Number(data.hintsRemaining ?? 3) },
+                        { label: 'Clades revealed', value: Array.isArray(data.revealedClades) ? data.revealedClades.length : 0 }
+                    ],
+                    buttons: [
+                        { text: 'Continue Game', value: 'continue', primary: true },
+                        { text: 'Start Fresh', value: 'fresh', primary: false }
+                    ],
+                    closeOnOverlay: false
+                });
+
+                if (savedGameChoice === 'fresh') {
+                    localStorage.removeItem(storageKey);
+                    data = null;
+                }
+            }
         } catch (error) {
             console.warn('Stored game session could not be restored:', error);
             localStorage.removeItem(storageKey);

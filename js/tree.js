@@ -322,6 +322,14 @@ function renderEnhancedTree() {
   renderTreeModel(nodes, leaves);
 }
 
+function renderCurrentGameTree() {
+  if (serverBackedGame && window.currentTreeSnapshot) {
+    renderTreeSnapshot(window.currentTreeSnapshot);
+  } else {
+    renderEnhancedTree();
+  }
+}
+
 function renderTreeSnapshot(treeSnapshot) {
   if (!treeSnapshot || !Array.isArray(treeSnapshot.nodes) || !Array.isArray(treeSnapshot.leaves)) {
     const wrapper = document.getElementById('tree-scroll-wrapper');
@@ -357,7 +365,7 @@ function renderTreeModel(nodes, leaves) {
   const wrapper = document.getElementById('tree-scroll-wrapper');
   if (!container || !wrapper || !nodes.has('Dinosauria')) return;
 
-  const nodeWidth = 160;
+  const nodeWidth = 200;
   const nodeHeight = 45;
 
   // ─────────────────────────────────────────────────────────────────────
@@ -414,7 +422,7 @@ function renderTreeModel(nodes, leaves) {
   }
   
   const totalSlots = countSlots('Dinosauria');
-    const dynH = Math.max(180, 240 - Math.max(0, (totalSlots - 3) * 8));
+  const dynH = Math.max(nodeWidth + 25, 250 - Math.max(0, (totalSlots - 3) * 8));
   const maxDepth = Math.max(...Array.from(nodes.values()).map(n => n.depth));
   const dynV = Math.max(80, Math.floor(120 * Math.max(0.7, 1 - (totalSlots - 15) * 0.02)));
   
@@ -480,7 +488,7 @@ function renderTreeModel(nodes, leaves) {
   const minX = Math.min(...allX);
   const maxX = Math.max(...allX);
   const maxY = Math.max(...allY);
-  const pad = 80;
+  const pad = 115;
   const svgW = maxX - minX + pad * 2;
   const svgH = maxY + pad;
   
@@ -540,7 +548,7 @@ nodes.forEach((data, clade) => {
     label.setAttribute('font-weight', '600');
     label.textContent = clade;
 
-    const maxTextWidth = clade === 'Dinosauria' ? 150 : 125; 
+    const maxTextWidth = clade === 'Dinosauria' ? 185 : 165; 
     const fontSize = Math.max(11, Math.min(15, Math.floor(maxTextWidth / (clade.length * 0.52))));
     
     if (fontSize < 15) {

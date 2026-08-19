@@ -972,7 +972,9 @@ async function showMuseum() {
             .map(record => record.name);
         const unlockedSet = new Set(unlockedList.map(name => name.toLowerCase()));
 
-        const levelDinos = fullDatabase.filter(d => d.dificuldade === selectedMuseumLevel);
+        const levelDinos = fullDatabase
+            .filter(d => d.dificuldade === selectedMuseumLevel)
+            .sort((a, b) => a.nome.localeCompare(b.nome));
         const levelUnlockedCount = levelDinos.filter(d => unlockedSet.has(d.nome.toLowerCase())).length;
         
         const totalCount = fullDatabase.length;

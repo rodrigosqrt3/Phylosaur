@@ -683,16 +683,16 @@ async function showVictory() {
     if (streakData && !isPracticeMode) {
         if (milestone) {
         streakHTML = `
-            <div style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid var(--color-warning);">
-            <div style="font-size:2.2em; color:var(--color-warning); margin-bottom:12px;">◆ ${milestone} DAY MILESTONE! ◆</div>
+            <div class="streak-celebration" style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid var(--color-warning);">
+            <div class="streak-milestone-title" style="font-size:2.2em; color:var(--color-warning); margin-bottom:12px;">◆ ${milestone} DAY MILESTONE! ◆</div>
             <div style="font-size:1.1em; color:var(--color-primary); margin-bottom:8px;">Current Streak: ${streakData.current} days</div>
             <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
             </div>
         `;
         } else {
         streakHTML = `
-            <div style="margin-top:25px; padding:20px; background:var(--bg-panel); border-radius:8px; border:2px solid var(--color-muted);">
-            <div style="font-size:1.8em; color:var(--color-warning); margin-bottom:8px;">◆ ${streakData.current} Day Streak</div>
+            <div class="streak-celebration" style="margin-top:25px; padding:20px; background:var(--bg-panel); border-radius:8px; border:2px solid var(--color-muted);">
+            <div class="streak-title" style="font-size:1.8em; color:var(--color-warning); margin-bottom:8px;">◆ ${streakData.current} Day Streak</div>
             <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
             </div>
         `;
