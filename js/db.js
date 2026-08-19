@@ -301,7 +301,7 @@ function updateServerGameDisplay(data) {
     updateGuessHistory();
 }
 
-function showRestoredServerCompletion(data) {
+async function showRestoredServerCompletion(data) {
     const input = document.getElementById('dino-input');
     if (input) input.disabled = true;
     document.querySelector('.btn-guess')?.setAttribute('disabled', true);
@@ -310,6 +310,9 @@ function showRestoredServerCompletion(data) {
 
     const container = document.getElementById('tree-container');
     if (!container || container.querySelector('.victory')) return;
+
+    const targetName = data.target?.nome || targetDino?.nome || '';
+    const resultMedia = targetName ? await loadResultMedia(targetName) : null;
 
     const panel = document.createElement('div');
     panel.className = 'victory';
@@ -320,15 +323,19 @@ function showRestoredServerCompletion(data) {
         <h2 style="${data.gaveUp ? 'color:var(--color-danger);' : ''}">
             ${data.gaveUp ? 'ANSWER REVEALED' : 'CHALLENGE COMPLETE'}
         </h2>
-        <div class="victory-dino">${data.target?.nome || ''}</div>
+        <div class="victory-dino">${targetName}</div>
         <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
             ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}
         </p>
+
+        ${buildResultMediaMarkup(targetName, resultMedia)}
+
         <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
             ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
         </button>
     `;
     container.insertBefore(panel, container.firstChild);
+    bindResultMedia(panel, targetName, resultMedia);
 }
 
 async function loadServerDatabase(mode, difficulty, forceClean = false) {
@@ -400,7 +407,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false) {
     initializeAutocomplete();
     document.getElementById('dino-input')?.focus();
 
-    if (data.complete) showRestoredServerCompletion(data);
+    if (data.complete) await showRestoredServerCompletion(data);
 }
 
 async function loadPracticeDatabase(difficulty) {
