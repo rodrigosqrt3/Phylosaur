@@ -124,7 +124,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   LIGHT MODE — only overrides what actually changes
+   LIGHT MODE - only overrides what actually changes
    ═══════════════════════════════════════════════════════════════════════ */
 body.light-mode {
     --bg-base:              #e8dcc8;
@@ -2679,7 +2679,7 @@ body.light-mode .museum-entry-overlay {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   LIGHT MODE — STATISTICS CATALOG CARDS
+   LIGHT MODE - STATISTICS CATALOG CARDS
    Quiet paper-like records instead of glossy raised controls.
    ═══════════════════════════════════════════════════════════════════════ */
 body.light-mode .stat {
@@ -3735,4 +3735,23 @@ body.light-mode .stat-label {
     min-width: 0;
     padding-inline: 8px;
   }
+}
+.site-description {
+    width: min(900px, calc(100% - 40px));
+    margin: 26px auto 38px;
+    padding: 18px 24px;
+    border-top: 1px solid var(--border-subtle);
+    color: var(--color-muted);
+    font-size: 0.88rem;
+    line-height: 1.65;
+    text-align: center;
+}
+
+.site-description p {
+    margin: 0;
+}
+
+.site-description strong {
+    color: var(--color-secondary);
+    font-weight: 600;
 }

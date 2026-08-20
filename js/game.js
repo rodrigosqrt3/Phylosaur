@@ -35,7 +35,7 @@ async function startPracticeChallenge(difficulty) {
         <div class="stat-label">Clades Shown</div>
         </div>
         <div class="stat">
-        <div class="stat-value" id="possible-specimens">—</div>
+        <div class="stat-value" id="possible-specimens">-</div>
         <div class="stat-label">Possible Answers</div>
         </div>
         </div>
@@ -94,7 +94,7 @@ async function startDailyChallenge(difficulty) {
         <div class="stat-label">Clades Shown</div>
         </div>
         <div class="stat">
-        <div class="stat-value" id="possible-specimens">—</div>
+        <div class="stat-value" id="possible-specimens">-</div>
         <div class="stat-label">Possible Answers</div>
         </div>
         </div>
@@ -174,7 +174,7 @@ async function startFriendChallengeFromPayload(data) {
             <div class="stat"><div class="stat-value" id="hints">3</div><div class="stat-label">Hints</div></div>
             <div class="stat"><div class="stat-value" id="best-match">0</div><div class="stat-label">Deepest Node</div></div>
             <div class="stat"><div class="stat-value" id="clades-revealed">0</div><div class="stat-label">Clades Shown</div></div>
-            <div class="stat"><div class="stat-value" id="possible-specimens">—</div><div class="stat-label">Possible Answers</div></div>
+            <div class="stat"><div class="stat-value" id="possible-specimens">-</div><div class="stat-label">Possible Answers</div></div>
         </div>
         <div class="input-section">
             <div class="guess-primary-row">
@@ -752,7 +752,7 @@ async function showVictory() {
         modeHTML = `
         <div style="padding:15px; background:rgba(139,115,85,0.15); border-radius:6px; margin-bottom:20px; border:2px solid var(--color-muted);">
             <div style="color:var(--color-accent); font-weight:600; letter-spacing:1px; font-size:0.95em;">
-            Practice Mode — Statistics not recorded
+            Practice Mode - Statistics not recorded
             </div>
         </div>
         `;
@@ -760,7 +760,7 @@ async function showVictory() {
     if (currentGameMode === 'challenge') {
         modeHTML = `
         <div class="challenge-result-note">
-            Friend Challenge <strong>${escapeChallengeHtml(currentChallengeCode)}</strong> — Daily statistics not affected
+            Friend Challenge <strong>${escapeChallengeHtml(currentChallengeCode)}</strong> - Daily statistics not affected
         </div>
         <div class="challenge-placement-slot"></div>`;
     }
@@ -841,7 +841,7 @@ function getShareResultData() {
         : '';
 
     return {
-        title: `Phylosaur — ${diffNames[selectedDifficulty] || 'Challenge'}`,
+        title: `Phylosaur - ${diffNames[selectedDifficulty] || 'Challenge'}`,
         modeLabel,
         difficultyLabel: diffNames[selectedDifficulty] || 'Challenge',
         dateLabel: getCurrentDateFormatted(),

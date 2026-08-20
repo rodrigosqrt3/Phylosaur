@@ -20,7 +20,7 @@ async function showDifficultySelection() {
         <div class="game-card" style="text-align:center;">
         <h2 style="color:var(--color-primary); margin-bottom:12px; font-size:1.8em;">Daily Challenge</h2>
         <p style="color:var(--color-secondary); margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
-            ${getCurrentDateFormatted()} — Choose a level
+            ${getCurrentDateFormatted()} - Choose a level
         </p>
         <p style="color:#6b5340; font-size:0.82em; font-style:italic; letter-spacing:1px; margin-top:8px;">
         Next daily challenge in <span id="countdown-timer" style="color:var(--color-secondary); font-weight:600;">--:--:--</span>
@@ -267,7 +267,7 @@ async function showStatsDashboard() {
         <div class="stat"><div class="stat-value">${gamesPlayed}</div><div class="stat-label">Games Played</div></div>
         <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">Games Won</div></div>
         <div class="stat"><div class="stat-value">${winRate}%</div><div class="stat-label">Success Rate</div></div>
-        <div class="stat"><div class="stat-value">${stats?.best_score || '—'}</div><div class="stat-label">Best Score</div></div>
+        <div class="stat"><div class="stat-value">${stats?.best_score || '-'}</div><div class="stat-label">Best Score</div></div>
         </div>
 
         ${generateStreakDisplay(streakData)}
@@ -418,7 +418,7 @@ function showAbout() {
         "The combination of such characters... will, it is presumed, be deemed sufficient ground for establishing 
         a distinct tribe or sub-order of Saurian Reptiles, for which I would propose the name of <em>Dinosauria</em>."
         <span style="display:block; margin-top:10px; font-style:normal; font-size:0.9em; color:var(--color-secondary);">
-            — Richard Owen (1842). Report on British Fossil Reptiles, Part II. <em>Report of the British Association 
+            - Richard Owen (1842). Report on British Fossil Reptiles, Part II. <em>Report of the British Association 
             for the Advancement of Science</em>, 11: 60–204.
         </span>
         </p>
@@ -535,7 +535,7 @@ function showAbout() {
             sorted vector of usable thirty-day pageview totals. Boundaries near the 20th, 40th, 60th, and 80th 
             percentiles divide the observed distribution into five familiarity bands. These are empirical game-design 
             categories, shaped by language, public interest, media attention, and the collection period. Genera without 
-            reliable traffic data—including ambiguous homonyms—are handled conservatively.
+            reliable traffic data - including ambiguous homonyms - are handled conservatively.
         </p>
 
         <h3 style="color:var(--color-accent); margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">

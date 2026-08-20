@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Phylosaur — Phylogenetic Challenge",
+  "name": "Phylosaur - Dinosaur Phylogeny Guessing Game",
   "short_name": "Phylosaur",
-  "description": "Identify dinosaurs by exploring their phylogenetic relationships.",
+  "description": "Identify a hidden dinosaur genus by following clues through the dinosaur family tree.",
   "lang": "en",
   "start_url": "./",
   "scope": "./",
