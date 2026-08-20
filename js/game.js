@@ -553,12 +553,13 @@ function bindResultMedia(panel, dinoName, media) {
 }
 
 function revealResultPanel(container, panel) {
+    container.classList.add('tree-result-active');
     panel.setAttribute('tabindex', '-1');
     panel.setAttribute('role', 'region');
     panel.setAttribute('aria-label', 'Challenge result');
 
-    // The tree is its own scroll container. Reset it first, then bring the
-    // result panel into the phone viewport after the tree has re-rendered.
+    // The completed game becomes a stable result view instead of remaining
+    // inside the draggable tree canvas.
     container.scrollTop = 0;
     container.scrollLeft = 0;
 
@@ -627,15 +628,17 @@ async function giveUp() {
 
     const container = document.getElementById('tree-container');
     const v = document.createElement('div');
-    v.className = 'victory';
-    v.style.background = 'linear-gradient(135deg, #3d2318 0%, #2c1a12 100%)';
+    v.className = 'victory victory--revealed';
 
     v.innerHTML = `
-        <h2 style="color:var(--color-danger);">ANSWER REVEALED</h2>
-        <div class="victory-dino">${targetDino.nome}</div>
-        <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
-        ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · gave up
-        </p>
+        <div class="victory-heading">
+            <h2>ANSWER REVEALED</h2>
+            <div class="victory-dino">${targetDino.nome}</div>
+            <div class="victory-summary" aria-label="Game result summary">
+                <span>${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}</span>
+                <span>Gave up</span>
+            </div>
+        </div>
 
         ${buildResultMediaSlotMarkup()}
 
@@ -645,17 +648,18 @@ async function giveUp() {
             <span>Your current race position. It becomes final when the race closes.</span>
         </div>` : ''}
 
-        <button class="btn-hint" onclick="shareResult()" id="share-btn"
-                style="width:100%; padding:15px; font-size:14px; letter-spacing:2px; margin-top:24px; margin-bottom:12px;">
-        Share Result
-        </button>
+        <div class="victory-actions">
+            <button class="btn-hint victory-action-secondary" onclick="shareResult()" id="share-btn">
+                Share Result
+            </button>
 
-        ${currentGameMode === 'challenge' ? `
-        <button class="btn-hint" onclick="showChallengeStandings()" style="width:100%;">View Standings</button>
-        <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
-        <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
-        ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
-        </button>`}
+            ${currentGameMode === 'challenge' ? `
+            <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">View Standings</button>
+            <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
+            <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+                ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
+            </button>`}
+        </div>
     `;
 
     container.insertBefore(v, container.firstChild);
@@ -672,18 +676,18 @@ function buildVictoryStreakMarkup(streakData, milestone) {
     if (!streakData) return '';
     if (milestone) {
         return `
-            <div class="streak-celebration" style="margin-top:25px; padding:25px; background:linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,69,0,0.2)); border-radius:8px; border:2px solid var(--color-warning);">
-            <div class="streak-milestone-title" style="font-size:2.2em; color:var(--color-warning); margin-bottom:12px;">◆ ${milestone} DAY MILESTONE! ◆</div>
-            <div style="font-size:1.1em; color:var(--color-primary); margin-bottom:8px;">Current Streak: ${streakData.current} days</div>
-            <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
+            <div class="streak-celebration streak-celebration--milestone">
+            <div class="streak-milestone-title">◆ ${milestone} DAY MILESTONE! ◆</div>
+            <div class="streak-current">Current Streak: ${streakData.current} days</div>
+            <div class="streak-best">Best: ${streakData.best} days</div>
             </div>
         `;
     }
 
     return `
-        <div class="streak-celebration" style="margin-top:25px; padding:20px; background:var(--bg-panel); border-radius:8px; border:2px solid var(--color-muted);">
-        <div class="streak-title" style="font-size:1.8em; color:var(--color-warning); margin-bottom:8px;">◆ ${streakData.current} Day Streak</div>
-        <div style="font-size:0.9em; color:var(--color-secondary);">Best: ${streakData.best} days</div>
+        <div class="streak-celebration">
+        <div class="streak-title">◆ ${streakData.current} Day Streak</div>
+        <div class="streak-best">Best: ${streakData.best} days</div>
         </div>
     `;
 }
@@ -750,10 +754,8 @@ async function showVictory() {
     let modeHTML = '';
     if (isPracticeMode) {
         modeHTML = `
-        <div style="padding:15px; background:rgba(139,115,85,0.15); border-radius:6px; margin-bottom:20px; border:2px solid var(--color-muted);">
-            <div style="color:var(--color-accent); font-weight:600; letter-spacing:1px; font-size:0.95em;">
+        <div class="victory-mode-note">
             Practice Mode - Statistics not recorded
-            </div>
         </div>
         `;
     }
@@ -772,27 +774,31 @@ async function showVictory() {
     const resultMediaPromise = loadResultMedia(targetDino.nome);
         v.innerHTML = `
             ${modeHTML}
-            <h2>CHALLENGE COMPLETE</h2>
-            <div class="victory-dino">${targetDino.nome}</div>
-            <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
-            ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'} · ${revealedClades.size} ${revealedClades.size === 1 ? 'clade' : 'clades'} revealed
-            </p>
+            <div class="victory-heading">
+                <h2>CHALLENGE COMPLETE</h2>
+                <div class="victory-dino">${targetDino.nome}</div>
+                <div class="victory-summary" aria-label="Game result summary">
+                    <span>${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}</span>
+                    <span>${revealedClades.size} ${revealedClades.size === 1 ? 'clade' : 'clades'} revealed</span>
+                </div>
+            </div>
 
             ${buildResultMediaSlotMarkup()}
 
             ${streakHTML}
             <div class="victory-save-status">Saving result…</div>
 
-            <button class="btn-hint" data-victory-action onclick="shareResult()" id="share-btn" disabled
-                    style="width:100%; padding:15px; font-size:14px; letter-spacing:2px; margin-top:24px; margin-bottom:12px;">
-            Share Result
-            </button>
-            ${currentGameMode === 'challenge' ? `
-            <button class="btn-hint" data-victory-action onclick="showChallengeStandings()" disabled style="width:100%; padding:15px; margin-bottom:12px;">View Standings</button>
-            <button class="btn-new-game" data-victory-action disabled onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
-            <button class="btn-new-game" data-victory-action disabled onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
-            ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
-            </button>`}
+            <div class="victory-actions">
+                <button class="btn-hint victory-action-secondary" data-victory-action onclick="shareResult()" id="share-btn" disabled>
+                    Share Result
+                </button>
+                ${currentGameMode === 'challenge' ? `
+                <button class="btn-hint victory-action-secondary" data-victory-action onclick="showChallengeStandings()" disabled>View Standings</button>
+                <button class="btn-new-game" data-victory-action disabled onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
+                <button class="btn-new-game" data-victory-action disabled onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+                    ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
+                </button>`}
+            </div>
         `;
 
     container.insertBefore(v, container.firstChild);

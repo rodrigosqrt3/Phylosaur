@@ -1404,7 +1404,7 @@ async function showMuseum() {
                 html += `
                     <div class="museum-card locked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}">
                         <div class="museum-card-art-container">
-                            <span class="museum-card-lock-icon">🔒</span>
+                            <span class="museum-card-lock-icon" aria-hidden="true"></span>
                         </div>
                         <div class="museum-card-name">???</div>
                         <div class="museum-card-clade">Locked</div>

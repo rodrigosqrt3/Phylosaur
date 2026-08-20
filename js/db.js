@@ -353,20 +353,19 @@ async function showRestoredServerCompletion(data) {
     const resultMedia = targetName ? await loadResultMedia(targetName) : null;
 
     const panel = document.createElement('div');
-    panel.className = 'victory';
     const wasRaceEliminated = currentGameMode === 'challenge' &&
         Boolean(data.challenge?.eliminated || currentChallengeEliminated);
-    if (data.gaveUp || wasRaceEliminated) {
-        panel.style.background = 'linear-gradient(135deg, #3d2318 0%, #2c1a12 100%)';
-    }
+    const resultWasRevealed = data.gaveUp || wasRaceEliminated;
+    panel.className = `victory${resultWasRevealed ? ' victory--revealed' : ''}`;
     panel.innerHTML = `
-        <h2 style="${data.gaveUp || wasRaceEliminated ? 'color:var(--color-danger);' : ''}">
-            ${wasRaceEliminated ? 'RACE COMPLETE' : data.gaveUp ? 'ANSWER REVEALED' : 'CHALLENGE COMPLETE'}
-        </h2>
-        <div class="victory-dino">${targetName}</div>
-        <p style="font-size:0.95em; color:var(--color-muted); margin-top:8px; letter-spacing:1px;">
-            ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}
-        </p>
+        <div class="victory-heading">
+            <h2>${wasRaceEliminated ? 'RACE COMPLETE' : data.gaveUp ? 'ANSWER REVEALED' : 'CHALLENGE COMPLETE'}</h2>
+            <div class="victory-dino">${targetName}</div>
+            <div class="victory-summary" aria-label="Game result summary">
+                <span>${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}</span>
+                ${resultWasRevealed ? '<span>Answer revealed</span>' : ''}
+            </div>
+        </div>
 
         ${wasRaceEliminated ? `
         <div class="race-placement-card">
@@ -377,15 +376,18 @@ async function showRestoredServerCompletion(data) {
 
         ${buildResultMediaMarkup(targetName, resultMedia)}
 
-        ${currentGameMode === 'challenge' ? `
-        <button class="btn-hint" onclick="showChallengeStandings()" style="width:100%; margin-top:20px;">View Standings</button>
-        <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
-        <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
-            ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
-        </button>`}
+        <div class="victory-actions">
+            ${currentGameMode === 'challenge' ? `
+            <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">View Standings</button>
+            <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
+            <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+                ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
+            </button>`}
+        </div>
     `;
     container.insertBefore(panel, container.firstChild);
     bindResultMedia(panel, targetName, resultMedia);
+    revealResultPanel(container, panel);
 }
 
 async function loadServerDatabase(mode, difficulty, forceClean = false) {

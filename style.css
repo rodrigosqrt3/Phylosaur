@@ -121,6 +121,9 @@
     --color-accent-faint:   rgba(201, 169, 110, 0.05);
     --color-accent-subtle:  rgba(201, 169, 110, 0.15);
     --color-bg-panel-login: rgba(61, 47, 31, 0.35);
+    --radius-control:       4px;
+    --radius-card:          8px;
+    --focus-ring:           var(--color-accent);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -760,8 +763,11 @@ button:disabled {
 
 button:focus-visible,
 a:focus-visible,
-[role="button"]:focus-visible {
-  outline: 3px solid var(--color-accent);
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
@@ -1003,6 +1009,35 @@ a:focus-visible,
   cursor: grabbing;
 }
 
+#tree-container.tree-result-active {
+  min-height: 0;
+  max-height: none;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  cursor: default;
+  touch-action: auto;
+  overscroll-behavior: auto;
+}
+
+#tree-container.tree-result-active:active {
+  cursor: default;
+}
+
+#tree-container.tree-result-active #tree-scroll-wrapper {
+  display: none;
+}
+
+#tree-container.tree-result-active .victory {
+  margin-bottom: 0;
+}
+
+#tree-container.tree-result-active + #clade-info {
+  display: none;
+}
+
 .tree-toolbar {
   display: flex;
   align-items: center;
@@ -1235,15 +1270,52 @@ body:not(.light-mode) .tree-node-group:hover rect {
 }
 
 .victory {
+  position: relative;
+  overflow: hidden;
   text-align: center;
-  padding: 40px;
+  padding: 38px;
   background: linear-gradient(135deg, var(--bg-victory) 0%, var(--bg-card) 100%);
   color: var(--color-text-light);
   animation: celebrate 0.6s ease-out;
-  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  border-top: 4px solid var(--color-success);
+  border-radius: var(--radius-card);
   margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 8px 24px rgba(0,0,0,0.28);
   transition: all 0.3s ease;
+}
+
+.victory::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, var(--color-accent-subtle), transparent 45%);
+  opacity: 0.65;
+}
+
+.victory > * {
+  position: relative;
+  z-index: 1;
+}
+
+.victory--revealed {
+  border-top-color: var(--color-danger);
+  background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-card) 100%);
+}
+
+.victory--revealed h2 {
+  color: var(--color-danger);
+}
+
+.victory-heading h2 {
+  margin: 0;
+  color: var(--color-success-text);
+  font-size: clamp(1.15rem, 4vw, 1.65rem);
+  letter-spacing: 0.16em;
+  line-height: 1.2;
 }
 
 .challenge-completed-banner {
@@ -1276,10 +1348,44 @@ body:not(.light-mode) .tree-node-group:hover rect {
 }
 
 .victory-dino {
-  font-size: 2em;
-  margin: 25px 0;
+  font-size: clamp(2rem, 7vw, 3.15rem);
+  margin: 16px 0 14px;
   font-style: italic;
+  font-weight: 600;
+  line-height: 1.1;
   color: var(--color-success-text);
+  overflow-wrap: anywhere;
+}
+
+.victory-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.victory-summary span {
+  padding: 7px 11px;
+  color: var(--color-secondary);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-inner);
+  border-radius: 999px;
+  font-size: 0.75em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.victory-mode-note {
+  margin-bottom: 22px;
+  padding: 12px 14px;
+  color: var(--color-accent);
+  background: var(--color-accent-faint);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  font-size: 0.84em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .victory-media {
@@ -1352,23 +1458,84 @@ body:not(.light-mode) .tree-node-group:hover rect {
   border-bottom-color: var(--border-subtle);
 }
 
+.victory-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.victory-actions .btn-hint,
+.victory-actions .btn-new-game {
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 13px 16px;
+}
+
+.victory-action-secondary {
+  font-size: 0.86em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.streak-celebration {
+  margin-top: 24px;
+  padding: 18px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+}
+
+.streak-celebration--milestone {
+  padding: 22px;
+  background: linear-gradient(135deg, var(--color-accent-subtle), var(--bg-panel));
+  border-color: var(--color-warning);
+}
+
+.streak-title,
+.streak-milestone-title {
+  margin-bottom: 8px;
+  color: var(--color-warning);
+  line-height: 1.25;
+}
+
+.streak-title {
+  font-size: 1.45em;
+}
+
+.streak-milestone-title {
+  margin-bottom: 12px;
+  font-size: 1.7em;
+}
+
+.streak-current {
+  margin-bottom: 7px;
+  color: var(--color-primary);
+  font-size: 1.05em;
+}
+
+.streak-best {
+  color: var(--color-secondary);
+  font-size: 0.88em;
+}
+
 @media (max-width: 600px) {
   .victory {
     padding: 24px 14px;
   }
 
   .streak-celebration {
-    padding: 16px 10px !important;
+    padding: 16px 10px;
   }
 
   .streak-milestone-title {
-    font-size: clamp(1.05rem, 5.5vw, 1.4rem) !important;
+    font-size: clamp(1.05rem, 5.5vw, 1.4rem);
     line-height: 1.25;
     overflow-wrap: anywhere;
   }
 
   .streak-title {
-    font-size: clamp(1.15rem, 6vw, 1.45rem) !important;
+    font-size: clamp(1.15rem, 6vw, 1.45rem);
     line-height: 1.25;
   }
 
@@ -1398,7 +1565,7 @@ body:not(.light-mode) .tree-node-group:hover rect {
 .difficulty-btn {
   background: linear-gradient(180deg, var(--bg-raised) 0%, var(--bg-inset) 100%);
   border: 2px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   color: var(--color-text-light);
   transition: all 0.25s;
   box-shadow:
@@ -1551,13 +1718,6 @@ body:not(.light-mode) .tree-node-group:hover rect {
   font-weight: 400;
   letter-spacing: 3px;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-
-.victory-dino {
-  font-size: 2em;
-  margin: 25px 0;
-  font-style: italic;
-  color: #c8e6c9;
 }
 
 .modal-overlay {
@@ -2091,7 +2251,7 @@ body.light-mode .theme-switch-thumb {
 .museum-card {
     background: var(--bg-card);
     border: 2px solid var(--border-base);
-    border-radius: 6px;
+    border-radius: var(--radius-card);
     padding: 12px;
     text-align: center;
     transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
@@ -2113,7 +2273,7 @@ body.light-mode .theme-switch-thumb {
     width: 100%;
     height: 140px;
     background: var(--bg-darkest);
-    border-radius: 4px;
+    border-radius: var(--radius-control);
     margin-bottom: 10px;
     overflow: hidden;
     display: flex;
@@ -2180,8 +2340,41 @@ body.light-mode .theme-switch-thumb {
 }
 
 .museum-card-lock-icon {
-    font-size: 2em;
+    position: relative;
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 34px;
+    height: 27px;
+    margin-top: 15px;
     color: var(--color-muted);
+    border: 3px solid currentColor;
+    border-radius: var(--radius-control);
+    opacity: 0.84;
+}
+
+.museum-card-lock-icon::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -19px;
+    width: 20px;
+    height: 19px;
+    border: 3px solid currentColor;
+    border-bottom: 0;
+    border-radius: 11px 11px 0 0;
+    transform: translateX(-50%);
+}
+
+.museum-card-lock-icon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 7px;
+    width: 5px;
+    height: 9px;
+    background: currentColor;
+    border-radius: 3px;
+    transform: translateX(-50%);
 }
 
 /* Light Mode Overrides for cards */
@@ -2737,7 +2930,7 @@ body:not(.light-mode) .museum-tabs .tab-btn {
     background: linear-gradient(180deg, #3a2d20 0%, #281f17 100%);
     border: 1px solid #6b5340;
     border-top-width: 4px;
-    border-radius: 6px;
+    border-radius: var(--radius-card);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     font-weight: 700;
     letter-spacing: 1.4px;
@@ -2794,7 +2987,7 @@ body.light-mode .museum-tabs .tab-btn {
     background: rgba(255, 255, 255, 0.72);
     border: 1px solid #bda77f;
     border-top-width: 4px;
-    border-radius: 6px;
+    border-radius: var(--radius-card);
     box-shadow: 0 2px 5px rgba(74, 56, 41, 0.1);
     font-weight: 700;
     letter-spacing: 1.4px;
@@ -4262,5 +4455,20 @@ body.light-mode .stat-label {
 
     .info-nav a {
         text-align: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }
