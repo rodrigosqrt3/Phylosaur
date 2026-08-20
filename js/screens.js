@@ -1380,7 +1380,7 @@ async function showMuseum() {
                     museumDiscoveryRecords[dino.nome.toLowerCase()]
                 );
                 html += `
-                    <div class="museum-card unlocked" role="button" tabindex="0"
+                    <div class="museum-card unlocked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" role="button" tabindex="0"
                          aria-label="Open museum entry for ${dino.nome}"
                          onclick="showMuseumEntry('${dino.nome}')"
                          onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); showMuseumEntry('${dino.nome}'); }"
@@ -1402,7 +1402,7 @@ async function showMuseum() {
                 `;
             } else {
                 html += `
-                    <div class="museum-card locked">
+                    <div class="museum-card locked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}">
                         <div class="museum-card-art-container">
                             <span class="museum-card-lock-icon">🔒</span>
                         </div>

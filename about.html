@@ -20,6 +20,16 @@
   <meta name="twitter:description" content="How Phylosaur turns dinosaur phylogeny into an educational guessing game.">
   <meta name="twitter:image" content="https://rodrigosqrt3.github.io/Phylosaur/pwa-icon-512.png">
 
+  <script>
+    try {
+      if (localStorage.getItem('phylosaur-theme') === 'light') {
+        document.documentElement.dataset.theme = 'light';
+      }
+    } catch (_error) {
+      // Use the default dark theme when browser storage is unavailable.
+    }
+  </script>
+
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",

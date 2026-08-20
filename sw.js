@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v4";
+const CACHE_VERSION = "phylosaur-shell-v5";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -110,7 +110,7 @@ self.addEventListener("fetch", (event) => {
     || /\.(?:css|js)$/i.test(url.pathname);
 
   if (isApplicationCode) {
-    event.respondWith(cachedStaticAsset(request));
+    event.respondWith(freshStaticAsset(request));
     return;
   }
 
