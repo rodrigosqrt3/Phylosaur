@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Phylosaur - Dinosaur Phylogeny Game and Methodology</title>
+  <meta name="description" content="Learn how Phylosaur turns dinosaur phylogeny into a guessing game, how its difficulty levels work, and how its taxonomic data is curated.">
+  <link rel="canonical" href="https://rodrigosqrt3.github.io/Phylosaur/about.html">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Phylosaur">
+  <meta property="og:title" content="About Phylosaur - Game and Methodology">
+  <meta property="og:description" content="How a dinosaur guessing game uses phylogenetic classification, curated lineages, and familiarity-based difficulty levels.">
+  <meta property="og:url" content="https://rodrigosqrt3.github.io/Phylosaur/about.html">
+  <meta property="og:image" content="https://rodrigosqrt3.github.io/Phylosaur/pwa-icon-512.png">
+  <meta property="og:image:alt" content="Phylosaur golden dinosaur footprint logo">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="About Phylosaur - Game and Methodology">
+  <meta name="twitter:description" content="How Phylosaur turns dinosaur phylogeny into an educational guessing game.">
+  <meta name="twitter:image" content="https://rodrigosqrt3.github.io/Phylosaur/pwa-icon-512.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About Phylosaur",
+    "url": "https://rodrigosqrt3.github.io/Phylosaur/about.html",
+    "description": "The game design, phylogenetic basis, data sources, and limitations of Phylosaur.",
+    "inLanguage": "en",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Phylosaur",
+      "url": "https://rodrigosqrt3.github.io/Phylosaur/"
+    }
+  }
+  </script>
+
+  <link rel="icon" type="image/svg+xml" href="pwa-icon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,900;1,400&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#2d2318">
+</head>
+<body>
+  <div class="info-shell">
+    <header class="info-header">
+      <h1>Phylosaur</h1>
+      <p>A dinosaur phylogeny guessing game</p>
+      <nav class="info-nav" aria-label="Page navigation">
+        <a href="index.html">Play Phylosaur</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#data">Data and methodology</a>
+        <a href="#limitations">Limitations</a>
+      </nav>
+    </header>
+
+    <main class="info-page">
+      <article>
+        <h2>About Phylosaur</h2>
+        <p class="info-lead">
+          Phylosaur is a free educational dinosaur guessing game built around phylogenetic classification.
+          Instead of answering questions about size, age, or geography, players identify a hidden dinosaur genus
+          by following its position through the dinosaur family tree.
+        </p>
+        <p>
+          The name combines <em>phylo-</em>, referring to evolutionary lineage, with <em>-saur</em>, the historical
+          element familiar from Dinosauria and many dinosaur names. It also reflects the project's simple purpose:
+          making dinosaur classification approachable through play.
+        </p>
+
+        <h2 id="how-it-works">How the dinosaur guessing game works</h2>
+        <p>
+          Every challenge selects a hidden dinosaur genus. After each guess, Phylosaur compares the stored lineage
+          of the guessed genus with the lineage of the target. The game then reveals the deepest named clade shared
+          by both dinosaurs. A guess that follows more of the target's lineage produces a higher proximity score.
+        </p>
+        <p>
+          This turns each attempt into a clue. A distant guess may only share Dinosauria or one of its broad branches,
+          while a close guess can reveal a much more specific family or subgroup. Hints expose the next part of the
+          target lineage, and the tree records the strongest path found during the game.
+        </p>
+        <ul>
+          <li>Daily challenges provide the same target for a selected level during the player's local day.</li>
+          <li>Practice mode allows unlimited games without affecting Daily statistics.</li>
+          <li>Private challenges let friends play the same hidden dinosaur using a shared code.</li>
+          <li>Completed games unlock dinosaur entries in the Museum.</li>
+        </ul>
+
+        <h2>Why phylogenetic classification?</h2>
+        <p>
+          Phylogenetics describes hypotheses about evolutionary relationships. A clade contains a common ancestor
+          and its descendants, and nested clades describe increasingly specific relationships. Phylosaur represents
+          each playable genus as one ordered path beginning with Dinosauria and continuing toward narrower groups.
+        </p>
+        <p>
+          The game is intended as an introduction to navigating those relationships. Its scores measure agreement
+          between stored lineage paths; they do not measure geological time, anatomical similarity, or a literal
+          percentage of shared evolution.
+        </p>
+
+        <h2>Difficulty levels</h2>
+        <p>
+          The five levels represent public familiarity rather than scientific importance or phylogenetic complexity.
+          Difficulty is informed by thirty-day Wikipedia pageview totals. Frequently visited genera generally appear
+          in lower levels, while less familiar names tend toward higher levels.
+        </p>
+        <p>
+          Pageviews are an imperfect proxy. Media attention, language, ambiguous names, and the collection period can
+          affect them. Biological homonyms are reviewed conservatively when traffic may belong to an unrelated plant,
+          animal, person, or place.
+        </p>
+
+        <h2 id="data">Data sources and taxonomic methodology</h2>
+        <p>
+          The catalogue began with open paleontological occurrence and taxonomic records, particularly material from
+          the Paleobiology Database, followed by filtering and manual review. The current lineage database combines
+          earlier curated classifications with lineages retrieved through <em>taxodist</em> from The Taxonomicon.
+        </p>
+        <p>
+          Automated checks remove placeholder ranks, detect ambiguous names and biological homonyms, prevent playable
+          genera from being used as internal clades, and look for named clades assigned to conflicting parents. When
+          an automated lineage is unresolved or removes too much useful structure, a reviewed fallback may be retained
+          for later investigation.
+        </p>
+        <p>
+          Museum descriptions are requested from Wikipedia for general orientation. Images come from reusable media
+          identified through Wikimedia Commons or explicitly licensed sources. Available creator, source, and licence
+          information is displayed with each image.
+        </p>
+
+        <div class="info-note">
+          Phylosaur is an independent educational project and should not be treated as a primary scientific source.
+          For formal research, classifications and claims should be checked against the relevant systematic literature.
+        </div>
+
+        <h2 id="limitations">Scientific limitations</h2>
+        <p>
+          Phylogenetic trees are scientific hypotheses that can change as new fossils, character matrices, and analyses
+          become available. Published studies may recover competing positions or unresolved relationships, while the
+          game must store one practical path for each genus.
+        </p>
+        <p>
+          Some included names may be historically important, disputed, synonymous, or based on limited material.
+          Detailed placement in the game should therefore not be interpreted as equal certainty at every node. Reports
+          of taxonomic errors and suggestions for improved placements are welcome.
+        </p>
+
+        <h2>Further resources</h2>
+        <p>
+          Readers interested in dinosaur classification and phylogenetic systematics can consult the Paleobiology
+          Database, primary systematic publications, museum research pages, and specialist references such as
+          <em>The Dinosauria</em> and works on phylogenetic methodology.
+        </p>
+        <p>
+          Questions, corrections, and feedback can be sent to
+          <a href="mailto:rodrigo03.villa@gmail.com">rodrigo03.villa@gmail.com</a>.
+        </p>
+      </article>
+    </main>
+
+    <footer class="info-footer">
+      <p><a href="index.html">Return to Phylosaur</a></p>
+    </footer>
+  </div>
+</body>
+</html>
