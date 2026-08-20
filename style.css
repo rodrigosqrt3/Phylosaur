@@ -3869,6 +3869,60 @@ body.light-mode .stat-label {
     border-left: 4px solid var(--color-muted);
 }
 
+.info-quote {
+    margin: 30px 0;
+    padding: 22px;
+    color: var(--color-secondary);
+    background: var(--bg-panel-subtle);
+    border-left: 4px solid var(--color-muted);
+    font-style: italic;
+}
+
+.info-quote p {
+    margin-bottom: 12px;
+}
+
+.info-quote cite {
+    display: block;
+    color: var(--color-muted);
+    font-size: 0.88rem;
+    font-style: normal;
+}
+
+.info-equation {
+    margin: 26px 0;
+    padding: 20px;
+    overflow-x: auto;
+    color: var(--color-text-light);
+    background: var(--bg-panel-subtle);
+    border: 1px solid var(--border-inner);
+    border-radius: 4px;
+    text-align: center;
+    -webkit-overflow-scrolling: touch;
+}
+
+.info-references {
+    margin: 30px 0;
+    padding: 22px;
+    color: var(--color-secondary);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+}
+
+.info-references h3 {
+    margin-bottom: 14px;
+    color: var(--color-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.info-references ul {
+    margin-bottom: 0;
+}
+
 .info-footer {
     margin: 26px 0 40px;
     color: var(--color-muted);

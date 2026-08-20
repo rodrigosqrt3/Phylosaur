@@ -13,8 +13,6 @@ function setHeaderControls(screen) {
       </button>
     `;
 
-    const aboutBtn = `<button class="btn-hint btn-header" onclick="showAbout()" style="padding:8px 14px; font-size:12px;">About</button>`;
-    
     const statsBtn = currentUser 
       ? `<button class="btn-hint btn-header" onclick="showStatsDashboard()">Stats</button>` 
       : '';
@@ -31,15 +29,15 @@ function setHeaderControls(screen) {
 
 const map = {
       'login':        themeBtn,
-      'difficulty': themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showMuseum()">Museum</button>` + analyticsBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
-      'game': themeBtn + aboutBtn + backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
+      'difficulty': themeBtn + `<button class="btn-hint btn-header" onclick="showMuseum()">Museum</button>` + analyticsBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
+      'game': themeBtn + backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
       'stats':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
       'museum':       themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`, // <-- ADD THIS LINE
       'about':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'practice-menu':themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'practice':     themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showPracticeMode()">← Back</button>`,
-      'friends':      themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'challenge':    themeBtn + aboutBtn + `<button class="btn-hint btn-header" onclick="showFriendChallenges()">← Friends</button>`,
+      'practice-menu':themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
+      'practice':     themeBtn + `<button class="btn-hint btn-header" onclick="showPracticeMode()">← Back</button>`,
+      'friends':      themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
+      'challenge':    themeBtn + `<button class="btn-hint btn-header" onclick="showFriendChallenges()">← Friends</button>`,
       'analytics':    themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
     };
 
