@@ -3038,6 +3038,12 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
         grid-template-columns: repeat(2, 1fr) !important; /* Stacks cleanly on phones */
         font-size: 0.8em !important;
     }
+
+    .museum-tabs .tab-btn:nth-child(5) {
+        grid-column: 1 / -1;
+        justify-self: center;
+        width: calc(50% - 4.5px);
+    }
 }
 
 /* Small-screen usability refinements */
