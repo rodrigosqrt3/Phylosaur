@@ -743,15 +743,38 @@ function buildVictoryStreakMarkup(streakData, milestone) {
     `;
 }
 
+function buildVictoryAchievementsMarkup(achievementIds) {
+    if (!Array.isArray(achievementIds) || achievementIds.length === 0) return '';
+
+    const rows = achievementIds.map(id => {
+        const definition = ACHIEVEMENT_DEFINITIONS.find(achievement => achievement.id === id);
+        if (!definition) return '';
+        return `
+            <div class="victory-achievement-item">
+                <span class="achievement-medal" aria-hidden="true"></span>
+                <span>${definition.name}</span>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <section class="victory-achievements" aria-label="Achievements unlocked">
+            <div class="victory-achievements-kicker">New achievement${achievementIds.length === 1 ? '' : 's'}</div>
+            <div class="victory-achievements-list">${rows}</div>
+        </section>
+    `;
+}
+
 async function persistVictoryResult() {
     let streakData = null;
     let milestone = null;
+    let newlyUnlockedAchievements = [];
 
     if (currentUser && currentGameMode === 'daily') {
         await clearGameProgress(selectedDifficulty);
         streakData = await updateStreak();
         milestone = checkStreakMilestone(streakData.current);
-        await updateStatsAfterGame(true, guesses.length, selectedDifficulty);
+        newlyUnlockedAchievements = await updateStatsAfterGame(true, guesses.length, selectedDifficulty);
         await markDailyChallengeCompleted(selectedDifficulty);
     }
 
@@ -760,7 +783,12 @@ async function persistVictoryResult() {
         await refreshCurrentChallengePlacement();
     }
 
-    return { streakData, milestone, placement: currentChallengePlacement };
+    return {
+        streakData,
+        milestone,
+        placement: currentChallengePlacement,
+        newlyUnlockedAchievements
+    };
 }
 
 async function hydrateVictoryMetadata(panel, persistencePromise) {
@@ -769,7 +797,13 @@ async function hydrateVictoryMetadata(panel, persistencePromise) {
         const result = await persistencePromise;
         const streakSlot = panel.querySelector('.victory-streak-slot');
         const placementSlot = panel.querySelector('.challenge-placement-slot');
+        const achievementSlot = panel.querySelector('.victory-achievements-slot');
         if (streakSlot) streakSlot.innerHTML = buildVictoryStreakMarkup(result.streakData, result.milestone);
+        if (achievementSlot) {
+            const markup = buildVictoryAchievementsMarkup(result.newlyUnlockedAchievements);
+            if (markup) achievementSlot.innerHTML = markup;
+            else achievementSlot.remove();
+        }
         if (placementSlot && result.placement) {
             placementSlot.innerHTML = `
                 <div class="race-placement-card">
@@ -821,6 +855,9 @@ async function showVictory() {
     const streakHTML = currentUser && currentGameMode === 'daily'
         ? '<div class="victory-streak-slot"></div>'
         : '';
+    const achievementHTML = currentUser && currentGameMode === 'daily'
+        ? '<div class="victory-achievements-slot"></div>'
+        : '';
 
     const resultMediaPromise = loadResultMedia(targetDino.nome);
         v.innerHTML = `
@@ -837,6 +874,7 @@ async function showVictory() {
             ${buildResultMediaSlotMarkup()}
 
             ${streakHTML}
+            ${achievementHTML}
             <div class="victory-save-status">Saving result…</div>
 
             <div class="victory-actions">

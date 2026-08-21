@@ -231,23 +231,43 @@ async function showStatsDashboard() {
     return;
     }
 
-    const [statsResult, diffStatsResult, recentGamesResult, achievementsResult] = await Promise.all([
+    const [statsResult, diffStatsResult, recentGamesResult, achievementsResult, achievementHistoryResult] = await Promise.all([
         sb.from('statistics').select('*').eq('user_id', currentUserId).single(),
         sb.from('difficulty_stats').select('*').eq('user_id', currentUserId),
         sb.from('daily_results').select('*').eq('user_id', currentUserId)
             .order('created_at', { ascending: false }).limit(10),
-        sb.from('achievements').select('achievement_id').eq('user_id', currentUserId)
+        sb.from('achievements').select('achievement_id').eq('user_id', currentUserId),
+        sb.from('daily_results')
+            .select('difficulty, guess_count, hint_history, won')
+            .eq('user_id', currentUserId)
+            .eq('won', true)
     ]);
     const stats = statsResult.data;
     const diffStats = diffStatsResult.data;
     const recentGames = recentGamesResult.data;
     const achievements = achievementsResult.data;
+    const achievementHistory = achievementHistoryResult.data || [];
 
     const gamesPlayed = stats?.games_played || 0;
     const gamesWon = stats?.games_won || 0;
     const winRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
     const streakData = { current: stats?.current_streak || 0, best: stats?.best_streak || 0, lastPlayed: stats?.last_played };
-    const unlockedAchievements = new Set(achievements ? achievements.map(a => a.achievement_id) : []);
+    let unlockedAchievements = new Set(achievements ? achievements.map(a => a.achievement_id) : []);
+    let achievementProgress = buildAchievementProgress(stats, achievementHistory);
+
+    try {
+        const synchronization = await syncHistoricalAchievements(
+            stats,
+            achievementHistory,
+            unlockedAchievements
+        );
+        unlockedAchievements = synchronization.unlockedSet;
+        achievementProgress = synchronization.progress;
+    } catch (error) {
+        console.error('Historical achievement synchronization failed:', error);
+    }
+    const unlockedAchievementCount = ACHIEVEMENT_DEFINITIONS
+        .filter(achievement => unlockedAchievements.has(achievement.id)).length;
 
     const appContent = document.getElementById('app-content');
 
@@ -277,9 +297,12 @@ async function showStatsDashboard() {
         ${generateDifficultyStats(diffStats)}
         </div>
 
-        <div style="background:var(--bg-panel); padding:25px; border-radius:8px; margin-bottom:30px; border:2px solid var(--border-subtle);">
-        <h3 style="color:var(--color-text-light); margin-bottom:20px; font-size:1.3em; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">Achievements</h3>
-        ${generateAchievements(unlockedAchievements)}
+        <div class="achievements-panel">
+        <div class="achievements-heading">
+            <h3>Achievements</h3>
+            <span>${unlockedAchievementCount} / ${ACHIEVEMENT_DEFINITIONS.length} unlocked</span>
+        </div>
+        ${generateAchievements(unlockedAchievements, achievementProgress)}
         </div>
 
         <div style="background:var(--bg-panel); padding:25px; border-radius:8px; border:2px solid var(--border-subtle);">
@@ -946,23 +969,39 @@ function generateDifficultyStats(diffStats) {
     return html;
 }
 
-function generateAchievements(unlockedSet) {
-    const allAchievements = [
-    { id: 'first_win', name: 'First Win', desc: 'Complete your first challenge' },
-    { id: 'perfect_game', name: 'Three Guesses', desc: 'Find the answer in 3 guesses or fewer' },
-    { id: 'ten_wins', name: '10 Wins', desc: 'Complete 10 challenges' },
-    { id: 'fifty_wins', name: '50 Wins', desc: 'Complete 50 challenges' },
-    { id: 'hard_win', name: 'Level IV', desc: 'Complete a Level IV challenge' },
-    { id: 'very_hard_win', name: 'Level V', desc: 'Complete a Level V challenge' }
-    ];
+function generateAchievements(unlockedSet, progressById = {}) {
+    const allAchievements = [...ACHIEVEMENT_DEFINITIONS].sort((a, b) =>
+        Number(unlockedSet?.has(b.id)) - Number(unlockedSet?.has(a.id))
+    );
 
-    let html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:15px;">';
+    let html = '<div class="achievements-grid">';
     allAchievements.forEach(ach => {
     const unlocked = unlockedSet && unlockedSet.has(ach.id);
+    const progress = progressById[ach.id] || {
+        current: unlocked ? 1 : 0,
+        target: 1,
+        unit: '',
+        complete: unlocked
+    };
+    const percent = Math.max(0, Math.min(100, Math.round((progress.current / progress.target) * 100)));
+    const progressText = unlocked
+        ? 'Completed'
+        : progress.unit
+            ? `${progress.current} / ${progress.target} ${progress.unit}`
+            : 'Not completed';
     html += `
         <div class="achievement-card ${unlocked ? 'achievement-unlocked' : 'achievement-locked'}">
-        <div class="achievement-title">${unlocked ? '◆' : '◇'} ${ach.name}</div>
+        <div class="achievement-card-heading">
+            <span class="achievement-medal" aria-hidden="true"></span>
+            <div class="achievement-title">${ach.name}</div>
+        </div>
         <div class="achievement-desc">${ach.desc}</div>
+        <div class="achievement-progress" aria-label="${progressText}">
+            <div class="achievement-progress-track">
+                <div class="achievement-progress-fill" style="width:${percent}%;"></div>
+            </div>
+            <span>${progressText}</span>
+        </div>
         </div>
     `;
     });

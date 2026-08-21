@@ -3,8 +3,23 @@
 // ═══════════════════════════════════════════════════════════════════════
 let dailyCompletionCache = null;
 
+const ACHIEVEMENT_DEFINITIONS = [
+    { id: 'first_win', name: 'First Win', desc: 'Complete your first challenge' },
+    { id: 'perfect_game', name: 'Three Guesses', desc: 'Find the answer in 3 guesses or fewer' },
+    { id: 'ten_wins', name: '10 Wins', desc: 'Complete 10 challenges' },
+    { id: 'fifty_wins', name: '50 Wins', desc: 'Complete 50 challenges' },
+    { id: 'hard_win', name: 'Level IV', desc: 'Complete a Level IV challenge' },
+    { id: 'very_hard_win', name: 'Level V', desc: 'Complete a Level V challenge' },
+    { id: 'field_researcher', name: 'Field Researcher', desc: 'Complete 10 Daily challenges' },
+    { id: 'persistence_pays', name: 'Persistence Pays', desc: 'Win a Daily challenge after 10 or more attempts' },
+    { id: 'independent_thinker', name: 'Independent Thinker', desc: 'Win a Daily challenge without using a hint' },
+    { id: 'complete_classification', name: 'Complete Classification', desc: 'Win a Daily challenge on every level' },
+    { id: 'three_day_expedition', name: 'Three-Day Expedition', desc: 'Reach a 3-day streak' },
+    { id: 'seven_day_expedition', name: 'Seven-Day Expedition', desc: 'Reach a 7-day streak' }
+];
+
 async function updateStatsAfterGame(won, guessCount, difficulty) {
-  if (!currentUserId) return;
+  if (!currentUserId) return [];
 
     const { data: current } = await sb.from('statistics')
         .select('*')
@@ -39,19 +54,52 @@ async function updateStatsAfterGame(won, guessCount, difficulty) {
     userStats.totalGuesses = newTotal;
     userStats.bestScore    = newBest;
 
-    checkAchievements(won, guessCount);
+    try {
+        return await checkAchievements(won, guessCount, {
+            usedHints: hintHistory.length > 0,
+            currentStreak: Number(base.current_streak || 0),
+            bestStreak: Number(base.best_streak || 0),
+            difficulty
+        });
+    } catch (error) {
+        console.error('Achievement check failed:', error);
+        return [];
+    }
     }
 
-async function checkAchievements(won, guessCount) {
+async function checkAchievements(won, guessCount, context = {}) {
     if (!currentUserId) return;
+
+    const { data: completedLevels } = await sb.from('daily_results')
+        .select('difficulty')
+        .eq('user_id', currentUserId)
+        .eq('won', true);
+
+    const gameDifficulty = context.difficulty || selectedDifficulty;
+    const wonLevels = new Set((completedLevels || []).map(result => result.difficulty));
+    if (won && gameDifficulty) wonLevels.add(gameDifficulty);
+
+    const allLevels = ['muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'];
+    const completedEveryLevel = allLevels.every(difficulty => wonLevels.has(difficulty));
+    const currentStreak = Math.max(
+        Number(context.currentStreak || 0),
+        Number(context.bestStreak || 0)
+    );
+    const usedHints = context.usedHints === true;
     
     const achievements = [
-        { id: 'first_win', condition: () => userStats.gamesWon === 1 },
+        { id: 'first_win', condition: () => userStats.gamesWon >= 1 },
         { id: 'perfect_game', condition: () => won && guessCount <= 3 },
         { id: 'ten_wins', condition: () => userStats.gamesWon >= 10 },
         { id: 'fifty_wins', condition: () => userStats.gamesWon >= 50 },
-        { id: 'hard_win', condition: () => won && selectedDifficulty === 'dificil' },
-        { id: 'very_hard_win', condition: () => won && selectedDifficulty === 'muito_dificil' }
+        { id: 'hard_win', condition: () => won && gameDifficulty === 'dificil' },
+        { id: 'very_hard_win', condition: () => won && gameDifficulty === 'muito_dificil' },
+        { id: 'field_researcher', condition: () => userStats.gamesPlayed >= 10 },
+        { id: 'persistence_pays', condition: () => won && guessCount >= 10 },
+        { id: 'independent_thinker', condition: () => won && !usedHints },
+        { id: 'complete_classification', condition: () => completedEveryLevel },
+        { id: 'three_day_expedition', condition: () => currentStreak >= 3 },
+        { id: 'seven_day_expedition', condition: () => currentStreak >= 7 }
     ];
 
     const { data: existing } = await sb.from('achievements')
@@ -59,49 +107,130 @@ async function checkAchievements(won, guessCount) {
         .eq('user_id', currentUserId);
 
     const unlocked = new Set(existing ? existing.map(a => a.achievement_id) : []);
+    const newlyUnlocked = [];
 
     for (const ach of achievements) {
         if (ach.condition() && !unlocked.has(ach.id)) {
-        await sb.from('achievements').insert({ user_id: currentUserId, achievement_id: ach.id });
+        const { error } = await sb.from('achievements')
+            .insert({ user_id: currentUserId, achievement_id: ach.id });
+        if (error) {
+            console.error(`Could not unlock achievement ${ach.id}:`, error);
+            continue;
+        }
+        unlocked.add(ach.id);
+        newlyUnlocked.push(ach.id);
         showAchievementNotification(ach.id);
         }
     }
+
+    return newlyUnlocked;
+}
+
+function buildAchievementProgress(stats = {}, wonResults = []) {
+    const gamesPlayed = Number(stats?.games_played || 0);
+    const gamesWon = Number(stats?.games_won || 0);
+    const bestStreak = Math.max(
+        Number(stats?.current_streak || 0),
+        Number(stats?.best_streak || 0)
+    );
+    const wins = Array.isArray(wonResults) ? wonResults.filter(result => result?.won !== false) : [];
+    const wonLevels = new Set(wins.map(result => result.difficulty).filter(Boolean));
+    const requiredLevels = ['muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'];
+    const completedLevelCount = requiredLevels.filter(difficulty => wonLevels.has(difficulty)).length;
+    const hasPerfectGame = wins.some(result => {
+        const guesses = Number(result.guess_count);
+        return Number.isFinite(guesses) && guesses > 0 && guesses <= 3;
+    });
+    const hasPersistenceWin = wins.some(result => {
+        const guesses = Number(result.guess_count);
+        return Number.isFinite(guesses) && guesses >= 10;
+    });
+    const hasHintlessWin = wins.some(result =>
+        Array.isArray(result.hint_history) && result.hint_history.length === 0
+    );
+
+    const numeric = (current, target, unit) => ({
+        current: Math.min(Number(current || 0), target),
+        target,
+        unit,
+        complete: Number(current || 0) >= target
+    });
+    const binary = complete => ({
+        current: complete ? 1 : 0,
+        target: 1,
+        unit: '',
+        complete
+    });
+
+    return {
+        first_win: numeric(gamesWon, 1, 'win'),
+        perfect_game: binary(hasPerfectGame),
+        ten_wins: numeric(gamesWon, 10, 'wins'),
+        fifty_wins: numeric(gamesWon, 50, 'wins'),
+        hard_win: binary(wonLevels.has('dificil')),
+        very_hard_win: binary(wonLevels.has('muito_dificil')),
+        field_researcher: numeric(gamesPlayed, 10, 'games'),
+        persistence_pays: binary(hasPersistenceWin),
+        independent_thinker: binary(hasHintlessWin),
+        complete_classification: numeric(completedLevelCount, 5, 'levels'),
+        three_day_expedition: numeric(bestStreak, 3, 'days'),
+        seven_day_expedition: numeric(bestStreak, 7, 'days')
+    };
+}
+
+async function syncHistoricalAchievements(stats, wonResults, unlockedSet = new Set()) {
+    if (!currentUserId) {
+        return { unlockedSet, newlyUnlocked: [], progress: buildAchievementProgress(stats, wonResults) };
+    }
+
+    const progress = buildAchievementProgress(stats, wonResults);
+    const newlyUnlocked = [];
+
+    for (const definition of ACHIEVEMENT_DEFINITIONS) {
+        if (!progress[definition.id]?.complete || unlockedSet.has(definition.id)) continue;
+
+        const { error } = await sb.from('achievements')
+            .insert({ user_id: currentUserId, achievement_id: definition.id });
+        if (error) {
+            console.error(`Could not synchronize achievement ${definition.id}:`, error);
+            continue;
+        }
+
+        unlockedSet.add(definition.id);
+        newlyUnlocked.push(definition.id);
+        showAchievementNotification(definition.id);
+    }
+
+    return { unlockedSet, newlyUnlocked, progress };
 }
 
 function showAchievementNotification(name) {
-    const achievementNames = {
-        first_win: 'First Win',
-        perfect_game: 'Three Guesses',
-        ten_wins: '10 Wins',
-        fifty_wins: '50 Wins',
-        hard_win: 'Level IV',
-        very_hard_win: 'Level V'
-    };
-    const displayName = achievementNames[name] || name;
+    const definition = ACHIEVEMENT_DEFINITIONS.find(achievement => achievement.id === name);
+    const displayName = definition?.name || name;
+    let stack = document.getElementById('achievement-notification-stack');
+    if (!stack) {
+        stack = document.createElement('div');
+        stack.id = 'achievement-notification-stack';
+        stack.className = 'achievement-notification-stack';
+        stack.setAttribute('aria-live', 'polite');
+        stack.setAttribute('aria-label', 'Achievement notifications');
+        document.body.appendChild(stack);
+    }
+
     const notif = document.createElement('div');
-    notif.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #3d4a2f 0%, #2d3a1f 100%);
-        color: #d4e5c9;
-        padding: 20px 30px;
-        border-radius: 8px;
-        border: 2px solid #4a5d36;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        z-index: 10000;
-        animation: slideIn 0.5s ease-out;
-        font-family: Georgia, serif;
-      `;
+    notif.className = 'achievement-notification';
       notif.innerHTML = `
-        <div style="font-size:0.9em; color:#a68a5a; margin-bottom:5px;">Achievement Unlocked!</div>
-        <div style="font-size:1.2em; font-weight:600; letter-spacing:1px;">${displayName}</div>
+        <div class="achievement-notification-kicker">Achievement Unlocked!</div>
+        <div class="achievement-notification-title">${displayName}</div>
       `;
-      document.body.appendChild(notif);
+      stack.appendChild(notif);
       
       setTimeout(() => {
-        notif.style.animation = 'slideOut 0.5s ease-in';
-        setTimeout(() => notif.remove(), 500);
+        notif.classList.add('is-leaving');
+        setTimeout(() => {
+            notif.remove();
+            if (!stack.children.length) stack.remove();
+        }, 350);
       }, 3000);
 }
 
