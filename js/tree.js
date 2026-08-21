@@ -180,8 +180,9 @@ function initTreePanning() {
   let startX, startY, scrollLeft, scrollTop;
 
   container.addEventListener('mousedown', e => {
-    if (container.classList.contains('tree-result-active')) return;
-    if (e.target.closest('.tree-node-group, g')) return;
+    if (container.classList.contains('tree-result-active') &&
+        !container.classList.contains('tree-review-active')) return;
+    if (e.target.closest('button, a, input, .tree-node-group, g')) return;
     isDown = true;
     startX = e.pageX - container.offsetLeft;
     startY = e.pageY - container.offsetTop;

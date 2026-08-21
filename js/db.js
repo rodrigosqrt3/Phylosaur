@@ -377,6 +377,7 @@ async function showRestoredServerCompletion(data) {
         ${buildResultMediaMarkup(targetName, resultMedia)}
 
         <div class="victory-actions">
+            <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">View Tree</button>
             ${currentGameMode === 'challenge' ? `
             <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">View Standings</button>
             <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `

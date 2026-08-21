@@ -554,6 +554,18 @@ function bindResultMedia(panel, dinoName, media) {
 
 function revealResultPanel(container, panel) {
     container.classList.add('tree-result-active');
+    container.classList.remove('tree-review-active');
+
+    let returnButton = container.querySelector('.tree-review-return');
+    if (!returnButton) {
+        returnButton = document.createElement('button');
+        returnButton.type = 'button';
+        returnButton.className = 'btn-hint btn-with-icon tree-review-return';
+        returnButton.innerHTML = '<i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back to Result</span>';
+        returnButton.addEventListener('click', () => toggleResultTreeView(false));
+        container.insertBefore(returnButton, container.firstChild);
+    }
+
     panel.setAttribute('tabindex', '-1');
     panel.setAttribute('role', 'region');
     panel.setAttribute('aria-label', 'Challenge result');
@@ -573,6 +585,28 @@ function revealResultPanel(container, panel) {
         } catch (error) {
             panel.focus();
         }
+    });
+}
+
+function toggleResultTreeView(showTree = true) {
+    const container = document.getElementById('tree-container');
+    if (!container?.classList.contains('tree-result-active')) return;
+
+    container.classList.toggle('tree-review-active', showTree);
+    container.scrollTop = 0;
+    container.scrollLeft = 0;
+
+    const focusTarget = showTree
+        ? container.querySelector('.tree-review-return')
+        : container.querySelector('.victory');
+
+    requestAnimationFrame(() => {
+        try {
+            focusTarget?.focus({ preventScroll: true });
+        } catch (_error) {
+            focusTarget?.focus();
+        }
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 }
 
@@ -649,6 +683,9 @@ async function giveUp() {
         </div>` : ''}
 
         <div class="victory-actions">
+            <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">
+                View Tree
+            </button>
             <button class="btn-hint victory-action-secondary" onclick="shareResult()" id="share-btn">
                 Share Result
             </button>
@@ -789,6 +826,9 @@ async function showVictory() {
             <div class="victory-save-status">Saving result…</div>
 
             <div class="victory-actions">
+                <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">
+                    View Tree
+                </button>
                 <button class="btn-hint victory-action-secondary" data-victory-action onclick="shareResult()" id="share-btn" disabled>
                     Share Result
                 </button>
