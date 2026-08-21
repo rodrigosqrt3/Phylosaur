@@ -5,14 +5,6 @@ function setHeaderControls(screen) {
     const controls = document.getElementById('header-controls');
     if (!controls) return;
 
-    const themeBtn = `
-      <button class="theme-switch" onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle theme">
-        <span class="theme-switch-track">
-          <span class="theme-switch-thumb"></span>
-        </span>
-      </button>
-    `;
-
     const statsBtn = currentUser 
       ? `<button class="btn-hint btn-header" onclick="showStatsDashboard()">Stats</button>` 
       : '';
@@ -28,27 +20,37 @@ function setHeaderControls(screen) {
     const backBtn = `<button class="btn-hint btn-with-icon" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`;
 
 const map = {
-      'login':        themeBtn,
-      'difficulty': themeBtn + `<button class="btn-hint btn-header" onclick="showMuseum()">Museum</button>` + analyticsBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
-      'game': themeBtn + backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
-      'stats':        themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'museum':       themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'about':        themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'practice-menu':themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'practice':     themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showPracticeMode()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'friends':      themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'challenge':    themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showFriendChallenges()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Friends</span></button>`,
-      'analytics':    themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'login':        '',
+      'difficulty': `<button class="btn-hint btn-header" onclick="showMuseum()">Museum</button>` + analyticsBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
+      'game': backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
+      'stats':        `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'museum':       `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'about':        `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'practice-menu':`<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'practice':     `<button class="btn-hint btn-header btn-with-icon" onclick="showPracticeMode()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'friends':      `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'challenge':    `<button class="btn-hint btn-header btn-with-icon" onclick="showFriendChallenges()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Friends</span></button>`,
+      'analytics':    `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
     };
 
-    controls.innerHTML = map[screen] || themeBtn;
+    controls.innerHTML = map[screen] || '';
 }
 
 function toggleTheme() {
         currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
         document.body.classList.toggle('light-mode');
         localStorage.setItem('phylosaur-theme', currentTheme);
+        updateThemeToggleState();
     }
+
+function updateThemeToggleState() {
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+
+    const isLight = currentTheme === 'light';
+    toggle.setAttribute('aria-pressed', String(isLight));
+    toggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+}
 
 function showModal(options) {
     return new Promise((resolve) => {

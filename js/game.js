@@ -601,12 +601,26 @@ function toggleResultTreeView(showTree = true) {
         : container.querySelector('.victory');
 
     requestAnimationFrame(() => {
+        if (showTree && typeof renderCurrentGameTree === 'function') {
+            renderCurrentGameTree();
+        }
+
         try {
             focusTarget?.focus({ preventScroll: true });
         } catch (_error) {
             focusTarget?.focus();
         }
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        if (showTree) {
+            requestAnimationFrame(() => {
+                const victoryNodes = container.querySelectorAll('.tree-victory-node');
+                const targetNode = victoryNodes[victoryNodes.length - 1];
+                if (targetNode && typeof centerTreeElement === 'function') {
+                    centerTreeElement(targetNode, 'auto');
+                }
+            });
+        }
     });
 }
 

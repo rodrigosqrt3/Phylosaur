@@ -72,15 +72,24 @@
 </head>
 <body>
   <div class="container" id="main-container">
-  <header>
-    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-        
-        <div style="flex:1;"></div>
-        <div style="flex:2; text-align:center;">
-          <h1 style="cursor:pointer;" onclick="showDifficultySelection()">Phylosaur</h1>
-          <p class="subtitle">A phylogenetic classification challenge</p>
+  <header class="site-header">
+    <div class="site-header-layout">
+      <div class="site-header-spacer" aria-hidden="true"></div>
+      <div class="site-brand">
+        <h1 style="cursor:pointer;" onclick="showDifficultySelection()">Phylosaur</h1>
+        <p class="subtitle">A phylogenetic classification challenge</p>
+      </div>
+      <div class="site-header-utility">
+        <div class="header-theme-row">
+          <button class="theme-switch header-theme-switch" onclick="toggleTheme()" id="theme-toggle"
+                  type="button" aria-label="Switch to light mode" aria-pressed="false">
+            <span class="theme-switch-track" aria-hidden="true">
+              <span class="theme-switch-thumb"></span>
+            </span>
+          </button>
         </div>
-        <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:10px;" id="header-controls">
+        <div id="header-controls"></div>
+      </div>
     </div>
   </header>
     <div id="app-content"></div>

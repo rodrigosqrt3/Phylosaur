@@ -642,6 +642,7 @@ transition: color 0.3s ease;
 }
 
 header {
+  position: relative;
   text-align: center;
   margin-bottom: 40px;
   padding: 40px 30px;
@@ -650,6 +651,49 @@ header {
   border-radius: 2px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   transition: all 0.3s ease;
+}
+
+.site-header-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 2fr) minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+}
+
+.site-brand {
+  min-width: 0;
+  text-align: center;
+}
+
+.site-header-utility {
+  display: grid;
+  justify-self: end;
+  justify-items: end;
+  gap: 4px;
+  min-width: 0;
+}
+
+.header-theme-row {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  min-height: 44px;
+}
+
+#header-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+#header-controls:empty {
+  display: none;
+}
+
+.header-theme-switch {
+  position: static;
 }
 
 header::before,
@@ -1051,26 +1095,22 @@ textarea:focus-visible {
         opacity: 1;
         text-decoration-color: currentColor;
     }
-    header > div { flex-wrap: wrap; gap: 10px; }
-    header > div {
-        flex-direction: column;
-        align-items: center;
+    .site-header-layout {
+        grid-template-columns: 1fr;
         gap: 16px;
     }
-    header > div > div:first-child {
-        display: none;
+    .site-header-spacer { display: none; }
+    .site-header-utility {
+        justify-self: stretch;
+        justify-items: stretch;
+        width: 100%;
+        gap: 6px;
     }
-    header > div > div:nth-child(2) {
-        flex: none;
-        text-align: center;
-    }
-    header > div > div:last-child {
-        flex: none;
-        justify-content: center !important;
+    .header-theme-row {
+        justify-content: flex-end;
     }
     #header-controls {
-        flex-wrap: wrap;
-        justify-content: flex-end;
+        justify-content: center;
         gap: 6px;
     }
     #header-controls button {
@@ -1131,7 +1171,10 @@ textarea:focus-visible {
 }
 
 #tree-container.tree-result-active #tree-scroll-wrapper {
-  display: none;
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 #tree-container.tree-result-active .victory {
@@ -1175,7 +1218,11 @@ textarea:focus-visible {
 }
 
 #tree-container.tree-result-active.tree-review-active #tree-scroll-wrapper {
-  display: block;
+  position: relative;
+  inset: auto;
+  display: inline-block;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 #tree-container.tree-result-active.tree-review-active .tree-review-return {
