@@ -705,7 +705,11 @@ const INTERACTIVE_TUTORIAL_STEPS = [
                 <text class="tutorial-welcome-question" x="250" y="29">?</text>
                 <circle class="tutorial-welcome-root" cx="140" cy="132" r="7"></circle>
             </svg>
-            <div class="tutorial-welcome-line">Guess → compare → follow the branches</div>
+            <div class="tutorial-welcome-line">
+                <span>Guess</span><i class="ui-icon ui-icon-arrow-right" aria-hidden="true"></i>
+                <span>Compare</span><i class="ui-icon ui-icon-arrow-right" aria-hidden="true"></i>
+                <span>Follow the branches</span>
+            </div>
         `
     },
     {
@@ -730,11 +734,11 @@ const INTERACTIVE_TUTORIAL_STEPS = [
         visual: `
             <div class="tutorial-tree-demo" aria-label="Example evolutionary trail">
                 <div class="tutorial-tree-node is-root">Dinosauria</div>
-                <div class="tutorial-tree-link is-best">↓</div>
+                <div class="tutorial-tree-link is-best"><i class="ui-icon ui-icon-arrow-down" aria-hidden="true"></i></div>
                 <div class="tutorial-tree-node is-best">Ornithischia</div>
                 <div class="tutorial-tree-split">
-                    <div><span>↙</span><div class="tutorial-tree-node is-guess">Triceratops</div></div>
-                    <div><span class="is-best">↘</span><div class="tutorial-tree-node is-best">Best trail</div></div>
+                    <div><span><i class="ui-icon ui-icon-arrow-down-left" aria-hidden="true"></i></span><div class="tutorial-tree-node is-guess">Triceratops</div></div>
+                    <div><span class="is-best"><i class="ui-icon ui-icon-arrow-down-right" aria-hidden="true"></i></span><div class="tutorial-tree-node is-best">Best trail</div></div>
                 </div>
             </div>
         `
@@ -1303,7 +1307,8 @@ async function showMuseumEntry(name) {
                 ${wikiInfo?.url ? `
                     <a class="museum-entry-read-more" href="${wikiInfo.url}"
                        target="_blank" rel="noopener">
-                        Read the full Wikipedia article ↗
+                        <span>Read the full Wikipedia article</span>
+                        <i class="ui-icon ui-icon-external" aria-hidden="true"></i>
                     </a>
                 ` : ''}
             </section>

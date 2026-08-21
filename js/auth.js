@@ -101,7 +101,7 @@ function showLoginScreen() {
       </div>
 
       <div class="login-form-panel" id="login-panel-reset">
-        <span class="login-forgot" style="text-align:left; display:inline-block; margin-bottom:20px;" onclick="loginShowReset(false)">← Back to sign in</span>
+        <span class="login-forgot login-back-link" style="text-align:left; display:inline-flex; margin-bottom:20px;" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back to sign in</span></span>
         <p style="color:#d4b87e; font-size:1.1em; letter-spacing:2px; margin-bottom:10px;">Reset Password</p>
         <p style="color:#8b7355; font-size:0.88em; line-height:1.7; margin-bottom:24px; font-style:italic;">
           Enter your email and we'll send you a reset link.
@@ -188,7 +188,7 @@ function showLoginModal() {
     </div>
 
     <div class="login-form-panel" id="login-panel-reset">
-      <span class="login-forgot" style="display:inline-block; margin-bottom:20px;" onclick="loginShowReset(false)">← Back</span>
+      <span class="login-forgot login-back-link" style="display:inline-flex; margin-bottom:20px;" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></span>
       <div class="login-global-error" id="reset-global-error"></div>
       <div class="login-global-success" id="reset-global-success"></div>
       <div class="login-field" style="margin-bottom:28px;">

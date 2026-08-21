@@ -25,20 +25,20 @@ function setHeaderControls(screen) {
       ? `<button class="btn-hint btn-header btn-account" onclick="logout()" title="Sign out: ${currentUser}">${currentUser}</button>` 
       : '';
 
-    const backBtn = `<button class="btn-hint" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;">← Levels</button>`;
+    const backBtn = `<button class="btn-hint btn-with-icon" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`;
 
 const map = {
       'login':        themeBtn,
       'difficulty': themeBtn + `<button class="btn-hint btn-header" onclick="showMuseum()">Museum</button>` + analyticsBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
       'game': themeBtn + backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
-      'stats':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'museum':       themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`, // <-- ADD THIS LINE
-      'about':        themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'practice-menu':themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'practice':     themeBtn + `<button class="btn-hint btn-header" onclick="showPracticeMode()">← Back</button>`,
-      'friends':      themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
-      'challenge':    themeBtn + `<button class="btn-hint btn-header" onclick="showFriendChallenges()">← Friends</button>`,
-      'analytics':    themeBtn + `<button class="btn-hint btn-header" onclick="showDifficultySelection()">← Back</button>`,
+      'stats':        themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'museum':       themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'about':        themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'practice-menu':themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'practice':     themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showPracticeMode()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'friends':      themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'challenge':    themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showFriendChallenges()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Friends</span></button>`,
+      'analytics':    themeBtn + `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
     };
 
     controls.innerHTML = map[screen] || themeBtn;

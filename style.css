@@ -521,6 +521,110 @@ body.light-mode .difficulty-btn:hover {
   letter-spacing: 0.5px;
 }
 
+.btn-with-icon,
+.login-back-link,
+.museum-entry-read-more {
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-with-icon {
+  display: inline-flex;
+  justify-content: center;
+}
+
+.login-back-link {
+  justify-content: flex-start;
+}
+
+.ui-icon {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 0.9em;
+  height: 0.9em;
+  color: currentColor;
+  font-size: 1em;
+  font-style: normal;
+  line-height: 1;
+  vertical-align: -0.08em;
+}
+
+.ui-icon-arrow-left::before,
+.ui-icon-arrow-right::before,
+.ui-icon-arrow-down::before,
+.ui-icon-arrow-down-left::before,
+.ui-icon-arrow-down-right::before {
+  content: '';
+  position: absolute;
+  left: 0.14em;
+  top: 0.32em;
+  width: 0.66em;
+  height: 0;
+  border-top: 2px solid currentColor;
+}
+
+.ui-icon-arrow-left::after,
+.ui-icon-arrow-right::after,
+.ui-icon-arrow-down::after,
+.ui-icon-arrow-down-left::after,
+.ui-icon-arrow-down-right::after {
+  content: '';
+  position: absolute;
+  left: 0.13em;
+  top: 0.13em;
+  width: 0.38em;
+  height: 0.38em;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.ui-icon-arrow-right {
+  transform: rotate(180deg);
+}
+
+.ui-icon-arrow-down {
+  transform: rotate(-90deg);
+}
+
+.ui-icon-arrow-down-left {
+  transform: rotate(-45deg);
+}
+
+.ui-icon-arrow-down-right {
+  transform: rotate(-135deg);
+}
+
+.ui-icon-external::before {
+  content: '';
+  position: absolute;
+  left: 0.04em;
+  bottom: 0.02em;
+  width: 0.58em;
+  height: 0.58em;
+  border: 2px solid currentColor;
+  border-radius: 1px;
+}
+
+.ui-icon-external::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 0.48em;
+  height: 0.48em;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  background: linear-gradient(
+    45deg,
+    transparent 42%,
+    currentColor 43%,
+    currentColor 56%,
+    transparent 57%
+  );
+}
+
 .difficulty-info-text {
   color: var(--color-accent);
   font-size: 0.9em;
@@ -2804,7 +2908,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 }
 
 .museum-entry-read-more {
-    display: inline-block;
+    display: inline-flex;
     margin-top: 28px;
     padding: 11px 18px;
     color: var(--color-text-light);
@@ -3971,6 +4075,11 @@ body.light-mode .stat-label {
 }
 
 .tutorial-welcome-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   margin-top: 18px;
   color: var(--color-muted);
   font-size: 0.78em;
@@ -4056,6 +4165,9 @@ body.light-mode .stat-label {
 }
 
 .tutorial-tree-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 5px;
   color: var(--tree-line);
   line-height: 1;
@@ -4075,7 +4187,9 @@ body.light-mode .stat-label {
 }
 
 .tutorial-tree-split > div > span {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding-bottom: 5px;
   color: var(--tree-line);
 }
