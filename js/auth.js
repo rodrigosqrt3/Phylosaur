@@ -72,7 +72,7 @@ function showLoginScreen() {
           <div class="login-field-error" id="signin-password-err">Password is required.</div>
         </div>
         <span class="login-forgot" onclick="loginShowReset()">Forgot password?</span>
-        <button class="btn-guess" id="signin-btn" onclick="handleSignIn()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+        <button class="btn-guess btn-block btn-large" id="signin-btn" onclick="handleSignIn()">
           Sign In
         </button>
       </div>
@@ -95,7 +95,7 @@ function showLoginScreen() {
           <input type="password" id="reg-confirm" placeholder="Repeat password" autocomplete="new-password" />
           <div class="login-field-error" id="reg-confirm-err">Passwords do not match.</div>
         </div>
-        <button class="btn-guess" id="register-btn" onclick="handleRegister()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+        <button class="btn-guess btn-block btn-large" id="register-btn" onclick="handleRegister()">
           Create Account
         </button>
       </div>
@@ -113,13 +113,13 @@ function showLoginScreen() {
           <input type="email" id="reset-email" placeholder="your@email.com" />
           <div class="login-field-error" id="reset-email-err">Please enter a valid email address.</div>
         </div>
-        <button class="btn-guess" id="reset-btn" onclick="handleReset()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+        <button class="btn-guess btn-block btn-large" id="reset-btn" onclick="handleReset()">
           Send Reset Link
         </button>
       </div>
 
       <p style="text-align:center; margin-top:20px;">
-        <button onclick="continueAsGuest()" class="btn-hint" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px; margin-top:12px;">
+        <button onclick="continueAsGuest()" class="btn-hint btn-block btn-large btn-spaced">
           Play Without Account
         </button>
       </p>
@@ -159,7 +159,7 @@ function showLoginModal() {
         <div class="login-field-error" id="signin-password-err">Password is required.</div>
       </div>
       <span class="login-forgot" onclick="loginShowReset()">Forgot password?</span>
-      <button class="btn-guess" id="signin-btn" onclick="handleSignInModal()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+      <button class="btn-guess btn-block btn-large" id="signin-btn" onclick="handleSignInModal()">
         Sign In
       </button>
     </div>
@@ -182,7 +182,7 @@ function showLoginModal() {
         <input type="password" id="reg-confirm" placeholder="Repeat password" autocomplete="new-password" />
         <div class="login-field-error" id="reg-confirm-err">Passwords do not match.</div>
       </div>
-      <button class="btn-guess" id="register-btn" onclick="handleRegisterModal()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+      <button class="btn-guess btn-block btn-large" id="register-btn" onclick="handleRegisterModal()">
         Create Account
       </button>
     </div>
@@ -196,12 +196,12 @@ function showLoginModal() {
         <input type="email" id="reset-email" placeholder="your@email.com" />
         <div class="login-field-error" id="reset-email-err">Please enter a valid email address.</div>
       </div>
-      <button class="btn-guess" id="reset-btn" onclick="handleReset()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+      <button class="btn-guess btn-block btn-large" id="reset-btn" onclick="handleReset()">
         Send Reset Link
       </button>
     </div>
 
-    <button onclick="closeLoginModal()" class="btn-hint" style="width:100%; padding:12px; font-size:12px; letter-spacing:2px; margin-top:20px;">
+    <button onclick="closeLoginModal()" class="btn-hint btn-block btn-spaced">
       Continue Without Account
     </button>
   `;
@@ -509,7 +509,7 @@ function showPasswordUpdateForm() {
         <input type="password" id="update-confirm" placeholder="Repeat password" />
         <div class="login-field-error" id="update-confirm-err">Passwords do not match.</div>
       </div>
-      <button class="btn-guess" id="update-btn" onclick="handlePasswordUpdate()" style="width:100%; padding:15px; font-size:14px; letter-spacing:2px;">
+      <button class="btn-guess btn-block btn-large" id="update-btn" onclick="handlePasswordUpdate()">
         Update Password
       </button>
     </div>

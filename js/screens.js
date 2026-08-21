@@ -36,13 +36,13 @@ async function showDifficultySelection() {
 
         <div style="margin-top:30px; text-align:center;">
             <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
-            <button class="btn-hint" onclick="showHowToPlay()" style="padding:18px 40px; font-size:15px;">
+            <button class="btn-hint btn-large btn-menu-action" onclick="showHowToPlay()">
                 How to Play
             </button>
-            <button class="btn-hint" onclick="showPracticeMode()" style="padding:18px 40px; font-size:15px;">
+            <button class="btn-hint btn-large btn-menu-action" onclick="showPracticeMode()">
                 Practice Mode
             </button>
-            <button class="btn-hint btn-friends" onclick="showFriendChallenges()" style="padding:18px 40px; font-size:15px;">
+            <button class="btn-hint btn-friends btn-large btn-menu-action" onclick="showFriendChallenges()">
                 Play with Friends
             </button>
             </div>

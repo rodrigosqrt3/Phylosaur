@@ -17,7 +17,7 @@ function setHeaderControls(screen) {
       ? `<button class="btn-hint btn-header btn-account" onclick="logout()" title="Sign out: ${currentUser}">${currentUser}</button>` 
       : '';
 
-    const backBtn = `<button class="btn-hint btn-with-icon" onclick="showDifficultySelection()" style="padding:8px 14px; font-size:12px;"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`;
+    const backBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`;
 
 const map = {
       'login':        '',
