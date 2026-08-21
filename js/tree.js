@@ -633,6 +633,7 @@ leafPositions.forEach((leaf, name) => {
     g.dataset.treeDisplay = leaf.displayName;
     g.setAttribute('class', [
       'tree-leaf-group',
+      leaf.isTarget ? 'tree-leaf-target' : (leaf.isHint ? 'tree-leaf-hint' : 'tree-leaf-guess'),
       bestPathNodeKeys.has(nodeKey) ? 'tree-best-destination' : '',
       isNewNode ? 'new-node' : '',
       isNewNode || isFocusedNode ? 'tree-new-focus' : '',
@@ -670,8 +671,7 @@ leafPositions.forEach((leaf, name) => {
     } else {
         rect.setAttribute('fill', 'var(--tree-leaf-bg)');
         rect.setAttribute('stroke', 'var(--tree-leaf-border)');
-        rect.setAttribute('stroke-width', '2');
-        rect.setAttribute('stroke-dasharray', '5,5');
+        rect.setAttribute('stroke-width', '2.5');
     }
     
     g.appendChild(rect);
@@ -685,7 +685,7 @@ leafPositions.forEach((leaf, name) => {
     );
     label.setAttribute('text-anchor', 'middle');
     label.setAttribute('dominant-baseline', 'middle');
-    label.setAttribute('font-weight', leaf.isTarget ? '700' : '500');
+    label.setAttribute('font-weight', leaf.isTarget || (!leaf.isHint && !leaf.isTarget) ? '600' : '500');
     label.setAttribute('font-style', 'italic'); 
     label.textContent = leaf.displayName;
 

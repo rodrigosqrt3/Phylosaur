@@ -765,6 +765,78 @@ function buildVictoryAchievementsMarkup(achievementIds) {
     `;
 }
 
+function buildVictoryDiscoveryMarkup(discovery) {
+    if (!discovery) return '';
+
+    const count = Math.max(Number(discovery.discoveryCount) || 1, 1);
+    const isNew = discovery.isFirstDiscovery === true;
+    const countLabel = count === 1
+        ? 'Now part of your collection'
+        : `Discovered ${count} times`;
+
+    return `
+        <section class="victory-discovery${isNew ? ' victory-discovery--new' : ''}"
+                 aria-label="${isNew ? 'New Museum discovery' : 'Museum discovery updated'}">
+            <span class="victory-discovery-mark" aria-hidden="true"></span>
+            <div class="victory-discovery-copy">
+                <div class="victory-discovery-kicker">${isNew ? 'New Museum Discovery' : 'Museum Record Updated'}</div>
+                <strong data-victory-discovery-primary>${isNew ? `${targetDino.nome} has been added to the Museum` : countLabel}</strong>
+                <span data-victory-discovery-secondary>${isNew ? countLabel : 'Its entry remains available in your collection.'}</span>
+            </div>
+            <button class="btn-hint victory-discovery-action" type="button" data-open-victory-museum>
+                View Entry
+            </button>
+        </section>
+    `;
+}
+
+async function hydrateVictoryDiscoveryCount(panel, name, isNew) {
+    try {
+        const records = await getDiscoveryRecords();
+        const count = Math.max(Number(records[name.toLowerCase()]?.count) || 1, 1);
+        const countLabel = count === 1
+            ? 'Now part of your collection'
+            : `Discovered ${count} times`;
+        const primary = panel.querySelector('[data-victory-discovery-primary]');
+        const secondary = panel.querySelector('[data-victory-discovery-secondary]');
+
+        if (isNew) {
+            if (secondary) secondary.textContent = countLabel;
+        } else if (primary) {
+            primary.textContent = countLabel;
+        }
+    } catch (error) {
+        console.warn('Could not refresh the Museum discovery count:', error);
+    }
+}
+
+async function openVictoryMuseumEntry(name, button = null) {
+    if (!name) return;
+
+    const originalText = button?.textContent;
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Opening…';
+    }
+
+    try {
+        museumDiscoveryRecords = await getDiscoveryRecords();
+        if (!Array.isArray(fullDatabase) || !fullDatabase.some(dino => dino.nome === name)) {
+            const catalog = await callGameApi('catalog');
+            fullDatabase = catalog.dinosaurs || [];
+        }
+        await showMuseumEntry(name);
+    } catch (error) {
+        console.error('Could not open Museum entry from victory:', error);
+        await customAlert('Could Not Open Museum Entry', error.message);
+    } finally {
+        if (button && document.body.contains(button)) {
+            button.disabled = false;
+            button.textContent = originalText || 'View Entry';
+        }
+    }
+}
+
 async function persistVictoryResult() {
     let streakData = null;
     let milestone = null;
@@ -824,7 +896,7 @@ async function hydrateVictoryMetadata(panel, persistencePromise) {
 }
 
 async function showVictory() {
-    registerDiscovery(targetDino.nome, currentMuseumProof);
+    const discovery = registerDiscovery(targetDino.nome, currentMuseumProof);
     const persistencePromise = persistVictoryResult();
 
     document.getElementById('dino-input').disabled = true;
@@ -873,6 +945,8 @@ async function showVictory() {
 
             ${buildResultMediaSlotMarkup()}
 
+            ${buildVictoryDiscoveryMarkup(discovery)}
+
             ${streakHTML}
             ${achievementHTML}
             <div class="victory-save-status">Saving result…</div>
@@ -894,6 +968,9 @@ async function showVictory() {
         `;
 
     container.insertBefore(v, container.firstChild);
+    const museumButton = v.querySelector('[data-open-victory-museum]');
+    museumButton?.addEventListener('click', () => openVictoryMuseumEntry(targetDino.nome, museumButton));
+    hydrateVictoryDiscoveryCount(v, targetDino.nome, discovery.isFirstDiscovery);
     hydrateResultMedia(v, targetDino.nome, resultMediaPromise);
     hydrateVictoryMetadata(v, persistencePromise);
     revealResultPanel(container, v);

@@ -678,7 +678,9 @@ function readLocalDiscoveryEvents() {
 }
 
 function registerDiscovery(dinoName, museumProof = null) {
-    if (!dinoName) return;
+    if (!dinoName) {
+        return { isFirstDiscovery: false, discoveryCount: 0, eventRecorded: false };
+    }
 
     const localDiscoveries = readLocalDiscoveryNames();
     const wasAlreadyUnlocked = localDiscoveries.some(
@@ -698,8 +700,14 @@ function registerDiscovery(dinoName, museumProof = null) {
             ? `challenge:${currentChallengeCode}:${dinoName}`
             : `practice:${discoveredAt}:${Math.random().toString(36).slice(2, 9)}`;
     const events = readLocalDiscoveryEvents();
+    const priorEventCount = events.filter(
+        event => event?.dinoName?.toLowerCase() === dinoName.toLowerCase()
+    ).length;
 
-    if (!events.some(event => event.eventKey === eventKey)) {
+    const existingEvent = events.find(event => event.eventKey === eventKey);
+    let eventRecorded = false;
+
+    if (!existingEvent) {
         events.push({
             eventKey,
             dinoName,
@@ -710,15 +718,25 @@ function registerDiscovery(dinoName, museumProof = null) {
             museumProof: museumProof || null
         });
         localStorage.setItem(DISCOVERY_EVENTS_KEY, JSON.stringify(events));
+        eventRecorded = true;
     } else if (museumProof) {
-        const matchingEvent = events.find(event => event.eventKey === eventKey);
-        if (matchingEvent && !matchingEvent.museumProof) {
-            matchingEvent.museumProof = museumProof;
+        if (!existingEvent.museumProof) {
+            existingEvent.museumProof = museumProof;
             localStorage.setItem(DISCOVERY_EVENTS_KEY, JSON.stringify(events));
         }
     }
 
     console.log(`Dinosaur discovery recorded: ${dinoName} (${source})`);
+    const recordedEventCount = events.filter(
+        event => event?.dinoName?.toLowerCase() === dinoName.toLowerCase()
+    ).length;
+    const legacyDiscoveryBaseline = wasAlreadyUnlocked && priorEventCount === 0 ? 1 : 0;
+
+    return {
+        isFirstDiscovery: !wasAlreadyUnlocked,
+        discoveryCount: Math.max(recordedEventCount + legacyDiscoveryBaseline, 1),
+        eventRecorded
+    };
 }
 
 async function getDiscoveryRecords() {
