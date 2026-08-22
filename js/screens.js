@@ -1062,7 +1062,7 @@ let museumFallbackCatalogPromise = null;
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=1')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=2')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();

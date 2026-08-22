@@ -1,7 +1,57 @@
 {
-  "version": 1,
+  "version": 2,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Amargasaurus": {
+      "file_title": "File:Amargasaurus Reconstruction Fred Wierum.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Amargasaurus_Reconstruction_Fred_Wierum.png/960px-Amargasaurus_Reconstruction_Fred_Wierum.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Amargasaurus_Reconstruction_Fred_Wierum.png",
+      "artist": "Fred Wierum",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Daspletosaurus": {
+      "file_title": "File:Daspletosaurus torDB.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Daspletosaurus_torDB.jpg/960px-Daspletosaurus_torDB.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Daspletosaurus_torDB.jpg",
+      "artist": "Dmitry Bogdanov",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Dreadnoughtus": {
+      "file_title": "File:Dreadnoughtus NT small (flipped).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Dreadnoughtus_NT_small_%28flipped%29.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Dreadnoughtus_NT_small_(flipped).jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Eoraptor": {
+      "file_title": "File:Eoraptor resto. 01.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Eoraptor_resto._01.png/960px-Eoraptor_resto._01.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Eoraptor_resto._01.png",
+      "artist": "Conty",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Giganotosaurus": {
+      "file_title": "File:Giganotosaurus TD.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Giganotosaurus_TD.png/960px-Giganotosaurus_TD.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Giganotosaurus_TD.png",
+      "artist": "TotalDino",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0 International",
+      "source": "wikimedia"
+    },
     "Irritator": {
       "file_title": "File:Irritator Life Reconstruction.jpg",
       "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Irritator_Life_Reconstruction.jpg/960px-Irritator_Life_Reconstruction.jpg",
