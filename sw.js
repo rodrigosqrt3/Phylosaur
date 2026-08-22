@@ -7,6 +7,7 @@ const CORE_ASSETS = [
   "./about.html",
   "./offline.html",
   "./manifest.webmanifest",
+  "./phylosaur_media_overrides.json",
   "./style.css",
   "./js/config.js",
   "./js/state.js",

@@ -1057,7 +1057,25 @@ function generateRecentGames(recentGames) {
 // ═══════════════════════════════════════════════════════════════════════
 let selectedMuseumLevel = 'muito_facil';
 
+let museumOverrideCatalogPromise = null;
 let museumFallbackCatalogPromise = null;
+
+async function loadMuseumOverrideCatalog() {
+    if (!museumOverrideCatalogPromise) {
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=1')
+            .then(response => {
+                if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(catalog => catalog.taxa || {})
+            .catch(error => {
+                console.warn('Museum media overrides unavailable:', error);
+                return {};
+            });
+    }
+
+    return museumOverrideCatalogPromise;
+}
 
 async function loadMuseumFallbackCatalog() {
     if (!museumFallbackCatalogPromise) {
@@ -1078,6 +1096,22 @@ async function loadMuseumFallbackCatalog() {
 
 async function getCachedDinoMedia(name) {
     let cache = JSON.parse(localStorage.getItem('phylosaur-image-cache-v5') || '{}');
+    const overrideCatalog = await loadMuseumOverrideCatalog();
+    const override = overrideCatalog[name];
+
+    // Reviewed choices always win, including over images saved by older versions.
+    if (override?.url) {
+        const media = {
+            ...override,
+            source: override.source || 'wikimedia'
+        };
+        if (cache[name]?.url !== media.url) {
+            cache[name] = media;
+            localStorage.setItem('phylosaur-image-cache-v5', JSON.stringify(cache));
+        }
+        return media;
+    }
+
     const cached = cache[name];
 
     // Older versions stored TotalDino URLs as plain strings.
