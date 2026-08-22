@@ -8,6 +8,7 @@ function escapeChallengeHtml(value) {
 }
 
 async function showDifficultySelection() {
+    setAppRoute('/');
     if (typeof stopChallengeStatusPolling === 'function') stopChallengeStatusPolling();
     const [completionStatus] = await Promise.all([
         getDailyCompletionStatus(),
@@ -52,6 +53,7 @@ async function showDifficultySelection() {
 }
 
 function showFriendChallenges(prefilledCode = '') {
+    setAppRoute('/friends');
     if (typeof stopChallengeStatusPolling === 'function') stopChallengeStatusPolling();
     setHeaderControls('friends');
     const appContent = document.getElementById('app-content');
@@ -153,6 +155,7 @@ async function joinFriendChallenge() {
 }
 
 function showPracticeMode() {
+    setAppRoute('/practice');
     setHeaderControls('practice-menu');
     const appContent = document.getElementById('app-content');
     
@@ -225,11 +228,12 @@ function generateDifficultyButton(difficulty, name, level, description, complete
 }
 
 async function showStatsDashboard() {
-    setHeaderControls('stats');
     if (!currentUser) {
     alert('Login to view statistics');
     return;
     }
+    setAppRoute('/stats');
+    setHeaderControls('stats');
 
     const [statsResult, diffStatsResult, recentGamesResult, achievementsResult, achievementHistoryResult] = await Promise.all([
         sb.from('statistics').select('*').eq('user_id', currentUserId).single(),
@@ -382,6 +386,7 @@ function ensureMathRenderer() {
 }
 
 function showAbout() {
+    setAppRoute('/about');
     setHeaderControls('about');
     const appContent = document.getElementById('app-content');
     
@@ -1055,7 +1060,8 @@ function generateRecentGames(recentGames) {
 // ═══════════════════════════════════════════════════════════════════════
 // MUSEUM SCREEN CONTROLLER
 // ═══════════════════════════════════════════════════════════════════════
-let selectedMuseumLevel = 'muito_facil';
+let selectedMuseumLevel = 'all';
+let museumSearchQuery = '';
 
 let museumOverrideCatalogPromise = null;
 let museumFallbackCatalogPromise = null;
@@ -1234,6 +1240,13 @@ function closeMuseumEntry() {
     }
 }
 
+function dismissMuseumEntry() {
+    closeMuseumEntry();
+    if (getCurrentAppRoute().startsWith('/museum/')) {
+        navigateBackOrHome('/museum');
+    }
+}
+
 function openMuseumImageViewer() {
     if (!activeMuseumEntryMedia?.url) return;
 
@@ -1260,6 +1273,7 @@ function openMuseumImageViewer() {
 }
 
 async function showMuseumEntry(name) {
+    setAppRoute(`/museum/${encodeURIComponent(name)}`);
     closeMuseumEntry();
 
     const dino = fullDatabase.find(item => item.nome === name);
@@ -1270,13 +1284,13 @@ async function showMuseumEntry(name) {
     overlay.className = 'museum-entry-overlay';
     overlay.innerHTML = `
         <article class="museum-entry-dialog" role="dialog" aria-modal="true" aria-label="${name}">
-            <button class="museum-entry-close" type="button" onclick="closeMuseumEntry()" aria-label="Close">×</button>
+            <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="Close">×</button>
             <div class="museum-entry-loading">Opening ${name}…</div>
         </article>
     `;
 
     overlay.addEventListener('click', event => {
-        if (event.target === overlay) closeMuseumEntry();
+        if (event.target === overlay) dismissMuseumEntry();
     });
 
     document.body.appendChild(overlay);
@@ -1286,7 +1300,7 @@ async function showMuseumEntry(name) {
         if (event.key !== 'Escape') return;
         const viewer = document.getElementById('museum-image-viewer');
         if (viewer) viewer.remove();
-        else closeMuseumEntry();
+        else dismissMuseumEntry();
     };
     document.addEventListener('keydown', museumEntryEscapeHandler);
 
@@ -1301,7 +1315,7 @@ async function showMuseumEntry(name) {
             Object.assign(dino, entry.dinosaur);
         } catch (error) {
             overlay.querySelector('.museum-entry-dialog').innerHTML = `
-                <button class="museum-entry-close" type="button" onclick="closeMuseumEntry()" aria-label="Close">×</button>
+                <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="Close">×</button>
                 <div class="museum-entry-loading" style="color:var(--color-danger);">
                     Could not open ${name}.<br>${error.message}
                 </div>
@@ -1340,7 +1354,7 @@ async function showMuseumEntry(name) {
     };
 
     overlay.querySelector('.museum-entry-dialog').innerHTML = `
-        <button class="museum-entry-close" type="button" onclick="closeMuseumEntry()" aria-label="Close">×</button>
+            <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="Close">×</button>
 
         <header class="museum-entry-header">
             <div class="museum-entry-kicker">Museum entry</div>
@@ -1390,6 +1404,7 @@ async function showMuseumEntry(name) {
 }
 
 async function showMuseum() {
+    setAppRoute('/museum');
     setHeaderControls('museum');
     const appContent = document.getElementById('app-content');
     
@@ -1406,13 +1421,12 @@ async function showMuseum() {
             .map(record => record.name);
         const unlockedSet = new Set(unlockedList.map(name => name.toLowerCase()));
 
-        const levelDinos = fullDatabase
-            .filter(d => d.dificuldade === selectedMuseumLevel)
+        const museumDinos = [...fullDatabase]
             .sort((a, b) => a.nome.localeCompare(b.nome));
-        const levelUnlockedCount = levelDinos.filter(d => unlockedSet.has(d.nome.toLowerCase())).length;
         
         const totalCount = fullDatabase.length;
-        const totalUnlocked = unlockedList.length;
+        const totalUnlocked = fullDatabase
+            .filter(dino => unlockedSet.has(dino.nome.toLowerCase())).length;
         const totalPercent = totalCount > 0 ? Math.round((totalUnlocked / totalCount) * 100) : 0;
 
         let html = `
@@ -1433,32 +1447,56 @@ async function showMuseum() {
                     </div>
                 </div>
 
-                <!-- Level Tabs -->
-                <div class="tab-row museum-tabs" style="margin-bottom: 24px;">
-                    <button class="tab-btn ${selectedMuseumLevel === 'muito_facil' ? 'active' : ''}" onclick="switchMuseumLevel('muito_facil')">Level I</button>
-                    <button class="tab-btn ${selectedMuseumLevel === 'facil' ? 'active' : ''}" onclick="switchMuseumLevel('facil')">Level II</button>
-                    <button class="tab-btn ${selectedMuseumLevel === 'normal' ? 'active' : ''}" onclick="switchMuseumLevel('normal')">Level III</button>
-                    <button class="tab-btn ${selectedMuseumLevel === 'dificil' ? 'active' : ''}" onclick="switchMuseumLevel('dificil')">Level IV</button>
-                    <button class="tab-btn ${selectedMuseumLevel === 'muito_dificil' ? 'active' : ''}" onclick="switchMuseumLevel('muito_dificil')">Level V</button>
+                <div class="museum-toolbar">
+                    <label class="museum-search" for="museum-search-input">
+                        <span>Search the collection</span>
+                        <input id="museum-search-input" type="search"
+                               value="${escapeChallengeHtml(museumSearchQuery)}"
+                               placeholder="Search by genus…"
+                               autocomplete="off"
+                               oninput="updateMuseumSearch(this.value)">
+                    </label>
+
+                    <div class="tab-row museum-tabs" role="group" aria-label="Filter Museum by level">
+                        <button class="tab-btn museum-filter-all ${selectedMuseumLevel === 'all' ? 'active' : ''}"
+                                data-museum-filter="all" aria-pressed="${selectedMuseumLevel === 'all'}"
+                                onclick="switchMuseumLevel('all')">All</button>
+                        <button class="tab-btn museum-filter-very-easy ${selectedMuseumLevel === 'muito_facil' ? 'active' : ''}"
+                                data-museum-filter="muito_facil" aria-pressed="${selectedMuseumLevel === 'muito_facil'}"
+                                onclick="switchMuseumLevel('muito_facil')">Level I</button>
+                        <button class="tab-btn museum-filter-easy ${selectedMuseumLevel === 'facil' ? 'active' : ''}"
+                                data-museum-filter="facil" aria-pressed="${selectedMuseumLevel === 'facil'}"
+                                onclick="switchMuseumLevel('facil')">Level II</button>
+                        <button class="tab-btn museum-filter-normal ${selectedMuseumLevel === 'normal' ? 'active' : ''}"
+                                data-museum-filter="normal" aria-pressed="${selectedMuseumLevel === 'normal'}"
+                                onclick="switchMuseumLevel('normal')">Level III</button>
+                        <button class="tab-btn museum-filter-hard ${selectedMuseumLevel === 'dificil' ? 'active' : ''}"
+                                data-museum-filter="dificil" aria-pressed="${selectedMuseumLevel === 'dificil'}"
+                                onclick="switchMuseumLevel('dificil')">Level IV</button>
+                        <button class="tab-btn museum-filter-very-hard ${selectedMuseumLevel === 'muito_dificil' ? 'active' : ''}"
+                                data-museum-filter="muito_dificil" aria-pressed="${selectedMuseumLevel === 'muito_dificil'}"
+                                onclick="switchMuseumLevel('muito_dificil')">Level V</button>
+                    </div>
                 </div>
 
-                <div style="font-size:1em; color:var(--color-secondary); text-align:center; margin-bottom:15px; font-weight:600;">
-                    Unlocked in this level: ${levelUnlockedCount} / ${levelDinos.length}
+                <div class="museum-filter-summary" id="museum-filter-summary" aria-live="polite">
+                    Showing ${totalCount} specimens · ${totalUnlocked} unlocked
                 </div>
 
                 <div class="museum-grid">
         `;
 
-        levelDinos.forEach(dino => {
+        museumDinos.forEach(dino => {
             const isUnlocked = unlockedSet.has(dino.nome.toLowerCase());
             const lastClade = dino.terminalClade || dino.linhagem?.at(-1) || 'Dinosauria';
+            const cardData = `data-museum-level="${dino.dificuldade}" data-museum-name="${escapeChallengeHtml(dino.nome.toLowerCase())}" data-museum-unlocked="${isUnlocked}"`;
 
             if (isUnlocked) {
                 const discovery = getMuseumDiscoverySummary(
                     museumDiscoveryRecords[dino.nome.toLowerCase()]
                 );
                 html += `
-                    <div class="museum-card unlocked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" role="button" tabindex="0"
+                    <div class="museum-card unlocked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" ${cardData} role="button" tabindex="0"
                          aria-label="Open museum entry for ${dino.nome}"
                          onclick="showMuseumEntry('${dino.nome}')"
                          onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); showMuseumEntry('${dino.nome}'); }"
@@ -1480,7 +1518,7 @@ async function showMuseum() {
                 `;
             } else {
                 html += `
-                    <div class="museum-card locked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}">
+                    <div class="museum-card locked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" ${cardData}>
                         <div class="museum-card-art-container">
                             <span class="museum-card-lock-icon" aria-hidden="true"></span>
                         </div>
@@ -1491,10 +1529,18 @@ async function showMuseum() {
             }
         });
 
-        html += `</div></div><div id="clade-info"></div>`;
+        html += `
+                    <div class="museum-empty-state" id="museum-empty-state" hidden>
+                        No specimens match this search and level filter.
+                    </div>
+                </div>
+            </div>
+            <div id="clade-info"></div>`;
         appContent.innerHTML = html;
 
-        levelDinos.forEach(async dino => {
+        applyMuseumFilters();
+
+        museumDinos.forEach(async dino => {
             if (unlockedSet.has(dino.nome.toLowerCase())) {
                 const imgElement = document.getElementById(`art-${dino.nome.replace(/\s+/g, '')}`);
                 if (imgElement) {
@@ -1527,7 +1573,48 @@ async function showMuseum() {
 
 function switchMuseumLevel(level) {
     selectedMuseumLevel = level;
-    showMuseum();
+    document.querySelectorAll('[data-museum-filter]').forEach(button => {
+        const isActive = button.dataset.museumFilter === level;
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+    });
+    applyMuseumFilters();
+}
+
+function updateMuseumSearch(value) {
+    museumSearchQuery = String(value || '').trim().toLowerCase();
+    applyMuseumFilters();
+}
+
+function applyMuseumFilters() {
+    const cards = [...document.querySelectorAll('.museum-card[data-museum-level]')];
+    if (cards.length === 0) return;
+
+    let visibleCount = 0;
+    let visibleUnlocked = 0;
+
+    cards.forEach(card => {
+        const matchesLevel = selectedMuseumLevel === 'all'
+            || card.dataset.museumLevel === selectedMuseumLevel;
+        const matchesSearch = !museumSearchQuery
+            || card.dataset.museumName.includes(museumSearchQuery);
+        const isVisible = matchesLevel && matchesSearch;
+
+        card.hidden = !isVisible;
+        if (!isVisible) return;
+
+        visibleCount += 1;
+        if (card.dataset.museumUnlocked === 'true') visibleUnlocked += 1;
+    });
+
+    const summary = document.getElementById('museum-filter-summary');
+    if (summary) {
+        const specimenLabel = visibleCount === 1 ? 'specimen' : 'specimens';
+        summary.textContent = `Showing ${visibleCount} ${specimenLabel} · ${visibleUnlocked} unlocked`;
+    }
+
+    const emptyState = document.getElementById('museum-empty-state');
+    if (emptyState) emptyState.hidden = visibleCount !== 0;
 }
 
 function analyticsLabel(value) {
@@ -1551,6 +1638,7 @@ function analyticsMetricCard(label, value, detail = '') {
 }
 
 async function showAnalyticsDashboard(days = 30) {
+    setAppRoute('/analytics');
     setHeaderControls('analytics');
     const appContent = document.getElementById('app-content');
 

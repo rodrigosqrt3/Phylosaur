@@ -17,20 +17,20 @@ function setHeaderControls(screen) {
       ? `<button class="btn-hint btn-header btn-account" onclick="logout()" title="Sign out: ${currentUser}">${currentUser}</button>` 
       : '';
 
-    const backBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`;
+    const backBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`;
 
 const map = {
       'login':        '',
       'difficulty': `<button class="btn-hint btn-header" onclick="showMuseum()">Museum</button>` + analyticsBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
       'game': backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
-      'stats':        `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'museum':       `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'about':        `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'practice-menu':`<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'practice':     `<button class="btn-hint btn-header btn-with-icon" onclick="showPracticeMode()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'friends':      `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'challenge':    `<button class="btn-hint btn-header btn-with-icon" onclick="showFriendChallenges()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Friends</span></button>`,
-      'analytics':    `<button class="btn-hint btn-header btn-with-icon" onclick="showDifficultySelection()"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'stats':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'museum':       `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'about':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'practice-menu':`<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'practice':     `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/practice')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'friends':      `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'challenge':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/friends')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Friends</span></button>`,
+      'analytics':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
     };
 
     controls.innerHTML = map[screen] || '';

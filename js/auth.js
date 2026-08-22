@@ -24,6 +24,8 @@ async function initializeUserSystem() {
       userStats.totalGuesses = stats.total_guesses;
       userStats.bestScore = stats.best_score;
     }
+
+    await claimGuestProgressOnLogin({ showNotice: false });
   }
 }
 
@@ -248,6 +250,7 @@ async function handleSignInModal() {
   currentUserId = data.user.id;
   analyticsAccessChecked = false;
   await initUserStatsRow();
+  await claimGuestProgressOnLogin({ showNotice: true });
 
   closeLoginModal();
   setHeaderControls(selectedDifficulty ? 'game' : 'difficulty');
@@ -386,6 +389,7 @@ async function handleSignIn() {
   currentUserId = data.user.id;
   analyticsAccessChecked = false;
   await initUserStatsRow();
+  await claimGuestProgressOnLogin({ showNotice: true });
 
   document.removeEventListener('keydown', loginEnterHandler);
   showDifficultySelection();

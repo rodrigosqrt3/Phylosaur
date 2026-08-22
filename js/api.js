@@ -103,7 +103,7 @@ async function initializeAnalyticsAccess() {
   return isAnalyticsAdmin;
 }
 
-function getStoredGameSessionIds() {
+function getStoredGameSessionIds(limit = 10) {
   const sessionIds = [];
 
   for (let index = 0; index < localStorage.length; index++) {
@@ -116,7 +116,7 @@ function getStoredGameSessionIds() {
     }
   }
 
-  return sessionIds.slice(0, 10);
+  return sessionIds.slice(0, Math.max(1, Number(limit) || 10));
 }
 
 function getGameSessionStorageKey(mode, difficulty) {

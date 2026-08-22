@@ -520,7 +520,7 @@ async function showRestoredServerCompletion(data) {
     revealResultPanel(container, panel);
 }
 
-async function loadServerDatabase(mode, difficulty, forceClean = false) {
+async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAutomatically = false) {
     window.collapsedClades.clear();
     window.currentTreeSnapshot = null;
     if (typeof resetTreeAnimationState === 'function') resetTreeAnimationState();
@@ -561,7 +561,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false) {
             data = await callGameApi('state', { sessionId: storedSessionId });
 
             const hasSavedProgress = !data.complete && Number(data.attempts || 0) > 0;
-            if (hasSavedProgress) {
+            if (hasSavedProgress && !resumeAutomatically) {
                 const savedGameChoice = await showModal({
                     title: 'Progress Found',
                     message: 'You have an unfinished game at this level.',
@@ -631,9 +631,32 @@ async function loadChallengeDatabase(code, playerName) {
     await startFriendChallengeFromPayload(data);
 }
 
-async function loadPracticeDatabase(difficulty) {
+async function restoreStoredChallenge(code) {
+    const normalizedCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    if (!normalizedCode) return false;
+
+    const storageKey = getChallengeSessionStorageKey(normalizedCode);
+    const storedSessionId = localStorage.getItem(storageKey);
+    if (!storedSessionId) return false;
+
     try {
-        await loadServerDatabase('practice', difficulty, true);
+        const data = await callGameApi('state', { sessionId: storedSessionId });
+        if (data.mode !== 'challenge' || data.challenge?.code !== normalizedCode) {
+            localStorage.removeItem(storageKey);
+            return false;
+        }
+        await startFriendChallengeFromPayload(data);
+        return true;
+    } catch (error) {
+        console.warn('Stored friend challenge could not be restored:', error);
+        localStorage.removeItem(storageKey);
+        return false;
+    }
+}
+
+async function loadPracticeDatabase(difficulty, forceClean = true, resumeAutomatically = false) {
+    try {
+        await loadServerDatabase('practice', difficulty, forceClean, resumeAutomatically);
     } catch (error) {
         console.error('Server practice game error:', error);
         const wrapper = document.getElementById('tree-scroll-wrapper');
@@ -641,9 +664,9 @@ async function loadPracticeDatabase(difficulty) {
     }
 }
 
-async function loadDailyDatabase(difficulty, forceClean = false) {
+async function loadDailyDatabase(difficulty, forceClean = false, resumeAutomatically = false) {
     try {
-        await loadServerDatabase('daily', difficulty, forceClean);
+        await loadServerDatabase('daily', difficulty, forceClean, resumeAutomatically);
     } catch (error) {
         console.error('Server daily game error:', error);
         const wrapper = document.getElementById('tree-scroll-wrapper');
@@ -694,11 +717,13 @@ function registerDiscovery(dinoName, museumProof = null) {
 
     const discoveredAt = new Date().toISOString();
     const source = currentGameMode;
-    const eventKey = currentGameMode === 'daily'
-        ? `daily:${getTodayString()}:${selectedDifficulty}`
-        : currentGameMode === 'challenge'
-            ? `challenge:${currentChallengeCode}:${dinoName}`
-            : `practice:${discoveredAt}:${Math.random().toString(36).slice(2, 9)}`;
+    const eventKey = gameSessionId
+        ? `session:${gameSessionId}`
+        : currentGameMode === 'daily'
+            ? `daily:${getTodayString()}:${selectedDifficulty}`
+            : currentGameMode === 'challenge'
+                ? `challenge:${currentChallengeCode}:${dinoName}`
+                : `practice:${discoveredAt}:${Math.random().toString(36).slice(2, 9)}`;
     const events = readLocalDiscoveryEvents();
     const priorEventCount = events.filter(
         event => event?.dinoName?.toLowerCase() === dinoName.toLowerCase()
@@ -714,6 +739,7 @@ function registerDiscovery(dinoName, museumProof = null) {
             discoveredAt,
             source,
             difficulty: selectedDifficulty,
+            sessionId: gameSessionId || null,
             firstKnownUnlock: !wasAlreadyUnlocked,
             museumProof: museumProof || null
         });
@@ -753,6 +779,8 @@ async function getDiscoveryRecords() {
             dinoName: event.dinoName,
             discoveredAt: event.discoveredAt || null,
             source: event.source || 'local',
+            difficulty: event.difficulty || null,
+            sessionId: event.sessionId || null,
             firstKnownUnlock: event.firstKnownUnlock === true,
             museumProof: event.museumProof || null
         });
@@ -760,22 +788,30 @@ async function getDiscoveryRecords() {
 
     if (currentUserId) {
         try {
-            const { data, error } = await sb.from('daily_results')
-                .select('target_dino, played_date, created_at, difficulty')
-                .eq('user_id', currentUserId)
-                .eq('won', true);
+            const progress = await callGameApi('account_discoveries');
 
-            if (error) throw error;
-
-            (data || []).forEach((row, index) => {
-                if (!row.target_dino) return;
-                const eventKey = `daily:${row.played_date || index}:${row.difficulty || 'unknown'}`;
-                serverDinoNames.add(row.target_dino.toLowerCase());
+            (progress.discoveries || []).forEach((row, index) => {
+                if (!row.dinoName) return;
+                const eventKey = row.eventKey || `account:${index}:${row.dinoName}`;
+                serverDinoNames.add(row.dinoName.toLowerCase());
+                const accountTime = row.discoveredAt ? new Date(row.discoveredAt).getTime() : NaN;
+                const duplicateLocalEntry = [...allEvents.entries()].find(([, event]) => {
+                    if (event.dinoName?.toLowerCase() !== row.dinoName.toLowerCase()) return false;
+                    if ((event.source || 'local') !== (row.source || 'account')) return false;
+                    if (event.difficulty && row.difficulty && event.difficulty !== row.difficulty) return false;
+                    if (event.sessionId && row.sessionId) return event.sessionId === row.sessionId;
+                    const localTime = event.discoveredAt ? new Date(event.discoveredAt).getTime() : NaN;
+                    return Number.isFinite(accountTime) && Number.isFinite(localTime)
+                        && Math.abs(accountTime - localTime) < 10 * 60 * 1000;
+                });
+                if (duplicateLocalEntry) allEvents.delete(duplicateLocalEntry[0]);
                 allEvents.set(eventKey, {
                     eventKey,
-                    dinoName: row.target_dino,
-                    discoveredAt: row.created_at || row.played_date || null,
-                    source: 'daily',
+                    dinoName: row.dinoName,
+                    discoveredAt: row.discoveredAt || null,
+                    source: row.source || 'account',
+                    difficulty: row.difficulty || null,
+                    sessionId: row.sessionId || null,
                     firstKnownUnlock: true
                 });
             });
@@ -853,5 +889,41 @@ async function getUnlockedDinos() {
 async function syncDiscoveriesOnLogin() {
     if (currentUserId) {
         await getUnlockedDinos();
+    }
+}
+
+async function claimGuestProgressOnLogin({ showNotice = false } = {}) {
+    if (!currentUserId) return { claimedSessions: 0 };
+
+    const sessionIds = getStoredGameSessionIds(100);
+    if (sessionIds.length === 0) {
+        await syncDiscoveriesOnLogin();
+        return { claimedSessions: 0 };
+    }
+
+    try {
+        const result = await callGameApi('claim_guest_progress', { sessionIds });
+        dailyCompletionCache = null;
+
+        if (result.statistics) {
+            userStats.gamesPlayed = Number(result.statistics.games_played || 0);
+            userStats.gamesWon = Number(result.statistics.games_won || 0);
+            userStats.totalGuesses = Number(result.statistics.total_guesses || 0);
+            userStats.bestScore = result.statistics.best_score ?? null;
+        }
+
+        await syncDiscoveriesOnLogin();
+
+        if (showNotice && Number(result.claimedSessions || 0) > 0) {
+            await customAlert(
+                'Progress Saved',
+                'Progress from this browser is now linked to your account.'
+            );
+        }
+
+        return result;
+    } catch (error) {
+        console.error('Guest progress could not be linked to the account:', error);
+        return { claimedSessions: 0, error };
     }
 }

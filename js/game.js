@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════
 // GAME INITIALIZATION AND MAIN LOGIC
 // ═══════════════════════════════════════════════
-async function startPracticeChallenge(difficulty) {
+async function startPracticeChallenge(difficulty, { restoreExisting = false } = {}) {
+    setAppRoute(`/game/practice/${difficulty}`);
     setHeaderControls('practice');
     currentGameMode = 'practice';
     selectedDifficulty = difficulty;
@@ -64,10 +65,11 @@ async function startPracticeChallenge(difficulty) {
         <div id="guess-history"></div>
     </div>
     `;
-    loadPracticeDatabase(difficulty);
+    await loadPracticeDatabase(difficulty, !restoreExisting, restoreExisting);
 }
 
-async function startDailyChallenge(difficulty) {
+async function startDailyChallenge(difficulty, { restoreExisting = false } = {}) {
+    setAppRoute(`/game/daily/${difficulty}`);
     setHeaderControls('game');
     isPracticeMode = false;
     currentGameMode = 'daily';
@@ -124,7 +126,7 @@ async function startDailyChallenge(difficulty) {
     </div>
     `;
 
-    await loadDailyDatabase(difficulty, false);
+    await loadDailyDatabase(difficulty, false, restoreExisting);
 }
 
 async function startFriendChallengeFromPayload(data) {
@@ -148,6 +150,7 @@ async function startFriendChallengeFromPayload(data) {
     isPracticeMode = false;
     selectedDifficulty = data.difficulty;
     currentChallengeCode = data.challenge?.code || currentChallengeCode;
+    if (currentChallengeCode) setAppRoute(`/challenge/${currentChallengeCode}`);
     currentChallengePlayerName = data.challenge?.playerName || currentChallengePlayerName || 'Player';
     currentChallengeCreatorName = data.challenge?.creatorName || currentChallengeCreatorName;
     currentChallengePlacement = data.challenge?.placement ?? null;
