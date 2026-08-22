@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 6,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Abelisaurus": {
@@ -20,6 +20,16 @@
       "license": "CC BY 3.0",
       "license_url": "https://creativecommons.org/licenses/by/3.0",
       "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Agustinia": {
+      "file_title": "File:Agustinia reconstruction.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Agustinia_reconstruction.png/960px-Agustinia_reconstruction.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Agustinia_reconstruction.png",
+      "artist": "Atlantis536",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
       "source": "wikimedia"
     },
     "Amargasaurus": {
@@ -64,13 +74,13 @@
       "source": "wikimedia"
     },
     "Chaoyangsaurus": {
-      "file_title": "File:Chaoyangsaurus BW transparent.png",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Chaoyangsaurus_BW_transparent.png",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Chaoyangsaurus_BW_transparent.png",
+      "file_title": "File:Chaoyangsaurus BW.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Chaoyangsaurus_BW.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Chaoyangsaurus_BW.jpg",
       "artist": "Nobu Tamura",
-      "license": "CC BY-SA 3.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
       "source": "wikimedia"
     },
     "Daspletosaurus": {
@@ -143,6 +153,16 @@
       "usage_terms": "Creative Commons Attribution 3.0 Unported",
       "source": "wikimedia"
     },
+    "Leptoceratops": {
+      "file_title": "File:Leptoceratops BW.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Leptoceratops_BW.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Leptoceratops_BW.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
     "Masiakasaurus": {
       "file_title": "File:Masiakasaurus LMR.png",
       "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Masiakasaurus_LMR.png/960px-Masiakasaurus_LMR.png",
@@ -161,6 +181,76 @@
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Noasaurus": {
+      "file_title": "File:Noasaurus.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Noasaurus.png/960px-Noasaurus.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Noasaurus.png",
+      "artist": "Olmagon",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Nothronychus": {
+      "file_title": "File:Nothronychus graffami Restoration.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Nothronychus_graffami_Restoration.png/960px-Nothronychus_graffami_Restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Nothronychus_graffami_Restoration.png",
+      "artist": "PaleoNeolitic",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0 International",
+      "source": "wikimedia"
+    },
+    "Ouranosaurus": {
+      "file_title": "File:Ouranosaurus nigeriensis.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Ouranosaurus_nigeriensis.png/960px-Ouranosaurus_nigeriensis.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Ouranosaurus_nigeriensis.png",
+      "artist": "Connor Ashbridge",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0 International",
+      "source": "wikimedia"
+    },
+    "Patagopteryx": {
+      "file_title": "File:Patagopteryx deferrariisi.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Patagopteryx_deferrariisi.jpg/960px-Patagopteryx_deferrariisi.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Patagopteryx_deferrariisi.jpg",
+      "artist": "FunkMonk (Michael B. H.)",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Pelorosaurus": {
+      "file_title": "File:Pelorosaurus2.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Pelorosaurus2.jpg/960px-Pelorosaurus2.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Pelorosaurus2.jpg",
+      "artist": "Levi Bernardo",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Pentaceratops": {
+      "file_title": "File:Pentaceratops BW.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Pentaceratops_BW.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Pentaceratops_BW.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Sinraptor": {
+      "file_title": "File:Sinraptor dongi.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Sinraptor_dongi.jpg/960px-Sinraptor_dongi.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Sinraptor_dongi.jpg",
+      "artist": "Ian Armstrong",
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 2.0 Generic",
       "source": "wikimedia"
     },
     "Sinosauropteryx": {
@@ -183,6 +273,16 @@
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia"
     },
+    "Stenopelix": {
+      "file_title": "File:1857 - Stenopelix.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/1857_-_Stenopelix.png/960px-1857_-_Stenopelix.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:1857_-_Stenopelix.png",
+      "artist": "Atlantis536",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
+      "source": "wikimedia"
+    },
     "Troodon": {
       "file_title": "File:1856 - Troodon.png",
       "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/1856_-_Troodon.png/960px-1856_-_Troodon.png",
@@ -198,6 +298,26 @@
       "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Utahraptor_Restoration.png/960px-Utahraptor_Restoration.png",
       "file_page": "https://commons.wikimedia.org/wiki/File:Utahraptor_Restoration.png",
       "artist": "Fred Wierum",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Xenoceratops": {
+      "file_title": "File:Xenoceratops environment.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Xenoceratops_environment.jpg/960px-Xenoceratops_environment.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Xenoceratops_environment.jpg",
+      "artist": "ABelov2014",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Zhuchengtyrannus": {
+      "file_title": "File:Zhuchengtyrannus magnus reconstruction.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Zhuchengtyrannus_magnus_reconstruction.jpg/960px-Zhuchengtyrannus_magnus_reconstruction.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Zhuchengtyrannus_magnus_reconstruction.jpg",
+      "artist": "The Afenogaster",
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
