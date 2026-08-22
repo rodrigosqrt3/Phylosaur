@@ -1,7 +1,27 @@
 {
-  "version": 2,
+  "version": 4,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Abelisaurus": {
+      "file_title": "File:Abelisaurus comahuensis jmallon.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Abelisaurus_comahuensis_jmallon.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Abelisaurus_comahuensis_jmallon.jpg",
+      "artist": "Jordan Mallon",
+      "license": "CC BY-SA 2.5",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.5",
+      "usage_terms": "Creative Commons Attribution-Share Alike 2.5 Generic",
+      "source": "wikimedia"
+    },
+    "Alioramus": {
+      "file_title": "File:Alioramus Life Restoration.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Alioramus_Life_Restoration.jpg/960px-Alioramus_Life_Restoration.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Alioramus_Life_Restoration.jpg",
+      "artist": "Fred Wierum",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
     "Amargasaurus": {
       "file_title": "File:Amargasaurus Reconstruction Fred Wierum.png",
       "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Amargasaurus_Reconstruction_Fred_Wierum.png/960px-Amargasaurus_Reconstruction_Fred_Wierum.png",
@@ -10,6 +30,47 @@
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Anchisaurus": {
+      "file_title": "File:File--i-Anchisaurus polyzelus-i- is an early herbivorous dinosaur related to sauropods. It lived during the Jurassic. Fossil bones (4d02e7bf-ac55-46f2-8d02-69e379794aba) (cropped).png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/26/File--i-Anchisaurus_polyzelus-i-_is_an_early_herbivorous_dinosaur_related_to_sauropods._It_lived_during_the_Jurassic._Fossil_bones_%284d02e7bf-ac55-46f2-8d02-69e379794aba%29_%28cropped%29.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:File--i-Anchisaurus_polyzelus-i-_is_an_early_herbivorous_dinosaur_related_to_sauropods._It_lived_during_the_Jurassic._Fossil_bones_(4d02e7bf-ac55-46f2-8d02-69e379794aba)_(cropped).png",
+      "artist": "National Park Service",
+      "license": "Public domain",
+      "license_url": "",
+      "usage_terms": "Work of the United States National Park Service",
+      "source": "wikimedia"
+    },
+    "Avimimus": {
+      "file_title": "File:Avimimus ( feathers ).JPG",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Avimimus_%28_feathers_%29.JPG/960px-Avimimus_%28_feathers_%29.JPG",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Avimimus_(_feathers_).JPG",
+      "artist": "Conty",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Bruhathkayosaurus": {
+      "file_title": "File:Bruhathkayosaurus matleyi updated.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Bruhathkayosaurus_matleyi_updated.png/960px-Bruhathkayosaurus_matleyi_updated.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Bruhathkayosaurus_matleyi_updated.png",
+      "artist": "Ansh Saxena 7163",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "editorial_note": "The restoration is highly hypothetical because very little fossil material is known.",
+      "source": "wikimedia"
+    },
+    "Chaoyangsaurus": {
+      "file_title": "File:Chaoyangsaurus BW transparent.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Chaoyangsaurus_BW_transparent.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Chaoyangsaurus_BW_transparent.png",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
       "source": "wikimedia"
     },
     "Daspletosaurus": {
@@ -32,6 +93,16 @@
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia"
     },
+    "Eodromaeus": {
+      "file_title": "File:Eodromaeus murphi (2).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/1/11/Eodromaeus_murphi_%282%29.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Eodromaeus_murphi_(2).jpg",
+      "artist": "Ezequielvera",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
     "Eoraptor": {
       "file_title": "File:Eoraptor resto. 01.png",
       "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Eoraptor_resto._01.png/960px-Eoraptor_resto._01.png",
@@ -40,6 +111,16 @@
       "license": "CC BY 3.0",
       "license_url": "https://creativecommons.org/licenses/by/3.0",
       "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Gallimimus": {
+      "file_title": "File:Gallimimus Restoration.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Gallimimus_Restoration.png/960px-Gallimimus_Restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Gallimimus_Restoration.png",
+      "artist": "PaleoNeolitic",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0 International",
       "source": "wikimedia"
     },
     "Giganotosaurus": {
@@ -60,6 +141,66 @@
       "license": "CC BY 3.0",
       "license_url": "https://creativecommons.org/licenses/by/3.0",
       "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Masiakasaurus": {
+      "file_title": "File:Masiakasaurus LMR.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Masiakasaurus_LMR.png/960px-Masiakasaurus_LMR.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Masiakasaurus_LMR.png",
+      "artist": "Levi Martinez-Reza",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Microraptor": {
+      "file_title": "File:M zhaoianus.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/M_zhaoianus.png/960px-M_zhaoianus.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:M_zhaoianus.png",
+      "artist": "Entelognathus",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Sinosauropteryx": {
+      "file_title": "File:Sinosauropteryx color (without scale bar).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Sinosauropteryx_color_%28without_scale_bar%29.jpg/960px-Sinosauropteryx_color_%28without_scale_bar%29.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Sinosauropteryx_color_(without_scale_bar).jpg",
+      "artist": "Fiann M. Smithwick, Robert Nicholls, Innes C. Cuthill and Jakob Vinther",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Suchomimus": {
+      "file_title": "File:Suchomimus paleoart 2024.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Suchomimus_paleoart_2024.png/960px-Suchomimus_paleoart_2024.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Suchomimus_paleoart_2024.png",
+      "artist": "Sauroarchive",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Troodon": {
+      "file_title": "File:1856 - Troodon.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/1856_-_Troodon.png/960px-1856_-_Troodon.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:1856_-_Troodon.png",
+      "artist": "Atlantis536",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
+      "source": "wikimedia"
+    },
+    "Utahraptor": {
+      "file_title": "File:Utahraptor Restoration.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Utahraptor_Restoration.png/960px-Utahraptor_Restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Utahraptor_Restoration.png",
+      "artist": "Fred Wierum",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia"
     }
   }
