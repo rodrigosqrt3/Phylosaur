@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "description": "Manually reviewed media choices that take priority over automatic sources.",
+  "taxa": {
+    "Irritator": {
+      "file_title": "File:Irritator Life Reconstruction.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Irritator_Life_Reconstruction.jpg/960px-Irritator_Life_Reconstruction.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Irritator_Life_Reconstruction.jpg",
+      "artist": "Fred Wierum",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    }
+  }
+}
