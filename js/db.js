@@ -436,6 +436,29 @@ function setServerStatValue(element, value, animate) {
     }
 }
 
+function updateHintButtonState() {
+    const button = document.querySelector('.btn-game-hint');
+    if (!button) return;
+
+    const guessesRequired = Math.max(0, 2 - guessesSinceLastHint);
+    const unavailable = gameWon || hintsRemaining <= 0 || guessesRequired > 0;
+    button.disabled = unavailable;
+
+    if (gameWon) {
+        button.title = 'This game is complete';
+    } else if (hintsRemaining <= 0) {
+        button.title = 'No hints remaining';
+    } else if (guessesRequired > 0) {
+        button.title = `Make ${guessesRequired} more ${guessesRequired === 1 ? 'guess' : 'guesses'} before using a hint`;
+    } else {
+        button.title = 'Reveal the next clade in the hidden lineage';
+    }
+
+    button.textContent = guessesRequired > 0
+        ? `Hint · ${guessesRequired} ${guessesRequired === 1 ? 'guess' : 'guesses'}`
+        : 'Hint';
+}
+
 function updateServerGameDisplay(data) {
     const bestMatch = guesses.length > 0
         ? Math.max(...guesses.map(guess => guess.proximity.matches))
@@ -456,6 +479,7 @@ function updateServerGameDisplay(data) {
     setServerStatValue(best, bestMatch, animateStats);
     setServerStatValue(clades, revealedClades.size, animateStats);
     setServerStatValue(possible, serverPossibleSpecimens, animateStats);
+    updateHintButtonState();
 
     const wrapper = document.getElementById('tree-scroll-wrapper');
     if (data.tree && (guesses.length > 0 || hintHistory.length > 0 || data.complete)) {

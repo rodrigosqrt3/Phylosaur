@@ -50,7 +50,7 @@ async function startPracticeChallenge(difficulty, { restoreExisting = false } = 
             <button class="btn-guess" onclick="makeGuess()">Submit</button>
         </div>
         <div class="guess-secondary-row">
-            <button class="btn-hint btn-game-hint" onclick="useHint()">Hint</button>
+            <button class="btn-hint btn-game-hint" onclick="useHint()" disabled title="Make 2 guesses before using a hint">Hint · 2 guesses</button>
             <button class="btn-giveup" onclick="giveUp()">Give Up</button>
         </div>
         </div>
@@ -110,7 +110,7 @@ async function startDailyChallenge(difficulty, { restoreExisting = false } = {})
             <button class="btn-guess" onclick="makeGuess()">Submit</button>
         </div>
         <div class="guess-secondary-row">
-            <button class="btn-hint btn-game-hint" onclick="useHint()">Hint</button>
+            <button class="btn-hint btn-game-hint" onclick="useHint()" disabled title="Make 2 guesses before using a hint">Hint · 2 guesses</button>
             <button class="btn-giveup" onclick="giveUp()">Give Up</button>
         </div>
         </div>
@@ -188,7 +188,7 @@ async function startFriendChallengeFromPayload(data) {
                 <button class="btn-guess" onclick="makeGuess()">Submit</button>
             </div>
             <div class="guess-secondary-row">
-                <button class="btn-hint btn-game-hint" onclick="useHint()">Hint</button>
+                <button class="btn-hint btn-game-hint" onclick="useHint()" disabled title="Make 2 guesses before using a hint">Hint · 2 guesses</button>
                 <button class="btn-giveup" onclick="giveUp()">Give Up</button>
             </div>
         </div>
