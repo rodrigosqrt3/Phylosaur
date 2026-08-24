@@ -649,7 +649,7 @@ async function giveUp() {
 
     gameWon = false;
 
-    if (currentUser && currentGameMode === 'daily') {
+    if (currentUserId && currentGameMode === 'daily') {
         await updateStatsAfterGame(false, guesses.length, selectedDifficulty);
         await sb.from('daily_results').upsert({
             user_id: currentUserId,
@@ -663,6 +663,8 @@ async function giveUp() {
             revealed_clades: Array.from(revealedClades),
             hint_history: hintHistory
         }, { onConflict: 'user_id,played_date,difficulty' });
+    } else if (currentGameMode === 'daily') {
+        recordGuestDailyResult(false);
     }
 
     if (currentGameMode === 'challenge') {
@@ -845,12 +847,14 @@ async function persistVictoryResult() {
     let milestone = null;
     let newlyUnlockedAchievements = [];
 
-    if (currentUser && currentGameMode === 'daily') {
+    if (currentUserId && currentGameMode === 'daily') {
         await clearGameProgress(selectedDifficulty);
         streakData = await updateStreak();
         milestone = checkStreakMilestone(streakData.current);
         newlyUnlockedAchievements = await updateStatsAfterGame(true, guesses.length, selectedDifficulty);
         await markDailyChallengeCompleted(selectedDifficulty);
+    } else if (currentGameMode === 'daily') {
+        newlyUnlockedAchievements = recordGuestDailyResult(true);
     }
 
     if (currentGameMode === 'challenge') {
@@ -930,7 +934,7 @@ async function showVictory() {
     const streakHTML = currentUser && currentGameMode === 'daily'
         ? '<div class="victory-streak-slot"></div>'
         : '';
-    const achievementHTML = currentUser && currentGameMode === 'daily'
+    const achievementHTML = currentGameMode === 'daily'
         ? '<div class="victory-achievements-slot"></div>'
         : '';
 

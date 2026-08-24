@@ -18,6 +18,120 @@ const ACHIEVEMENT_DEFINITIONS = [
     { id: 'seven_day_expedition', name: 'Seven-Day Expedition', desc: 'Reach a 7-day streak' }
 ];
 
+const GUEST_ACHIEVEMENT_PROGRESS_KEY = 'phylosaur-guest-achievements-v1';
+
+function readGuestAchievementProgress() {
+    try {
+        const stored = JSON.parse(localStorage.getItem(GUEST_ACHIEVEMENT_PROGRESS_KEY) || '{}');
+        return {
+            results: stored.results && typeof stored.results === 'object' ? stored.results : {},
+            unlocked: Array.isArray(stored.unlocked) ? stored.unlocked : []
+        };
+    } catch (error) {
+        console.warn('Could not read guest achievement progress:', error);
+        return { results: {}, unlocked: [] };
+    }
+}
+
+function writeGuestAchievementProgress(progress) {
+    try {
+        localStorage.setItem(GUEST_ACHIEVEMENT_PROGRESS_KEY, JSON.stringify(progress));
+    } catch (error) {
+        console.warn('Could not save guest achievement progress:', error);
+    }
+}
+
+function getGuestAchievementIds() {
+    return readGuestAchievementProgress().unlocked.filter(id =>
+        ACHIEVEMENT_DEFINITIONS.some(definition => definition.id === id)
+    );
+}
+
+function getLongestGuestDailyStreak(results) {
+    const winningDates = [...new Set(results
+        .filter(result => result.won && /^\d{4}-\d{2}-\d{2}$/.test(result.playedDate))
+        .map(result => result.playedDate))]
+        .sort();
+
+    let longest = 0;
+    let current = 0;
+    let previousTime = null;
+
+    winningDates.forEach(dateString => {
+        const time = new Date(`${dateString}T00:00:00Z`).getTime();
+        current = previousTime !== null && time - previousTime === 86400000
+            ? current + 1
+            : 1;
+        longest = Math.max(longest, current);
+        previousTime = time;
+    });
+
+    return longest;
+}
+
+function evaluateGuestAchievements(results) {
+    const wins = results.filter(result => result.won);
+    const wonLevels = new Set(wins.map(result => result.difficulty));
+    const longestStreak = getLongestGuestDailyStreak(results);
+
+    return [
+        ['first_win', wins.length >= 1],
+        ['perfect_game', wins.some(result => result.guessCount <= 3)],
+        ['ten_wins', wins.length >= 10],
+        ['fifty_wins', wins.length >= 50],
+        ['hard_win', wins.some(result => result.difficulty === 'dificil')],
+        ['very_hard_win', wins.some(result => result.difficulty === 'muito_dificil')],
+        ['field_researcher', results.length >= 10],
+        ['persistence_pays', wins.some(result => result.guessCount >= 10)],
+        ['independent_thinker', wins.some(result => !result.usedHints)],
+        ['complete_classification', ['muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil']
+            .every(difficulty => wonLevels.has(difficulty))],
+        ['three_day_expedition', longestStreak >= 3],
+        ['seven_day_expedition', longestStreak >= 7]
+    ].filter(([, complete]) => complete).map(([id]) => id);
+}
+
+function recordGuestDailyResult(won) {
+    if (currentGameMode !== 'daily' || currentUserId) return [];
+
+    const progress = readGuestAchievementProgress();
+    const resultKey = gameSessionId || [
+        getTodayString(),
+        selectedDifficulty,
+        targetDino?.nome || 'unknown'
+    ].join(':');
+
+    if (!progress.results[resultKey]) {
+        progress.results[resultKey] = {
+            sessionId: gameSessionId || null,
+            playedDate: getTodayString(),
+            difficulty: selectedDifficulty,
+            won: won === true,
+            guessCount: guesses.length,
+            usedHints: hintHistory.length > 0,
+            completedAt: new Date().toISOString()
+        };
+    }
+
+    const results = Object.values(progress.results)
+        .sort((first, second) => String(first.completedAt).localeCompare(String(second.completedAt)))
+        .slice(-500);
+    progress.results = Object.fromEntries(results.map(result => [
+        result.sessionId || [result.playedDate, result.difficulty, result.completedAt].join(':'),
+        result
+    ]));
+
+    const unlocked = new Set(progress.unlocked);
+    const newlyUnlocked = evaluateGuestAchievements(results)
+        .filter(id => !unlocked.has(id));
+    newlyUnlocked.forEach(id => unlocked.add(id));
+    progress.unlocked = [...unlocked];
+    writeGuestAchievementProgress(progress);
+
+    newlyUnlocked.forEach(showAchievementNotification);
+    return newlyUnlocked;
+}
+
 async function updateStatsAfterGame(won, guessCount, difficulty) {
   if (!currentUserId) return [];
 
@@ -920,13 +1034,17 @@ async function claimGuestProgressOnLogin({ showNotice = false } = {}) {
     if (!currentUserId) return { claimedSessions: 0 };
 
     const sessionIds = getStoredGameSessionIds(100);
-    if (sessionIds.length === 0) {
+    const guestAchievementIds = getGuestAchievementIds();
+    if (sessionIds.length === 0 && guestAchievementIds.length === 0) {
         await syncDiscoveriesOnLogin();
         return { claimedSessions: 0 };
     }
 
     try {
-        const result = await callGameApi('claim_guest_progress', { sessionIds });
+        const result = await callGameApi('claim_guest_progress', {
+            sessionIds,
+            guestAchievementIds
+        });
         dailyCompletionCache = null;
 
         if (result.statistics) {
@@ -938,10 +1056,13 @@ async function claimGuestProgressOnLogin({ showNotice = false } = {}) {
 
         await syncDiscoveriesOnLogin();
 
-        if (showNotice && Number(result.claimedSessions || 0) > 0) {
+        if (showNotice && (
+            Number(result.claimedSessions || 0) > 0
+            || (result.linkedAchievements || []).length > 0
+        )) {
             await customAlert(
                 'Progress Saved',
-                'Progress from this browser is now linked to your account.'
+                'Progress and achievements from this browser are now linked to your account.'
             );
         }
 

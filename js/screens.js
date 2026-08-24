@@ -988,7 +988,9 @@ function generateAchievements(unlockedSet, progressById = {}) {
         unit: '',
         complete: unlocked
     };
-    const percent = Math.max(0, Math.min(100, Math.round((progress.current / progress.target) * 100)));
+    const percent = unlocked
+        ? 100
+        : Math.max(0, Math.min(100, Math.round((progress.current / progress.target) * 100)));
     const progressText = unlocked
         ? 'Completed'
         : progress.unit
