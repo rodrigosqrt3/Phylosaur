@@ -566,8 +566,9 @@ function showAbout() {
         <p style="margin-bottom:25px;">
             From an information-theoretic perspective, each guess is a query that reveals the depth and identity of a 
             shared branch. The revealed clade restricts the remaining candidates to genera compatible with that portion 
-            of the target path. Hints reduce uncertainty more directly by exposing the next clade, and the waiting rule 
-            between hints creates space for the player to use the new information. Dinosaur branches are highly uneven: 
+            of the target path. Hints reduce uncertainty more directly by exposing the next clade or, after the stored 
+            lineage is exhausted, a clue about the target name. The waiting rule between hints creates space for the 
+            player to use the new information. Dinosaur branches are highly uneven: 
             one clade may contain hundreds of candidates while another contains only a few. Consequently, different 
             guesses can provide very different amounts of information, which is an important part of the strategy.
         </p>
@@ -695,7 +696,7 @@ async function showHowToPlay() {
 
         <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
             <strong style="color:var(--color-primary);">3. Hints</strong><br>
-            You have 3 hints per challenge. Each hint reveals the next clade in the target's lineage. You must make 2 guesses between hints.
+            You have 3 hints per challenge. Hints reveal the next clade, then clues about the genus name once the full lineage is known. You must make 2 guesses between hints.
         </div>
 
         <div style="margin-bottom:12px; padding:12px; background:rgba(61,47,31,0.4); border-radius:4px;">
@@ -787,7 +788,7 @@ const INTERACTIVE_TUTORIAL_STEPS = [
     {
         kicker: 'Step 3',
         title: 'Using hints',
-        copy: 'A hint reveals the next clade in the hidden lineage. You have three, and must make two guesses before requesting another.',
+        copy: 'A hint reveals the next clade in the hidden lineage. Once the full lineage is known, remaining hints reveal clues about the genus name. You have three, and must make two guesses before requesting another.',
         visual: `
             <div class="tutorial-hint-demo">
                 <div class="tutorial-hint-count"><strong>3</strong><span>hints available</span></div>

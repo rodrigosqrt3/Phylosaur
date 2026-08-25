@@ -394,10 +394,17 @@ function updateGuessHistory() {
     
     if (hintHistory.length > 0) {
     hintHistory.slice().reverse().forEach(hint => {
+        const isCladeHint = Boolean(hint.cladeName);
+        const hintName = isCladeHint
+            ? `[HINT: ${hint.cladeName}]`
+            : '[NAME HINT]';
+        const hintDetail = isCladeHint
+            ? `Revealed clade at depth ${hint.depth}`
+            : hint.message || 'A clue about the target name was revealed.';
         html += `
         <div class="guess-item guess-item-hint">
-            <span class="guess-name">[HINT: ${hint.cladeName}]</span>
-            <span class="guess-match">Revealed clade at depth ${hint.depth}</span>
+            <span class="guess-name">${hintName}</span>
+            <span class="guess-match">${hintDetail}</span>
         </div>
         `;
     });

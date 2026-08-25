@@ -651,7 +651,7 @@ function updateHintButtonState() {
     } else if (guessesRequired > 0) {
         button.title = `Make ${guessesRequired} more ${guessesRequired === 1 ? 'guess' : 'guesses'} before using a hint`;
     } else {
-        button.title = 'Reveal the next clade in the hidden lineage';
+        button.title = 'Reveal the next clue';
     }
 
     button.textContent = guessesRequired > 0

@@ -458,17 +458,25 @@ async function useServerHint() {
         const data = await callGameApi('hint', { sessionId: gameSessionId });
         applyServerGamePayload(data);
         guessesSinceLastHint = 0;
+        const isCladeHint = Boolean(data.hint?.cladeName);
         setTreeAnimationMode(
-            'hint',
-            data.hint?.cladeName ? `node:${data.hint.cladeName}` : null
+            isCladeHint ? 'hint' : 'default',
+            isCladeHint ? `node:${data.hint.cladeName}` : null
         );
         updateServerGameDisplay(data);
 
-        await customAlert(
-            'Hint',
-            `The next clade in the lineage is:<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${data.hint.cladeName}</strong>`
-        );
-        await showCladeInfo(data.hint.cladeName);
+        if (isCladeHint) {
+            await customAlert(
+                'Hint',
+                `The next clade in the lineage is:<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${data.hint.cladeName}</strong>`
+            );
+            await showCladeInfo(data.hint.cladeName);
+        } else {
+            await customAlert(
+                'Name Hint',
+                `<strong style="color:var(--color-primary); font-size:1.2em;">${data.hint?.message || 'A clue about the name has been revealed.'}</strong>`
+            );
+        }
     } catch (error) {
         const missing = Number(error.data?.guessesRequired || 0);
         const message = missing > 0
