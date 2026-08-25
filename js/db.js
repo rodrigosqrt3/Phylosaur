@@ -15,7 +15,17 @@ const ACHIEVEMENT_DEFINITIONS = [
     { id: 'independent_thinker', name: 'Independent Thinker', desc: 'Win a Daily challenge without using a hint' },
     { id: 'complete_classification', name: 'Complete Classification', desc: 'Win a Daily challenge on every level' },
     { id: 'three_day_expedition', name: 'Three-Day Expedition', desc: 'Reach a 3-day streak' },
-    { id: 'seven_day_expedition', name: 'Seven-Day Expedition', desc: 'Reach a 7-day streak' }
+    { id: 'seven_day_expedition', name: 'Seven-Day Expedition', desc: 'Reach a 7-day streak' },
+    { id: 'museum_apprentice', name: 'Museum Apprentice', desc: 'Discover 10 unique genera' },
+    { id: 'museum_curator', name: 'Museum Curator', desc: 'Discover 50 unique genera' },
+    { id: 'across_dinosauria', name: 'Across Dinosauria', desc: 'Discover a theropod, sauropodomorph, and ornithischian' },
+    { id: 'warmer_every_time', name: 'Warmer Every Time', desc: 'Get closer with every guess in a game of at least 4 guesses' },
+    { id: 'deep_classification', name: 'Deep Classification', desc: 'Complete Level V without using a hint' },
+    { id: 'full_field_day', name: 'Full Field Day', desc: 'Complete all five Daily levels on the same day' },
+    { id: 'fourteen_day_expedition', name: 'Fourteen-Day Expedition', desc: 'Reach a 14-day streak' },
+    { id: 'expedition_leader', name: 'Expedition Leader', desc: 'Win your first friend challenge' },
+    { id: 'podium_finish', name: 'Podium Finish', desc: 'Finish in the top three of a friend challenge' },
+    { id: 'against_all_odds', name: 'Against All Odds', desc: 'Win after at least 10 guesses without using a hint' }
 ];
 
 const GUEST_ACHIEVEMENT_PROGRESS_KEY = 'phylosaur-guest-achievements-v1';
@@ -69,33 +79,88 @@ function getLongestGuestDailyStreak(results) {
     return longest;
 }
 
+function hasStrictlyImprovingGuesses(result) {
+    const matches = Array.isArray(result?.matches)
+        ? result.matches.map(Number).filter(Number.isFinite)
+        : [];
+    return matches.length >= 4 && matches.every((value, index) =>
+        index === 0 || value > matches[index - 1]
+    );
+}
+
+function getBestCompletedDailyLevelCount(results) {
+    const levelsByDate = new Map();
+    results.filter(result => result.won && (result.mode || 'daily') === 'daily')
+        .forEach(result => {
+            if (!result.playedDate || !result.difficulty) return;
+            if (!levelsByDate.has(result.playedDate)) levelsByDate.set(result.playedDate, new Set());
+            levelsByDate.get(result.playedDate).add(result.difficulty);
+        });
+    return Math.max(0, ...[...levelsByDate.values()].map(levels => levels.size));
+}
+
+function getGuestMuseumSnapshot(results) {
+    const names = new Set(readLocalDiscoveryNames().map(name => name.trim().toLowerCase()));
+    const branches = new Set();
+
+    results.filter(result => result.won).forEach(result => {
+        if (result.targetName) names.add(result.targetName.trim().toLowerCase());
+        const lineage = Array.isArray(result.targetLineage) ? result.targetLineage : [];
+        if (lineage.includes('Theropoda')) branches.add('Theropoda');
+        if (lineage.includes('Sauropodomorpha')) branches.add('Sauropodomorpha');
+        if (lineage.includes('Ornithischia')) branches.add('Ornithischia');
+    });
+
+    return { uniqueGenera: names.size, majorBranches: branches.size };
+}
+
 function evaluateGuestAchievements(results) {
+    const dailyResults = results.filter(result => (result.mode || 'daily') === 'daily');
+    const dailyWins = dailyResults.filter(result => result.won);
     const wins = results.filter(result => result.won);
-    const wonLevels = new Set(wins.map(result => result.difficulty));
-    const longestStreak = getLongestGuestDailyStreak(results);
+    const wonLevels = new Set(dailyWins.map(result => result.difficulty));
+    const longestStreak = getLongestGuestDailyStreak(dailyResults);
+    const museum = getGuestMuseumSnapshot(results);
+    const bestDailyLevelCount = getBestCompletedDailyLevelCount(dailyResults);
 
     return [
-        ['first_win', wins.length >= 1],
-        ['perfect_game', wins.some(result => result.guessCount <= 3)],
-        ['ten_wins', wins.length >= 10],
-        ['fifty_wins', wins.length >= 50],
-        ['hard_win', wins.some(result => result.difficulty === 'dificil')],
-        ['very_hard_win', wins.some(result => result.difficulty === 'muito_dificil')],
-        ['field_researcher', results.length >= 10],
-        ['persistence_pays', wins.some(result => result.guessCount >= 10)],
-        ['independent_thinker', wins.some(result => !result.usedHints)],
+        ['first_win', dailyWins.length >= 1],
+        ['perfect_game', dailyWins.some(result => result.guessCount <= 3)],
+        ['ten_wins', dailyWins.length >= 10],
+        ['fifty_wins', dailyWins.length >= 50],
+        ['hard_win', dailyWins.some(result => result.difficulty === 'dificil')],
+        ['very_hard_win', dailyWins.some(result => result.difficulty === 'muito_dificil')],
+        ['field_researcher', dailyResults.length >= 10],
+        ['persistence_pays', dailyWins.some(result => result.guessCount >= 10)],
+        ['independent_thinker', dailyWins.some(result => !result.usedHints)],
         ['complete_classification', ['muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil']
             .every(difficulty => wonLevels.has(difficulty))],
         ['three_day_expedition', longestStreak >= 3],
-        ['seven_day_expedition', longestStreak >= 7]
+        ['seven_day_expedition', longestStreak >= 7],
+        ['museum_apprentice', museum.uniqueGenera >= 10],
+        ['museum_curator', museum.uniqueGenera >= 50],
+        ['across_dinosauria', museum.majorBranches >= 3],
+        ['warmer_every_time', wins.some(hasStrictlyImprovingGuesses)],
+        ['deep_classification', wins.some(result =>
+            result.difficulty === 'muito_dificil' && !result.usedHints
+        )],
+        ['full_field_day', bestDailyLevelCount >= 5],
+        ['fourteen_day_expedition', longestStreak >= 14],
+        ['expedition_leader', wins.some(result => result.mode === 'challenge')],
+        ['podium_finish', wins.some(result =>
+            result.mode === 'challenge' && Number(result.challengePlacement) > 0 &&
+            Number(result.challengePlacement) <= 3
+        )],
+        ['against_all_odds', wins.some(result => result.guessCount >= 10 && !result.usedHints)]
     ].filter(([, complete]) => complete).map(([id]) => id);
 }
 
-function recordGuestDailyResult(won) {
-    if (currentGameMode !== 'daily' || currentUserId) return [];
+function recordGuestGameResult(won) {
+    if (currentUserId) return [];
 
     const progress = readGuestAchievementProgress();
     const resultKey = gameSessionId || [
+        currentGameMode,
         getTodayString(),
         selectedDifficulty,
         targetDino?.nome || 'unknown'
@@ -104,11 +169,16 @@ function recordGuestDailyResult(won) {
     if (!progress.results[resultKey]) {
         progress.results[resultKey] = {
             sessionId: gameSessionId || null,
+            mode: currentGameMode,
             playedDate: getTodayString(),
             difficulty: selectedDifficulty,
             won: won === true,
             guessCount: guesses.length,
             usedHints: hintHistory.length > 0,
+            matches: guesses.map(guess => Number(guess?.proximity?.matches || 0)),
+            targetName: targetDino?.nome || null,
+            targetLineage: Array.isArray(targetDino?.linhagem) ? targetDino.linhagem : [],
+            challengePlacement: currentChallengePlacement || null,
             completedAt: new Date().toISOString()
         };
     }
@@ -130,6 +200,11 @@ function recordGuestDailyResult(won) {
 
     newlyUnlocked.forEach(showAchievementNotification);
     return newlyUnlocked;
+}
+
+function recordGuestDailyResult(won) {
+    if (currentGameMode !== 'daily') return [];
+    return recordGuestGameResult(won);
 }
 
 async function updateStatsAfterGame(won, guessCount, difficulty) {
@@ -240,7 +315,7 @@ async function checkAchievements(won, guessCount, context = {}) {
     return newlyUnlocked;
 }
 
-function buildAchievementProgress(stats = {}, wonResults = []) {
+function buildAchievementProgress(stats = {}, wonResults = [], supplementalProgress = {}) {
     const gamesPlayed = Number(stats?.games_played || 0);
     const gamesWon = Number(stats?.games_won || 0);
     const bestStreak = Math.max(
@@ -288,7 +363,18 @@ function buildAchievementProgress(stats = {}, wonResults = []) {
         independent_thinker: binary(hasHintlessWin),
         complete_classification: numeric(completedLevelCount, 5, 'levels'),
         three_day_expedition: numeric(bestStreak, 3, 'days'),
-        seven_day_expedition: numeric(bestStreak, 7, 'days')
+        seven_day_expedition: numeric(bestStreak, 7, 'days'),
+        museum_apprentice: numeric(0, 10, 'genera'),
+        museum_curator: numeric(0, 50, 'genera'),
+        across_dinosauria: numeric(0, 3, 'branches'),
+        warmer_every_time: binary(false),
+        deep_classification: binary(false),
+        full_field_day: numeric(0, 5, 'levels'),
+        fourteen_day_expedition: numeric(bestStreak, 14, 'days'),
+        expedition_leader: binary(false),
+        podium_finish: binary(false),
+        against_all_odds: binary(false),
+        ...supplementalProgress
     };
 }
 
@@ -1072,4 +1158,19 @@ async function claimGuestProgressOnLogin({ showNotice = false } = {}) {
         console.error('Guest progress could not be linked to the account:', error);
         return { claimedSessions: 0, error };
     }
+}
+
+async function syncAccountAchievements({ notify = true } = {}) {
+    if (!currentUserId) {
+        return { unlockedIds: [], newlyUnlocked: [], progress: {} };
+    }
+
+    const result = await callGameApi('account_achievements');
+    const newlyUnlocked = Array.isArray(result.newlyUnlocked) ? result.newlyUnlocked : [];
+    if (notify) newlyUnlocked.forEach(showAchievementNotification);
+    return {
+        unlockedIds: Array.isArray(result.unlockedIds) ? result.unlockedIds : [],
+        newlyUnlocked,
+        progress: result.progress && typeof result.progress === 'object' ? result.progress : {}
+    };
 }

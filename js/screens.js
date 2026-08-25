@@ -257,7 +257,7 @@ async function showStatsDashboard() {
     const winRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
     const streakData = { current: stats?.current_streak || 0, best: stats?.best_streak || 0, lastPlayed: stats?.last_played };
     let unlockedAchievements = new Set(achievements ? achievements.map(a => a.achievement_id) : []);
-    let achievementProgress = buildAchievementProgress(stats, achievementHistory);
+    let supplementalAchievementProgress = {};
 
     try {
         const synchronization = await syncHistoricalAchievements(
@@ -266,10 +266,23 @@ async function showStatsDashboard() {
             unlockedAchievements
         );
         unlockedAchievements = synchronization.unlockedSet;
-        achievementProgress = synchronization.progress;
     } catch (error) {
         console.error('Historical achievement synchronization failed:', error);
     }
+
+    try {
+        const accountSynchronization = await syncAccountAchievements();
+        accountSynchronization.unlockedIds.forEach(id => unlockedAchievements.add(id));
+        supplementalAchievementProgress = accountSynchronization.progress;
+    } catch (error) {
+        console.error('Extended achievement synchronization failed:', error);
+    }
+
+    const achievementProgress = buildAchievementProgress(
+        stats,
+        achievementHistory,
+        supplementalAchievementProgress
+    );
     const unlockedAchievementCount = ACHIEVEMENT_DEFINITIONS
         .filter(achievement => unlockedAchievements.has(achievement.id)).length;
 

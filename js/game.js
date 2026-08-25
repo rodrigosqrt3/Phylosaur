@@ -869,6 +869,22 @@ async function persistVictoryResult() {
         await refreshCurrentChallengePlacement();
     }
 
+    if (!currentUserId && currentGameMode !== 'daily') {
+        newlyUnlockedAchievements = recordGuestGameResult(true);
+    }
+
+    if (currentUserId) {
+        try {
+            const synchronization = await syncAccountAchievements();
+            newlyUnlockedAchievements = [...new Set([
+                ...newlyUnlockedAchievements,
+                ...synchronization.newlyUnlocked
+            ])];
+        } catch (error) {
+            console.error('Account achievement synchronization failed:', error);
+        }
+    }
+
     return {
         streakData,
         milestone,
@@ -941,9 +957,7 @@ async function showVictory() {
     const streakHTML = currentUser && currentGameMode === 'daily'
         ? '<div class="victory-streak-slot"></div>'
         : '';
-    const achievementHTML = currentGameMode === 'daily'
-        ? '<div class="victory-achievements-slot"></div>'
-        : '';
+    const achievementHTML = '<div class="victory-achievements-slot"></div>';
 
     const resultMediaPromise = loadResultMedia(targetDino.nome);
         v.innerHTML = `
