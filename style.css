@@ -1936,8 +1936,8 @@ body:not(.light-mode) .tree-node-group:hover rect {
 }
 
 .victory-discovery-mark {
-  position: relative;
-  display: block;
+  display: grid;
+  place-items: center;
   width: 48px;
   height: 48px;
   color: var(--color-accent);
@@ -1947,29 +1947,16 @@ body:not(.light-mode) .tree-node-group:hover rect {
   box-shadow: inset 0 0 0 4px var(--color-accent-faint);
 }
 
-.victory-discovery-mark::before,
-.victory-discovery-mark::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  background: currentColor;
-  transform: translateX(-50%);
-}
-
-.victory-discovery-mark::before {
-  top: 12px;
-  width: 17px;
-  height: 21px;
-  border-radius: 55% 55% 48% 48%;
-  transform: translateX(-50%) rotate(-8deg);
-}
-
-.victory-discovery-mark::after {
-  top: 8px;
-  width: 5px;
-  height: 8px;
-  border-radius: 50%;
-  box-shadow: -9px 4px 0 -0.5px currentColor, 9px 1px 0 -0.5px currentColor;
+.victory-discovery-footprint {
+  width: 37px;
+  height: 37px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 28px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 0 var(--color-accent-faint));
 }
 
 .victory-discovery-copy {

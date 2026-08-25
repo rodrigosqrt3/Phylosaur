@@ -843,10 +843,12 @@ function registerDiscovery(dinoName, museumProof = null) {
         return { isFirstDiscovery: false, discoveryCount: 0, eventRecorded: false };
     }
 
+    const normalizedDinoName = dinoName.trim().toLowerCase();
     const localDiscoveries = readLocalDiscoveryNames();
-    const wasAlreadyUnlocked = localDiscoveries.some(
-        name => name.toLowerCase() === dinoName.toLowerCase()
-    );
+    const events = readLocalDiscoveryEvents();
+    const wasAlreadyUnlocked =
+        localDiscoveries.some(name => name.trim().toLowerCase() === normalizedDinoName) ||
+        events.some(event => event?.dinoName?.trim().toLowerCase() === normalizedDinoName);
 
     if (!wasAlreadyUnlocked) {
         localDiscoveries.push(dinoName);
@@ -862,9 +864,8 @@ function registerDiscovery(dinoName, museumProof = null) {
             : currentGameMode === 'challenge'
                 ? `challenge:${currentChallengeCode}:${dinoName}`
                 : `practice:${discoveredAt}:${Math.random().toString(36).slice(2, 9)}`;
-    const events = readLocalDiscoveryEvents();
     const priorEventCount = events.filter(
-        event => event?.dinoName?.toLowerCase() === dinoName.toLowerCase()
+        event => event?.dinoName?.trim().toLowerCase() === normalizedDinoName
     ).length;
 
     const existingEvent = events.find(event => event.eventKey === eventKey);
@@ -892,7 +893,7 @@ function registerDiscovery(dinoName, museumProof = null) {
 
     console.log(`Dinosaur discovery recorded: ${dinoName} (${source})`);
     const recordedEventCount = events.filter(
-        event => event?.dinoName?.toLowerCase() === dinoName.toLowerCase()
+        event => event?.dinoName?.trim().toLowerCase() === normalizedDinoName
     ).length;
     const legacyDiscoveryBaseline = wasAlreadyUnlocked && priorEventCount === 0 ? 1 : 0;
 

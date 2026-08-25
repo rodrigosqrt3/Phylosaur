@@ -782,7 +782,14 @@ function buildVictoryDiscoveryMarkup(discovery) {
     return `
         <section class="victory-discovery${isNew ? ' victory-discovery--new' : ''}"
                  aria-label="${isNew ? 'New Museum discovery' : 'Museum discovery updated'}">
-            <span class="victory-discovery-mark" aria-hidden="true"></span>
+            <span class="victory-discovery-mark" aria-hidden="true">
+                <svg class="victory-discovery-footprint" viewBox="0 0 512 512" focusable="false">
+                    <path
+                        d="M511.517 370.284c-5.971-20.294-92.954-22.906-113.159-18.866-20.216 4.041-76.79 2.68-88.913-9.443-12.124-12.124 4.041-32.329 16.175-44.451 12.124-12.124 38.389-50.524 46.472-58.606 8.082-8.082 50.166-50.378 65.325-74.758 30.988-49.843 41.437-98.68 25.262-114.845-16.164-16.164-65.003-5.727-114.834 25.262-24.38 15.17-66.688 57.244-74.769 65.325-8.083 8.083-46.472 34.36-58.606 46.483-12.122 12.124-32.328 28.287-44.451 16.164-12.122-12.124-13.474-68.698-9.433-88.902 4.041-20.205 1.419-107.187-18.866-113.16C121.438-5.483 83.798 44.94 68.984 87.37c-8.685 24.871-82.852 141.446-66.688 226.319 16.175 84.872 31 127.982 49.507 146.503 18.519 18.519 61.642 33.343 146.503 49.507 84.872 16.164 201.448-57.991 226.319-66.676 42.431-14.825 92.853-52.466 86.892-72.739z"
+                        transform="translate(76 76) scale(.703125)"
+                    />
+                </svg>
+            </span>
             <div class="victory-discovery-copy">
                 <div class="victory-discovery-kicker">${isNew ? 'New Museum Discovery' : 'Museum Record Updated'}</div>
                 <strong data-victory-discovery-primary>${isNew ? `${targetDino.nome} has been added to the Museum` : countLabel}</strong>
