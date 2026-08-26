@@ -1081,6 +1081,166 @@ let museumSearchQuery = '';
 
 let museumOverrideCatalogPromise = null;
 let museumFallbackCatalogPromise = null;
+let museumPaleodataCatalogPromise = null;
+
+async function loadMuseumPaleodataCatalog() {
+    if (!museumPaleodataCatalogPromise) {
+        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=3')
+            .then(response => {
+                if (!response.ok) throw new Error(`Paleodata catalog HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(catalog => ({
+                timeline: catalog.timeline || { oldest_ma: 251.9, youngest_ma: 66 },
+                taxa: catalog.taxa || {}
+            }))
+            .catch(error => {
+                console.warn('Museum paleodata catalog unavailable:', error);
+                return { timeline: { oldest_ma: 251.9, youngest_ma: 66 }, taxa: {} };
+            });
+    }
+
+    return museumPaleodataCatalogPromise;
+}
+
+function formatMuseumAge(value) {
+    const age = Number(value);
+    if (!Number.isFinite(age)) return '';
+    return Number.isInteger(age) ? String(age) : age.toFixed(1);
+}
+
+function getMuseumPaleodataSourceUrl(value) {
+    try {
+        const url = new URL(String(value || ''));
+        return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+    } catch (_error) {
+        return '';
+    }
+}
+
+function renderMuseumPaleodataSources(record) {
+    const sources = Array.isArray(record?.verification?.sources)
+        ? record.verification.sources
+        : [];
+    const reviewedSources = sources.filter(source =>
+        String(source?.citation || '').trim()
+        && getMuseumPaleodataSourceUrl(source?.url)
+    );
+    if (reviewedSources.length === 0) return '';
+
+    const links = reviewedSources.map(source => {
+        const citation = escapeChallengeHtml(source?.citation || 'Scientific source');
+        const url = getMuseumPaleodataSourceUrl(source?.url);
+        return url
+            ? `<a href="${escapeChallengeHtml(url)}" target="_blank" rel="noopener">${citation}</a>`
+            : `<span>${citation}</span>`;
+    }).join('<b>·</b>');
+
+    return `
+        <div class="museum-entry-paleo-sources">
+            <strong>Reviewed sources</strong>
+            <div>${links}</div>
+        </div>
+    `;
+}
+
+function renderMuseumPaleodata(record, timeline = {}) {
+    const reviewedSources = record?.verification?.sources;
+    const hasReviewedSource = Array.isArray(reviewedSources)
+        && reviewedSources.some(source =>
+            String(source?.citation || '').trim()
+            && getMuseumPaleodataSourceUrl(source?.url)
+        );
+    if (!record
+        || record.verification?.status !== 'source_verified'
+        || !String(record.verification?.scope || '').trim()
+        || !hasReviewedSource) return '';
+
+    const maxMa = record.max_ma === null || record.max_ma === undefined
+        ? Number.NaN
+        : Number(record.max_ma);
+    const minMa = record.min_ma === null || record.min_ma === undefined
+        ? Number.NaN
+        : Number(record.min_ma);
+    const oldestMa = Number(timeline.oldest_ma) || 251.9;
+    const youngestMa = Number(timeline.youngest_ma) || 66;
+    const timelineSpan = Math.max(1, oldestMa - youngestMa);
+    const hasAgeRange = Number.isFinite(maxMa) && Number.isFinite(minMa);
+    const rangeStart = hasAgeRange
+        ? Math.max(0, Math.min(100, ((oldestMa - maxMa) / timelineSpan) * 100))
+        : 0;
+    const rangeWidth = hasAgeRange
+        ? Math.max(1.2, Math.min(100 - rangeStart, ((maxMa - minMa) / timelineSpan) * 100))
+        : 0;
+    const ageLabel = record.age_text
+        ? String(record.age_text)
+        : hasAgeRange
+            ? `${formatMuseumAge(maxMa)}–${formatMuseumAge(minMa)} million years ago`
+            : 'Numerical age not asserted';
+    const countries = Array.isArray(record.countries) ? record.countries : [];
+    const continents = Array.isArray(record.continents) ? record.continents : [];
+    const formations = Array.isArray(record.formations) ? record.formations : [];
+    const locationLabel = countries.length
+        ? countries.join(' · ')
+        : continents.length
+            ? continents.join(' · ')
+            : 'Discovery locations under review';
+
+    return `
+        <section class="museum-entry-paleodata" aria-label="Time and fossil locations">
+            <div class="museum-entry-paleo-grid">
+                <div class="museum-entry-paleo-card museum-entry-paleo-time">
+                    <div class="museum-entry-paleo-label">When</div>
+                    <strong>${escapeChallengeHtml(record.period || 'Geologic interval under review')}</strong>
+                    <span>${escapeChallengeHtml(ageLabel)}</span>
+                    ${hasAgeRange ? `
+                        <div class="museum-time-scale"
+                             role="img"
+                             aria-label="${escapeChallengeHtml(record.period || 'Age range')}, ${escapeChallengeHtml(ageLabel)}">
+                            <div class="museum-time-periods" aria-hidden="true">
+                                <span>Triassic</span><span>Jurassic</span><span>Cretaceous</span>
+                            </div>
+                            <div class="museum-time-track" aria-hidden="true">
+                                <span class="museum-time-segment triassic"></span>
+                                <span class="museum-time-segment jurassic"></span>
+                                <span class="museum-time-segment cretaceous"></span>
+                                <i class="museum-time-range" style="left:${rangeStart.toFixed(2)}%; width:${rangeWidth.toFixed(2)}%;"></i>
+                            </div>
+                            <div class="museum-time-ages" aria-hidden="true">
+                                <span>252 Ma</span><span>201</span><span>143</span><span>66 Ma</span>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="museum-entry-paleo-card museum-entry-paleo-place">
+                    <div class="museum-entry-paleo-label">Where fossils were found</div>
+                    <strong>${escapeChallengeHtml(locationLabel)}</strong>
+                    ${continents.length ? `
+                        <div class="museum-paleo-chips">
+                            ${continents.map(continent => `<span>${escapeChallengeHtml(continent)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    ${formations.length ? `
+                        <div class="museum-paleo-formations">
+                            <b>Rock units</b>
+                            <span>${escapeChallengeHtml(formations.join(' · '))}</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            <p class="museum-entry-paleo-note">
+                Locations use modern geography and summarize reported fossil occurrences; they are not a reconstruction of ancient political or continental boundaries.
+            </p>
+            ${record.verification?.scope ? `
+                <p class="museum-entry-paleo-scope">
+                    <strong>Reviewed scope:</strong> ${escapeChallengeHtml(record.verification.scope)}
+                </p>
+            ` : ''}
+            ${renderMuseumPaleodataSources(record)}
+        </section>
+    `;
+}
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
@@ -1340,9 +1500,10 @@ async function showMuseumEntry(name) {
         }
     }
 
-    const [media, wikiInfo] = await Promise.all([
+    const [media, wikiInfo, paleodataCatalog] = await Promise.all([
         getCachedDinoMedia(name),
-        fetchWikipediaInfo(name)
+        fetchWikipediaInfo(name),
+        loadMuseumPaleodataCatalog()
     ]);
 
     if (!document.body.contains(overlay)) return;
@@ -1362,6 +1523,8 @@ async function showMuseumEntry(name) {
     const discovery = getMuseumDiscoverySummary(
         museumDiscoveryRecords[name.toLowerCase()]
     );
+    const paleodata = paleodataCatalog.taxa[name] || null;
+    const paleodataHtml = renderMuseumPaleodata(paleodata, paleodataCatalog.timeline);
 
     activeMuseumEntryMedia = {
         name,
@@ -1403,6 +1566,8 @@ async function showMuseumEntry(name) {
                 <p class="museum-entry-description">
                     ${wikiInfo?.description || 'No encyclopedia summary is available for this genus yet.'}
                 </p>
+
+                ${paleodataHtml}
 
                 <h3>Classification</h3>
                 <div class="museum-entry-lineage">${lineage || '<span>Dinosauria</span>'}</div>

@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v6";
+const CACHE_VERSION = "phylosaur-shell-v9";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -8,6 +8,7 @@ const CORE_ASSETS = [
   "./offline.html",
   "./manifest.webmanifest",
   "./phylosaur_media_overrides.json",
+  "./phylosaur_paleodata.json",
   "./style.css",
   "./js/config.js",
   "./js/state.js",

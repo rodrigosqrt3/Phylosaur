@@ -1,0 +1,253 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-26",
+  "description": "Source-verified Museum paleodata. Only records with verification.status equal to source_verified are rendered by the app. Modern countries identify fossil collection locations, not reconstructed Mesozoic geography or a complete biological range.",
+  "timeline": {
+    "oldest_ma": 251.9,
+    "youngest_ma": 66.0
+  },
+  "taxa": {
+    "Archaeopteryx": {
+      "period": "Late Jurassic",
+      "age_text": "Tithonian",
+      "countries": ["Germany"],
+      "continents": ["Europe"],
+      "formations": ["Solnhofen–Eichstätt limestones", "Mörnsheim Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Late Jurassic Archaeopteryx material from the Solnhofen–Eichstätt region of Bavaria; no Spanish Early Cretaceous occurrence is accepted here.",
+        "sources": [
+          {
+            "citation": "Rauhut et al. (2019), eLife 8:e43789",
+            "url": "https://elifesciences.org/articles/43789"
+          },
+          {
+            "citation": "IUGS Geoheritage: Jurassic Solnhofen–Eichstätt Archaeopteryx serial site",
+            "url": "https://iugs-geoheritage.org/geoheritage_sites/jurassic-solnhofen-eichstatt-archaeopteryx-serial-site/"
+          },
+          {
+            "citation": "Foth et al. (2025), Fossil Record: Archaeopteryx from the lower Tithonian Mörnsheim Formation",
+            "url": "https://fr.pensoft.net/article/131671/"
+          }
+        ]
+      }
+    },
+    "Brachiosaurus": {
+      "period": "Late Jurassic",
+      "age_text": "Kimmeridgian–Tithonian",
+      "countries": ["United States"],
+      "continents": ["North America"],
+      "formations": ["Morrison Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Brachiosaurus altithorax from the Morrison Formation of the western United States. Tanzanian material is excluded because it belongs to Giraffatitan.",
+        "sources": [
+          {
+            "citation": "Taylor (2009), Journal of Vertebrate Paleontology 29:787–806",
+            "url": "https://doi.org/10.1671/039.029.0309"
+          },
+          {
+            "citation": "Taylor (2011), correction to the Brachiosaurus–Giraffatitan separation",
+            "url": "https://doi.org/10.1080/02724634.2011.557115"
+          }
+        ]
+      }
+    },
+    "Carnotaurus": {
+      "period": "Late Cretaceous",
+      "age_text": "Late Cretaceous",
+      "countries": ["Argentina"],
+      "continents": ["South America"],
+      "formations": ["La Colonia Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Carnotaurus sastrei from the La Colonia Formation of Chubut Province, Argentina. A narrower numerical range is not asserted.",
+        "sources": [
+          {
+            "citation": "Bonaparte, Novas & Coria (1990), Contributions in Science 416:1–42",
+            "url": "https://doi.org/10.5962/p.226819"
+          },
+          {
+            "citation": "Gasparini et al. (2015), Cretaceous Research 54:154–168",
+            "url": "https://staff.mef.org.ar/images/investigadores/diego_pol/papers/73.pdf"
+          }
+        ]
+      }
+    },
+    "Cryolophosaurus": {
+      "period": "Early Jurassic",
+      "age_text": "Early Jurassic",
+      "countries": ["Antarctica"],
+      "continents": ["Antarctica"],
+      "formations": ["Hanson Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Cryolophosaurus ellioti from the Hanson Formation of the central Transantarctic Mountains. No narrower numerical range is asserted.",
+        "sources": [
+          {
+            "citation": "Smith et al. (2007), USGS Open-File Report 2007-1047",
+            "url": "https://pubs.usgs.gov/publication/ofr20071047SRP003"
+          },
+          {
+            "citation": "Smith et al. (2007), Zoological Journal of the Linnean Society 151:377–421",
+            "url": "https://experts.umn.edu/en/publications/osteology-of-cryolophosaurus-ellioti-dinosauria-theropoda-from-th/"
+          }
+        ]
+      }
+    },
+    "Dilophosaurus": {
+      "period": "Early Jurassic",
+      "age_text": "Early Jurassic",
+      "countries": ["United States"],
+      "continents": ["North America"],
+      "formations": ["Kayenta Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Dilophosaurus wetherilli from the Kayenta Formation of northern Arizona. Historical Asian assignments are excluded.",
+        "sources": [
+          {
+            "citation": "Marsh & Rowe (2020), Journal of Paleontology 94(S78):1–103",
+            "url": "https://www.cambridge.org/core/journals/journal-of-paleontology/article/comprehensive-anatomical-and-phylogenetic-evaluation-of-dilophosaurus-wetherilli-dinosauria-theropoda-with-descriptions-of-new-specimens-from-the-kayenta-formation-of-northern-arizona/39C2921EDC6E951AC9F94A22158CA4E5"
+          },
+          {
+            "citation": "Marsh & Rowe (2020), Dryad research dataset",
+            "url": "https://datadryad.org/dataset/doi:10.5061/dryad.r7sqv9s81"
+          }
+        ]
+      }
+    },
+    "Herrerasaurus": {
+      "period": "Late Triassic",
+      "age_text": "Carnian",
+      "countries": ["Argentina"],
+      "continents": ["South America"],
+      "formations": ["Ischigualasto Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Herrerasaurus ischigualastensis from Carnian strata of the Ischigualasto Formation in northwestern Argentina.",
+        "sources": [
+          {
+            "citation": "Martínez & Alcober (2009), PLOS ONE 4:e4397",
+            "url": "https://doi.org/10.1371/journal.pone.0004397"
+          },
+          {
+            "citation": "Martínez & Alcober (2010), ZooKeys 63:55–81",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3088398/"
+          }
+        ]
+      }
+    },
+    "Haplocanthosaurus": {
+      "period": "Late Jurassic",
+      "age_text": "Late Jurassic",
+      "countries": ["United States"],
+      "continents": ["North America"],
+      "formations": ["Morrison Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Confirmed Haplocanthosaurus material from the Morrison Formation of the western United States. Tentative records identified only as possible Haplocanthosaurus are excluded, and no narrower numerical range is asserted.",
+        "sources": [
+          {
+            "citation": "Foster & Wedel (2014), Volumina Jurassica 12(2):197–210",
+            "url": "https://doi.org/10.5604/17313708.1130144"
+          },
+          {
+            "citation": "Curtice et al. (2024), The Anatomical Record",
+            "url": "https://doi.org/10.1002/ar.25520"
+          }
+        ]
+      }
+    },
+    "Majungasaurus": {
+      "period": "Late Cretaceous",
+      "age_text": "Maastrichtian",
+      "countries": ["Madagascar"],
+      "continents": ["Africa"],
+      "formations": ["Maevarano Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Majungasaurus crenatissimus from the Maastrichtian Maevarano Formation of northwestern Madagascar. Historical names now treated as synonyms are not presented as separate geographic occurrences.",
+        "sources": [
+          {
+            "citation": "Krause et al. (2007), Journal of Vertebrate Paleontology 27(S2):1–20",
+            "url": "https://research.si.edu/publication-details/?id=20793"
+          },
+          {
+            "citation": "Carrano (2007), Journal of Vertebrate Paleontology 27(S2):163–179",
+            "url": "https://repository.si.edu/handle/10088/7636"
+          }
+        ]
+      }
+    },
+    "Masiakasaurus": {
+      "period": "Late Cretaceous",
+      "age_text": "Maastrichtian",
+      "countries": ["Madagascar"],
+      "continents": ["Africa"],
+      "formations": ["Maevarano Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Masiakasaurus knopfleri from the Maastrichtian Maevarano Formation of northwestern Madagascar. No distribution beyond this reviewed formation is asserted.",
+        "sources": [
+          {
+            "citation": "Sampson, Carrano & Forster (2001), Nature 409:504–506",
+            "url": "https://doi.org/10.1038/35054046"
+          },
+          {
+            "citation": "Carrano, Loewen & Sertich (2011), Smithsonian Contributions to Paleobiology 95",
+            "url": "https://doi.org/10.5479/si.00810266.95.1"
+          }
+        ]
+      }
+    },
+    "Scutellosaurus": {
+      "period": "Early Jurassic",
+      "age_text": "Early Jurassic",
+      "countries": ["United States"],
+      "continents": ["North America"],
+      "formations": ["Kayenta Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Scutellosaurus lawleri from the Lower Jurassic Kayenta Formation of Arizona. Tentative cf. Scutellosaurus records are not used to broaden its published range.",
+        "sources": [
+          {
+            "citation": "Breeden et al. (2021), Royal Society Open Science 8:201676",
+            "url": "https://doi.org/10.1098/rsos.201676"
+          }
+        ]
+      }
+    },
+    "Styracosaurus": {
+      "period": "Late Cretaceous",
+      "age_text": "Late Campanian",
+      "countries": ["Canada"],
+      "continents": ["North America"],
+      "formations": ["Dinosaur Park Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Styracosaurus albertensis from the upper, late Campanian part of the Dinosaur Park Formation in Alberta, Canada. Broad stage-wide PBDB numerical bounds are not asserted.",
+        "sources": [
+          {
+            "citation": "Holmes et al. (2020), Cretaceous Research 107:104308",
+            "url": "https://doi.org/10.1016/j.cretres.2019.104308"
+          },
+          {
+            "citation": "Brown, Holmes & Currie (2020), Vertebrate Anatomy Morphology Palaeontology 8:67–95",
+            "url": "https://doi.org/10.18435/vamp29361"
+          }
+        ]
+      }
+    }
+  }
+}
