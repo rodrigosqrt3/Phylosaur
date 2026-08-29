@@ -1,16 +1,24 @@
-const javascriptSources = [
-  "game/js/config.txt",
-  "game/js/state.txt",
-  "game/js/api.txt",
-  "game/js/autocomplete.txt",
-  "game/js/db.txt",
-  "game/js/auth.txt",
-  "game/js/ui.txt",
-  "game/js/screens.txt",
-  "game/js/tree.txt",
-  "game/js/game.txt",
-  "game/js/main.txt",
+function fileExists(path: string) {
+  try {
+    return Deno.statSync(path).isFile;
+  } catch {
+    return false;
+  }
+}
+
+const localSourceLayout = fileExists("game/js/config.txt");
+const gameRoot = localSourceLayout ? "game" : ".";
+const javascriptRoot = localSourceLayout ? "game/js" : "js";
+const javascriptExtension = localSourceLayout ? "txt" : "js";
+const javascriptNames = [
+  "config", "state", "api", "autocomplete", "db", "auth",
+  "ui", "screens", "tree", "game", "main",
 ];
+const javascriptSources = javascriptNames.map(
+  (name) => `${javascriptRoot}/${name}.${javascriptExtension}`,
+);
+const assetPath = (name: string) => gameRoot === "." ? name : `${gameRoot}/${name}`;
+const databasePath = assetPath("phylosaur_db.json");
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -35,14 +43,18 @@ Deno.test("browser JavaScript parses individually and in production order", () =
 });
 
 Deno.test("all game JSON files are valid", () => {
-  for (const entry of Deno.readDirSync("game")) {
+  for (const entry of Deno.readDirSync(gameRoot)) {
     if (!entry.isFile || !entry.name.endsWith(".json")) continue;
-    readJson(`game/${entry.name}`);
+    readJson(assetPath(entry.name));
   }
 });
 
 Deno.test("playable dinosaur database preserves tree invariants", () => {
-  const database = readJson("game/phylosaur_db.json");
+  if (!fileExists(databasePath)) {
+    console.warn("phylosaur_db.json is not published in this layout; tree checks skipped.");
+    return;
+  }
+  const database = readJson(databasePath);
   assert(Array.isArray(database) && database.length > 0, "Dinosaur database is empty.");
 
   const validDifficulties = new Set([
@@ -96,13 +108,16 @@ Deno.test("playable dinosaur database preserves tree invariants", () => {
 });
 
 Deno.test("published paleodata is source-reviewed and belongs to playable genera", () => {
-  const database = readJson("game/phylosaur_db.json");
-  const playableNames = new Set(database.map((dinosaur: { nome: string }) => dinosaur.nome));
-  const paleodata = readJson("game/phylosaur_paleodata.json");
+  const playableNames = fileExists(databasePath)
+    ? new Set(readJson(databasePath).map((dinosaur: { nome: string }) => dinosaur.nome))
+    : null;
+  const paleodata = readJson(assetPath("phylosaur_paleodata.json"));
   const taxa = paleodata.taxa ?? {};
 
   for (const [name, record] of Object.entries<any>(taxa)) {
-    assert(playableNames.has(name), `Paleodata contains unknown genus: ${name}`);
+    if (playableNames) {
+      assert(playableNames.has(name), `Paleodata contains unknown genus: ${name}`);
+    }
     assert(record.verification?.status === "source_verified", `${name} is not source-verified.`);
     assert(record.period && record.age_text, `${name} has incomplete age information.`);
     assert(Array.isArray(record.countries) && record.countries.length, `${name} has no country.`);
@@ -120,12 +135,15 @@ Deno.test("published paleodata is source-reviewed and belongs to playable genera
 });
 
 Deno.test("media overrides are complete and belong to playable genera", () => {
-  const database = readJson("game/phylosaur_db.json");
-  const playableNames = new Set(database.map((dinosaur: { nome: string }) => dinosaur.nome));
-  const overrides = readJson("game/phylosaur_media_overrides.json").taxa ?? {};
+  const playableNames = fileExists(databasePath)
+    ? new Set(readJson(databasePath).map((dinosaur: { nome: string }) => dinosaur.nome))
+    : null;
+  const overrides = readJson(assetPath("phylosaur_media_overrides.json")).taxa ?? {};
 
   for (const [name, media] of Object.entries<any>(overrides)) {
-    assert(playableNames.has(name), `Media override contains unknown genus: ${name}`);
+    if (playableNames) {
+      assert(playableNames.has(name), `Media override contains unknown genus: ${name}`);
+    }
     assert(/^https:\/\//.test(media.url), `${name} has an invalid image URL.`);
     assert(/^https:\/\//.test(media.file_page), `${name} has an invalid file page.`);
     assert(media.artist, `${name} has no artist attribution.`);
@@ -134,8 +152,10 @@ Deno.test("media overrides are complete and belong to playable genera", () => {
 });
 
 Deno.test("guess input accessibility contract remains present in every mode", () => {
-  const gameSource = Deno.readTextFileSync("game/js/game.txt");
-  const autocompleteSource = Deno.readTextFileSync("game/js/autocomplete.txt");
+  const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const autocompleteSource = Deno.readTextFileSync(
+    `${javascriptRoot}/autocomplete.${javascriptExtension}`,
+  );
 
   assert(
     gameSource.match(/<label class="visually-hidden" for="dino-input">/g)?.length === 3,
@@ -153,18 +173,31 @@ Deno.test("guess input accessibility contract remains present in every mode", ()
 });
 
 Deno.test("service worker cache version and critical release sources exist", () => {
-  const worker = Deno.readTextFileSync("game/sw_service_worker.txt");
+  const workerPath = localSourceLayout
+    ? "game/sw_service_worker.txt"
+    : "sw.js";
+  const worker = Deno.readTextFileSync(workerPath);
   assert(/phylosaur-shell-v\d+/.test(worker), "Service worker cache version is invalid.");
 
-  const requiredSources = [
-    "game/index_pwa_html.txt",
-    "game/about_html.txt",
-    "game/offline_html.txt",
-    "game/manifest_webmanifest.txt",
-    "game/style.txt",
-    "game/sw_service_worker.txt",
-    ...javascriptSources,
-  ];
+  const requiredSources = localSourceLayout
+    ? [
+      "game/index_pwa_html.txt",
+      "game/about_html.txt",
+      "game/offline_html.txt",
+      "game/manifest_webmanifest.txt",
+      "game/style.txt",
+      "game/sw_service_worker.txt",
+      ...javascriptSources,
+    ]
+    : [
+      "index.html",
+      "about.html",
+      "offline.html",
+      "manifest.webmanifest",
+      "style.css",
+      "sw.js",
+      ...javascriptSources,
+    ];
   for (const path of requiredSources) {
     assert(Deno.statSync(path).isFile, `Required release source is missing: ${path}`);
   }
