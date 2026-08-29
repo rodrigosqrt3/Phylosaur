@@ -53,6 +53,19 @@ function getTreeAnimationMode() {
     return window.treeAnimationState?.mode || 'default';
 }
 
+function makeTreeElementInteractive(element, label, activate) {
+    element.setAttribute('role', 'button');
+    element.setAttribute('tabindex', '0');
+    element.setAttribute('aria-label', label);
+
+    element.addEventListener('click', event => activate(event));
+    element.addEventListener('keydown', event => {
+        if (event.target !== element || (event.key !== 'Enter' && event.key !== ' ')) return;
+        event.preventDefault();
+        activate(event);
+    });
+}
+
 function getTreeElementByKey(key) {
     if (!key) return null;
     const svg = document.getElementById('tree-svg');
@@ -530,7 +543,11 @@ nodes.forEach((data, clade) => {
       victoryNodeKeys.has(nodeKey) ? 'tree-victory-node' : ''
     ].filter(Boolean).join(' '));
     g.style.cursor = 'pointer';
-    g.onclick = () => showCladeInfo(clade);
+    makeTreeElementInteractive(
+      g,
+      `Open information about the ${clade} clade`,
+      () => showCladeInfo(clade)
+    );
     
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     rect.setAttribute('x', pos.x - nodeWidth / 2);
@@ -567,13 +584,20 @@ nodes.forEach((data, clade) => {
     }
     g.appendChild(label);
 
+    let collapseToggle = null;
     if (clade !== 'Dinosauria') {
       const toggleG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const isCollapsed = window.collapsedClades.has(clade);
+      toggleG.setAttribute('class', 'tree-collapse-toggle');
       toggleG.style.cursor = 'pointer';
-      toggleG.onclick = (e) => {
+      makeTreeElementInteractive(
+        toggleG,
+        `${isCollapsed ? 'Expand' : 'Collapse'} descendants of ${clade}`,
+        e => {
         e.stopPropagation();
         toggleCladeCollapse(clade);
-      };
+        }
+      );
       
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       line.setAttribute('x1', pos.x + nodeWidth / 2 - 25);
@@ -592,13 +616,13 @@ nodes.forEach((data, clade) => {
       sym.setAttribute('font-size', '14px');
       sym.setAttribute('font-weight', 'bold');
       sym.setAttribute('fill', '#fff');
-      sym.textContent = window.collapsedClades.has(clade) ? '+' : '−';
+      sym.textContent = isCollapsed ? '+' : '−';
       toggleG.appendChild(sym);
-      
-      g.appendChild(toggleG);
+      collapseToggle = toggleG;
     }
 
     svg.appendChild(g);
+    if (collapseToggle) svg.appendChild(collapseToggle);
   });
   
   leafPositions.forEach((leaf, name) => {
@@ -642,11 +666,14 @@ leafPositions.forEach((leaf, name) => {
       victoryNodeKeys.has(nodeKey) ? 'tree-victory-node' : '',
       animationMode === 'reveal' && leaf.isTarget ? 'tree-reveal-target' : ''
     ].filter(Boolean).join(' '));
-    g.style.cursor = 'pointer';
-    g.onclick = () => {
-      if (leaf.displayName === '?') return;
-      showCladeInfo(leaf.displayName);
-    };
+    if (leaf.displayName !== '?') {
+      g.style.cursor = 'pointer';
+      makeTreeElementInteractive(
+        g,
+        `Open information about ${leaf.displayName}`,
+        () => showCladeInfo(leaf.displayName)
+      );
+    }
     
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     rect.setAttribute('x', leaf.x - nodeWidth / 2);

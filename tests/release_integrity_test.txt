@@ -172,6 +172,20 @@ Deno.test("guess input accessibility contract remains present in every mode", ()
   );
 });
 
+Deno.test("tree nodes remain accessible by keyboard", () => {
+  const treeSource = Deno.readTextFileSync(`${javascriptRoot}/tree.${javascriptExtension}`);
+  assert(
+    treeSource.includes("function makeTreeElementInteractive") &&
+      treeSource.includes("element.setAttribute('role', 'button')") &&
+      treeSource.includes("element.setAttribute('tabindex', '0')"),
+    "Interactive tree elements must be focusable buttons.",
+  );
+  assert(
+    treeSource.includes("event.key !== 'Enter'") && treeSource.includes("event.key !== ' '"),
+    "Tree elements must support Enter and Space activation.",
+  );
+});
+
 Deno.test("service worker cache version and critical release sources exist", () => {
   const workerPath = localSourceLayout
     ? "game/sw_service_worker.txt"

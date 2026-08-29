@@ -1573,6 +1573,24 @@ min-width: 100%;
   filter: drop-shadow(0 0 8px rgba(139, 115, 85, 0.4));
 }
 
+.tree-node-group:focus-visible,
+.tree-leaf-group:focus-visible,
+.tree-collapse-toggle:focus-visible {
+  outline: none;
+}
+
+.tree-node-group:focus-visible > rect,
+.tree-leaf-group:focus-visible > rect {
+  stroke: var(--focus-ring);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 8px var(--focus-ring));
+}
+
+.tree-collapse-toggle:focus-visible text {
+  fill: var(--focus-ring);
+  font-size: 18px;
+}
+
 .tree-line {
   stroke: var(--tree-line);
   stroke-width: 2;
