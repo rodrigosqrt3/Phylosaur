@@ -27,5 +27,41 @@ jobs:
 
       - name: Type-check Edge Function
         run: |
+          if [ -f game/index.txt ]; then
+            cp game/index.txt /tmp/phylosaur-edge.ts
+            deno check /tmp/phylosaur-edge.ts
+          elif [ -f supabase/functions/game/index.ts ]; then
+            deno check supabase/functions/game/index.ts
+          else
+            echo "Edge Function source is not stored in this repository; skipping."
+          finame: Validate Phylosaur
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run project integrity tests
+        run: |
+          cp tests/release_integrity_test.txt /tmp/release_integrity_test.ts
+          deno test --allow-read /tmp/release_integrity_test.ts
+
+      - name: Type-check Edge Function
+        run: |
           cp index.txt /tmp/phylosaur-edge.ts
           deno check /tmp/phylosaur-edge.ts
