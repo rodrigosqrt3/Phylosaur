@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Abelisaurus": {
@@ -311,6 +311,37 @@
       "license": "CC BY-SA 3.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Saturnalia": {
+      "file_title": "File:Saturnalia tupiniquim.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Saturnalia_tupiniquim.jpg/960px-Saturnalia_tupiniquim.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Saturnalia_tupiniquim.jpg",
+      "artist": "CaetaMS",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Titanosaurus": {
+      "file_title": "File:Titanosaurus indicus holotype silhouette.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Titanosaurus_indicus_holotype_silhouette.jpg/960px-Titanosaurus_indicus_holotype_silhouette.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Titanosaurus_indicus_holotype_silhouette.jpg",
+      "artist": "Unofficial Jurassic World",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
+      "editorial_note": "Highly hypothetical silhouette: Titanosaurus indicus is based on only two caudal vertebrae, and the missing anatomy is inferred from other titanosaurs.",
+      "source": "wikimedia"
+    },
+    "Limusaurus": {
+      "file_title": "File:Limusaurus inextricabilis.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/89/Limusaurus_inextricabilis.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Limusaurus_inextricabilis.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
       "source": "wikimedia"
     },
     "Zhuchengtyrannus": {

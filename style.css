@@ -3398,6 +3398,18 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     border-bottom: 1px solid var(--border-subtle);
 }
 
+.museum-entry-media-note {
+    display: block;
+    margin-top: 7px;
+    padding: 7px 9px;
+    color: var(--color-secondary);
+    background: var(--bg-panel-darker);
+    border-left: 2px solid var(--border-subtle);
+    font-size: 0.92em;
+    font-style: italic;
+    text-align: left;
+}
+
 .museum-entry-copy {
     padding: 4px 4px 10px;
 }
@@ -3414,6 +3426,217 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     font-size: 1.02em;
     line-height: 1.85;
     text-align: left;
+}
+
+.museum-entry-paleodata {
+    margin-top: 26px;
+}
+
+.museum-entry-paleo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.museum-entry-paleo-card {
+    min-width: 0;
+    padding: 16px;
+    background:
+        linear-gradient(145deg, var(--color-accent-faint), transparent 55%),
+        var(--bg-panel);
+    border: 1px solid var(--border-inner);
+    border-radius: 4px;
+}
+
+.museum-entry-paleo-label {
+    margin-bottom: 8px;
+    color: var(--color-muted);
+    font-size: 0.67em;
+    font-weight: 600;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+.museum-entry-paleo-card > strong {
+    display: block;
+    color: var(--color-primary);
+    font-family: Georgia, serif;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.museum-entry-paleo-card > span {
+    display: block;
+    margin-top: 4px;
+    color: var(--color-secondary);
+    font-size: 0.75em;
+    line-height: 1.45;
+}
+
+.museum-time-scale {
+    margin-top: 15px;
+}
+
+.museum-time-periods,
+.museum-time-track {
+    display: grid;
+    grid-template-columns: 27.16fr 31.36fr 41.48fr;
+}
+
+.museum-time-periods span {
+    padding-bottom: 5px;
+    color: var(--color-muted);
+    font-size: 0.54em;
+    letter-spacing: 0.2px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.museum-time-track {
+    position: relative;
+    height: 13px;
+    overflow: visible;
+    background: var(--bg-darkest);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+}
+
+.museum-time-segment {
+    opacity: 0.42;
+}
+
+.museum-time-segment.triassic {
+    background: #8f5d66;
+    border-radius: 7px 0 0 7px;
+}
+
+.museum-time-segment.jurassic {
+    background: #6f8c68;
+}
+
+.museum-time-segment.cretaceous {
+    background: #aa8a55;
+    border-radius: 0 7px 7px 0;
+}
+
+.museum-time-range {
+    position: absolute;
+    z-index: 1;
+    top: -4px;
+    height: 19px;
+    min-width: 7px;
+    background: var(--color-primary);
+    border: 2px solid var(--color-text-light);
+    border-radius: 8px;
+    box-shadow: 0 0 9px var(--color-accent-faint);
+}
+
+.museum-time-ages {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    color: var(--color-muted);
+    font-size: 0.54em;
+}
+
+.museum-paleo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 11px;
+}
+
+.museum-paleo-chips span {
+    padding: 4px 7px;
+    color: var(--color-secondary);
+    background: var(--bg-panel-darker);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    font-size: 0.62em;
+    letter-spacing: 0.4px;
+}
+
+.museum-paleo-formations {
+    margin-top: 12px;
+    color: var(--color-muted);
+    font-size: 0.66em;
+    line-height: 1.5;
+}
+
+.museum-paleo-formations b {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--color-secondary);
+    font-size: 0.9em;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.museum-entry-paleo-note {
+    margin: 9px 3px 0;
+    color: var(--color-muted);
+    font-size: 0.65em;
+    font-style: italic;
+    line-height: 1.45;
+}
+
+.museum-entry-paleo-scope {
+    margin: 10px 3px 0;
+    padding: 9px 11px;
+    color: var(--color-secondary);
+    background: var(--bg-panel-darker);
+    border-left: 2px solid var(--border-subtle);
+    font-size: 0.68em;
+    line-height: 1.5;
+}
+
+.museum-entry-paleo-scope strong {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.museum-entry-paleo-sources {
+    margin: 11px 3px 0;
+    color: var(--color-muted);
+    font-size: 0.65em;
+    line-height: 1.55;
+}
+
+.museum-entry-paleo-sources > strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--color-secondary);
+    font-size: 0.9em;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.museum-entry-paleo-sources div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+}
+
+.museum-entry-paleo-sources a,
+.museum-entry-paleo-sources span {
+    color: var(--color-muted);
+}
+
+.museum-entry-paleo-sources a {
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.museum-entry-paleo-sources a:hover {
+    color: var(--color-primary);
+    border-color: var(--color-accent);
+}
+
+.museum-entry-paleo-sources b {
+    color: var(--border-subtle);
+    font-weight: normal;
 }
 
 .museum-entry-copy h3 {
@@ -3507,6 +3730,11 @@ body.light-mode .museum-entry-overlay {
     background: rgba(45, 35, 24, 0.74);
 }
 
+body.light-mode .museum-time-range {
+    border-color: #fff8e8;
+    box-shadow: 0 0 8px rgba(92, 64, 51, 0.22);
+}
+
 @media (max-width: 780px) {
     .museum-entry-overlay {
         align-items: flex-start;
@@ -3536,6 +3764,10 @@ body.light-mode .museum-entry-overlay {
     .museum-entry-description {
         font-size: 0.96em;
         line-height: 1.7;
+    }
+
+    .museum-entry-paleo-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -4324,7 +4556,8 @@ body.light-mode .stat-label {
 }
 
 .analytics-breakdown,
-.analytics-activity {
+.analytics-activity,
+.analytics-players {
     display: grid;
     gap: 7px;
 }
@@ -4377,6 +4610,51 @@ body.light-mode .stat-label {
     margin-top: 3px;
 }
 
+.analytics-player-row {
+    display: grid;
+    grid-template-columns: 34px minmax(130px, 0.8fr) minmax(190px, 1.35fr) minmax(145px, 0.8fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    color: var(--color-secondary);
+    background: var(--bg-panel);
+    border-radius: 4px;
+    font-size: 0.78em;
+}
+
+.analytics-player-rank {
+    color: var(--color-muted);
+    text-align: center;
+}
+
+.analytics-player-row strong {
+    overflow: hidden;
+    color: var(--color-primary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.analytics-player-row time,
+.analytics-section-note,
+.analytics-data-warning {
+    color: var(--color-muted);
+    font-size: 0.72em;
+}
+
+.analytics-section-note {
+    margin-top: 12px;
+    font-style: italic;
+}
+
+.analytics-data-warning {
+    margin-top: 18px;
+    padding: 10px 12px;
+    color: var(--color-warning);
+    background: var(--bg-panel-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+}
+
 .analytics-generated {
     margin-top: 22px;
     text-align: right;
@@ -4408,6 +4686,15 @@ body.light-mode .stat-label {
     }
 
     .analytics-activity-row time {
+        grid-column: 2;
+    }
+
+    .analytics-player-row {
+        grid-template-columns: 28px minmax(0, 1fr);
+    }
+
+    .analytics-player-row > span:not(.analytics-player-rank),
+    .analytics-player-row time {
         grid-column: 2;
     }
 }

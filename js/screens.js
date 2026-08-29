@@ -1244,7 +1244,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=6')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=7')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
@@ -1392,9 +1392,13 @@ function getMuseumMediaCredit(name, media) {
             : media.license;
         const sourceName = media.source === 'dinopedia' ? 'Dinopedia' : 'Wikimedia Commons';
         const contributor = media.artist || `${sourceName} contributor`;
+        const editorialNote = media.editorial_note
+            ? `<span class="museum-entry-media-note">${escapeChallengeHtml(media.editorial_note)}</span>`
+            : '';
         return `
             Image by ${contributor} · ${license}
             · <a href="${media.file_page}" target="_blank" rel="noopener">${sourceName}</a>
+            ${editorialNote}
         `;
     }
 
@@ -1865,7 +1869,11 @@ async function showAnalyticsDashboard(days = 30) {
 
     const activityRows = (data.recentActivity || []).map(event => {
         const when = new Date(event.createdAt).toLocaleString();
-        const context = [analyticsLabel(event.mode), analyticsLabel(event.difficulty)].filter(value => value && value !== 'Unknown').join(' · ');
+        const context = [
+            event.player ? `@${event.player}` : '',
+            analyticsLabel(event.mode),
+            analyticsLabel(event.difficulty)
+        ].filter(value => value && value !== 'Unknown').join(' · ');
         return `<div class="analytics-activity-row">
             <span>◆</span>
             <div><strong>${escapeChallengeHtml(analyticsLabel(event.type))}</strong>${context ? `<small>${escapeChallengeHtml(context)}</small>` : ''}</div>
@@ -1873,13 +1881,29 @@ async function showAnalyticsDashboard(days = 30) {
         </div>`;
     }).join('');
 
+    const playerRows = (data.registeredPlayers || []).map((player, index) => {
+        const lastPlayed = player.lastPlayed
+            ? new Date(`${player.lastPlayed}T00:00:00`).toLocaleDateString()
+            : 'Never';
+        return `<div class="analytics-player-row">
+            <span class="analytics-player-rank">${index + 1}</span>
+            <strong>@${escapeChallengeHtml(player.username)}</strong>
+            <span>${player.gamesPlayed} games · ${player.gamesWon} wins (${player.winRate}%)</span>
+            <span>Current ${player.currentStreak} · Best ${player.bestStreak}</span>
+            <time>Last daily: ${escapeChallengeHtml(lastPlayed)}</time>
+        </div>`;
+    }).join('');
+
+    const pagination = data.pagination || {};
+    const hasTruncatedData = Object.values(pagination).some(Boolean);
+
     appContent.innerHTML = `
     <div class="game-card analytics-dashboard">
         <div class="analytics-header">
             <div>
                 <div class="friends-kicker">Private Analytics</div>
                 <h2>Phylosaur Analytics</h2>
-                <p>Aggregated usage only. No emails, usernames, IP addresses or fingerprints are displayed.</p>
+                <p>Private administrator view. Registered usernames may be displayed; emails, IP addresses and fingerprints are never included.</p>
             </div>
             <div class="analytics-range" role="group" aria-label="Analytics period">
                 ${[7, 30, 90].map(period => `<button class="btn-hint btn-header ${period === data.days ? 'active' : ''}" onclick="showAnalyticsDashboard(${period})">${period}d</button>`).join('')}
@@ -1894,10 +1918,20 @@ async function showAnalyticsDashboard(days = 30) {
             ${analyticsMetricCard('Average guesses', summary.averageGuesses)}
             ${analyticsMetricCard('Average hints', summary.averageHints)}
             ${analyticsMetricCard('New accounts', summary.newAccounts)}
+            ${analyticsMetricCard('Registered accounts', summary.registeredAccounts, `${summary.activeRegisteredPlayers || 0} with recorded games`)}
+            ${analyticsMetricCard('Highest streak', summary.highestBestStreak, summary.highestStreakPlayer ? `@${summary.highestStreakPlayer}` : 'No streak recorded')}
             ${analyticsMetricCard('Anonymous sessions', summary.anonymousSessions)}
             ${analyticsMetricCard('Friend challenges', summary.challengesCreated, `${summary.challengeJoins} joins`)}
             ${analyticsMetricCard('Museum views', summary.museumViews)}
         </div>
+
+        <section class="analytics-section">
+            <h3>Registered players · highest streaks</h3>
+            <div class="analytics-players">${playerRows || '<p class="empty-state">No registered player statistics yet.</p>'}</div>
+            ${(data.registeredPlayers || []).length >= 100
+                ? '<p class="analytics-section-note">Showing the first 100 accounts, ordered by best streak and activity.</p>'
+                : ''}
+        </section>
 
         <section class="analytics-section">
             <h3>Games by day</h3>
@@ -1920,6 +1954,7 @@ async function showAnalyticsDashboard(days = 30) {
             <div class="analytics-activity">${activityRows || '<p class="empty-state">New tracked events will appear here.</p>'}</div>
         </section>
 
+        ${hasTruncatedData ? '<p class="analytics-data-warning">The safety limit was reached for at least one dataset. Some totals may be partial.</p>' : ''}
         <p class="analytics-generated">Generated ${escapeChallengeHtml(new Date(data.generatedAt).toLocaleString())}</p>
     </div>`;
 }
