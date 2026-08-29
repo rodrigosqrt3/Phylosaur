@@ -12,6 +12,20 @@ function initializeAutocomplete() {
   input.setAttribute('aria-controls', 'suggestions');
   input.setAttribute('aria-expanded', 'false');
   sugDiv.setAttribute('role', 'listbox');
+  sugDiv.setAttribute('aria-label', 'Dinosaur suggestions');
+
+  let status = sugDiv.parentElement?.querySelector('.autocomplete-status');
+  if (!status) {
+    status = document.createElement('div');
+    status.className = 'visually-hidden autocomplete-status';
+    status.setAttribute('aria-live', 'polite');
+    status.setAttribute('aria-atomic', 'true');
+    sugDiv.insertAdjacentElement('afterend', status);
+  }
+
+  input.addEventListener('dblclick', () => {
+    if (!input.disabled) input.select();
+  });
 
   const hideSuggestions = () => {
     sugDiv.style.display = 'none';
@@ -33,6 +47,7 @@ function initializeAutocomplete() {
     const text = this.value.toLowerCase().trim();
     
     if (text.length < 2) {
+      status.textContent = '';
       hideSuggestions();
       return;
     }
@@ -45,6 +60,7 @@ function initializeAutocomplete() {
       .slice(0, 8);
     
     if (!matches.length) {
+      status.textContent = 'No dinosaur suggestions available.';
       hideSuggestions();
       return;
     }
@@ -55,6 +71,7 @@ function initializeAutocomplete() {
     
     sugDiv.style.display = 'block';
     input.setAttribute('aria-expanded', 'true');
+    status.textContent = `${matches.length} dinosaur suggestion${matches.length === 1 ? '' : 's'} available.`;
   });
 
   input.addEventListener('keydown', e => {
@@ -79,16 +96,10 @@ function initializeAutocomplete() {
       if (current) {
         input.value = current.textContent.trim();
         hideSuggestions();
-      } else {
-        makeGuess();
       }
+      makeGuess();
     } else if (e.key === 'Tab') {
-      const first = sugDiv.querySelector('.suggestion-item');
-      if (sugDiv.style.display !== 'none' && first) {
-        e.preventDefault();
-        input.value = first.textContent.trim();
-        hideSuggestions();
-      }
+      hideSuggestions();
     } else if (e.key === 'Escape') {
       hideSuggestions();
     }

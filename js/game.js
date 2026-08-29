@@ -44,7 +44,8 @@ async function startPracticeChallenge(difficulty, { restoreExisting = false } = 
         <div class="input-section">
         <div class="guess-primary-row">
             <div class="guess-field">
-            <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" />
+            <label class="visually-hidden" for="dino-input">Dinosaur guess</label>
+            <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
             <div id="suggestions"></div>
             </div>
             <button class="btn-guess" onclick="makeGuess()">Submit</button>
@@ -104,7 +105,8 @@ async function startDailyChallenge(difficulty, { restoreExisting = false } = {})
         <div class="input-section">
         <div class="guess-primary-row">
             <div class="guess-field">
-            <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" />
+            <label class="visually-hidden" for="dino-input">Dinosaur guess</label>
+            <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
             <div id="suggestions"></div>
             </div>
             <button class="btn-guess" onclick="makeGuess()">Submit</button>
@@ -183,7 +185,8 @@ async function startFriendChallengeFromPayload(data) {
         <div class="input-section">
             <div class="guess-primary-row">
                 <div class="guess-field">
-                    <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off">
+                    <label class="visually-hidden" for="dino-input">Dinosaur guess</label>
+                    <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go">
                     <div id="suggestions"></div>
                 </div>
                 <button class="btn-guess" onclick="makeGuess()">Submit</button>
