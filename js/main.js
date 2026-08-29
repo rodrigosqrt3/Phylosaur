@@ -73,6 +73,18 @@ function navigateBackOrHome(fallbackRoute = '/') {
   renderFallbackRoute(fallbackRoute);
 }
 
+function navigateToAppRoute(route = '/') {
+  const normalized = normalizeAppRoute(route);
+  window.history.replaceState({
+    ...(window.history.state || {}),
+    phylosaurRoute: normalized,
+    phylosaurDepth: 0
+  }, document.title, buildAppRouteUrl(normalized));
+
+  if (appRoutingReady) return restoreAppRoute();
+  return renderFallbackRoute(normalized);
+}
+
 async function restoreAppRoute() {
   let route = getCurrentAppRoute();
   const parts = route.split('/').filter(Boolean);

@@ -186,6 +186,22 @@ Deno.test("tree nodes remain accessible by keyboard", () => {
   );
 });
 
+Deno.test("Practice Back returns directly to the main level selection", () => {
+  const mainSource = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
+  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  assert(
+    mainSource.includes("function navigateToAppRoute(route = '/')") &&
+      mainSource.includes("phylosaurDepth: 0"),
+    "Direct navigation must reset stale in-app history depth.",
+  );
+  assert(
+    uiSource.includes("'practice':     `<button") &&
+      uiSource.includes("'practice-menu':`<button") &&
+      (uiSource.match(/onclick="navigateToAppRoute\('\/'\)"/g)?.length ?? 0) >= 3,
+    "Practice Back must target the main Daily level selection directly.",
+  );
+});
+
 Deno.test("service worker cache version and critical release sources exist", () => {
   const workerPath = localSourceLayout
     ? "game/sw_service_worker.txt"
