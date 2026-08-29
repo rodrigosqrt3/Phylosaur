@@ -267,27 +267,48 @@ function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
     overlay.focus();
 }
 
-async function showCladeInfo(cladeName) {
+let cladeInfoRequestId = 0;
+
+async function showCladeInfo(cladeName, options = {}) {
     const infoDiv = document.getElementById('clade-info');
+    if (!infoDiv || !cladeName) return;
+
+    const requestId = ++cladeInfoRequestId;
+    const heading = options.heading || 'Clade';
+    const includeRevealedPath = options.includeRevealedPath === true;
     infoDiv.innerHTML = `
     <div class="clade-info">
-        <div class="loading">Loading information about ${cladeName}…</div>
+        <div class="loading">Loading information about ${escapeChallengeHtml(cladeName)}…</div>
     </div>
     `;
 
     const wikiInfo = await fetchWikipediaInfo(cladeName);
+    if (requestId !== cladeInfoRequestId || !infoDiv.isConnected) return;
+
+    const revealedPathHtml = includeRevealedPath
+        ? `
+            <div class="phylo-path"><h4>Revealed path to the target:</h4>
+                ${Array.from(revealedClades).map(clade => `
+                    <div class="phylo-step">
+                        <span class="phylo-step-name">${escapeChallengeHtml(clade)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `
+        : '';
     
     if (!wikiInfo) {
     infoDiv.innerHTML = `
         <div class="clade-info">
-        <h3>Clade: ${cladeName}</h3>
+        <h3>${escapeChallengeHtml(heading)}: ${escapeChallengeHtml(cladeName)}</h3>
         <p style="color:#999;font-style:italic;">No encyclopedia entry found.</p>
+        ${revealedPathHtml}
         </div>
     `;
     return;
     }
 
-    let html = `<div class="clade-info"><h3>Clade: ${cladeName}</h3><div class="clade-content">`;
+    let html = `<div class="clade-info"><h3>${escapeChallengeHtml(heading)}: ${escapeChallengeHtml(cladeName)}</h3><div class="clade-content">`;
     
     if (wikiInfo.image) {
     html += `<img src="${wikiInfo.image}" alt="${wikiInfo.title}" class="clade-image" />`;
@@ -303,81 +324,42 @@ async function showCladeInfo(cladeName) {
     </div>
     `;
     
-    html += `</div></div>`;
+    html += `</div>${revealedPathHtml}</div>`;
     infoDiv.innerHTML = html;
 }
 
 async function updateCladeInfo() {
     const infoDiv = document.getElementById('clade-info');
-    
-    if (guesses.length === 0) {
-    infoDiv.innerHTML = '';
-    return;
+    if (!infoDiv) return;
+
+    const bestGuess = guesses.reduce((best, candidate) =>
+        Number(candidate?.proximity?.matches || 0) > Number(best?.proximity?.matches || 0)
+            ? candidate
+            : best,
+    null);
+    const bestGuessDepth = Number(bestGuess?.proximity?.matches || 0);
+    const bestGuessClade = bestGuess?.proximity?.lastCommonClade || null;
+
+    const deepestHint = hintHistory.reduce((best, hint) => {
+        if (!hint?.cladeName) return best;
+        return Number(hint.depth || 0) > Number(best?.depth || 0) ? hint : best;
+    }, null);
+    const deepestHintDepth = Number(deepestHint?.depth || 0);
+
+    const useHintClade = Boolean(deepestHint?.cladeName)
+        && deepestHintDepth >= bestGuessDepth;
+    const selectedClade = useHintClade ? deepestHint.cladeName : bestGuessClade;
+
+    if (!selectedClade) {
+        cladeInfoRequestId++;
+        infoDiv.innerHTML = '';
+        return;
     }
 
-    const bestGuess = guesses.reduce((b, c) => 
-    c.proximity.matches > b.proximity.matches ? c : b
-    );
-    
-    const lastCommonClade = bestGuess.proximity.lastCommonClade;
-    
-    if (!lastCommonClade) {
-    infoDiv.innerHTML = '';
-    return;
-    }
-
-    infoDiv.innerHTML = `
-    <div class="clade-info">
-        <div class="loading">Loading information about ${lastCommonClade}…</div>
-    </div>
-    `;
-
-    const wikiInfo = await fetchWikipediaInfo(lastCommonClade);
-    
-    if (!wikiInfo) {
-    infoDiv.innerHTML = `
-        <div class="clade-info">
-        <h3>Most Recent Common Ancestor: ${lastCommonClade}</h3>
-        <p style="color:#999;font-style:italic;">No encyclopedia entry found.</p>
-        </div>
-    `;
-    return;
-    }
-
-    let html = `
-    <div class="clade-info">
-        <h3>Most Recent Common Ancestor: ${lastCommonClade}</h3>
-        <div class="clade-content">
-    `;
-    
-    if (wikiInfo.image) {
-    html += `<img src="${wikiInfo.image}" alt="${wikiInfo.title}" class="clade-image" />`;
-    }
-    
-    html += `
-    <div class="clade-text">
-        ${wikiInfo.description 
-        ? `<p>${wikiInfo.description}</p>` 
-        : '<p style="color:#999;font-style:italic;">Description unavailable.</p>'
-        }
-        <a href="${wikiInfo.url}" target="_blank" class="clade-link">View Encyclopedia Entry</a>
-    </div>
-    `;
-    
-    html += `</div>`;
-
-    html += `<div class="phylo-path"><h4>Revealed path to the target:</h4>`;
-    const visiblePath = Array.from(revealedClades);
-    for (const clade of visiblePath) {
-    html += `
-        <div class="phylo-step">
-        <span class="phylo-step-name">${clade}</span>
-        </div>
-    `;
-    }
-    html += `</div></div>`;
-    
-    infoDiv.innerHTML = html;
+    await showCladeInfo(selectedClade, {
+        heading: useHintClade ? 'Deepest Revealed Clade' : 'Most Recent Common Ancestor',
+        includeRevealedPath: true
+    });
 }
 
 function updateGuessHistory() {

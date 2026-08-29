@@ -146,6 +146,7 @@ async function startFriendChallengeFromPayload(data) {
     serverPossibleSpecimens = 0;
     gameRequestPending = false;
     currentMuseumProof = null;
+    currentAccountProgress = null;
     currentGameMode = 'challenge';
     isPracticeMode = false;
     selectedDifficulty = data.difficulty;
@@ -470,7 +471,7 @@ async function useServerHint() {
                 'Hint',
                 `The next clade in the lineage is:<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${data.hint.cladeName}</strong>`
             );
-            await showCladeInfo(data.hint.cladeName);
+            await updateCladeInfo();
         } else {
             await customAlert(
                 'Name Hint',
@@ -658,19 +659,12 @@ async function giveUp() {
     gameWon = false;
 
     if (currentUserId && currentGameMode === 'daily') {
-        await updateStatsAfterGame(false, guesses.length, selectedDifficulty);
-        await sb.from('daily_results').upsert({
-            user_id: currentUserId,
-            played_date: getTodayString(),
-            difficulty: selectedDifficulty,
-            target_dino: targetDino.nome,
-            guess_count: guesses.length,
-            won: false,
-            gave_up: true,
-            guesses: guesses.map(g => ({ nome: g.dino.nome, isHint: g.isHint || false })),
-            revealed_clades: Array.from(revealedClades),
-            hint_history: hintHistory
-        }, { onConflict: 'user_id,played_date,difficulty' });
+        try {
+            await ensureDailyAccountProgress();
+            await syncAccountAchievements();
+        } catch (error) {
+            console.error('Daily progress finalization failed:', error);
+        }
     } else if (currentGameMode === 'daily') {
         recordGuestDailyResult(false);
     }
@@ -863,11 +857,8 @@ async function persistVictoryResult() {
     let newlyUnlockedAchievements = [];
 
     if (currentUserId && currentGameMode === 'daily') {
-        await clearGameProgress(selectedDifficulty);
-        streakData = await updateStreak();
-        milestone = checkStreakMilestone(streakData.current);
-        newlyUnlockedAchievements = await updateStatsAfterGame(true, guesses.length, selectedDifficulty);
-        await markDailyChallengeCompleted(selectedDifficulty);
+        streakData = await ensureDailyAccountProgress();
+        milestone = streakData ? checkStreakMilestone(streakData.current) : null;
     } else if (currentGameMode === 'daily') {
         newlyUnlockedAchievements = recordGuestDailyResult(true);
     }
@@ -925,7 +916,7 @@ async function hydrateVictoryMetadata(panel, persistencePromise) {
         status?.remove();
     } catch (error) {
         console.error('Victory result persistence error:', error);
-        if (status) status.textContent = 'Result saved locally; online statistics will retry on your next visit.';
+        if (status) status.textContent = 'Game saved; account statistics will retry on your next visit.';
     } finally {
         panel.querySelectorAll('[data-victory-action]').forEach(button => {
             button.disabled = false;

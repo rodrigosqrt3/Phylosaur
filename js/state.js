@@ -29,6 +29,7 @@ let currentTargetDepth = 0;
 let serverPossibleSpecimens = 0;
 let gameRequestPending = false;
 let currentMuseumProof = null;
+let currentAccountProgress = null;
 let isAnalyticsAdmin = false;
 let analyticsAccessChecked = false;
 

@@ -608,6 +608,7 @@ function applyServerGamePayload(data) {
     gameWon = Boolean(data.won || data.complete);
     isGiveUpMode = Boolean(data.gaveUp);
     if (data.museumProof) currentMuseumProof = data.museumProof;
+    if (data.accountProgress) applyAccountProgress(data.accountProgress);
 
     if (data.target) {
         targetDino = {
@@ -620,6 +621,32 @@ function applyServerGamePayload(data) {
     }
 
     if (data.tree) window.currentTreeSnapshot = data.tree;
+}
+
+function applyAccountProgress(progress) {
+    if (!progress || typeof progress !== 'object') return null;
+
+    const stats = progress.statistics;
+    if (stats && typeof stats === 'object') {
+        userStats.gamesPlayed = Number(stats.games_played || 0);
+        userStats.gamesWon = Number(stats.games_won || 0);
+        userStats.totalGuesses = Number(stats.total_guesses || 0);
+        userStats.bestScore = stats.best_score ?? null;
+    }
+
+    dailyCompletionCache = null;
+    currentAccountProgress = progress;
+    return progress.streak || null;
+}
+
+async function ensureDailyAccountProgress() {
+    if (!currentUserId || currentGameMode !== 'daily' || !gameSessionId) return null;
+    if (currentAccountProgress) return applyAccountProgress(currentAccountProgress);
+
+    const result = await callGameApi('finalize_daily_progress', {
+        sessionId: gameSessionId
+    });
+    return applyAccountProgress(result.accountProgress);
 }
 
 function setServerStatValue(element, value, animate) {
@@ -770,6 +797,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
     serverPossibleSpecimens = 0;
     gameRequestPending = false;
     currentMuseumProof = null;
+    currentAccountProgress = null;
 
     const wrapper = document.getElementById('tree-scroll-wrapper');
     if (wrapper) wrapper.innerHTML = '<div class="loading">Loading challenge...</div>';

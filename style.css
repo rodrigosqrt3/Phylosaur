@@ -1380,6 +1380,9 @@ textarea:focus-visible {
 }
 
 #tree-container.tree-result-active {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 0;
   max-height: none;
   padding: 0;
@@ -1397,10 +1400,7 @@ textarea:focus-visible {
 }
 
 #tree-container.tree-result-active #tree-scroll-wrapper {
-  position: absolute;
-  inset: 0;
-  visibility: hidden;
-  pointer-events: none;
+  display: none;
 }
 
 #tree-container.tree-result-active .victory {
@@ -1705,6 +1705,9 @@ body:not(.light-mode) .tree-node-group:hover rect {
 
 .victory {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   text-align: center;
   padding: 38px;
