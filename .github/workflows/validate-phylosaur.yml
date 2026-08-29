@@ -22,10 +22,10 @@ jobs:
 
       - name: Run project integrity tests
         run: |
-          cp game/tests/release_integrity_test.txt /tmp/release_integrity_test.ts
+          cp tests/release_integrity_test.txt /tmp/release_integrity_test.ts
           deno test --allow-read /tmp/release_integrity_test.ts
 
       - name: Type-check Edge Function
         run: |
-          cp game/index.txt /tmp/phylosaur-edge.ts
+          cp index.txt /tmp/phylosaur-edge.ts
           deno check /tmp/phylosaur-edge.ts
