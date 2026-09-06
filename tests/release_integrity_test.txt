@@ -172,6 +172,81 @@ Deno.test("guess input accessibility contract remains present in every mode", ()
   );
 });
 
+Deno.test("autocomplete ranks exact names, prefixes and interior matches before limiting", () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/autocomplete.${javascriptExtension}`);
+  const rank = new Function(`${source}; return getRankedDinosaurSuggestions;`)();
+  const candidates = ["Yutyrannus", "Styracosaurus", "Tyrannotitan", "Tyrannosaurus"]
+    .map(nome => ({ nome }));
+  const original = JSON.stringify(candidates);
+  const names = (matches: { nome: string }[]) => matches.map(match => match.nome).join(",");
+  assert(
+    names(rank(candidates, "  TYR  ")) === "Tyrannosaurus,Tyrannotitan,Styracosaurus,Yutyrannus",
+    "Prefixes must precede interior matches, with alphabetical ties and case-insensitive input.",
+  );
+  assert(
+    names(rank([...candidates].reverse(), "tyr")) === names(rank(candidates, "tyr")),
+    "Suggestion order must not depend on catalog order.",
+  );
+  assert(JSON.stringify(candidates) === original, "Ranking must not reorder the game database.");
+  assert(
+    names(rank(candidates, "tyr", new Set(["tyrannosaurus"]))) === "Tyrannotitan,Styracosaurus,Yutyrannus",
+    "Already-guessed names must stay excluded.",
+  );
+  const fixtures = [
+    ...Array.from({ length: 12 }, (_, index) => ({ nome: `Other${index}Match` })),
+    { nome: "MatchPrefix" }, { nome: "Match" },
+  ];
+  const limited = rank(fixtures, "match");
+  assert(limited.length === 8, "Suggestions must remain limited to eight.");
+  assert(limited[0].nome === "Match" && limited[1].nome === "MatchPrefix",
+    "Exact and prefix matches must not be discarded before ranking.");
+  for (const query of ["", " ", "t", "zzzzzz"]) {
+    assert(rank(candidates, query).length === 0, `Unexpected suggestions for '${query}'.`);
+  }
+});
+
+Deno.test("guess input displays ranked suggestions and submits the typed name", () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/autocomplete.${javascriptExtension}`);
+  const handlers: Record<string, Function> = {};
+  let guesses = 0;
+  const status = { textContent: "" };
+  const input = {
+    value: "tyr",
+    setAttribute() {}, removeAttribute() {},
+    addEventListener: (event: string, handler: Function) => { handlers[event] = handler; },
+  };
+  const suggestions = {
+    innerHTML: "", style: { display: "none" },
+    parentElement: { querySelector: () => status },
+    setAttribute() {}, querySelector: () => null, querySelectorAll: () => [],
+  };
+  const initialize = new Function(
+    "document", "window", "database", "guessedNames", "makeGuess",
+    `${source}; return initializeAutocomplete;`,
+  )(
+    {
+      getElementById: (id: string) => id === "dino-input" ? input : suggestions,
+      addEventListener() {}, querySelector: () => null,
+    },
+    {},
+    ["Yutyrannus", "Tyrannotitan", "Tyrannosaurus"].map(nome => ({ nome })),
+    new Set(["tyrannotitan"]),
+    () => { guesses++; },
+  );
+  initialize();
+  handlers.input.call(input);
+  assert(suggestions.innerHTML.includes("Tyrannosaurus") && !suggestions.innerHTML.includes("Tyrannotitan"),
+    "Rendered suggestions must exclude previous guesses.");
+  assert(suggestions.innerHTML.indexOf("Tyrannosaurus") < suggestions.innerHTML.indexOf("Yutyrannus"),
+    "The input must render prefix matches first.");
+  assert(status.textContent === "2 dinosaur suggestions available.", "Suggestion count is incorrect.");
+  input.value = "Yutyrannus";
+  handlers.keydown({ key: "Enter", preventDefault() {} });
+  assert(guesses === 1 && input.value === "Yutyrannus", "Ranking must not replace a typed guess on Enter.");
+  handlers.keydown({ key: "Escape", preventDefault() {} });
+  assert(suggestions.style.display === "none", "Escape must still dismiss suggestions.");
+});
+
 Deno.test("tree nodes remain accessible by keyboard", () => {
   const treeSource = Deno.readTextFileSync(`${javascriptRoot}/tree.${javascriptExtension}`);
   assert(

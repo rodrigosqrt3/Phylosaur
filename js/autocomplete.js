@@ -1,6 +1,23 @@
 // ═══════════════════════════════════════════════
 // AUTOCOMPLETE
 // ═══════════════════════════════════════════════
+function getRankedDinosaurSuggestions(candidates, query, excludedNames = new Set()) {
+  const text = String(query || '').trim().toLowerCase();
+  if (text.length < 2) return [];
+
+  const matches = [];
+  for (const dinosaur of candidates) {
+    const name = dinosaur.nome.toLowerCase();
+    if (excludedNames.has(name) || !name.includes(text)) continue;
+    const rank = name === text ? 0 : name.startsWith(text) ? 1 : 2;
+    matches.push({ dinosaur, name, rank });
+  }
+
+  matches.sort((first, second) => first.rank - second.rank
+    || (first.name < second.name ? -1 : first.name > second.name ? 1 : 0));
+  return matches.slice(0, 8).map(match => match.dinosaur);
+}
+
 function initializeAutocomplete() {
   const input = document.getElementById('dino-input');
   const sugDiv = document.getElementById('suggestions');
@@ -52,12 +69,7 @@ function initializeAutocomplete() {
       return;
     }
     
-    const matches = database
-      .filter(d => 
-        d.nome.toLowerCase().includes(text) && 
-        !guessedNames.has(d.nome.toLowerCase())
-      )
-      .slice(0, 8);
+    const matches = getRankedDinosaurSuggestions(database, text, guessedNames);
     
     if (!matches.length) {
       status.textContent = 'No dinosaur suggestions available.';
