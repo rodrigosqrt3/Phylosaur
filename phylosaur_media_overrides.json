@@ -1,7 +1,77 @@
 {
-  "version": 7,
+  "version": 8,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Centrosaurus": {
+      "file_title": "File:Centrosaurus (flipped).png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Centrosaurus_%28flipped%29.png/960px-Centrosaurus_%28flipped%29.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Centrosaurus_(flipped).png",
+      "artist": "Fred Wierum",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Haplocanthosaurus": {
+      "file_title": "File:Haplocanthosaurus sp life restoration.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Haplocanthosaurus_sp_life_restoration.png/960px-Haplocanthosaurus_sp_life_restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Haplocanthosaurus_sp_life_restoration.png",
+      "artist": "Colin Boisvert, Gunnar T. Bivens, Brian Curtice, Ray Wilhite, and Mathew Wedel",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0 International",
+      "source": "wikimedia"
+    },
+    "Neovenator": {
+      "file_title": "File:Neovenator.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Neovenator.png/960px-Neovenator.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Neovenator.png",
+      "artist": "Fred Wierum",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Ornitholestes": {
+      "file_title": "File:Ornitholestes reconstruction (flipped).png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Ornitholestes_reconstruction_%28flipped%29.png/960px-Ornitholestes_reconstruction_%28flipped%29.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Ornitholestes_reconstruction_(flipped).png",
+      "artist": "PaleoNeolitic",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Segnosaurus": {
+      "file_title": "File:Segnosaurus Restoration.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Segnosaurus_Restoration.jpg/960px-Segnosaurus_Restoration.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Segnosaurus_Restoration.jpg",
+      "artist": "PaleoNeolitic",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Tianyulong": {
+      "file_title": "File:Tianyulong confuciusi.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Tianyulong_confuciusi.png/960px-Tianyulong_confuciusi.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Tianyulong_confuciusi.png",
+      "artist": "Connor Ashbridge",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0 International",
+      "source": "wikimedia"
+    },
+    "Vulcanodon": {
+      "file_title": "File:Vulcanodon.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Vulcanodon.png/960px-Vulcanodon.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Vulcanodon.png",
+      "artist": "J-H. Jang (Palaeotaku)",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
     "Abelisaurus": {
       "file_title": "File:Abelisaurus comahuensis jmallon.jpg",
       "url": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Abelisaurus_comahuensis_jmallon.jpg",
