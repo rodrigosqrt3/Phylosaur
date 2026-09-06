@@ -1408,22 +1408,48 @@ function getMuseumMediaCredit(name, media) {
     `;
 }
 
-function closeMuseumEntry() {
+async function closeMuseumEntry({ animate = false, restorePosition = false } = {}) {
+    const overlay = document.getElementById('museum-entry-overlay');
+    if (animate && overlay) {
+        if (!overlay.museumClosing) {
+            overlay.classList.add('is-closing');
+            const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
+            overlay.museumClosing = new Promise(resolve => setTimeout(resolve, duration));
+        }
+        await overlay.museumClosing;
+        if (document.getElementById('museum-entry-overlay') !== overlay) return false;
+    }
+
     document.getElementById('museum-image-viewer')?.remove();
-    document.getElementById('museum-entry-overlay')?.remove();
-    document.body.style.overflow = '';
+    overlay?.remove();
+    document.body.style.overflow = overlay?.museumReturnState?.overflow || '';
     activeMuseumEntryMedia = null;
 
     if (museumEntryEscapeHandler) {
         document.removeEventListener('keydown', museumEntryEscapeHandler);
         museumEntryEscapeHandler = null;
     }
+
+    if (restorePosition && overlay?.museumReturnState) {
+        const { scrollX, scrollY, card } = overlay.museumReturnState;
+        window.scrollTo({ left: scrollX, top: scrollY, behavior: 'instant' });
+        if (card?.isConnected) card.focus({ preventScroll: true });
+    }
+    return true;
 }
 
-function dismissMuseumEntry() {
-    closeMuseumEntry();
-    if (getCurrentAppRoute().startsWith('/museum/')) {
-        navigateBackOrHome('/museum');
+async function dismissMuseumEntry() {
+    const overlay = document.getElementById('museum-entry-overlay');
+    if (!overlay || overlay.museumDismissRequested) return;
+    overlay.museumDismissRequested = true;
+    const route = getCurrentAppRoute();
+    const closed = await closeMuseumEntry({ animate: true, restorePosition: true });
+    if (closed && getCurrentAppRoute() === route && route.startsWith('/museum/')) {
+        if (Number(window.history.state?.phylosaurDepth || 0) > 0) {
+            window.history.back();
+        } else {
+            setAppRoute('/museum', { replace: true });
+        }
     }
 }
 
@@ -1462,6 +1488,13 @@ async function showMuseumEntry(name) {
     const overlay = document.createElement('div');
     overlay.id = 'museum-entry-overlay';
     overlay.className = 'museum-entry-overlay';
+    overlay.museumReturnState = {
+        scrollX: window.scrollX,
+        scrollY: window.scrollY,
+        overflow: document.body.style.overflow,
+        card: Array.from(document.querySelectorAll('.museum-card.unlocked'))
+            .find(card => card.dataset.museumName === name.toLowerCase()) || document.activeElement
+    };
     overlay.innerHTML = `
         <article class="museum-entry-dialog" role="dialog" aria-modal="true" aria-label="${name}">
             <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="Close">×</button>

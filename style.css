@@ -3266,6 +3266,30 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
         inset 0 0 0 1px var(--border-inner);
 }
 
+.museum-entry-overlay.is-closing {
+    animation: museumEntryFadeOut 180ms ease forwards;
+}
+
+.museum-entry-overlay.is-closing .museum-entry-dialog {
+    animation: museumEntrySlideOut 180ms ease forwards;
+}
+
+@keyframes museumEntryFadeOut {
+    to { opacity: 0; }
+}
+
+@keyframes museumEntrySlideOut {
+    to { transform: translateY(12px) scale(0.985); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .museum-entry-overlay,
+    .museum-entry-overlay.is-closing,
+    .museum-entry-overlay.is-closing .museum-entry-dialog {
+        animation: none;
+    }
+}
+
 .museum-entry-dialog::before {
     content: '';
     position: absolute;

@@ -89,16 +89,22 @@ async function restoreAppRoute() {
   let route = getCurrentAppRoute();
   const parts = route.split('/').filter(Boolean);
 
-  closeTransientRouteOverlays();
+  const museumVisible = Boolean(document.querySelector('#app-content .museum-grid'));
+  if (route === '/museum' && museumVisible) {
+    await closeMuseumEntry({ animate: true, restorePosition: true });
+    if (getCurrentAppRoute() !== route) return getCurrentAppRoute();
+  } else {
+    closeTransientRouteOverlays();
+  }
   isRestoringAppRoute = true;
 
   try {
     if (route === '/') {
       await showDifficultySelection();
     } else if (route === '/museum') {
-      await showMuseum();
+      if (!museumVisible) await showMuseum();
     } else if (parts[0] === 'museum' && parts[1]) {
-      await showMuseum();
+      if (!museumVisible) await showMuseum();
       await showMuseumEntry(decodeURIComponent(parts.slice(1).join('/')));
     } else if (route === '/practice') {
       showPracticeMode();

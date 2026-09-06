@@ -202,6 +202,95 @@ Deno.test("Practice Back returns directly to the main level selection", () => {
   );
 });
 
+Deno.test("Museum routes reuse the gallery but still support direct links", async () => {
+  const mainSource = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
+  const routeSource = mainSource.slice(
+    mainSource.indexOf("async function restoreAppRoute()"),
+    mainSource.indexOf("window.addEventListener('popstate'"),
+  );
+  for (const [route, visible, expectedRenders, expectedEntries] of [
+    ["/museum", true, 0, 0],
+    ["/museum/Triceratops", true, 0, 1],
+    ["/museum", false, 1, 0],
+    ["/museum/Triceratops", false, 1, 1],
+  ] as const) {
+    let renders = 0;
+    let entries = 0;
+    let restoredPosition = false;
+    const restore = new Function(
+      "getCurrentAppRoute", "document", "window", "showMuseum", "showMuseumEntry",
+      "closeMuseumEntry", "closeTransientRouteOverlays", "buildAppRouteUrl",
+      `let isRestoringAppRoute = false; ${routeSource}; return restoreAppRoute;`,
+    )(
+      () => route,
+      { querySelector: () => visible ? {} : null, title: "Phylosaur" },
+      { history: { state: {}, replaceState() {} } },
+      async () => { renders++; },
+      async () => { entries++; },
+      async (options: { restorePosition: boolean }) => { restoredPosition = options.restorePosition; },
+      () => {},
+      (value: string) => value,
+    );
+    await restore();
+    assert(renders === expectedRenders, `${route}: unexpected gallery rebuild.`);
+    assert(entries === expectedEntries, `${route}: entry was not restored correctly.`);
+    if (route === "/museum" && visible) {
+      assert(restoredPosition, "Browser Back must preserve the gallery position.");
+    }
+  }
+});
+
+Deno.test("Museum dismissal animates once and restores scroll and card focus", async () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const closeSource = screensSource.slice(
+    screensSource.indexOf("async function closeMuseumEntry("),
+    screensSource.indexOf("function openMuseumImageViewer("),
+  );
+  for (const reducedMotion of [false, true]) {
+    for (const depth of [0, 1]) {
+      let backCalls = 0;
+      let replacedRoute = "";
+      let scroll: any;
+      let focus: any;
+      let duration = -1;
+      let animated = false;
+      let currentOverlay: any;
+      const body = { style: { overflow: "hidden" } };
+      const overlay = {
+        museumReturnState: {
+          scrollX: 0, scrollY: 1460, overflow: "auto",
+          card: { isConnected: true, focus: (options: any) => { focus = options; } },
+        },
+        classList: { add: (name: string) => { animated = name === "is-closing"; } },
+        remove: () => { currentOverlay = null; },
+      };
+      currentOverlay = overlay;
+      const dismiss = new Function(
+        "document", "window", "getCurrentAppRoute", "setAppRoute", "setTimeout",
+        `let activeMuseumEntryMedia = null; let museumEntryEscapeHandler = null;
+         ${closeSource}; return dismissMuseumEntry;`,
+      )(
+        { body, getElementById: (id: string) => id === "museum-entry-overlay" ? currentOverlay : null },
+        {
+          matchMedia: () => ({ matches: reducedMotion }),
+          scrollTo: (options: any) => { scroll = options; },
+          history: { state: { phylosaurDepth: depth }, back: () => { backCalls++; } },
+        },
+        () => "/museum/Triceratops",
+        (route: string) => { replacedRoute = route; },
+        (resolve: () => void, delay: number) => { duration = delay; queueMicrotask(resolve); },
+      );
+      await Promise.all([dismiss(), dismiss()]);
+      assert(animated && duration === (reducedMotion ? 0 : 180), "Motion preference was ignored.");
+      assert(currentOverlay === null && body.style.overflow === "auto", "Scroll lock was not released.");
+      assert(scroll?.top === 1460 && scroll?.behavior === "instant", "Gallery position was lost.");
+      assert(focus?.preventScroll === true, "Focus must return without scrolling the card into view.");
+      assert(backCalls === depth, "Repeated close events must not navigate back twice.");
+      assert(replacedRoute === (depth ? "" : "/museum"), "Direct links must close to the Museum.");
+    }
+  }
+});
+
 Deno.test("service worker cache version and critical release sources exist", () => {
   const workerPath = localSourceLayout
     ? "game/sw_service_worker.txt"
