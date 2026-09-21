@@ -1256,6 +1256,12 @@ textarea:focus-visible {
 
 @media (max-width: 768px) {
     h1 { font-size: 1.6em; letter-spacing: 4px; }
+    .site-brand h1 {
+        font-size: clamp(2.35rem, 10vw, 3rem);
+        line-height: 1;
+        letter-spacing: 3px;
+        margin-bottom: 12px;
+    }
     h2 { font-size: 1.4em !important; letter-spacing: 1px !important; line-height: 1.4 !important;}
     .game-card { padding: 20px; }
     .stats { 
@@ -2258,6 +2264,80 @@ body:not(.light-mode) .tree-node-group:hover rect {
   border-radius: 50%;
   font-size: 14px;
   font-weight: 700;
+}
+
+.difficulty-home {
+  text-align: center;
+}
+
+.difficulty-home-title {
+  color: var(--color-primary);
+  margin-bottom: 12px;
+  font-size: 1.8em;
+}
+
+.difficulty-home-date {
+  color: var(--color-secondary);
+  margin-bottom: 30px;
+  font-size: 0.95em;
+  letter-spacing: 1px;
+}
+
+.difficulty-home-countdown {
+  color: var(--color-text-dim);
+  margin-top: 8px;
+  font-size: 0.82em;
+  font-style: italic;
+  letter-spacing: 1px;
+}
+
+.difficulty-home-countdown #countdown-timer {
+  color: var(--color-secondary);
+  font-weight: 600;
+}
+
+.difficulty-home-levels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.difficulty-home .difficulty-btn {
+  position: relative;
+  flex: 0 1 260px;
+  padding: 30px;
+  font-size: 1.2em;
+}
+
+.difficulty-level-name {
+  margin-bottom: 10px;
+  font-size: 1.3em;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+
+.difficulty-level-tiers {
+  margin: 8px 0;
+}
+
+.difficulty-level-description {
+  color: var(--color-muted);
+  font-size: 0.75em;
+  font-style: italic;
+}
+
+.difficulty-home-actions-wrap {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.difficulty-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
 }
 
 @keyframes shimmer {
@@ -4008,23 +4088,138 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 /* Small-screen usability refinements */
 @media (max-width: 600px) {
     body {
-        padding-top: calc(14px + env(safe-area-inset-top, 0px));
-        padding-right: calc(12px + env(safe-area-inset-right, 0px));
-        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-        padding-left: calc(12px + env(safe-area-inset-left, 0px));
+        padding-top: calc(10px + env(safe-area-inset-top, 0px));
+        padding-right: calc(8px + env(safe-area-inset-right, 0px));
+        padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+        padding-left: calc(8px + env(safe-area-inset-left, 0px));
     }
 
     header {
-        margin-bottom: 20px;
-        padding: 24px 14px;
+        margin-bottom: 16px;
+        padding: 24px 14px 18px;
+    }
+
+    .site-header-layout {
+        gap: 10px;
+    }
+
+    .subtitle {
+        max-width: 310px;
+        margin: 0 auto;
+        font-size: 0.96em;
+        line-height: 1.45;
+        letter-spacing: 2.2px;
+    }
+
+    .site-header-utility {
+        gap: 2px;
+    }
+
+    .header-theme-row {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: auto;
+        min-height: 0;
     }
 
     .game-card {
         padding: 18px;
     }
 
+    .game-card.difficulty-home {
+        padding: 22px 14px;
+    }
+
+    .difficulty-home-title {
+        margin-bottom: 8px;
+        font-size: clamp(1.65rem, 8vw, 1.9rem) !important;
+        letter-spacing: 1.2px !important;
+    }
+
+    .difficulty-home-date {
+        margin-bottom: 12px;
+        font-size: 0.88em;
+        line-height: 1.45;
+    }
+
+    .difficulty-home-countdown {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin: 0;
+        padding: 7px 11px;
+        color: var(--color-muted);
+        background: var(--bg-panel-subtle);
+        border: 1px solid var(--border-inner);
+        border-radius: 999px;
+        font-size: 0.76em;
+        letter-spacing: 0.4px;
+    }
+
+    .difficulty-home-countdown #countdown-timer {
+        color: var(--color-primary);
+    }
+
+    .difficulty-home-levels {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+        margin: 22px 0;
+    }
+
+    .difficulty-home .difficulty-btn {
+        width: 100%;
+        min-height: 94px;
+        padding: 18px 16px;
+        font-size: 1em;
+    }
+
+    .difficulty-home .difficulty-level-name {
+        margin-bottom: 6px;
+        font-size: 1.28em;
+        letter-spacing: 2.6px;
+    }
+
+    .difficulty-home .difficulty-level-tiers {
+        margin: 4px 0 0;
+    }
+
+    .difficulty-home .difficulty-completion-mark {
+        top: 8px;
+        right: 8px;
+        width: 22px;
+        height: 22px;
+        font-size: 13px;
+    }
+
+    .difficulty-home-actions-wrap {
+        margin-top: 22px;
+    }
+
+    .difficulty-home-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .difficulty-home-actions .btn-menu-action {
+        width: 100%;
+        min-width: 0;
+        min-height: 50px;
+        padding: 12px 8px;
+        font-size: clamp(0.72rem, 3.2vw, 0.84rem);
+        letter-spacing: 1px;
+    }
+
+    .difficulty-home-actions .btn-friends {
+        grid-column: 1 / -1;
+    }
+
     #header-controls {
         justify-content: center;
+        margin-top: 2px;
     }
 
     #header-controls button:not(.theme-switch),
@@ -4124,14 +4319,14 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 
 @media (max-width: 420px) {
     header {
-        padding: 18px 10px;
+        padding: 22px 10px 16px;
     }
 
     .game-card {
         padding: 14px;
     }
 
-    .difficulty-btn {
+    .game-card:not(.difficulty-home) .difficulty-btn {
         flex-basis: 100% !important;
         padding: 22px 16px !important;
     }
@@ -5517,6 +5712,19 @@ body.light-mode .stat-label {
     .btn-menu-action {
         width: 100%;
         min-width: 0;
+    }
+
+    .site-description {
+        width: calc(100% - 16px);
+        margin: 20px auto 28px;
+        padding: 15px 12px;
+        font-size: 0.82rem;
+        line-height: 1.55;
+    }
+
+    .site-description a {
+        margin-top: 7px;
+        font-size: 0.79rem;
     }
 
     .info-page {

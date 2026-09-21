@@ -361,6 +361,24 @@ Deno.test("mobile dialogs keep actions visible and public copy avoids promotiona
     "The public description must use the educational positioning instead of 'free'.");
 });
 
+Deno.test("mobile Daily home uses the compact identity-preserving composition", () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  for (const className of [
+    "difficulty-home", "difficulty-home-title", "difficulty-home-countdown",
+    "difficulty-home-levels", "difficulty-home-actions",
+  ]) {
+    assert(screensSource.includes(`class="${className}`), `Daily home is missing ${className}.`);
+  }
+  assert(styleSource.includes(".site-brand h1") &&
+    styleSource.includes("font-size: clamp(2.35rem, 10vw, 3rem)") &&
+    styleSource.includes(".difficulty-home .difficulty-btn") &&
+    styleSource.includes("min-height: 94px") &&
+    styleSource.includes("grid-template-columns: repeat(2, minmax(0, 1fr))") &&
+    styleSource.includes(".difficulty-home-actions .btn-friends"),
+    "Mobile hierarchy must enlarge the brand, compact levels and preserve the full-width friend action.");
+});
+
 Deno.test("Museum routes reuse the gallery but still support direct links", async () => {
   const mainSource = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
   const routeSource = mainSource.slice(

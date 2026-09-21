@@ -15,16 +15,16 @@ async function showDifficultySelection() {
     const appContent = document.getElementById('app-content');
     
     appContent.innerHTML = `            
-        <div class="game-card" style="text-align:center;">
-        <h2 style="color:var(--color-primary); margin-bottom:12px; font-size:1.8em;">Daily Challenge</h2>
-        <p style="color:var(--color-secondary); margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
+        <div class="game-card difficulty-home">
+        <h2 class="difficulty-home-title">Daily Challenge</h2>
+        <p class="difficulty-home-date">
             ${getCurrentDateFormatted()} - Choose a level
         </p>
-        <p style="color:#6b5340; font-size:0.82em; font-style:italic; letter-spacing:1px; margin-top:8px;">
-        Next daily challenge in <span id="countdown-timer" style="color:var(--color-secondary); font-weight:600;">--:--:--</span>
+        <p class="difficulty-home-countdown">
+        Next daily challenge in <span id="countdown-timer">--:--:--</span>
         </p>
 
-        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin:30px 0;">
+        <div class="difficulty-home-levels">
             ${generateDifficultyButton('muito_facil', 'LEVEL I', 'I', '', completionStatus.muito_facil)}
             ${generateDifficultyButton('facil', 'LEVEL II', 'II', '', completionStatus.facil)}
             ${generateDifficultyButton('normal', 'LEVEL III', 'III', '', completionStatus.normal)}
@@ -32,8 +32,8 @@ async function showDifficultySelection() {
             ${generateDifficultyButton('muito_dificil', 'LEVEL V', 'V', '', completionStatus.muito_dificil)}
         </div>
 
-        <div style="margin-top:30px; text-align:center;">
-            <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+        <div class="difficulty-home-actions-wrap">
+            <div class="difficulty-home-actions">
             <button class="btn-hint btn-large btn-menu-action" onclick="showHowToPlay()">
                 How to Play
             </button>
@@ -253,16 +253,15 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     return `
         <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]} ${borderClass}" 
                 onclick="startDailyChallenge('${difficulty}')" 
-                data-difficulty="${difficulty}"
-                style="padding:30px; font-size:1.2em; position:relative; flex:0 1 260px;">
+                data-difficulty="${difficulty}">
         ${statusIndicator}
-        <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
+        <div class="difficulty-level-name">
             ${name}
         </div>
-        <div style="margin:8px 0;">
+        <div class="difficulty-level-tiers">
             ${tiers}
         </div>
-        ${description ? `<div style="font-size:0.75em; color:var(--color-muted); font-style:italic;">${description}</div>` : ''}
+        ${description ? `<div class="difficulty-level-description">${description}</div>` : ''}
         </button>
     `;
 }
