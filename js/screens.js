@@ -878,10 +878,76 @@ function generateRecentGames(recentGames) {
 // ═══════════════════════════════════════════════════════════════════════
 let selectedMuseumLevel = 'all';
 let museumSearchQuery = '';
+let museumView = 'atlas';
+let selectedMuseumClade = 'all';
+
+const MUSEUM_ATLAS_COLLECTIONS = [
+    {
+        clade: 'Theropoda',
+        title: 'Theropoda',
+        description: 'A saurischian clade ancestrally characterized by bipedal locomotion. It includes ceratosaurs, tetanurans, and avialans.',
+        achievementId: 'theropod_tracker',
+        achievementClade: 'Theropoda',
+        subclades: ['Ceratosauria', 'Tyrannosauroidea', 'Maniraptora']
+    },
+    {
+        clade: 'Sauropodomorpha',
+        title: 'Sauropodomorpha',
+        description: 'A saurischian clade of predominantly herbivorous dinosaurs that includes early-diverging forms and Sauropoda.',
+        achievementId: 'sauropod_collector',
+        achievementClade: 'Sauropoda',
+        subclades: ['Massopoda', 'Sauropoda', 'Macronaria']
+    },
+    {
+        clade: 'Ornithischia',
+        title: 'Ornithischia',
+        description: 'A primarily herbivorous dinosaur clade diagnosed by features including the predentary bone and a retroverted pubis.',
+        achievementId: 'ornithischian_explorer',
+        achievementClade: 'Ornithischia',
+        subclades: ['Thyreophora', 'Ornithopoda', 'Marginocephalia']
+    }
+];
 
 let museumOverrideCatalogPromise = null;
 let museumFallbackCatalogPromise = null;
 let museumPaleodataCatalogPromise = null;
+let museumLineageCatalogPromise = null;
+
+async function ensureMuseumCatalogLineages(catalog) {
+    const dinosaurs = Array.isArray(catalog) ? catalog : [];
+    if (dinosaurs.every(dino => Array.isArray(dino?.linhagem) && dino.linhagem.length > 0)) {
+        return dinosaurs;
+    }
+
+    if (!museumLineageCatalogPromise) {
+        museumLineageCatalogPromise = fetch('phylosaur_db.json?v=atlas-1')
+            .then(response => {
+                if (!response.ok) throw new Error(`Lineage catalog HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(records => new Map(
+                (Array.isArray(records) ? records : []).map(dino => [
+                    String(dino.nome || '').toLowerCase(),
+                    Array.isArray(dino.linhagem) ? dino.linhagem : []
+                ])
+            ))
+            .catch(error => {
+                console.warn('Museum lineage fallback unavailable:', error);
+                return new Map();
+            });
+    }
+
+    const lineageByName = await museumLineageCatalogPromise;
+    return dinosaurs.map(dino => {
+        if (Array.isArray(dino?.linhagem) && dino.linhagem.length > 0) return dino;
+        const lineage = lineageByName.get(String(dino?.nome || '').toLowerCase()) || [];
+        return {
+            ...dino,
+            linhagem: lineage,
+            terminalClade: dino?.terminalClade || lineage.at(-1) || 'Dinosauria'
+        };
+    });
+}
 
 async function loadMuseumPaleodataCatalog() {
     if (!museumPaleodataCatalogPromise) {
@@ -1548,6 +1614,165 @@ async function showMuseumEntry(name) {
     });
 }
 
+function getMuseumAtlasCollection(definition, unlockedSet) {
+    const specimens = fullDatabase.filter(dino =>
+        Array.isArray(dino.linhagem) && dino.linhagem.includes(definition.clade)
+    );
+    const unlockedSpecimens = specimens.filter(dino => unlockedSet.has(dino.nome.toLowerCase()));
+    const achievementDefinition = CLADE_ACHIEVEMENT_DEFINITIONS.find(
+        achievement => achievement.id === definition.achievementId
+    );
+    const achievementTarget = Number(achievementDefinition?.target || 10);
+    const achievementCount = fullDatabase.filter(dino =>
+        unlockedSet.has(dino.nome.toLowerCase()) &&
+        Array.isArray(dino.linhagem) &&
+        dino.linhagem.includes(definition.achievementClade)
+    ).length;
+    const subclades = definition.subclades.map(clade => {
+        const members = specimens.filter(dino => dino.linhagem.includes(clade));
+        return {
+            clade,
+            total: members.length,
+            unlocked: members.filter(dino => unlockedSet.has(dino.nome.toLowerCase())).length
+        };
+    });
+
+    return {
+        ...definition,
+        total: specimens.length,
+        unlocked: unlockedSpecimens.length,
+        percent: specimens.length ? Math.round((unlockedSpecimens.length / specimens.length) * 100) : 0,
+        achievementName: achievementDefinition?.name || 'Collection milestone',
+        achievementTarget,
+        achievementCount,
+        achievementComplete: achievementCount >= achievementTarget,
+        subclades
+    };
+}
+
+function renderMuseumAtlas(unlockedSet) {
+    const collections = MUSEUM_ATLAS_COLLECTIONS.map(definition =>
+        getMuseumAtlasCollection(definition, unlockedSet)
+    );
+
+    return `
+        <section class="museum-atlas" aria-labelledby="museum-atlas-title">
+            <div class="museum-atlas-intro">
+                <div>
+                    <h3 id="museum-atlas-title">Taxonomic overview</h3>
+                    <p>
+                        Museum specimens are organized here by three broad clades represented in the current
+                        classification. The totals follow the stored lineage of each genus.
+                    </p>
+                </div>
+            </div>
+
+            <div class="museum-atlas-grid">
+                ${collections.map(collection => {
+                    const achievementCurrent = Math.min(
+                        collection.achievementCount,
+                        collection.achievementTarget
+                    );
+                    const achievementPercent = Math.round(
+                        (achievementCurrent / collection.achievementTarget) * 100
+                    );
+                    const subclades = collection.subclades.map(subclade => `
+                        <span title="${subclade.unlocked} of ${subclade.total} discovered">
+                            ${escapeChallengeHtml(subclade.clade)}
+                            <small>${subclade.unlocked}/${subclade.total}</small>
+                        </span>
+                    `).join('');
+                    return `
+                        <button class="museum-atlas-card museum-atlas-${collection.clade.toLowerCase()}"
+                                type="button"
+                                onclick="openMuseumClade('${collection.clade}')"
+                                aria-label="Explore ${collection.title}: ${collection.unlocked} of ${collection.total} genera discovered">
+                            <strong class="museum-atlas-card-title">${collection.title}</strong>
+                            <span class="museum-atlas-card-description">${collection.description}</span>
+
+                            <span class="museum-atlas-count">
+                                <strong>${collection.unlocked}</strong>
+                                <span>of ${collection.total} discovered</span>
+                                <small>${collection.percent}% of this branch</small>
+                            </span>
+                            <span class="museum-atlas-progress" aria-hidden="true">
+                                <span style="width:${collection.percent}%"></span>
+                            </span>
+
+                            <span class="museum-atlas-subclades-label">Selected subordinate clades</span>
+                            <span class="museum-atlas-subclades">${subclades}</span>
+
+                            <span class="museum-atlas-achievement ${collection.achievementComplete ? 'is-complete' : ''}">
+                                <span>${escapeChallengeHtml(collection.achievementName)}</span>
+                                <strong>${achievementCurrent}/${collection.achievementTarget}</strong>
+                                <i><span style="width:${achievementPercent}%"></span></i>
+                            </span>
+
+                            <span class="museum-atlas-open">Filter specimens by this clade</span>
+                        </button>
+                    `;
+                }).join('')}
+            </div>
+
+            <p class="museum-atlas-note">
+                Herrerasaurus, Sanjuansaurus, and Staurikosaurus are retained outside these three collections because
+                their stored lineages do not place them within Theropoda, Sauropodomorpha, or Ornithischia.
+            </p>
+        </section>
+    `;
+}
+
+function switchMuseumView(view) {
+    museumView = view === 'specimens' ? 'specimens' : 'atlas';
+    document.querySelectorAll('[data-museum-view]').forEach(button => {
+        const active = button.dataset.museumView === museumView;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+    });
+
+    const atlasPanel = document.getElementById('museum-atlas-panel');
+    const specimensPanel = document.getElementById('museum-specimens-panel');
+    if (atlasPanel) atlasPanel.hidden = museumView !== 'atlas';
+    if (specimensPanel) specimensPanel.hidden = museumView !== 'specimens';
+
+    if (museumView === 'specimens') {
+        applyMuseumFilters();
+        initializeMuseumCardMediaLoading();
+    } else {
+        stopMuseumCardMediaLoading();
+    }
+}
+
+function updateMuseumCladeFilterDisplay() {
+    const banner = document.getElementById('museum-clade-filter');
+    const name = document.getElementById('museum-clade-filter-name');
+    if (!banner || !name) return;
+    banner.hidden = selectedMuseumClade === 'all';
+    name.textContent = selectedMuseumClade === 'all' ? '' : selectedMuseumClade;
+}
+
+function openMuseumClade(clade) {
+    selectedMuseumClade = clade;
+    selectedMuseumLevel = 'all';
+    museumSearchQuery = '';
+
+    const input = document.getElementById('museum-search-input');
+    if (input) input.value = '';
+    document.querySelectorAll('[data-museum-filter]').forEach(button => {
+        const active = button.dataset.museumFilter === 'all';
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+    });
+    updateMuseumCladeFilterDisplay();
+    switchMuseumView('specimens');
+}
+
+function clearMuseumCladeFilter() {
+    selectedMuseumClade = 'all';
+    updateMuseumCladeFilterDisplay();
+    applyMuseumFilters();
+}
+
 async function showMuseum() {
     setAppRoute('/museum');
     setHeaderControls('museum');
@@ -1560,6 +1785,7 @@ async function showMuseum() {
             const catalog = await callGameApi('catalog');
             fullDatabase = catalog.dinosaurs || [];
         }
+        fullDatabase = await ensureMuseumCatalogLineages(fullDatabase);
 
         museumDiscoveryRecords = await getDiscoveryRecords();
         if (!currentUserId) synchronizeGuestAchievements();
@@ -1581,7 +1807,7 @@ async function showMuseum() {
                 
                 <div class="museum-progress-container">
                     <div style="font-size:1.1em; color:var(--color-secondary); font-weight:600;">
-                        UNLOCKED: ${totalUnlocked} / ${totalCount} (${totalPercent}%)
+                        Unlocked: ${totalUnlocked} / ${totalCount} (${totalPercent}%)
                     </div>
                     <div class="museum-progress-bar">
                         <div class="museum-progress-fill" style="width: ${totalPercent}%;"></div>
@@ -1589,6 +1815,29 @@ async function showMuseum() {
                     <div style="font-size:0.85em; color:var(--color-muted); font-style:italic;">
                         Complete challenges or practice games to unlock dinosaurs.
                     </div>
+                </div>
+
+                <div class="museum-view-switch" role="tablist" aria-label="Museum view">
+                    <button type="button" role="tab" data-museum-view="atlas"
+                            class="${museumView === 'atlas' ? 'active' : ''}"
+                            aria-selected="${museumView === 'atlas'}"
+                            aria-controls="museum-atlas-panel"
+                            onclick="switchMuseumView('atlas')">Clade Atlas</button>
+                    <button type="button" role="tab" data-museum-view="specimens"
+                            class="${museumView === 'specimens' ? 'active' : ''}"
+                            aria-selected="${museumView === 'specimens'}"
+                            aria-controls="museum-specimens-panel"
+                            onclick="switchMuseumView('specimens')">Specimens</button>
+                </div>
+
+                <div id="museum-atlas-panel" role="tabpanel" ${museumView === 'atlas' ? '' : 'hidden'}>
+                    ${renderMuseumAtlas(unlockedSet)}
+                </div>
+
+                <div id="museum-specimens-panel" role="tabpanel" ${museumView === 'specimens' ? '' : 'hidden'}>
+                <div class="museum-clade-filter" id="museum-clade-filter" ${selectedMuseumClade === 'all' ? 'hidden' : ''}>
+                    <span>Exploring <strong id="museum-clade-filter-name">${escapeChallengeHtml(selectedMuseumClade === 'all' ? '' : selectedMuseumClade)}</strong></span>
+                    <button type="button" onclick="clearMuseumCladeFilter()">Show all clades</button>
                 </div>
 
                 <div class="museum-toolbar">
@@ -1633,7 +1882,8 @@ async function showMuseum() {
         museumDinos.forEach(dino => {
             const isUnlocked = unlockedSet.has(dino.nome.toLowerCase());
             const lastClade = dino.terminalClade || dino.linhagem?.at(-1) || 'Dinosauria';
-            const cardData = `data-museum-level="${dino.dificuldade}" data-museum-name="${escapeChallengeHtml(dino.nome.toLowerCase())}" data-museum-unlocked="${isUnlocked}"`;
+            const lineageData = Array.isArray(dino.linhagem) ? dino.linhagem.join('|') : '';
+            const cardData = `data-museum-level="${dino.dificuldade}" data-museum-name="${escapeChallengeHtml(dino.nome.toLowerCase())}" data-museum-unlocked="${isUnlocked}" data-museum-lineage="${escapeChallengeHtml(lineageData)}"`;
 
             if (isUnlocked) {
                 const discovery = getMuseumDiscoverySummary(
@@ -1680,12 +1930,13 @@ async function showMuseum() {
                         No specimens match this search and level filter.
                     </div>
                 </div>
+                </div>
             </div>
             <div id="clade-info"></div>`;
         appContent.innerHTML = html;
 
-        applyMuseumFilters();
-        initializeMuseumCardMediaLoading();
+        updateMuseumCladeFilterDisplay();
+        switchMuseumView(museumView);
 
     } catch (err) {
         console.error('Museum Error:', err);
@@ -1722,7 +1973,9 @@ function applyMuseumFilters() {
             || card.dataset.museumLevel === selectedMuseumLevel;
         const matchesSearch = !museumSearchQuery
             || card.dataset.museumName.includes(museumSearchQuery);
-        const isVisible = matchesLevel && matchesSearch;
+        const matchesClade = selectedMuseumClade === 'all'
+            || String(card.dataset.museumLineage || '').split('|').includes(selectedMuseumClade);
+        const isVisible = matchesLevel && matchesSearch && matchesClade;
 
         card.hidden = !isVisible;
         if (!isVisible) return;
@@ -1734,11 +1987,17 @@ function applyMuseumFilters() {
     const summary = document.getElementById('museum-filter-summary');
     if (summary) {
         const specimenLabel = visibleCount === 1 ? 'specimen' : 'specimens';
-        summary.textContent = `Showing ${visibleCount} ${specimenLabel} · ${visibleUnlocked} unlocked`;
+        const cladeLabel = selectedMuseumClade === 'all' ? '' : ` in ${selectedMuseumClade}`;
+        summary.textContent = `Showing ${visibleCount} ${specimenLabel}${cladeLabel} · ${visibleUnlocked} unlocked`;
     }
 
     const emptyState = document.getElementById('museum-empty-state');
-    if (emptyState) emptyState.hidden = visibleCount !== 0;
+    if (emptyState) {
+        emptyState.hidden = visibleCount !== 0;
+        emptyState.textContent = selectedMuseumClade === 'all'
+            ? 'No specimens match this search and level filter.'
+            : `No ${selectedMuseumClade} specimens match these filters.`;
+    }
 }
 
 function analyticsLabel(value) {

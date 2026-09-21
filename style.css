@@ -3072,6 +3072,318 @@ body.light-mode .theme-switch-thumb {
     transition: width 0.5s ease-out;
 }
 
+.museum-view-switch {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(460px, 100%);
+    margin: 0 auto 24px;
+    padding: 4px;
+    background: var(--bg-darkest);
+    border: 1px solid var(--border-inner);
+    border-radius: 999px;
+}
+
+.museum-view-switch button {
+    min-height: 44px;
+    padding: 9px 18px;
+    color: var(--color-muted);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-transform: none;
+    cursor: pointer;
+    transition: color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.museum-view-switch button:hover {
+    color: var(--color-text-light);
+}
+
+.museum-view-switch button.active {
+    color: var(--button-primary-color);
+    background: var(--color-primary);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.museum-view-switch button:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+#museum-atlas-panel[hidden],
+#museum-specimens-panel[hidden] {
+    display: none;
+}
+
+.museum-clade-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 12px 15px;
+    color: var(--color-secondary);
+    background: var(--color-accent-subtle);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-card);
+    font-size: 0.88em;
+}
+
+.museum-clade-filter[hidden] {
+    display: none;
+}
+
+.museum-clade-filter strong {
+    color: var(--color-text-light);
+    font-style: italic;
+}
+
+.museum-clade-filter button {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    color: var(--color-text-light);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-base);
+    border-radius: var(--radius-control);
+    font: inherit;
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    cursor: pointer;
+}
+
+.museum-atlas {
+    display: grid;
+    gap: 22px;
+}
+
+.museum-atlas-intro {
+    padding: 18px 20px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-base);
+    border-radius: var(--radius-card);
+}
+
+.museum-atlas-intro h3 {
+    margin: 0 0 7px;
+    color: var(--color-text-light);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.museum-atlas-intro p {
+    max-width: 720px;
+    margin: 0;
+    color: var(--color-secondary);
+    font-size: 0.92em;
+    line-height: 1.55;
+}
+
+.museum-atlas-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.museum-atlas-card {
+    --atlas-accent: var(--color-primary);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 20px;
+    overflow: hidden;
+    color: var(--color-text);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-base);
+    border-left: 4px solid var(--atlas-accent);
+    border-radius: var(--radius-card);
+    box-shadow: 0 3px 9px rgba(0,0,0,0.18);
+    font: inherit;
+    letter-spacing: normal;
+    text-align: left;
+    text-transform: none;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.museum-atlas-theropoda { --atlas-accent: #b86843; }
+.museum-atlas-sauropodomorpha { --atlas-accent: #6f8d55; }
+.museum-atlas-ornithischia { --atlas-accent: #9a784e; }
+
+.museum-atlas-card:hover,
+.museum-atlas-card:focus-visible {
+    background: var(--bg-card);
+    border-color: var(--atlas-accent);
+}
+
+.museum-atlas-card:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+.museum-atlas-card-title {
+    display: block;
+    margin: 0 0 8px;
+    color: var(--color-text-light);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    font-weight: 600;
+}
+
+.museum-atlas-card-description {
+    display: block;
+    min-height: 5.2em;
+    color: var(--color-secondary);
+    font-size: 0.84em;
+    line-height: 1.55;
+}
+
+.museum-atlas-count {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: 3px 8px;
+}
+
+.museum-atlas-count > strong {
+    color: var(--atlas-accent);
+    font-size: 1.75em;
+    line-height: 1;
+}
+
+.museum-atlas-count > span {
+    color: var(--color-text-light);
+    font-size: 0.86em;
+    font-weight: 600;
+}
+
+.museum-atlas-count > small {
+    grid-column: 1 / -1;
+    color: var(--color-muted);
+    font-size: 0.7em;
+    letter-spacing: 0;
+}
+
+.museum-atlas-progress {
+    display: block;
+    height: 7px;
+    margin: 10px 0 14px;
+    overflow: hidden;
+    background: var(--bg-darkest);
+    border: 1px solid var(--border-inner);
+    border-radius: 999px;
+}
+
+.museum-atlas-progress > span {
+    display: block;
+    height: 100%;
+    background: var(--atlas-accent);
+    border-radius: inherit;
+}
+
+.museum-atlas-subclades-label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--color-muted);
+    font-size: 0.65em;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.museum-atlas-subclades {
+    display: grid;
+    margin-bottom: 15px;
+    border-top: 1px solid var(--border-inner);
+}
+
+.museum-atlas-subclades > span {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    color: var(--color-secondary);
+    border-bottom: 1px solid var(--border-inner);
+    font-size: 0.7em;
+}
+
+.museum-atlas-subclades small {
+    color: var(--color-muted);
+}
+
+.museum-atlas-achievement {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 10px;
+    padding: 10px;
+    color: var(--color-secondary);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-inner);
+    border-radius: var(--radius-control);
+    font-size: 0.73em;
+}
+
+.museum-atlas-achievement > span {
+    overflow: hidden;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.museum-atlas-achievement > strong {
+    color: var(--color-text-light);
+}
+
+.museum-atlas-achievement > i {
+    grid-column: 1 / -1;
+    height: 4px;
+    overflow: hidden;
+    background: var(--bg-darkest);
+    border-radius: 999px;
+}
+
+.museum-atlas-achievement > i > span {
+    display: block;
+    height: 100%;
+    background: var(--color-accent);
+}
+
+.museum-atlas-achievement.is-complete {
+    color: var(--color-success-text);
+    border-color: var(--color-success);
+}
+
+.museum-atlas-achievement.is-complete > i > span {
+    background: var(--color-success);
+}
+
+.museum-atlas-open {
+    display: block;
+    margin-top: auto;
+    padding-top: 14px;
+    color: var(--atlas-accent);
+    font-size: 0.76em;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.museum-atlas-note {
+    margin: 0;
+    padding: 12px 15px;
+    color: var(--color-muted);
+    background: var(--bg-panel);
+    border-left: 3px solid var(--border-base);
+    border-radius: var(--radius-control);
+    font-size: 0.78em;
+    line-height: 1.55;
+}
+
 .museum-toolbar {
     display: grid;
     gap: 16px;
@@ -4252,12 +4564,43 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 }
 
 @media (max-width: 900px) {
+    .museum-atlas-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .museum-atlas-card-description {
+        min-height: 0;
+    }
+
     .museum-tabs {
         grid-template-columns: repeat(3, 1fr) !important; /* Adapts to tablet screens */
     }
 }
 
 @media (max-width: 600px) {
+    .museum-atlas-intro {
+        grid-template-columns: 1fr;
+        padding: 17px;
+    }
+
+    .museum-atlas-root {
+        display: none;
+    }
+
+    .museum-atlas-card {
+        padding: 17px;
+    }
+
+    .museum-clade-filter {
+        align-items: stretch;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .museum-clade-filter button {
+        width: 100%;
+    }
+
     .museum-tabs {
         grid-template-columns: repeat(2, 1fr) !important; /* Stacks cleanly on phones */
         font-size: 0.8em !important;

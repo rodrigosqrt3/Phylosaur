@@ -324,6 +324,97 @@ Deno.test("clade collection achievements count unique Museum genera and synchron
   }
 });
 
+Deno.test("Museum Clade Atlas exposes the three principal branches without hiding early dinosaurs", async () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const database = fileExists(databasePath) ? readJson(databasePath) : [];
+  const atlasClades = ["Theropoda", "Sauropodomorpha", "Ornithischia"];
+
+  assert(screensSource.includes("const MUSEUM_ATLAS_COLLECTIONS") &&
+    screensSource.includes("async function ensureMuseumCatalogLineages(") &&
+    screensSource.includes("fetch('phylosaur_db.json?v=atlas-1')") &&
+    screensSource.includes("function renderMuseumAtlas(") &&
+    screensSource.includes("function getMuseumAtlasCollection(") &&
+    screensSource.includes("function openMuseumClade(") &&
+    screensSource.includes("function clearMuseumCladeFilter("),
+    "The Museum Atlas structure or collection navigation is missing.");
+  for (const clade of atlasClades) {
+    assert(screensSource.includes(`clade: '${clade}'`), `${clade} is missing from the Atlas.`);
+  }
+  assert(screensSource.includes('role="tablist" aria-label="Museum view"') &&
+    screensSource.includes('data-museum-view="atlas"') &&
+    screensSource.includes('data-museum-view="specimens"') &&
+    screensSource.includes('data-museum-lineage='),
+    "Atlas and specimen views must remain accessible and filterable by lineage.");
+  assert(screensSource.includes("saurischian clade ancestrally characterized by bipedal locomotion") &&
+    screensSource.includes("includes early-diverging forms and Sauropoda") &&
+    screensSource.includes("diagnosed by features including the predentary bone") &&
+    !screensSource.includes('class="museum-atlas-branch"') &&
+    !screensSource.includes("Recent discoveries"),
+    "Atlas copy must remain scientific and free of unnecessary decorative content.");
+  assert(styleSource.includes(".museum-view-switch") &&
+    styleSource.includes(".museum-atlas-grid") &&
+    styleSource.includes(".museum-atlas-card") &&
+    styleSource.includes(".museum-clade-filter"),
+    "The responsive Atlas presentation is missing.");
+  const atlasStyle = styleSource.slice(
+    styleSource.indexOf(".museum-view-switch"),
+    styleSource.indexOf(".museum-toolbar"),
+  );
+  assert(atlasStyle.includes(".museum-atlas-theropoda") &&
+    atlasStyle.includes(".museum-atlas-sauropodomorpha") &&
+    atlasStyle.includes(".museum-atlas-ornithischia") &&
+    atlasStyle.includes("color: var(--atlas-accent)") &&
+    atlasStyle.includes("text-transform: none") &&
+    !atlasStyle.includes("text-transform: uppercase") &&
+    !screensSource.includes("UNLOCKED:"),
+    "The Atlas must preserve clade colors without forcing labels into uppercase.");
+
+  if (database.length > 0) {
+    const enrichmentSource = screensSource.slice(
+      screensSource.indexOf("async function ensureMuseumCatalogLineages("),
+      screensSource.indexOf("async function loadMuseumPaleodataCatalog("),
+    );
+    const enrich = new Function(
+      "fetch",
+      `let museumLineageCatalogPromise = null; ${enrichmentSource};
+       return ensureMuseumCatalogLineages;`,
+    )(async () => ({ ok: true, json: async () => database }));
+    const sparseCatalog = database.slice(0, 5).map((dinosaur: any) => ({
+      nome: dinosaur.nome,
+      dificuldade: dinosaur.dificuldade,
+      terminalClade: dinosaur.linhagem.at(-1),
+    }));
+    const enriched = await enrich(sparseCatalog);
+    assert(enriched.every((dinosaur: any) => Array.isArray(dinosaur.linhagem) && dinosaur.linhagem.length),
+      "The published database fallback did not restore missing catalog lineages.");
+
+    const covered = database.filter((dinosaur: any) =>
+      atlasClades.some(clade => dinosaur.linhagem.includes(clade))
+    );
+    const outside = database.filter((dinosaur: any) =>
+      !atlasClades.some(clade => dinosaur.linhagem.includes(clade))
+    );
+    assert(covered.length === 628, "The principal Atlas branches no longer cover 628 genera.");
+    assert(outside.map((dinosaur: any) => dinosaur.nome).sort().join(",") ===
+      "Herrerasaurus,Sanjuansaurus,Staurikosaurus",
+      "Unexpected genera now sit outside the three principal Atlas branches.");
+  }
+
+  if (localSourceLayout) {
+    const edgeSource = Deno.readTextFileSync("game/index.txt");
+    const workerSource = Deno.readTextFileSync("game/sw_service_worker.txt");
+    const catalogSource = edgeSource.slice(
+      edgeSource.indexOf('if (action === "catalog")'),
+      edgeSource.indexOf('if (action === "museum_entry")'),
+    );
+    assert(catalogSource.includes("linhagem: lineage"),
+      "The server catalog must publish complete lineages for the Clade Atlas.");
+    assert(workerSource.includes('"./phylosaur_db.json"'),
+      "The offline shell must cache the Atlas lineage fallback.");
+  }
+});
+
 Deno.test("guess input accessibility contract remains present in every mode", () => {
   const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
   const autocompleteSource = Deno.readTextFileSync(
