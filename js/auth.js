@@ -64,7 +64,7 @@ function showLoginScreen() {
   const appContent = document.getElementById('app-content');
 
   appContent.innerHTML = `
-    <div class="game-card" style="max-width:480px; margin:40px auto; padding:40px;">
+    <div class="game-card login-card">
       <div class="tab-row">
         <button class="tab-btn active" id="tab-signin" onclick="loginSwitchTab('signin')">Sign In</button>
         <button class="tab-btn" id="tab-register" onclick="loginSwitchTab('register')">Create Account</button>
@@ -74,16 +74,16 @@ function showLoginScreen() {
         <div class="login-global-error" id="signin-global-error"></div>
         <div class="login-global-success" id="signin-global-success"></div>
         <div class="login-field">
-          <label>Email</label>
+          <label for="signin-email">Email</label>
           <input type="email" id="signin-email" placeholder="your@email.com" autocomplete="email" />
           <div class="login-field-error" id="signin-email-err">Please enter a valid email address.</div>
         </div>
         <div class="login-field">
-          <label>Password</label>
+          <label for="signin-password">Password</label>
           <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password" />
           <div class="login-field-error" id="signin-password-err">Password is required.</div>
         </div>
-        <span class="login-forgot" onclick="loginShowReset()">Forgot password?</span>
+        <button type="button" class="login-forgot login-text-action" onclick="loginShowReset()">Forgot password?</button>
         <button class="btn-guess btn-block btn-large" id="signin-btn" onclick="handleSignIn()">
           Sign In
         </button>
@@ -93,17 +93,17 @@ function showLoginScreen() {
         <div class="login-global-error" id="register-global-error"></div>
         <div class="login-global-success" id="register-global-success"></div>
         <div class="login-field">
-          <label>Email</label>
+          <label for="reg-email">Email</label>
           <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email" />
           <div class="login-field-error" id="reg-email-err">Please enter a valid email address.</div>
         </div>
         <div class="login-field">
-          <label>Password</label>
+          <label for="reg-password">Password</label>
           <input type="password" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password" />
           <div class="login-field-error" id="reg-password-err">Password must be at least 6 characters.</div>
         </div>
-        <div class="login-field" style="margin-bottom:28px;">
-          <label>Confirm Password</label>
+        <div class="login-field login-field-last">
+          <label for="reg-confirm">Confirm Password</label>
           <input type="password" id="reg-confirm" placeholder="Repeat password" autocomplete="new-password" />
           <div class="login-field-error" id="reg-confirm-err">Passwords do not match.</div>
         </div>
@@ -113,15 +113,15 @@ function showLoginScreen() {
       </div>
 
       <div class="login-form-panel" id="login-panel-reset">
-        <span class="login-forgot login-back-link" style="text-align:left; display:inline-flex; margin-bottom:20px;" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back to sign in</span></span>
-        <p style="color:#d4b87e; font-size:1.1em; letter-spacing:2px; margin-bottom:10px;">Reset Password</p>
-        <p style="color:#8b7355; font-size:0.88em; line-height:1.7; margin-bottom:24px; font-style:italic;">
+        <button type="button" class="login-text-action login-back-link" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back to sign in</span></button>
+        <p class="login-reset-title">Reset Password</p>
+        <p class="login-reset-copy">
           Enter your email and we'll send you a reset link.
         </p>
         <div class="login-global-error" id="reset-global-error"></div>
         <div class="login-global-success" id="reset-global-success"></div>
-        <div class="login-field" style="margin-bottom:28px;">
-          <label>Email</label>
+        <div class="login-field login-field-last">
+          <label for="reset-email">Email</label>
           <input type="email" id="reset-email" placeholder="your@email.com" />
           <div class="login-field-error" id="reset-email-err">Please enter a valid email address.</div>
         </div>
@@ -130,7 +130,7 @@ function showLoginScreen() {
         </button>
       </div>
 
-      <p style="text-align:center; margin-top:20px;">
+      <p class="login-guest-action">
         <button onclick="continueAsGuest()" class="btn-hint btn-block btn-large btn-spaced">
           Play Without Account
         </button>
@@ -141,18 +141,27 @@ function showLoginScreen() {
   document.addEventListener('keydown', loginEnterHandler);
 }
 
+let activeLoginModalCleanup = null;
+
 function showLoginModal() {
+  closeLoginModal();
+  const previouslyFocused = document.activeElement;
+  const previousBodyOverflow = document.body.style.overflow;
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'login-modal-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'Account access');
   
   const box = document.createElement('div');
-  box.className = 'modal-box';
+  box.className = 'modal-box login-modal-box';
+  box.tabIndex = -1;
   box.style.maxWidth = '480px';
   box.style.width = '90%';
   
   box.innerHTML = `
-    <div class="tab-row" style="margin:-40px -40px 36px;">
+    <div class="tab-row">
       <button class="tab-btn active" id="tab-signin" onclick="loginSwitchTab('signin')">Sign In</button>
       <button class="tab-btn" id="tab-register" onclick="loginSwitchTab('register')">Create Account</button>
     </div>
@@ -161,16 +170,16 @@ function showLoginModal() {
       <div class="login-global-error" id="signin-global-error"></div>
       <div class="login-global-success" id="signin-global-success"></div>
       <div class="login-field">
-        <label>Email</label>
+        <label for="signin-email">Email</label>
         <input type="email" id="signin-email" placeholder="your@email.com" autocomplete="email" />
         <div class="login-field-error" id="signin-email-err">Please enter a valid email address.</div>
       </div>
       <div class="login-field">
-        <label>Password</label>
+        <label for="signin-password">Password</label>
         <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password" />
         <div class="login-field-error" id="signin-password-err">Password is required.</div>
       </div>
-      <span class="login-forgot" onclick="loginShowReset()">Forgot password?</span>
+      <button type="button" class="login-forgot login-text-action" onclick="loginShowReset()">Forgot password?</button>
       <button class="btn-guess btn-block btn-large" id="signin-btn" onclick="handleSignInModal()">
         Sign In
       </button>
@@ -180,17 +189,17 @@ function showLoginModal() {
       <div class="login-global-error" id="register-global-error"></div>
       <div class="login-global-success" id="register-global-success"></div>
       <div class="login-field">
-        <label>Email</label>
+        <label for="reg-email">Email</label>
         <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email" />
         <div class="login-field-error" id="reg-email-err">Please enter a valid email address.</div>
       </div>
       <div class="login-field">
-        <label>Password</label>
+        <label for="reg-password">Password</label>
         <input type="password" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password" />
         <div class="login-field-error" id="reg-password-err">Password must be at least 6 characters.</div>
       </div>
-      <div class="login-field" style="margin-bottom:28px;">
-        <label>Confirm Password</label>
+      <div class="login-field login-field-last">
+        <label for="reg-confirm">Confirm Password</label>
         <input type="password" id="reg-confirm" placeholder="Repeat password" autocomplete="new-password" />
         <div class="login-field-error" id="reg-confirm-err">Passwords do not match.</div>
       </div>
@@ -200,11 +209,11 @@ function showLoginModal() {
     </div>
 
     <div class="login-form-panel" id="login-panel-reset">
-      <span class="login-forgot login-back-link" style="display:inline-flex; margin-bottom:20px;" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></span>
+      <button type="button" class="login-text-action login-back-link" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back to sign in</span></button>
       <div class="login-global-error" id="reset-global-error"></div>
       <div class="login-global-success" id="reset-global-success"></div>
-      <div class="login-field" style="margin-bottom:28px;">
-        <label>Email</label>
+      <div class="login-field login-field-last">
+        <label for="reset-email">Email</label>
         <input type="email" id="reset-email" placeholder="your@email.com" />
         <div class="login-field-error" id="reset-email-err">Please enter a valid email address.</div>
       </div>
@@ -220,15 +229,55 @@ function showLoginModal() {
 
   overlay.appendChild(box);
   document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+
+  const modalKeyHandler = event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeLoginModal();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(box.querySelectorAll(
+      'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+    ));
+    if (!focusable.length) {
+      event.preventDefault();
+      box.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  document.addEventListener('keydown', modalKeyHandler, true);
+  activeLoginModalCleanup = () => {
+    document.removeEventListener('keydown', modalKeyHandler, true);
+    document.body.style.overflow = previousBodyOverflow;
+    if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+      previouslyFocused.focus();
+    }
+  };
 
   overlay.addEventListener('click', e => {
     if (e.target === overlay) closeLoginModal();
   });
+
+  queueMicrotask(() => document.getElementById('signin-email')?.focus() || box.focus());
 }
 
 function closeLoginModal() {
   const overlay = document.getElementById('login-modal-overlay');
-  if (overlay) document.body.removeChild(overlay);
+  overlay?.remove();
+  activeLoginModalCleanup?.();
+  activeLoginModalCleanup = null;
 }
 
 async function handleSignInModal() {

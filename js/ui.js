@@ -29,8 +29,8 @@ const map = {
       'stats':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
       'museum':       `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
       'about':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'practice-menu':`<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'practice':     `<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'practice-menu':`<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`,
+      'practice':     `<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`,
       'friends':      `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
       'challenge':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/friends')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Friends</span></button>`,
       'analytics':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
@@ -53,6 +53,23 @@ function updateThemeToggleState() {
     const isLight = currentTheme === 'light';
     toggle.setAttribute('aria-pressed', String(isLight));
     toggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+}
+
+function escapeAppStateText(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[character]);
+}
+
+function renderAppState(message, { type = 'loading', detail = '', compact = false } = {}) {
+    const safeType = ['loading', 'error', 'empty'].includes(type) ? type : 'loading';
+    const role = safeType === 'error' ? 'alert' : 'status';
+    return `<div class="app-state app-state-${safeType}${compact ? ' app-state-compact' : ''}"
+                 role="${role}" aria-live="${safeType === 'error' ? 'assertive' : 'polite'}">
+        <span class="app-state-icon" aria-hidden="true"></span>
+        <div class="app-state-message">${escapeAppStateText(message)}</div>
+        ${detail ? `<div class="app-state-detail">${escapeAppStateText(detail)}</div>` : ''}
+    </div>`;
 }
 
 function showModal(options) {

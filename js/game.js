@@ -58,7 +58,7 @@ async function startPracticeChallenge(difficulty, { restoreExisting = false } = 
 
         <div id="tree-container">
         <div id="tree-scroll-wrapper">
-            <div class="empty-state">Loading practice challenge...</div>
+            ${renderAppState('Loading practice challenge…', { compact: true })}
         </div>
         </div>
 
@@ -119,7 +119,7 @@ async function startDailyChallenge(difficulty, { restoreExisting = false } = {})
 
         <div id="tree-container">
         <div id="tree-scroll-wrapper">
-            <div class="empty-state">Loading daily challenge...</div>
+            ${renderAppState('Loading daily challenge…', { compact: true })}
         </div>
         </div>
 
@@ -196,7 +196,7 @@ async function startFriendChallengeFromPayload(data) {
                 <button class="btn-giveup" onclick="giveUp()">Give Up</button>
             </div>
         </div>
-        <div id="tree-container"><div id="tree-scroll-wrapper"><div class="empty-state">Loading friend challenge...</div></div></div>
+        <div id="tree-container"><div id="tree-scroll-wrapper">${renderAppState('Loading friend challenge…', { compact: true })}</div></div>
         <div id="clade-info"></div>
         <div id="guess-history"></div>
     </div>`;

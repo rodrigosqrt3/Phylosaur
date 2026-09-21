@@ -78,7 +78,7 @@
     <div class="site-header-layout">
       <div class="site-header-spacer" aria-hidden="true"></div>
       <div class="site-brand">
-        <h1 style="cursor:pointer;" onclick="showDifficultySelection()">Phylosaur</h1>
+        <h1><a class="site-brand-home" href="#" onclick="navigateToAppRoute('/'); return false;">Phylosaur</a></h1>
         <p class="subtitle">A phylogenetic classification challenge</p>
       </div>
       <div class="site-header-utility">
@@ -95,7 +95,12 @@
     </div>
   </header>
     <div id="app-content">
-      <div class="game-card"><div class="loading" role="status">Preparing Phylosaur…</div></div>
+      <div class="game-card">
+        <div class="app-state app-state-loading" role="status" aria-live="polite">
+          <span class="app-state-icon" aria-hidden="true"></span>
+          <div class="app-state-message">Preparing Phylosaur…</div>
+        </div>
+      </div>
     </div>
   </div>
 

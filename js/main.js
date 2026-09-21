@@ -111,7 +111,7 @@ async function restoreAppRoute() {
     } else if (route === '/friends') {
       showFriendChallenges();
     } else if (route === '/about') {
-      showAbout();
+      await showAbout();
     } else if (route === '/stats' && currentUser) {
       await showStatsDashboard();
     } else if (route === '/analytics' && isAnalyticsAdmin) {

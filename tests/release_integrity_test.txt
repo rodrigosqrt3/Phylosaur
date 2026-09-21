@@ -167,8 +167,14 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Hypselospinus: "Hypselospinus_NT_flipped.jpg",
     Ichthyovenator: "Ichthyovenator_laosensis_life_reconstruction_by_PaleoGeek.png",
     Leaellynasaura: "Leaellynasaura_BW.jpg",
+    Mochlodon: "1881_-_Mochlodon.png",
+    Nankangia: "Nankangia_Restoration.jpg",
+    Regnosaurus: "1848_-_Regnosaurus.png",
+    Scansoriopteryx: "Scansoriopteryx.png",
+    Sellosaurus: "Sellosaurus.jpg",
+    Struthiomimus: "Struthiomimus.png",
   };
-  assert(mediaCatalog.version >= 9, "The curated Museum media release version was not advanced.");
+  assert(mediaCatalog.version >= 10, "The curated Museum media release version was not advanced.");
   for (const [name, filename] of Object.entries(requestedFiles)) {
     assert(replacements[name], `The requested Museum replacement is missing: ${name}`);
     assert(replacements[name].url.includes(filename), `${name} does not use the requested image.`);
@@ -211,6 +217,41 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
+  assert(screensSource.includes("await fetch('about.html')") &&
+    screensSource.includes("new DOMParser()") &&
+    !screensSource.includes("function showAboutLegacy"),
+    "The in-app About screen must reuse the canonical About document.");
+});
+
+Deno.test("shared UI states, account controls and motion remain standardized", () => {
+  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const authSource = Deno.readTextFileSync(`${javascriptRoot}/auth.${javascriptExtension}`);
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const dbSource = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
+
+  assert(uiSource.includes("function renderAppState(") &&
+    gameSource.includes("renderAppState('Loading practice challenge…'") &&
+    dbSource.includes("renderAppState('Could not load challenge.'") &&
+    screensSource.includes("renderAppState('Loading Museum…'"),
+    "Loading and error feedback must use the shared application-state component.");
+  assert(authSource.includes("login-text-action") &&
+    authSource.includes("aria-modal', 'true'") &&
+    authSource.includes("event.key === 'Escape'") &&
+    authSource.includes("previouslyFocused.focus()") &&
+    !authSource.includes('<span class="login-forgot"'),
+    "Account dialogs must use semantic controls and preserve keyboard focus.");
+  assert(htmlSource.includes('class="site-brand-home"') &&
+    !htmlSource.includes('<h1 style="cursor:pointer;"'),
+    "The main brand must be a keyboard-accessible home link.");
+  assert(styleSource.includes("--motion-screen") &&
+    styleSource.includes("animation: fadeInUp var(--motion-screen) var(--motion-ease)") &&
+    styleSource.includes(".practice-levels") &&
+    styleSource.includes(".stats-section") &&
+    styleSource.includes(".how-to-play-step"),
+    "Primary screen layout and motion tokens must remain shared.");
 });
 
 Deno.test("guess input accessibility contract remains present in every mode", () => {
@@ -402,9 +443,9 @@ Deno.test("network operations time out and challenge polling avoids background o
 Deno.test("Daily documentation consistently describes the global UTC day", () => {
   const aboutSource = Deno.readTextFileSync(localSourceLayout ? "game/about_html.txt" : "about.html");
   const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
-  assert(aboutSource.includes("UTC calendar day") && screensSource.includes("UTC calendar day"),
-    "Daily documentation must describe the server's global UTC reset.");
-  assert(!aboutSource.includes("player's local day") && !screensSource.includes("local calendar day"),
+  assert(aboutSource.includes("UTC calendar day") && screensSource.includes("await fetch('about.html')"),
+    "Canonical Daily documentation must describe the server's global UTC reset.");
+  assert(!aboutSource.includes("player's local day") && !aboutSource.includes("local calendar day"),
     "Local-day wording conflicts with the UTC server implementation.");
 });
 

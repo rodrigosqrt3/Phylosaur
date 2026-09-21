@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Centrosaurus": {
@@ -542,6 +542,66 @@
       "license": "CC BY 3.0",
       "license_url": "https://creativecommons.org/licenses/by/3.0",
       "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Mochlodon": {
+      "file_title": "File:1881 - Mochlodon.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/1881_-_Mochlodon.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:1881_-_Mochlodon.png",
+      "artist": "Atlantis536",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
+      "source": "wikimedia"
+    },
+    "Nankangia": {
+      "file_title": "File:Nankangia Restoration.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Nankangia_Restoration.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Nankangia_Restoration.jpg",
+      "artist": "Danny Cicchetti",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Regnosaurus": {
+      "file_title": "File:1848 - Regnosaurus.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/1848_-_Regnosaurus.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:1848_-_Regnosaurus.png",
+      "artist": "Atlantis536",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
+      "source": "wikimedia"
+    },
+    "Scansoriopteryx": {
+      "file_title": "File:Scansoriopteryx.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scansoriopteryx.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Scansoriopteryx.png",
+      "artist": "Matt Martyniuk",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Sellosaurus": {
+      "file_title": "File:Sellosaurus.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sellosaurus.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Sellosaurus.jpg",
+      "artist": "Nobu Tamura; edits by FunkMonk",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Struthiomimus": {
+      "file_title": "File:Struthiomimus.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Struthiomimus.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Struthiomimus.png",
+      "artist": "Levi Martinez-Reza",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia"
     }
   }

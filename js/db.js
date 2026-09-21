@@ -800,7 +800,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
     currentAccountProgress = null;
 
     const wrapper = document.getElementById('tree-scroll-wrapper');
-    if (wrapper) wrapper.innerHTML = '<div class="loading">Loading challenge...</div>';
+    if (wrapper) wrapper.innerHTML = renderAppState('Loading challenge…', { compact: true });
 
     const storageKey = getGameSessionStorageKey(mode, difficulty);
     if (forceClean) localStorage.removeItem(storageKey);
@@ -912,7 +912,9 @@ async function loadPracticeDatabase(difficulty, forceClean = true, resumeAutomat
     } catch (error) {
         console.error('Server practice game error:', error);
         const wrapper = document.getElementById('tree-scroll-wrapper');
-        if (wrapper) wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${error.message}</div>`;
+        if (wrapper) wrapper.innerHTML = renderAppState('Could not load challenge.', {
+            type: 'error', detail: error.message, compact: true
+        });
     }
 }
 
@@ -922,7 +924,9 @@ async function loadDailyDatabase(difficulty, forceClean = false, resumeAutomatic
     } catch (error) {
         console.error('Server daily game error:', error);
         const wrapper = document.getElementById('tree-scroll-wrapper');
-        if (wrapper) wrapper.innerHTML = `<div class="empty-state" style="color:#c62828;"><strong>Error loading challenge</strong><br>${error.message}</div>`;
+        if (wrapper) wrapper.innerHTML = renderAppState('Could not load challenge.', {
+            type: 'error', detail: error.message, compact: true
+        });
     }
 }
 
