@@ -16,7 +16,7 @@ async function showDifficultySelection() {
     
     appContent.innerHTML = `            
         <div class="game-card difficulty-home">
-        <h2 class="difficulty-home-title">Daily Challenge</h2>
+        <h2 class="difficulty-home-title screen-title">Daily Challenge</h2>
         <p class="difficulty-home-date">
             ${getCurrentDateFormatted()} - Choose a level
         </p>
@@ -103,7 +103,7 @@ function showFriendChallenges(prefilledCode = '') {
     <div class="game-card friends-hub">
         <div class="friends-heading">
             <div class="friends-kicker">Private Challenge</div>
-            <h2>Play with Friends</h2>
+            <h2 class="screen-title">Play with Friends</h2>
             <p>Create a private challenge or enter a six-character code. Everyone receives the same hidden dinosaur and plays on their own tree.</p>
         </div>
 
@@ -200,8 +200,8 @@ function showPracticeMode() {
     
     appContent.innerHTML = `
     <div class="game-card" style="text-align:center;">
-        <h2 style="color:var(--color-primary); margin-bottom:12px; font-size:1.8em;">Practice Mode</h2>
-        <p style="color:var(--color-secondary); margin-bottom:30px; font-size:0.95em; letter-spacing:1px;">
+        <h2 class="screen-title">Practice Mode</h2>
+        <p class="screen-subtitle">
         Choose a level and play as often as you like
         </p>
 
@@ -331,9 +331,7 @@ async function showStatsDashboard() {
 
 
     <div class="game-card">
-        <h2 style="color:var(--color-primary); margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
-        STATISTICS
-        </h2>
+        <h2 class="screen-title">Statistics</h2>
 
         <div style="text-align:center; margin-bottom:30px; color:var(--color-secondary); font-size:1.1em; letter-spacing:2px;">
         Player: <span style="color:var(--color-accent); font-weight:600;">${currentUser}</span>
@@ -445,12 +443,10 @@ function showAbout() {
     appContent.innerHTML = `
 
     
-    <div class="game-card" style="max-width: 900px; margin: 0 auto;">
-        <h2 style="color:var(--color-primary); margin-bottom:30px; text-align:center; font-size:2em; letter-spacing:3px;">
-        About Phylosaur
-        </h2>
+    <div class="game-card about-screen">
+        <h2 class="screen-title about-screen-title">About Phylosaur</h2>
         
-        <div style="color:var(--color-text-light); line-height:1.85; font-size:1.02em; text-align:left;">
+        <div class="about-screen-body">
 
         <p style="margin-bottom:25px; font-style:italic; color:var(--color-secondary); font-size:0.95em;">
         <strong>Phylosaur</strong> is a deliberate meeting of language and subject. The scientific element 
@@ -1815,9 +1811,7 @@ async function showMuseum() {
 
         let html = `
             <div class="game-card">
-                <h2 style="color:var(--color-primary); margin-bottom:20px; text-align:center; font-size:2em; letter-spacing:3px;">
-                    MUSEUM
-                </h2>
+                <h2 class="screen-title">Museum</h2>
                 
                 <div class="museum-progress-container">
                     <div style="font-size:1.1em; color:var(--color-secondary); font-weight:600;">

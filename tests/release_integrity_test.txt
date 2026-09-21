@@ -151,6 +151,68 @@ Deno.test("media overrides are complete and belong to playable genera", () => {
   }
 });
 
+Deno.test("curated Museum image replacements and centered close controls remain published", () => {
+  const mediaCatalog = readJson(assetPath("phylosaur_media_overrides.json"));
+  const replacements = mediaCatalog.taxa ?? {};
+  const requestedFiles: Record<string, string> = {
+    Xiaotingia: "Xiaotingia_.jpg",
+    Unenlagia: "Unenlagia_comahuensis_.jpg",
+    Tylocephale: "Tylocephale_pair.jpg",
+    Cumnoria: "Cumnoria_NT_flipped_transparent.png",
+    Dakotadon: "Dakotadon_restoration.png",
+    Graciliceratops: "Graciliceratops_BW_flipped_transparent.png",
+    Guaibasaurus: "Guaibasaurus-mingau.png",
+    Hulsanpes: "Hulsanpes_no_background.png",
+    Hypacrosaurus: "Hypacrosaurus_altispinus.jpg",
+    Hypselospinus: "Hypselospinus_NT_flipped.jpg",
+    Ichthyovenator: "Ichthyovenator_laosensis_life_reconstruction_by_PaleoGeek.png",
+    Leaellynasaura: "Leaellynasaura_BW.jpg",
+  };
+  assert(mediaCatalog.version >= 9, "The curated Museum media release version was not advanced.");
+  for (const [name, filename] of Object.entries(requestedFiles)) {
+    assert(replacements[name], `The requested Museum replacement is missing: ${name}`);
+    assert(replacements[name].url.includes(filename), `${name} does not use the requested image.`);
+  }
+
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  assert(styleSource.includes(".museum-entry-close::before") &&
+    styleSource.includes(".museum-entry-close::after") &&
+    styleSource.includes("content: ''") &&
+    styleSource.includes("display: block") &&
+    styleSource.includes("display: grid") &&
+    styleSource.includes("place-items: center") &&
+    styleSource.includes("top: 50%") &&
+    styleSource.includes("left: 50%") &&
+    styleSource.includes("margin: -1px 0 0 -9px") &&
+    styleSource.includes("transform: rotate(45deg)") &&
+    styleSource.includes("transform: rotate(-45deg)"),
+    "Museum close marks must stay geometrically centered inside their circular controls.");
+});
+
+Deno.test("About navigation and primary screen titles share the application shell", () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
+  const aboutSource = Deno.readTextFileSync(localSourceLayout ? "game/about_html.txt" : "about.html");
+
+  assert(htmlSource.includes('href="#/about"') &&
+    htmlSource.includes('onclick="showAbout(); return false;"') &&
+    !htmlSource.includes('href="about.html">About the game and its methodology'),
+    "The home-page About link must use the in-app route instead of leaving the application shell.");
+  assert(screensSource.includes('class="difficulty-home-title screen-title"') &&
+    screensSource.includes('class="screen-title about-screen-title"') &&
+    screensSource.includes('class="screen-title">Practice Mode') &&
+    screensSource.includes('class="screen-title">Museum'),
+    "Primary screens must use the shared title hierarchy.");
+  assert(styleSource.includes(".screen-title") &&
+    styleSource.includes(".screen-subtitle") &&
+    styleSource.includes(".about-screen") &&
+    styleSource.includes(".info-header h1"),
+    "Shared screen and standalone About typography is missing.");
+  assert(aboutSource.includes("A phylogenetic classification challenge"),
+    "The standalone About header must preserve the same identity line as the application.");
+});
+
 Deno.test("guess input accessibility contract remains present in every mode", () => {
   const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
   const autocompleteSource = Deno.readTextFileSync(

@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Centrosaurus": {
@@ -422,6 +422,126 @@
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Xiaotingia": {
+      "file_title": "File:Xiaotingia_.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Xiaotingia_.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Xiaotingia_.jpg",
+      "artist": "El fosilmaníaco",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Unenlagia": {
+      "file_title": "File:Unenlagia comahuensis_.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Unenlagia_comahuensis_.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Unenlagia_comahuensis_.jpg",
+      "artist": "Veta yogurt",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Tylocephale": {
+      "file_title": "File:Tylocephale pair.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tylocephale_pair.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Tylocephale_pair.jpg",
+      "artist": "ABelov2014",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Cumnoria": {
+      "file_title": "File:Cumnoria NT flipped transparent.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cumnoria_NT_flipped_transparent.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Cumnoria_NT_flipped_transparent.png",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Dakotadon": {
+      "file_title": "File:Dakotadon restoration.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Dakotadon_restoration.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Dakotadon_restoration.png",
+      "artist": "Bubblesorg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Graciliceratops": {
+      "file_title": "File:Graciliceratops BW flipped transparent.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Graciliceratops_BW_flipped_transparent.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Graciliceratops_BW_flipped_transparent.png",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Guaibasaurus": {
+      "file_title": "File:Guaibasaurus-mingau.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Guaibasaurus-mingau.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Guaibasaurus-mingau.png",
+      "artist": "JohnnyMingau",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Hulsanpes": {
+      "file_title": "File:Hulsanpes no background.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hulsanpes_no_background.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Hulsanpes_no_background.png",
+      "artist": "Sauriazoicillus",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Hypacrosaurus": {
+      "file_title": "File:Hypacrosaurus altispinus.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hypacrosaurus_altispinus.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Hypacrosaurus_altispinus.jpg",
+      "artist": "ABelov2014",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Hypselospinus": {
+      "file_title": "File:Hypselospinus NT flipped.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hypselospinus_NT_flipped.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Hypselospinus_NT_flipped.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Ichthyovenator": {
+      "file_title": "File:Ichthyovenator laosensis life reconstruction by PaleoGeek.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ichthyovenator_laosensis_life_reconstruction_by_PaleoGeek.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Ichthyovenator_laosensis_life_reconstruction_by_PaleoGeek.png",
+      "artist": "PaleoGeek",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Leaellynasaura": {
+      "file_title": "File:Leaellynasaura BW.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Leaellynasaura_BW.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Leaellynasaura_BW.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
       "source": "wikimedia"
     }
   }

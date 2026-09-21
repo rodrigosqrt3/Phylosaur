@@ -2270,10 +2270,23 @@ body:not(.light-mode) .tree-node-group:hover rect {
   text-align: center;
 }
 
-.difficulty-home-title {
+.screen-title {
   color: var(--color-primary);
-  margin-bottom: 12px;
-  font-size: 1.8em;
+  margin: 0 0 12px;
+  font-size: clamp(1.8rem, 4vw, 2.15rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.screen-subtitle {
+  margin: 0 0 30px;
+  color: var(--color-secondary);
+  font-size: 0.95em;
+  line-height: 1.55;
+  letter-spacing: 1px;
+  text-align: center;
 }
 
 .difficulty-home-date {
@@ -3440,14 +3453,42 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     right: 16px;
     width: 44px;
     height: 44px;
+    display: grid;
+    place-items: center;
     padding: 0;
     color: var(--color-secondary);
     background: var(--bg-panel-darker);
     border: 1px solid var(--border-subtle);
     border-radius: 50%;
-    font-family: Georgia, serif;
-    font-size: 25px;
-    line-height: 1;
+    font-size: 0;
+    line-height: 0;
+}
+
+.museum-entry-close::before,
+.museum-entry-close::after,
+.museum-image-viewer-close::before,
+.museum-image-viewer-close::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 2px;
+    margin: -1px 0 0 -9px;
+    background: currentColor;
+    border-radius: 999px;
+    transform-origin: center;
+}
+
+.museum-entry-close::before,
+.museum-image-viewer-close::before {
+    transform: rotate(45deg);
+}
+
+.museum-entry-close::after,
+.museum-image-viewer-close::after {
+    transform: rotate(-45deg);
 }
 
 .museum-entry-close:hover,
@@ -4173,7 +4214,7 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
         padding: 22px 14px;
     }
 
-    .difficulty-home-title {
+    .screen-title {
         margin-bottom: 8px;
         font-size: clamp(1.65rem, 8vw, 1.9rem) !important;
         letter-spacing: 1.2px !important;
@@ -4451,9 +4492,6 @@ body.light-mode .stat-label {
 
 .friends-heading h2 {
     margin: 4px 0 12px;
-    color: var(--color-primary);
-    font-size: clamp(1.8rem, 5vw, 2.6rem);
-    font-weight: 600;
 }
 
 .friends-heading p,
@@ -5565,20 +5603,41 @@ body.light-mode .stat-label {
 }
 
 .info-header {
-    margin-bottom: 24px;
+    margin-bottom: 40px;
+    padding: 40px 30px;
+    background: linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-deeper) 100%);
+    border: 2px solid var(--border-base);
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     text-align: center;
 }
 
 .info-header h1 {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     color: var(--color-primary);
-    font-size: clamp(2.2rem, 8vw, 4rem);
-    letter-spacing: 3px;
+    font-size: 3.5em;
+    font-weight: 900;
+    letter-spacing: normal;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
 }
 
 .info-header p {
     color: var(--color-secondary);
-    letter-spacing: 1px;
+    font-size: 1.1em;
+    font-style: italic;
+    letter-spacing: 3px;
+}
+
+.about-screen {
+    max-width: 900px;
+    margin-inline: auto;
+}
+
+.about-screen-body {
+    color: var(--color-text-light);
+    font-size: 1.02em;
+    line-height: 1.85;
+    text-align: left;
 }
 
 .info-nav {
@@ -5771,6 +5830,23 @@ body.light-mode .stat-label {
 
     .info-page {
         padding: 24px 18px;
+    }
+
+    .info-header {
+        margin-bottom: 20px;
+        padding: 30px 16px;
+    }
+
+    .info-header h1 {
+        margin-bottom: 12px;
+        font-size: clamp(2.35rem, 10vw, 3rem);
+        line-height: 1;
+        letter-spacing: 3px;
+    }
+
+    .info-header p {
+        font-size: 0.9em;
+        line-height: 1.45;
     }
 
     .info-nav {
