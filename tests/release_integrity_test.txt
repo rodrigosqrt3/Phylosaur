@@ -348,7 +348,7 @@ Deno.test("Daily documentation consistently describes the global UTC day", () =>
 
 Deno.test("mobile dialogs keep actions visible and public copy avoids promotional free wording", () => {
   const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
-  const styleSource = Deno.readTextFileSync(assetPath("style.txt"));
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
   const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
   assert(uiSource.includes('<div class="modal-scroll-region">'),
     "Dialog content must have a dedicated scrolling region.");
