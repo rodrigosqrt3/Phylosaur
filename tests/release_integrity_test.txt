@@ -372,11 +372,35 @@ Deno.test("mobile Daily home uses the compact identity-preserving composition", 
   }
   assert(styleSource.includes(".site-brand h1") &&
     styleSource.includes("font-size: clamp(2.35rem, 10vw, 3rem)") &&
+    styleSource.includes(".difficulty-home-countdown") &&
+    styleSource.includes("border-radius: 999px") &&
     styleSource.includes(".difficulty-home .difficulty-btn") &&
     styleSource.includes("min-height: 94px") &&
     styleSource.includes("grid-template-columns: repeat(2, minmax(0, 1fr))") &&
     styleSource.includes(".difficulty-home-actions .btn-friends"),
-    "Mobile hierarchy must enlarge the brand, compact levels and preserve the full-width friend action.");
+    "The Daily hierarchy must emphasize the brand and countdown, compact mobile levels and preserve the full-width friend action.");
+});
+
+Deno.test("Museum media loads near the viewport with bounded concurrency and progressive entries", () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  assert(screensSource.includes("const MUSEUM_MEDIA_LOAD_LIMIT = 3") &&
+    screensSource.includes("new IntersectionObserver") &&
+    screensSource.includes("rootMargin: '400px 0px'") &&
+    screensSource.includes("museumMediaLoadsInFlight < MUSEUM_MEDIA_LOAD_LIMIT") &&
+    screensSource.includes("initializeMuseumCardMediaLoading()") &&
+    !screensSource.includes("museumDinos.forEach(async dino =>"),
+    "Museum cards must lazy-load media with bounded request concurrency.");
+  assert(screensSource.includes("const mediaPromise = getCachedDinoMedia(name)") &&
+    screensSource.includes("const wikiPromise = fetchWikipediaInfo(name)") &&
+    screensSource.includes("const paleodataPromise = loadMuseumPaleodataCatalog()") &&
+    screensSource.includes("Loading encyclopedia overview…") &&
+    screensSource.includes("void mediaPromise.then") &&
+    screensSource.includes("void wikiPromise.then") &&
+    screensSource.includes("void paleodataPromise.then"),
+    "Museum entries must render their shell before optional remote content finishes.");
+  assert(uiSource.includes("stopMuseumCardMediaLoading"),
+    "Museum media observation must stop when navigating to another screen.");
 });
 
 Deno.test("Museum routes reuse the gallery but still support direct links", async () => {

@@ -2,6 +2,9 @@
 // UI AND MODALS
 // ═══════════════════════════════════════════════
 function setHeaderControls(screen) {
+    if (screen !== 'museum' && typeof stopMuseumCardMediaLoading === 'function') {
+      stopMuseumCardMediaLoading();
+    }
     const controls = document.getElementById('header-controls');
     if (!controls) return;
 

@@ -1372,6 +1372,92 @@ async function getCachedDinoMedia(name) {
 let activeMuseumEntryMedia = null;
 let museumEntryEscapeHandler = null;
 let museumDiscoveryRecords = {};
+const MUSEUM_MEDIA_LOAD_LIMIT = 3;
+let museumMediaObserver = null;
+let museumMediaLoadQueue = [];
+let museumMediaLoadsInFlight = 0;
+let museumMediaGeneration = 0;
+
+function stopMuseumCardMediaLoading() {
+    museumMediaGeneration += 1;
+    museumMediaObserver?.disconnect();
+    museumMediaObserver = null;
+    museumMediaLoadQueue = [];
+}
+
+function queueMuseumCardMedia(card, generation) {
+    if (!card || card.dataset.museumMediaState) return;
+    card.dataset.museumMediaState = 'queued';
+    museumMediaLoadQueue.push({ card, generation });
+    pumpMuseumCardMediaQueue();
+}
+
+function pumpMuseumCardMediaQueue() {
+    while (museumMediaLoadsInFlight < MUSEUM_MEDIA_LOAD_LIMIT && museumMediaLoadQueue.length) {
+        const task = museumMediaLoadQueue.shift();
+        museumMediaLoadsInFlight += 1;
+        void loadMuseumCardMedia(task)
+            .catch(error => {
+                if (task.card?.isConnected) task.card.dataset.museumMediaState = 'error';
+                console.warn('Museum card media could not be loaded:', error);
+            })
+            .finally(() => {
+                museumMediaLoadsInFlight -= 1;
+                pumpMuseumCardMediaQueue();
+            });
+    }
+}
+
+async function loadMuseumCardMedia({ card, generation }) {
+    if (!card?.isConnected || generation !== museumMediaGeneration) return;
+
+    card.dataset.museumMediaState = 'loading';
+    const image = card.querySelector('.museum-card-art');
+    const name = image?.dataset.museumMediaName || '';
+    if (!image || !name) return;
+
+    const media = await getCachedDinoMedia(name);
+    if (!card.isConnected || generation !== museumMediaGeneration) return;
+
+    image.src = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
+    image.classList.add('loaded');
+    card.dataset.museumMediaState = 'loaded';
+
+    if (media?.source !== 'wikimedia' && media?.source !== 'dinopedia') return;
+    const sourceElement = card.querySelector('.museum-card-source');
+    if (!sourceElement) return;
+
+    const sourceName = media.source === 'dinopedia' ? 'Dinopedia' : 'Commons';
+    const filePage = escapeChallengeHtml(media.file_page || '');
+    const attribution = escapeChallengeHtml(media.artist || sourceName);
+    const license = escapeChallengeHtml(media.license || '');
+    sourceElement.innerHTML = filePage
+        ? `<a href="${filePage}" target="_blank" rel="noopener"
+              onclick="event.stopPropagation()">${attribution}${license ? ` · ${license}` : ''}</a>`
+        : `${attribution}${license ? ` · ${license}` : ''}`;
+}
+
+function initializeMuseumCardMediaLoading() {
+    stopMuseumCardMediaLoading();
+    const generation = museumMediaGeneration;
+    const cards = [...document.querySelectorAll('.museum-card.unlocked')]
+        .filter(card => card.querySelector('.museum-card-art[data-museum-media-name]'));
+
+    if (!('IntersectionObserver' in window)) {
+        cards.forEach(card => queueMuseumCardMedia(card, generation));
+        return;
+    }
+
+    museumMediaObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            museumMediaObserver?.unobserve(entry.target);
+            queueMuseumCardMedia(entry.target, generation);
+        });
+    }, { rootMargin: '400px 0px', threshold: 0.01 });
+
+    cards.forEach(card => museumMediaObserver.observe(card));
+}
 
 function formatMuseumDiscoveryDate(value) {
     if (!value) return '';
@@ -1576,16 +1662,11 @@ async function showMuseumEntry(name) {
         }
     }
 
-    const [media, wikiInfo, paleodataCatalog] = await Promise.all([
-        getCachedDinoMedia(name),
-        fetchWikipediaInfo(name),
-        loadMuseumPaleodataCatalog()
-    ]);
-
     if (!document.body.contains(overlay)) return;
 
-    const imageUrl = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
-    const credit = getMuseumMediaCredit(name, media);
+    const mediaPromise = getCachedDinoMedia(name);
+    const wikiPromise = fetchWikipediaInfo(name);
+    const paleodataPromise = loadMuseumPaleodataCatalog();
     const levelNames = {
         muito_facil: 'Level I',
         facil: 'Level II',
@@ -1594,18 +1675,16 @@ async function showMuseumEntry(name) {
         muito_dificil: 'Level V'
     };
     const lineage = (dino.linhagem || [])
-        .map(clade => `<span>${clade}</span>`)
+        .map(clade => `<span>${escapeChallengeHtml(clade)}</span>`)
         .join('<b>›</b>');
     const discovery = getMuseumDiscoverySummary(
         museumDiscoveryRecords[name.toLowerCase()]
     );
-    const paleodata = paleodataCatalog.taxa[name] || null;
-    const paleodataHtml = renderMuseumPaleodata(paleodata, paleodataCatalog.timeline);
 
     activeMuseumEntryMedia = {
         name,
-        url: media?.url || null,
-        credit
+        url: null,
+        credit: ''
     };
 
     overlay.querySelector('.museum-entry-dialog').innerHTML = `
@@ -1613,7 +1692,7 @@ async function showMuseumEntry(name) {
 
         <header class="museum-entry-header">
             <div class="museum-entry-kicker">Museum entry</div>
-            <h2>${name}</h2>
+            <h2>${escapeChallengeHtml(name)}</h2>
             <div class="museum-entry-meta">
                 ${levelNames[dino.dificuldade] || dino.dificuldade}
                 · ${(dino.linhagem || []).at(-1) || 'Dinosauria'}
@@ -1629,35 +1708,83 @@ async function showMuseumEntry(name) {
             <figure class="museum-entry-figure">
                 <button class="museum-entry-image-button" type="button"
                         onclick="openMuseumImageViewer()"
-                        ${media?.url ? '' : 'disabled'}
+                        disabled
                         aria-label="View larger image of ${name}">
-                    <img src="${imageUrl}" alt="${name}">
-                    ${media?.url ? '<span>Click to enlarge</span>' : ''}
+                    <img src="dinosaur-footprint-1-svgrepo-com.svg" alt="${name}">
                 </button>
-                <figcaption>${credit}</figcaption>
+                <figcaption>Loading illustration…</figcaption>
             </figure>
 
             <section class="museum-entry-copy">
                 <div class="museum-entry-ornament">◆</div>
                 <p class="museum-entry-description">
-                    ${wikiInfo?.description || 'No encyclopedia summary is available for this genus yet.'}
+                    Loading encyclopedia overview…
                 </p>
 
-                ${paleodataHtml}
+                <div class="museum-entry-paleodata-slot">
+                    <div class="museum-entry-section-loading">Loading fossil record…</div>
+                </div>
 
                 <h3>Classification</h3>
                 <div class="museum-entry-lineage">${lineage || '<span>Dinosauria</span>'}</div>
 
-                ${wikiInfo?.url ? `
-                    <a class="museum-entry-read-more" href="${wikiInfo.url}"
-                       target="_blank" rel="noopener">
-                        <span>Read the full Wikipedia article</span>
-                        <i class="ui-icon ui-icon-external" aria-hidden="true"></i>
-                    </a>
-                ` : ''}
+                <div class="museum-entry-read-more-slot"></div>
             </section>
         </div>
     `;
+
+    void mediaPromise.then(media => {
+        if (!overlay.isConnected) return;
+        const figure = overlay.querySelector('.museum-entry-figure');
+        const button = figure?.querySelector('.museum-entry-image-button');
+        const image = figure?.querySelector('img');
+        const caption = figure?.querySelector('figcaption');
+        if (!button || !image || !caption) return;
+
+        const hasImage = Boolean(media?.url);
+        const credit = hasImage
+            ? getMuseumMediaCredit(name, media)
+            : 'No reviewed illustration is available yet.';
+        image.src = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
+        button.disabled = !hasImage;
+        if (hasImage) button.insertAdjacentHTML('beforeend', '<span>Click to enlarge</span>');
+        caption.innerHTML = credit;
+        activeMuseumEntryMedia = { name, url: media?.url || null, credit };
+    }).catch(error => {
+        console.warn(`Museum illustration unavailable for ${name}:`, error);
+        const caption = overlay.querySelector('.museum-entry-figure figcaption');
+        if (caption) caption.textContent = 'No reviewed illustration is available yet.';
+    });
+
+    void wikiPromise.then(wikiInfo => {
+        if (!overlay.isConnected) return;
+        const description = overlay.querySelector('.museum-entry-description');
+        if (description) {
+            description.textContent = wikiInfo?.description
+                || 'No encyclopedia summary is available for this genus yet.';
+        }
+
+        const readMoreSlot = overlay.querySelector('.museum-entry-read-more-slot');
+        if (readMoreSlot && wikiInfo?.url) {
+            readMoreSlot.innerHTML = `
+                <a class="museum-entry-read-more" href="${escapeChallengeHtml(wikiInfo.url)}"
+                   target="_blank" rel="noopener">
+                    <span>Read the full Wikipedia article</span>
+                    <i class="ui-icon ui-icon-external" aria-hidden="true"></i>
+                </a>
+            `;
+        }
+    });
+
+    void paleodataPromise.then(paleodataCatalog => {
+        if (!overlay.isConnected) return;
+        const slot = overlay.querySelector('.museum-entry-paleodata-slot');
+        if (!slot) return;
+        const paleodata = paleodataCatalog.taxa[name] || null;
+        const html = renderMuseumPaleodata(paleodata, paleodataCatalog.timeline);
+        if (html) slot.innerHTML = html;
+        else slot.remove();
+    });
 }
 
 async function showMuseum() {
@@ -1756,10 +1883,13 @@ async function showMuseum() {
                     <div class="museum-card unlocked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" ${cardData} role="button" tabindex="0"
                          aria-label="Open museum entry for ${dino.nome}"
                          onclick="showMuseumEntry('${dino.nome}')"
-                         onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); showMuseumEntry('${dino.nome}'); }"
+                        onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); showMuseumEntry('${dino.nome}'); }"
                          style="cursor:pointer;">
                         <div class="museum-card-art-container">
-                            <img class="museum-card-art" id="art-${dino.nome.replace(/\s+/g, '')}" src="dinosaur-footprint-1-svgrepo-com.svg" alt="${dino.nome}" />
+                            <img class="museum-card-art"
+                                 data-museum-media-name="${escapeChallengeHtml(dino.nome)}"
+                                 src="dinosaur-footprint-1-svgrepo-com.svg"
+                                 alt="${dino.nome}" loading="lazy" decoding="async" />
                         </div>
                         <div class="museum-card-name">${dino.nome}</div>
                         <div class="museum-card-clade">${lastClade}</div>
@@ -1769,8 +1899,7 @@ async function showMuseum() {
                                 ? `<strong>${discovery.countLabel}</strong>`
                                 : ''}
                         </div>
-                        <div id="source-${dino.nome.replace(/\s+/g, '')}"
-                             style="font-size:0.68em; line-height:1.3; margin-top:6px;"></div>
+                        <div class="museum-card-source"></div>
                     </div>
                 `;
             } else {
@@ -1796,31 +1925,7 @@ async function showMuseum() {
         appContent.innerHTML = html;
 
         applyMuseumFilters();
-
-        museumDinos.forEach(async dino => {
-            if (unlockedSet.has(dino.nome.toLowerCase())) {
-                const imgElement = document.getElementById(`art-${dino.nome.replace(/\s+/g, '')}`);
-                if (imgElement) {
-                    const media = await getCachedDinoMedia(dino.nome);
-                    imgElement.src = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
-                    imgElement.classList.add('loaded');
-
-                    if (media?.source === 'wikimedia' || media?.source === 'dinopedia') {
-                        const sourceElement = document.getElementById(`source-${dino.nome.replace(/\s+/g, '')}`);
-                        if (sourceElement) {
-                            const sourceName = media.source === 'dinopedia' ? 'Dinopedia' : 'Commons';
-                            sourceElement.innerHTML = `
-                                <a href="${media.file_page}" target="_blank"
-                                   onclick="event.stopPropagation()"
-                                   style="color:var(--color-muted); text-decoration:none;">
-                                    ${media.artist || sourceName} · ${media.license}
-                                </a>
-                            `;
-                        }
-                    }
-                }
-            }
-        });
+        initializeMuseumCardMediaLoading();
 
     } catch (err) {
         console.error('Museum Error:', err);
