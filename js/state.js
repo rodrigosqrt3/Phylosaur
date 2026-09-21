@@ -21,6 +21,7 @@ let currentChallengePlacement = null;
 let currentChallengeTotalPlayers = 0;
 let currentChallengeEliminated = false;
 let challengeStatusPollTimer = null;
+let challengeStatusPollInFlight = false;
 let challengeRaceClosing = false;
 let isGiveUpMode = false;
 let currentTheme = 'dark';

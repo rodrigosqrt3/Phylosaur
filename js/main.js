@@ -193,14 +193,24 @@ document.addEventListener('DOMContentLoaded', async function() {
       return;
   }
 
-  await initializeUserSystem();
+  const userInitialization = initializeUserSystem();
   appRoutingReady = true;
   const challengeCode = new URLSearchParams(window.location.search).get('challenge');
   let restoredRoute;
+  if (!challengeCode && getCurrentAppRoute() === '/') {
+    await showDifficultySelection();
+    restoredRoute = '/';
+    void userInitialization.then(() => {
+      if (getCurrentAppRoute() === '/') return refreshDifficultySelectionAccountState();
+    });
+  } else {
+    await userInitialization;
+  }
+
   if (challengeCode && getCurrentAppRoute() === '/') {
     showFriendChallenges(challengeCode);
     restoredRoute = '/friends';
-  } else {
+  } else if (!restoredRoute) {
     restoredRoute = await restoreAppRoute();
   }
 

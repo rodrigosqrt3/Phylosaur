@@ -2244,6 +2244,22 @@ body:not(.light-mode) .tree-node-group:hover rect {
   box-shadow: 0 0 20px rgba(90, 156, 107, 0.3) !important;
 }
 
+.difficulty-completion-mark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #fff;
+  background: var(--color-success);
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 @keyframes shimmer {
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }
@@ -2384,7 +2400,17 @@ body:not(.light-mode) .tree-node-group:hover rect {
   position: relative;
   max-height: 85vh;
   max-height: calc(100dvh - 24px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-scroll-region {
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 4px 0;
 }
 
 .modal-title {
@@ -4048,7 +4074,20 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 
     .modal-box {
         width: 100%;
-        padding: 24px 18px;
+        max-height: calc(100dvh - 48px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        padding: 22px 16px 16px;
+        border-radius: 12px;
+    }
+
+    .modal-overlay {
+        padding-top: calc(24px + env(safe-area-inset-top, 0px));
+        padding-right: calc(16px + env(safe-area-inset-right, 0px));
+        padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        padding-left: calc(16px + env(safe-area-inset-left, 0px));
+    }
+
+    .modal-scroll-region {
+        padding: 2px 5px 0;
     }
 
     .modal-title {
@@ -4070,6 +4109,11 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
     .modal-buttons {
         flex-direction: column;
         width: 100%;
+        flex: 0 0 auto;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border-subtle);
+        background: var(--bg-card-dark);
     }
 
     .modal-btn {

@@ -28,7 +28,7 @@
     "@type": "WebApplication",
     "name": "Phylosaur",
     "url": "https://rodrigosqrt3.github.io/Phylosaur/",
-    "description": "A free dinosaur guessing game based on phylogenetic classification.",
+    "description": "An educational dinosaur guessing game based on phylogenetic classification.",
     "applicationCategory": "GameApplication",
     "operatingSystem": "Any",
     "browserRequirements": "Requires JavaScript and an internet connection",
@@ -50,6 +50,8 @@
   <meta name="apple-mobile-web-app-title" content="Phylosaur">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://rpezjtvmxardbkjjtpit.supabase.co" crossorigin>
+  <link rel="dns-prefetch" href="https://rpezjtvmxardbkjjtpit.supabase.co">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,900;1,400&display=swap" rel="stylesheet">
@@ -92,12 +94,14 @@
       </div>
     </div>
   </header>
-    <div id="app-content"></div>
+    <div id="app-content">
+      <div class="game-card"><div class="loading" role="status">Preparing Phylosaur…</div></div>
+    </div>
   </div>
 
   <footer class="site-description" aria-label="About Phylosaur">
     <p>
-      <strong>Phylosaur</strong> is a free dinosaur guessing game based on phylogenetic classification.
+      <strong>Phylosaur</strong> is an educational dinosaur guessing game based on phylogenetic classification.
       Identify the hidden genus by using each guess to follow its path through the dinosaur family tree.
     </p>
     <a href="about.html">About the game and its methodology</a>

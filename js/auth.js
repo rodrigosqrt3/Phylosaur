@@ -2,9 +2,10 @@
 // USER ACCOUNT SYSTEM
 // ═══════════════════════════════════════════════
 async function initializeUserSystem() {
-  const { data: { session } } = await sb.auth.getSession();
-  
-  if (session) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return null;
+
     currentUserId = session.user.id;
     analyticsAccessChecked = false;
     const [profileResult, statsResult] = await Promise.all([
@@ -13,10 +14,8 @@ async function initializeUserSystem() {
     ]);
     const profile = profileResult.data;
     const stats = statsResult.data;
-    
-    if (profile) {
-      currentUser = profile.username;
-    }
+
+    currentUser = profile?.username || session.user.email?.split('@')[0] || null;
 
     if (stats) {
       userStats.gamesPlayed = stats.games_played;
@@ -25,7 +24,18 @@ async function initializeUserSystem() {
       userStats.bestScore = stats.best_score;
     }
 
-    await claimGuestProgressOnLogin({ showNotice: false });
+    void claimGuestProgressOnLogin({ showNotice: false })
+      .then(() => {
+        if (typeof getCurrentAppRoute === 'function' && getCurrentAppRoute() === '/') {
+          return refreshDifficultySelectionAccountState();
+        }
+      })
+      .catch(error => console.warn('Background account synchronization failed:', error));
+
+    return session;
+  } catch (error) {
+    console.warn('Account initialization could not be completed:', error);
+    return null;
   }
 }
 

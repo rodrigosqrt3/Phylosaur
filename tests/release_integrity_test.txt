@@ -261,6 +261,23 @@ Deno.test("tree nodes remain accessible by keyboard", () => {
   );
 });
 
+Deno.test("first mobile tree render centers Dinosauria before following later guesses", () => {
+  const treeSource = Deno.readTextFileSync(`${javascriptRoot}/tree.${javascriptExtension}`);
+  assert(
+    treeSource.includes("function centerTreeRootOnMobile(container)") &&
+      treeSource.includes("'(max-width: 768px)'") &&
+      treeSource.includes("getTreeElementByKey('node:Dinosauria')") &&
+      treeSource.includes("container.scrollLeft += rootCenter - viewportCenter") &&
+      treeSource.includes("container.dataset.mobileRootPositioned = 'true'"),
+    "The first mobile tree must center the root horizontally without locking later navigation.",
+  );
+  assert(
+    treeSource.includes("const mobileRootCentered = centerTreeRootOnMobile(container)") &&
+      treeSource.includes("if (!mobileRootCentered && (animationMode === 'guess' || animationMode === 'hint'))"),
+    "The first guess must keep Dinosauria centered before later guesses begin following new nodes.",
+  );
+});
+
 Deno.test("Practice Back returns directly to the main level selection", () => {
   const mainSource = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
   const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
@@ -275,6 +292,73 @@ Deno.test("Practice Back returns directly to the main level selection", () => {
       (uiSource.match(/onclick="navigateToAppRoute\('\/'\)"/g)?.length ?? 0) >= 3,
     "Practice Back must target the main Daily level selection directly.",
   );
+});
+
+Deno.test("initial route renders before account synchronization finishes", () => {
+  const mainSource = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
+  const authSource = Deno.readTextFileSync(`${javascriptRoot}/auth.${javascriptExtension}`);
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
+  const initialization = mainSource.indexOf("const userInitialization = initializeUserSystem()");
+  const immediateRender = mainSource.indexOf("await showDifficultySelection()", initialization);
+  const blockingWait = mainSource.indexOf("await userInitialization", initialization);
+  assert(initialization >= 0 && immediateRender > initialization && blockingWait > immediateRender,
+    "The root screen must render before waiting for account initialization.");
+  const initializeUserSource = authSource.slice(
+    authSource.indexOf("async function initializeUserSystem()"),
+    authSource.indexOf("async function initUserStatsRow()"),
+  );
+  assert(initializeUserSource.includes("void claimGuestProgressOnLogin"),
+    "Legacy progress synchronization must remain outside the initial render path.");
+  assert(screensSource.includes("void refreshDifficultySelectionAccountState()") &&
+    screensSource.includes('data-difficulty="${difficulty}"'),
+    "Daily completion markers must refresh progressively after rendering.");
+  assert(htmlSource.includes('rel="preconnect" href="https://rpezjtvmxardbkjjtpit.supabase.co"') &&
+    htmlSource.includes("Preparing Phylosaur…"),
+    "The cold-load document must prepare the Supabase connection and show immediate feedback.");
+});
+
+Deno.test("network operations time out and challenge polling avoids background overlap", () => {
+  const apiSource = Deno.readTextFileSync(`${javascriptRoot}/api.${javascriptExtension}`);
+  const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const workerPath = localSourceLayout ? "game/sw_service_worker.txt" : "sw.js";
+  const workerSource = Deno.readTextFileSync(workerPath);
+  assert(apiSource.includes("const GAME_API_TIMEOUT_MS = 15000") &&
+    apiSource.includes("const controller = new AbortController()") &&
+    apiSource.includes("signal: controller.signal") &&
+    apiSource.includes("clearTimeout(timeout)"),
+    "Game API requests must have a cleared abort timeout.");
+  assert(gameSource.includes("document.hidden || challengeStatusPollInFlight") &&
+    gameSource.includes("challengeStatusPollInFlight = false") &&
+    gameSource.includes("document.addEventListener('visibilitychange'"),
+    "Friend challenge polling must pause when hidden and prevent overlapping requests.");
+  assert(workerSource.includes(".catch(() => null)") &&
+    workerSource.includes('new Response("Asset unavailable offline."'),
+    "Cached background updates must handle offline network rejection.");
+});
+
+Deno.test("Daily documentation consistently describes the global UTC day", () => {
+  const aboutSource = Deno.readTextFileSync(localSourceLayout ? "game/about_html.txt" : "about.html");
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  assert(aboutSource.includes("UTC calendar day") && screensSource.includes("UTC calendar day"),
+    "Daily documentation must describe the server's global UTC reset.");
+  assert(!aboutSource.includes("player's local day") && !screensSource.includes("local calendar day"),
+    "Local-day wording conflicts with the UTC server implementation.");
+});
+
+Deno.test("mobile dialogs keep actions visible and public copy avoids promotional free wording", () => {
+  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(assetPath("style.txt"));
+  const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
+  assert(uiSource.includes('<div class="modal-scroll-region">'),
+    "Dialog content must have a dedicated scrolling region.");
+  assert(styleSource.includes(".modal-scroll-region") &&
+    styleSource.includes("max-height: calc(100dvh - 48px") &&
+    styleSource.includes("flex: 0 0 auto"),
+    "Mobile dialogs must preserve breathing room and keep their actions outside scrolling content.");
+  assert(htmlSource.includes("is an educational dinosaur guessing game") &&
+    !htmlSource.includes("is a free dinosaur guessing game"),
+    "The public description must use the educational positioning instead of 'free'.");
 });
 
 Deno.test("Museum routes reuse the gallery but still support direct links", async () => {

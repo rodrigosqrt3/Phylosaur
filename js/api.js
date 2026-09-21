@@ -4,6 +4,7 @@
 const wikipediaInfoCache = new Map();
 const wikimediaImageCache = new Map();
 window.phylosaurPerformance = window.phylosaurPerformance || [];
+const GAME_API_TIMEOUT_MS = 15000;
 
 function recordGameApiPerformance(action, durationMs, ok) {
   const entry = {
@@ -56,16 +57,33 @@ async function callGameApi(action, payload = {}) {
   const requestStartedAt = performance.now();
   const { data: { session } } = await sb.auth.getSession();
   const accessToken = session?.access_token || SUPABASE_ANON_KEY;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GAME_API_TIMEOUT_MS);
+  let response;
 
-  const response = await fetch(GAME_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${accessToken}`
-    },
-    body: JSON.stringify({ action, visitorId: getAnalyticsVisitorId(), ...payload })
-  });
+  try {
+    response = await fetch(GAME_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({ action, visitorId: getAnalyticsVisitorId(), ...payload }),
+      signal: controller.signal
+    });
+  } catch (error) {
+    recordGameApiPerformance(action, performance.now() - requestStartedAt, false);
+    if (error?.name === 'AbortError') {
+      throw new Error('The game server took too long to respond. Please try again.');
+    }
+    if (navigator.onLine === false) {
+      throw new Error('You appear to be offline. Reconnect and try again.');
+    }
+    throw new Error('The game server could not be reached. Please try again.');
+  } finally {
+    clearTimeout(timeout);
+  }
 
   let data = null;
   try {

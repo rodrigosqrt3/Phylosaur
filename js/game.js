@@ -258,7 +258,9 @@ async function pollChallengeRaceStatus() {
         stopChallengeStatusPolling();
         return;
     }
+    if (document.hidden || challengeStatusPollInFlight) return;
 
+    challengeStatusPollInFlight = true;
     try {
         const data = await callGameApi('challenge_status', {
             code: currentChallengeCode,
@@ -272,14 +274,20 @@ async function pollChallengeRaceStatus() {
         }
     } catch (error) {
         console.warn('Challenge race status unavailable:', error);
+    } finally {
+        challengeStatusPollInFlight = false;
     }
 }
 
 function startChallengeStatusPolling() {
     stopChallengeStatusPolling();
-    pollChallengeRaceStatus();
-    challengeStatusPollTimer = setInterval(pollChallengeRaceStatus, 4000);
+    void pollChallengeRaceStatus();
+    challengeStatusPollTimer = setInterval(() => void pollChallengeRaceStatus(), 4000);
 }
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && challengeStatusPollTimer) void pollChallengeRaceStatus();
+});
 
 async function refreshCurrentChallengePlacement() {
     if (currentGameMode !== 'challenge' || !currentChallengeCode || !gameSessionId) return null;

@@ -94,6 +94,23 @@ function centerTreeElement(element, behavior = 'smooth') {
     return true;
 }
 
+function centerTreeRootOnMobile(container) {
+    if (!container || container.dataset.mobileRootPositioned === 'true') return false;
+    if (!window.matchMedia?.('(max-width: 768px)').matches) return false;
+
+    const root = getTreeElementByKey('node:Dinosauria');
+    if (!root) return false;
+
+    const containerRect = container.getBoundingClientRect();
+    const rootRect = root.getBoundingClientRect();
+    const rootCenter = rootRect.left + rootRect.width / 2;
+    const viewportCenter = containerRect.left + containerRect.width / 2;
+
+    container.scrollLeft += rootCenter - viewportCenter;
+    container.dataset.mobileRootPositioned = 'true';
+    return true;
+}
+
 function focusTreeKey(key, options = {}) {
     if (!key) return;
 
@@ -759,7 +776,9 @@ leafPositions.forEach((leaf, name) => {
     container.scrollLeft = savedScrollLeft;
     container.scrollTop = savedScrollTop;
 
-    if (animationMode === 'guess' || animationMode === 'hint') {
+    const mobileRootCentered = centerTreeRootOnMobile(container);
+
+    if (!mobileRootCentered && (animationMode === 'guess' || animationMode === 'hint')) {
       const focusTargets = svg.querySelectorAll('.tree-new-focus');
       const focusTarget = svg.querySelector('.tree-primary-focus')
         || focusTargets[focusTargets.length - 1];

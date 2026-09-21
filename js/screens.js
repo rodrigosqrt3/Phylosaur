@@ -10,10 +10,7 @@ function escapeChallengeHtml(value) {
 async function showDifficultySelection() {
     setAppRoute('/');
     if (typeof stopChallengeStatusPolling === 'function') stopChallengeStatusPolling();
-    const [completionStatus] = await Promise.all([
-        getDailyCompletionStatus(),
-        initializeAnalyticsAccess()
-    ]);
+    const completionStatus = getImmediateDailyCompletionStatus();
     setHeaderControls('difficulty');
     const appContent = document.getElementById('app-content');
     
@@ -50,6 +47,48 @@ async function showDifficultySelection() {
         </div>
     `;
     startCountdown();
+    void refreshDifficultySelectionAccountState();
+}
+
+function emptyDailyCompletionStatus() {
+    return { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
+}
+
+function getImmediateDailyCompletionStatus() {
+    if (!currentUserId) return emptyDailyCompletionStatus();
+    const cacheKey = `${currentUserId}:${getTodayString()}`;
+    return dailyCompletionCache?.key === cacheKey
+        ? { ...dailyCompletionCache.status }
+        : emptyDailyCompletionStatus();
+}
+
+function updateDifficultyCompletionStatus(status) {
+    Object.entries(status || {}).forEach(([difficulty, completed]) => {
+        const button = document.querySelector(`.difficulty-btn[data-difficulty="${difficulty}"]`);
+        if (!button) return;
+        button.classList.toggle('difficulty-completed', completed === true);
+        let mark = button.querySelector('.difficulty-completion-mark');
+        if (completed && !mark) {
+            mark = document.createElement('span');
+            mark.className = 'difficulty-completion-mark';
+            mark.setAttribute('aria-label', 'Completed');
+            mark.textContent = '✓';
+            button.appendChild(mark);
+        } else if (!completed) {
+            mark?.remove();
+        }
+    });
+}
+
+async function refreshDifficultySelectionAccountState() {
+    if (getCurrentAppRoute() !== '/') return;
+    const [completionStatus] = await Promise.all([
+        getDailyCompletionStatus(),
+        initializeAnalyticsAccess()
+    ]);
+    if (getCurrentAppRoute() !== '/' || !document.querySelector('.difficulty-btn[data-difficulty]')) return;
+    updateDifficultyCompletionStatus(completionStatus);
+    setHeaderControls('difficulty');
 }
 
 function showFriendChallenges(prefilledCode = '') {
@@ -206,7 +245,7 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     }
 
     const statusIndicator = completed 
-        ? '<div style="position:absolute; top:10px; right:10px; width:24px; height:24px; background:var(--color-success); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:bold;">✓</div>'
+        ? '<span class="difficulty-completion-mark" aria-label="Completed">✓</span>'
         : '';
 
     const borderClass = completed ? 'difficulty-completed' : '';
@@ -214,6 +253,7 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     return `
         <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]} ${borderClass}" 
                 onclick="startDailyChallenge('${difficulty}')" 
+                data-difficulty="${difficulty}"
                 style="padding:30px; font-size:1.2em; position:relative; flex:0 1 260px;">
         ${statusIndicator}
         <div style="font-weight:bold; margin-bottom:10px; font-size:1.3em; letter-spacing:3px;">
@@ -484,7 +524,7 @@ function showAbout() {
         incorporate taxa with lower pageview counts (generally lesser-known genera that receive less popular 
         attention) thereby requiring broader taxonomic knowledge independent of their scientific importance 
         or systematic resolution. Daily challenges are generated from the date and selected level, so a given level 
-        presents the same target throughout the player's local calendar day.
+        presents the same target worldwide throughout the UTC calendar day.
         </p>
 
         <h3 style="color:var(--color-accent); margin:35px 0 20px; font-size:1.4em; font-weight:400; letter-spacing:2px; border-bottom:2px solid var(--border-subtle); padding-bottom:12px;">

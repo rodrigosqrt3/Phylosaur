@@ -68,7 +68,7 @@ function showModal(options) {
     const previouslyFocused = document.activeElement;
     const previousBodyOverflow = document.body.style.overflow;
     
-    let html = '';
+    let html = '<div class="modal-scroll-region">';
     
     if (options.title) {
         html += `<div class="modal-title">${options.title}</div>`;
@@ -90,6 +90,8 @@ function showModal(options) {
         });
         html += '</div>';
     }
+
+    html += '</div>';
     
     html += '<div class="modal-buttons">';
     

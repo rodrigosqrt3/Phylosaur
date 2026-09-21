@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v19";
+const CACHE_VERSION = "phylosaur-shell-v23";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -76,9 +76,13 @@ async function cachedStaticAsset(request) {
       await cache.put(request, response.clone());
     }
     return response;
-  });
+  }).catch(() => null);
 
-  return cached || networkRequest;
+  if (cached) return cached;
+  return (await networkRequest) || new Response("Asset unavailable offline.", {
+    status: 504,
+    headers: { "Content-Type": "text/plain; charset=utf-8" }
+  });
 }
 
 async function freshStaticAsset(request) {
