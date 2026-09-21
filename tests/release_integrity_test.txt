@@ -254,6 +254,76 @@ Deno.test("shared UI states, account controls and motion remain standardized", (
     "Primary screen layout and motion tokens must remain shared.");
 });
 
+Deno.test("clade collection achievements count unique Museum genera and synchronize accounts", () => {
+  const dbSource = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const expectedClades: Record<string, string> = {
+    theropod_tracker: "Theropoda",
+    sauropod_collector: "Sauropoda",
+    ornithischian_explorer: "Ornithischia",
+    horned_gallery: "Ceratopsia",
+    armored_archive: "Thyreophora",
+    duck_billed_collection: "Hadrosauridae",
+    feathered_branch: "Maniraptora",
+  };
+
+  const helpers = new Function(
+    "localStorage", "fullDatabase", "database", "targetDino",
+    `${dbSource}; return {
+      definitions: CLADE_ACHIEVEMENT_DEFINITIONS,
+      getGuestMuseumSnapshot,
+      evaluateGuestAchievements
+    };`,
+  )(
+    { getItem: () => null, setItem() {} },
+    [],
+    [],
+    null,
+  );
+  const fixtures = helpers.definitions.flatMap((definition: any) =>
+    Array.from({ length: definition.target }, (_, index) => ({
+      won: true,
+      mode: "practice",
+      targetName: `${definition.id}-${index}`,
+      targetLineage: ["Dinosauria", definition.clade],
+      guessCount: 4,
+      usedHints: false,
+      completedAt: `2026-01-${String(index + 1).padStart(2, "0")}T00:00:00Z`,
+    }))
+  );
+  fixtures.push({ ...fixtures[0] });
+
+  const snapshot = helpers.getGuestMuseumSnapshot(fixtures);
+  const unlocked = new Set(helpers.evaluateGuestAchievements(fixtures));
+  for (const [id, clade] of Object.entries(expectedClades)) {
+    assert(snapshot.cladeCounts[clade] === 10, `${clade} discoveries were double-counted.`);
+    assert(unlocked.has(id), `${id} did not unlock at ten unique genera.`);
+    assert(dbSource.includes(`id: '${id}'`) && dbSource.includes(`clade: '${clade}'`),
+      `${id} is missing from the client achievement catalogue.`);
+  }
+
+  assert(dbSource.includes("function synchronizeGuestAchievements") &&
+    screensSource.includes("synchronizeGuestAchievements()"),
+    "Guest clade achievements must be re-evaluated after the Museum catalogue loads.");
+  assert(screensSource.includes("Clade collection") &&
+    styleSource.includes(".achievement-card-clade") &&
+    styleSource.includes(".achievement-category"),
+    "Clade achievements must remain visually identifiable in the achievement gallery.");
+
+  if (localSourceLayout) {
+    const edgeSource = Deno.readTextFileSync("game/index.txt");
+    for (const [id, clade] of Object.entries(expectedClades)) {
+      assert(edgeSource.includes(`id: "${id}"`) && edgeSource.includes(`clade: "${clade}"`),
+        `${id} is missing from account-side achievement derivation.`);
+    }
+    assert(edgeSource.includes("const discoveredLineages = new Map<string, string[]>()") &&
+      edgeSource.includes("const cladeCounts = Object.fromEntries") &&
+      edgeSource.includes("cladeCounts[definition.clade] >= definition.target"),
+      "Account clade progress must be derived retroactively from unique discovered genera.");
+  }
+});
+
 Deno.test("guess input accessibility contract remains present in every mode", () => {
   const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
   const autocompleteSource = Deno.readTextFileSync(

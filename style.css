@@ -598,6 +598,31 @@ gap: 5px 16px;
   margin-bottom: 10px;
 }
 
+.achievement-card-clade {
+  position: relative;
+  overflow: hidden;
+}
+
+.achievement-card-clade::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-accent);
+  opacity: 0.7;
+}
+
+.achievement-category {
+  margin-bottom: 3px;
+  color: var(--color-accent);
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .achievement-medal {
   position: relative;
   display: inline-block;

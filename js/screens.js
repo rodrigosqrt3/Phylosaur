@@ -808,10 +808,13 @@ function generateAchievements(unlockedSet, progressById = {}) {
             ? `${progress.current} / ${progress.target} ${progress.unit}`
             : 'Not completed';
     html += `
-        <div class="achievement-card ${unlocked ? 'achievement-unlocked' : 'achievement-locked'}">
+        <div class="achievement-card ${ach.category === 'clade' ? 'achievement-card-clade' : ''} ${unlocked ? 'achievement-unlocked' : 'achievement-locked'}">
         <div class="achievement-card-heading">
             <span class="achievement-medal" aria-hidden="true"></span>
-            <div class="achievement-title">${ach.name}</div>
+            <div>
+                ${ach.category === 'clade' ? '<div class="achievement-category">Clade collection</div>' : ''}
+                <div class="achievement-title">${ach.name}</div>
+            </div>
         </div>
         <div class="achievement-desc">${ach.desc}</div>
         <div class="achievement-progress" aria-label="${progressText}">
@@ -1559,6 +1562,7 @@ async function showMuseum() {
         }
 
         museumDiscoveryRecords = await getDiscoveryRecords();
+        if (!currentUserId) synchronizeGuestAchievements();
         const unlockedList = Object.values(museumDiscoveryRecords)
             .map(record => record.name);
         const unlockedSet = new Set(unlockedList.map(name => name.toLowerCase()));

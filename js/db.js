@@ -3,6 +3,16 @@
 // ═══════════════════════════════════════════════════════════════════════
 let dailyCompletionCache = null;
 
+const CLADE_ACHIEVEMENT_DEFINITIONS = [
+    { id: 'theropod_tracker', name: 'Theropod Tracker', desc: 'Discover 10 theropod genera', clade: 'Theropoda', target: 10, category: 'clade' },
+    { id: 'sauropod_collector', name: 'Long-Necked Collection', desc: 'Discover 10 sauropod genera', clade: 'Sauropoda', target: 10, category: 'clade' },
+    { id: 'ornithischian_explorer', name: 'Ornithischian Explorer', desc: 'Discover 10 ornithischian genera', clade: 'Ornithischia', target: 10, category: 'clade' },
+    { id: 'horned_gallery', name: 'Horned Gallery', desc: 'Discover 10 ceratopsian genera', clade: 'Ceratopsia', target: 10, category: 'clade' },
+    { id: 'armored_archive', name: 'Armored Archive', desc: 'Discover 10 thyreophoran genera', clade: 'Thyreophora', target: 10, category: 'clade' },
+    { id: 'duck_billed_collection', name: 'Duck-Billed Collection', desc: 'Discover 10 hadrosaurid genera', clade: 'Hadrosauridae', target: 10, category: 'clade' },
+    { id: 'feathered_branch', name: 'Feathered Branch', desc: 'Discover 10 maniraptoran genera', clade: 'Maniraptora', target: 10, category: 'clade' }
+];
+
 const ACHIEVEMENT_DEFINITIONS = [
     { id: 'first_win', name: 'First Win', desc: 'Complete your first challenge' },
     { id: 'perfect_game', name: 'Three Guesses', desc: 'Find the answer in 3 guesses or fewer' },
@@ -25,7 +35,8 @@ const ACHIEVEMENT_DEFINITIONS = [
     { id: 'fourteen_day_expedition', name: 'Fourteen-Day Expedition', desc: 'Reach a 14-day streak' },
     { id: 'expedition_leader', name: 'Expedition Leader', desc: 'Win your first friend challenge' },
     { id: 'podium_finish', name: 'Podium Finish', desc: 'Finish in the top three of a friend challenge' },
-    { id: 'against_all_odds', name: 'Against All Odds', desc: 'Win after at least 10 guesses without using a hint' }
+    { id: 'against_all_odds', name: 'Against All Odds', desc: 'Win after at least 10 guesses without using a hint' },
+    ...CLADE_ACHIEVEMENT_DEFINITIONS
 ];
 
 const GUEST_ACHIEVEMENT_PROGRESS_KEY = 'phylosaur-guest-achievements-v1';
@@ -102,16 +113,40 @@ function getBestCompletedDailyLevelCount(results) {
 function getGuestMuseumSnapshot(results) {
     const names = new Set(readLocalDiscoveryNames().map(name => name.trim().toLowerCase()));
     const branches = new Set();
+    const lineagesByName = new Map();
 
     results.filter(result => result.won).forEach(result => {
-        if (result.targetName) names.add(result.targetName.trim().toLowerCase());
+        const normalizedName = result.targetName?.trim().toLowerCase();
+        if (normalizedName) names.add(normalizedName);
         const lineage = Array.isArray(result.targetLineage) ? result.targetLineage : [];
+        if (normalizedName && lineage.length > 0) lineagesByName.set(normalizedName, lineage);
         if (lineage.includes('Theropoda')) branches.add('Theropoda');
         if (lineage.includes('Sauropodomorpha')) branches.add('Sauropodomorpha');
         if (lineage.includes('Ornithischia')) branches.add('Ornithischia');
     });
 
-    return { uniqueGenera: names.size, majorBranches: branches.size };
+    const availableDinosaurs = [
+        ...(Array.isArray(fullDatabase) ? fullDatabase : []),
+        ...(Array.isArray(database) ? database : []),
+        ...(targetDino ? [targetDino] : [])
+    ];
+    availableDinosaurs.forEach(dino => {
+        const normalizedName = dino?.nome?.trim().toLowerCase();
+        if (!normalizedName || !names.has(normalizedName) || !Array.isArray(dino.linhagem)) return;
+        lineagesByName.set(normalizedName, dino.linhagem);
+    });
+
+    const cladeCounts = Object.fromEntries(
+        CLADE_ACHIEVEMENT_DEFINITIONS.map(definition => [definition.clade, 0])
+    );
+    names.forEach(name => {
+        const lineage = lineagesByName.get(name) || [];
+        CLADE_ACHIEVEMENT_DEFINITIONS.forEach(definition => {
+            if (lineage.includes(definition.clade)) cladeCounts[definition.clade] += 1;
+        });
+    });
+
+    return { uniqueGenera: names.size, majorBranches: branches.size, cladeCounts };
 }
 
 function evaluateGuestAchievements(results) {
@@ -151,8 +186,29 @@ function evaluateGuestAchievements(results) {
             result.mode === 'challenge' && Number(result.challengePlacement) > 0 &&
             Number(result.challengePlacement) <= 3
         )],
-        ['against_all_odds', wins.some(result => result.guessCount >= 10 && !result.usedHints)]
+        ['against_all_odds', wins.some(result => result.guessCount >= 10 && !result.usedHints)],
+        ...CLADE_ACHIEVEMENT_DEFINITIONS.map(definition => [
+            definition.id,
+            Number(museum.cladeCounts[definition.clade] || 0) >= definition.target
+        ])
     ].filter(([, complete]) => complete).map(([id]) => id);
+}
+
+function synchronizeGuestAchievements({ notify = true } = {}) {
+    if (currentUserId) return [];
+
+    const progress = readGuestAchievementProgress();
+    const results = Object.values(progress.results)
+        .sort((first, second) => String(first.completedAt).localeCompare(String(second.completedAt)));
+    const unlocked = new Set(progress.unlocked);
+    const newlyUnlocked = evaluateGuestAchievements(results)
+        .filter(id => !unlocked.has(id));
+    newlyUnlocked.forEach(id => unlocked.add(id));
+    progress.unlocked = [...unlocked];
+    writeGuestAchievementProgress(progress);
+
+    if (notify) newlyUnlocked.forEach(showAchievementNotification);
+    return newlyUnlocked;
 }
 
 function recordGuestGameResult(won) {
@@ -191,15 +247,8 @@ function recordGuestGameResult(won) {
         result
     ]));
 
-    const unlocked = new Set(progress.unlocked);
-    const newlyUnlocked = evaluateGuestAchievements(results)
-        .filter(id => !unlocked.has(id));
-    newlyUnlocked.forEach(id => unlocked.add(id));
-    progress.unlocked = [...unlocked];
     writeGuestAchievementProgress(progress);
-
-    newlyUnlocked.forEach(showAchievementNotification);
-    return newlyUnlocked;
+    return synchronizeGuestAchievements();
 }
 
 function recordGuestDailyResult(won) {
@@ -374,6 +423,10 @@ function buildAchievementProgress(stats = {}, wonResults = [], supplementalProgr
         expedition_leader: binary(false),
         podium_finish: binary(false),
         against_all_odds: binary(false),
+        ...Object.fromEntries(CLADE_ACHIEVEMENT_DEFINITIONS.map(definition => [
+            definition.id,
+            numeric(0, definition.target, 'genera')
+        ])),
         ...supplementalProgress
     };
 }
