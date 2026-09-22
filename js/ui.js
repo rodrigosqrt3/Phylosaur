@@ -2,7 +2,9 @@
 // UI AND MODALS
 // ═══════════════════════════════════════════════
 function setHeaderControls(screen) {
-    if (screen !== 'museum' && typeof stopMuseumCardMediaLoading === 'function') {
+    if (screen !== 'museum' && typeof releaseMuseumViewResources === 'function') {
+      releaseMuseumViewResources();
+    } else if (screen !== 'museum' && typeof stopMuseumCardMediaLoading === 'function') {
       stopMuseumCardMediaLoading();
     }
     const controls = document.getElementById('header-controls');
@@ -16,8 +18,9 @@ function setHeaderControls(screen) {
       ? `<button class="btn-hint btn-header" onclick="showAnalyticsDashboard()">Analytics</button>`
       : '';
 
+    const safeCurrentUser = escapeHtml(currentUser);
     const logoutBtn = currentUser 
-      ? `<button class="btn-hint btn-header btn-account" onclick="logout()" title="Sign out: ${currentUser}">${currentUser}</button>` 
+      ? `<button class="btn-hint btn-header btn-account" onclick="logout()" title="Sign out: ${safeCurrentUser}">${safeCurrentUser}</button>` 
       : '';
 
     const backBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`;
@@ -42,7 +45,7 @@ const map = {
 function toggleTheme() {
         currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
         document.body.classList.toggle('light-mode');
-        localStorage.setItem('phylosaur-theme', currentTheme);
+        localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.theme, currentTheme);
         updateThemeToggleState();
     }
 
@@ -56,9 +59,7 @@ function updateThemeToggleState() {
 }
 
 function escapeAppStateText(value) {
-    return String(value ?? '').replace(/[&<>'"]/g, character => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    })[character]);
+    return escapeHtml(value);
 }
 
 function renderAppState(message, { type = 'loading', detail = '', compact = false } = {}) {

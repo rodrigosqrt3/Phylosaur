@@ -404,6 +404,19 @@ to   { opacity: 1; transform: translateX(0); }
   padding: 40px;
 }
 
+.password-update-card {
+  text-align: left;
+}
+
+.password-update-title {
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.password-update-copy {
+  margin-bottom: 28px;
+}
+
 .login-card .tab-row,
 .login-modal-box .tab-row {
   margin: -40px -40px 36px;
@@ -3467,6 +3480,8 @@ body.light-mode .theme-switch-thumb {
 
 /* Individual Specimen Cards */
 .museum-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 235px;
     background: var(--bg-card);
     border: 2px solid var(--border-base);
     border-radius: var(--radius-card);

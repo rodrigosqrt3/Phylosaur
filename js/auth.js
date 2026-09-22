@@ -369,7 +369,10 @@ function loginShowReset(show = true) {
 
 function loginClearErrors() {
   document.querySelectorAll('.login-field-error').forEach(e => e.classList.remove('visible'));
-  document.querySelectorAll('.login-field input').forEach(i => i.classList.remove('input-error'));
+  document.querySelectorAll('.login-field input').forEach(i => {
+    i.classList.remove('input-error');
+    i.removeAttribute('aria-invalid');
+  });
   document.querySelectorAll('.login-global-error, .login-global-success').forEach(e => e.classList.remove('visible'));
 }
 
@@ -378,6 +381,7 @@ function loginShowFieldError(errId) {
   if (!err) return;
   err.classList.add('visible');
   err.previousElementSibling.classList.add('input-error');
+  err.previousElementSibling.setAttribute('aria-invalid', 'true');
 }
 
 function loginShowGlobalError(panelPrefix, msg) {
@@ -550,27 +554,27 @@ async function logout() {
 }
 
 function showPasswordUpdateForm() {
+  setHeaderControls('login');
   const appContent = document.getElementById('app-content');
 
   appContent.innerHTML = `
-    <div class="game-card" style="max-width:480px; margin:40px auto; padding:40px;">
-      <div style="text-align:center; margin-bottom:32px;">
-        <h1 style="font-size:2.8em; color:#d4b87e; font-weight:300; letter-spacing:14px; text-transform:uppercase; font-variant:small-caps; text-shadow:2px 2px 8px rgba(0,0,0,0.6); margin-bottom:6px;">Phylosaur</h1>
-      </div>
-      <p style="color:#d4b87e; font-size:1.1em; letter-spacing:2px; margin-bottom:10px;">Set New Password</p>
-      <p style="color:#8b7355; font-size:0.88em; line-height:1.7; margin-bottom:28px; font-style:italic;">
+    <div class="game-card login-card password-update-card">
+      <h2 class="screen-title password-update-title">Set New Password</h2>
+      <p class="login-reset-copy password-update-copy">
         Choose a new password for your account.
       </p>
-      <div class="login-global-error" id="update-global-error"></div>
-      <div class="login-global-success" id="update-global-success"></div>
+      <div class="login-global-error" id="update-global-error" role="alert"></div>
+      <div class="login-global-success" id="update-global-success" role="status" aria-live="polite"></div>
       <div class="login-field">
-        <label>New Password</label>
-        <input type="password" id="update-password" placeholder="At least 6 characters" />
+        <label for="update-password">New Password</label>
+        <input type="password" id="update-password" placeholder="At least 6 characters"
+               autocomplete="new-password" aria-describedby="update-password-err" />
         <div class="login-field-error" id="update-password-err">Password must be at least 6 characters.</div>
       </div>
-      <div class="login-field" style="margin-bottom:28px;">
-        <label>Confirm Password</label>
-        <input type="password" id="update-confirm" placeholder="Repeat password" />
+      <div class="login-field login-field-last">
+        <label for="update-confirm">Confirm Password</label>
+        <input type="password" id="update-confirm" placeholder="Repeat password"
+               autocomplete="new-password" aria-describedby="update-confirm-err" />
         <div class="login-field-error" id="update-confirm-err">Passwords do not match.</div>
       </div>
       <button class="btn-guess btn-block btn-large" id="update-btn" onclick="handlePasswordUpdate()">
@@ -578,12 +582,14 @@ function showPasswordUpdateForm() {
       </button>
     </div>
   `;
+
+  focusAppScreenHeading('.password-update-title');
 }
 
 async function handlePasswordUpdate() {
   loginClearErrors();
-  const password = document.getElementById('update-password')?.value;
-  const confirm  = document.getElementById('update-confirm')?.value;
+  const password = document.getElementById('update-password')?.value || '';
+  const confirm  = document.getElementById('update-confirm')?.value || '';
   let valid = true;
 
   if (password.length < 6) { loginShowFieldError('update-password-err'); valid = false; }

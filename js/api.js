@@ -34,7 +34,7 @@ window.getPhylosaurPerformanceSummary = function() {
 };
 
 function getAnalyticsVisitorId() {
-  const storageKey = 'phylosaur-visitor-id';
+  const storageKey = PHYLOSAUR_STORAGE_KEYS.visitorId;
   let visitorId = localStorage.getItem(storageKey);
   if (visitorId && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(visitorId)) {
     return visitorId;

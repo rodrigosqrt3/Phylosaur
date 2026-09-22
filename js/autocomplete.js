@@ -78,7 +78,7 @@ function initializeAutocomplete() {
     }
     
     sugDiv.innerHTML = matches
-      .map((d, index) => `<div class="suggestion-item" id="dino-suggestion-${index}" role="option" aria-selected="false" onclick="selectSuggestion('${d.nome}')">${d.nome}</div>`)
+      .map((d, index) => `<div class="suggestion-item" id="dino-suggestion-${index}" role="option" aria-selected="false" data-suggestion-name="${escapeHtml(d.nome)}">${escapeHtml(d.nome)}</div>`)
       .join('');
     
     sugDiv.style.display = 'block';
@@ -115,6 +115,12 @@ function initializeAutocomplete() {
     } else if (e.key === 'Escape') {
       hideSuggestions();
     }
+  });
+
+  sugDiv.addEventListener('click', event => {
+    const item = event.target.closest('.suggestion-item');
+    if (!item || !sugDiv.contains(item)) return;
+    selectSuggestion(item.dataset.suggestionName || item.textContent.trim());
   });
 
   if (window.phylosaurAutocompleteCleanup) {

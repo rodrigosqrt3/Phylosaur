@@ -242,8 +242,15 @@ Deno.test("shared UI states, account controls and motion remain standardized", (
     authSource.includes("aria-modal', 'true'") &&
     authSource.includes("event.key === 'Escape'") &&
     authSource.includes("previouslyFocused.focus()") &&
+    authSource.includes("password-update-card") &&
+    authSource.includes('autocomplete="new-password"') &&
+    authSource.includes("setAttribute('aria-invalid', 'true')") &&
+    !authSource.includes('<div class="game-card" style="max-width:480px;') &&
     !authSource.includes('<span class="login-forgot"'),
     "Account dialogs must use semantic controls and preserve keyboard focus.");
+  assert(uiSource.includes("const safeCurrentUser = escapeHtml(currentUser)") &&
+    !uiSource.includes('title="Sign out: ${currentUser}"'),
+    "Account names must be escaped before being inserted into the application header.");
   assert(htmlSource.includes('class="site-brand-home"') &&
     !htmlSource.includes('<h1 style="cursor:pointer;"'),
     "The main brand must be a keyboard-accessible home link.");
@@ -253,6 +260,61 @@ Deno.test("shared UI states, account controls and motion remain standardized", (
     styleSource.includes(".stats-section") &&
     styleSource.includes(".how-to-play-step"),
     "Primary screen layout and motion tokens must remain shared.");
+});
+
+Deno.test("shared escaping, storage versions and password recovery remain standardized", () => {
+  const stateSource = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const authSource = Deno.readTextFileSync(`${javascriptRoot}/auth.${javascriptExtension}`);
+  const autocompleteSource = Deno.readTextFileSync(
+    `${javascriptRoot}/autocomplete.${javascriptExtension}`,
+  );
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const workerSource = Deno.readTextFileSync(
+    localSourceLayout ? "game/sw_service_worker.txt" : "sw.js",
+  );
+
+  const escapeSource = stateSource.slice(
+    stateSource.indexOf("function escapeHtml("),
+    stateSource.indexOf("let fullDatabase"),
+  );
+  const escape = new Function(`${escapeSource}; return escapeHtml;`)();
+  assert(escape(`<button title="'">&`) ===
+    "&lt;button title=&quot;&#39;&quot;&gt;&amp;",
+    "Shared HTML escaping does not cover text and attribute delimiters.");
+  assert(uiSource.includes("const safeCurrentUser = escapeHtml(currentUser)") &&
+    !uiSource.includes('>${currentUser}</button>'),
+    "Account names must be escaped before header rendering.");
+  assert(autocompleteSource.includes('data-suggestion-name="${escapeHtml(d.nome)}"') &&
+    autocompleteSource.includes("sugDiv.addEventListener('click'") &&
+    !autocompleteSource.includes("onclick=\"selectSuggestion("),
+    "Autocomplete suggestions must not interpolate names into inline JavaScript.");
+
+  const passwordUpdateSource = authSource.slice(
+    authSource.indexOf("function showPasswordUpdateForm()"),
+    authSource.indexOf("async function handlePasswordUpdate()"),
+  );
+  assert(passwordUpdateSource.includes('class="game-card login-card password-update-card"') &&
+    passwordUpdateSource.includes('for="update-password"') &&
+    passwordUpdateSource.includes('autocomplete="new-password"') &&
+    passwordUpdateSource.includes('role="alert"') &&
+    !passwordUpdateSource.includes('style="'),
+    "Password recovery must reuse semantic account styles without inline presentation.");
+  assert(styleSource.includes(".password-update-card") &&
+    styleSource.includes(".password-update-title") &&
+    styleSource.includes(".password-update-copy"),
+    "Password recovery styles are missing from the shared stylesheet.");
+
+  const releaseVersion = stateSource.match(/PHYLOSAUR_RELEASE_VERSION = (\d+)/)?.[1];
+  const workerVersion = workerSource.match(/phylosaur-shell-v(\d+)/)?.[1];
+  assert(releaseVersion && releaseVersion === workerVersion,
+    "Application and service-worker release versions must advance together.");
+  for (const key of [
+    "theme", "visitorId", "guestAchievements", "tutorialComplete", "museumImageCache",
+    "legacyDiscoveries", "discoveryEvents", "accountDiscoveryPrefix",
+  ]) {
+    assert(stateSource.includes(`${key}:`), `Shared storage key is missing: ${key}`);
+  }
 });
 
 Deno.test("clade collection achievements count unique Museum genera and synchronize accounts", () => {
@@ -270,7 +332,7 @@ Deno.test("clade collection achievements count unique Museum genera and synchron
   };
 
   const helpers = new Function(
-    "localStorage", "fullDatabase", "database", "targetDino",
+    "localStorage", "fullDatabase", "database", "targetDino", "PHYLOSAUR_STORAGE_KEYS",
     `${dbSource}; return {
       definitions: CLADE_ACHIEVEMENT_DEFINITIONS,
       getGuestMuseumSnapshot,
@@ -281,6 +343,12 @@ Deno.test("clade collection achievements count unique Museum genera and synchron
     [],
     [],
     null,
+    {
+      guestAchievements: "phylosaur-guest-achievements-v1",
+      legacyDiscoveries: "phylosaur-discoveries",
+      discoveryEvents: "phylosaur-discovery-events-v1",
+      accountDiscoveryPrefix: "phylosaur-account-discoveries-v1:",
+    },
   );
   const fixtures = helpers.definitions.flatMap((definition: any) =>
     Array.from({ length: definition.target }, (_, index) => ({
@@ -346,9 +414,19 @@ Deno.test("Museum discoveries remain separated across guest, account and logout 
   };
   const buildDiscoveryReader = (userId: string | null, callGameApi: Function) =>
     new Function(
-      "localStorage", "currentUserId", "callGameApi", "console",
+      "localStorage", "currentUserId", "callGameApi", "console", "PHYLOSAUR_STORAGE_KEYS",
       `${discoverySource}; return getDiscoveryRecords;`,
-    )(localStorage, userId, callGameApi, { log() {}, warn() {}, error() {} });
+    )(
+      localStorage,
+      userId,
+      callGameApi,
+      { log() {}, warn() {}, error() {} },
+      {
+        legacyDiscoveries: "phylosaur-discoveries",
+        discoveryEvents: "phylosaur-discovery-events-v1",
+        accountDiscoveryPrefix: "phylosaur-account-discoveries-v1:",
+      },
+    );
 
   const accountRecords = await buildDiscoveryReader(
     "user-a",
@@ -380,6 +458,20 @@ Deno.test("Museum discoveries remain separated across guest, account and logout 
     dbSource.includes("ownerId: currentUserId || null") &&
     !dbSource.includes("JSON.stringify(unlockedNames)"),
     "Logout or account merging can still erase or overwrite the guest discovery list.");
+
+  if (localSourceLayout) {
+    const edgeSource = Deno.readTextFileSync("game/index.txt");
+    const accountDiscoverySource = edgeSource.slice(
+      edgeSource.indexOf('if (action === "account_discoveries")'),
+      edgeSource.indexOf('if (action === "analytics_dashboard")'),
+    );
+    assert(accountDiscoverySource.includes('.from("daily_results")') &&
+      accountDiscoverySource.includes('.eq("won", true)') &&
+      accountDiscoverySource.includes('String(result.target_dino ?? "").trim()') &&
+      accountDiscoverySource.includes("const discoveriesByEvent = new Map") &&
+      accountDiscoverySource.includes("discoveriesByEvent.set(eventKey"),
+      "Account discovery synchronization must recover historical Daily wins without duplicates.");
+  }
 });
 
 Deno.test("Museum Clade Atlas exposes the three principal branches without hiding early dinosaurs", async () => {
@@ -591,9 +683,10 @@ Deno.test("guess input displays ranked suggestions and submits the typed name", 
     innerHTML: "", style: { display: "none" },
     parentElement: { querySelector: () => status },
     setAttribute() {}, querySelector: () => null, querySelectorAll: () => [],
+    addEventListener() {}, contains: () => true,
   };
   const initialize = new Function(
-    "document", "window", "database", "guessedNames", "makeGuess",
+    "document", "window", "database", "guessedNames", "makeGuess", "escapeHtml",
     `${source}; return initializeAutocomplete;`,
   )(
     {
@@ -604,6 +697,9 @@ Deno.test("guess input displays ranked suggestions and submits the typed name", 
     ["Yutyrannus", "Tyrannotitan", "Tyrannosaurus"].map(nome => ({ nome })),
     new Set(["tyrannotitan"]),
     () => { guesses++; },
+    (value: unknown) => String(value).replace(/[&<>'"]/g, character => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[character]!),
   );
   initialize();
   handlers.input.call(input);
@@ -612,6 +708,8 @@ Deno.test("guess input displays ranked suggestions and submits the typed name", 
   assert(suggestions.innerHTML.indexOf("Tyrannosaurus") < suggestions.innerHTML.indexOf("Yutyrannus"),
     "The input must render prefix matches first.");
   assert(status.textContent === "2 dinosaur suggestions available.", "Suggestion count is incorrect.");
+  assert(!suggestions.innerHTML.includes("onclick="),
+    "Suggestions must use delegated events instead of interpolated inline handlers.");
   input.value = "Yutyrannus";
   handlers.keydown({ key: "Enter", preventDefault() {} });
   assert(guesses === 1 && input.value === "Yutyrannus", "Ranking must not replace a typed guess on Enter.");
@@ -793,6 +891,59 @@ Deno.test("Museum media loads near the viewport with bounded concurrency and pro
     "Museum media observation must stop when navigating to another screen.");
 });
 
+Deno.test("Museum cache writes, filtering and offscreen rendering avoid repeated work", () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const cacheSource = screensSource.slice(
+    screensSource.indexOf("let museumImageCacheMemory"),
+    screensSource.indexOf("async function ensureMuseumCatalogLineages("),
+  );
+  let reads = 0;
+  let writes = 0;
+  let storedValue = JSON.stringify({ Triceratops: { url: "cached" } });
+  const timers = new Map<number, Function>();
+  let nextTimer = 0;
+  const cache = new Function(
+    "localStorage", "window", "document", "setTimeout", "clearTimeout",
+    "PHYLOSAUR_STORAGE_KEYS", "console",
+    `${cacheSource}; return {
+      getMuseumImageCache,
+      scheduleMuseumImageCacheWrite,
+      flushMuseumImageCache
+    };`,
+  )(
+    {
+      getItem: () => { reads++; return storedValue; },
+      setItem: (_key: string, value: string) => { writes++; storedValue = value; },
+    },
+    { addEventListener() {} },
+    { hidden: false, addEventListener() {} },
+    (callback: Function) => { const id = ++nextTimer; timers.set(id, callback); return id; },
+    (id: number) => timers.delete(id),
+    { museumImageCache: "phylosaur-image-cache-v5" },
+    { warn() {} },
+  );
+  const first = cache.getMuseumImageCache();
+  const second = cache.getMuseumImageCache();
+  first.Stegosaurus = { url: "new" };
+  cache.scheduleMuseumImageCacheWrite();
+  cache.scheduleMuseumImageCacheWrite();
+  cache.flushMuseumImageCache();
+  assert(first === second && reads === 1,
+    "Museum media cache must be parsed only once per application session.");
+  assert(writes === 1 && JSON.parse(storedValue).Stegosaurus.url === "new",
+    "Repeated Museum cache changes must be persisted as one grouped write.");
+
+  assert(screensSource.includes("[fullDatabase, museumDiscoveryRecords] = await Promise.all") &&
+    screensSource.includes("let museumFilterCards = []") &&
+    screensSource.includes("museumFilterFrame = requestAnimationFrame") &&
+    !screensSource.includes("String(card.dataset.museumLineage || '').split('|')"),
+    "Museum loading and filters must avoid sequential waits and repeated DOM/string allocation.");
+  assert(styleSource.includes("content-visibility: auto") &&
+    styleSource.includes("contain-intrinsic-size: auto 235px"),
+    "Offscreen Museum cards must defer layout and painting work.");
+});
+
 Deno.test("Museum routes reuse the gallery but still support direct links", async () => {
   const mainSource = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
   const routeSource = mainSource.slice(
@@ -888,6 +1039,13 @@ Deno.test("service worker cache version and critical release sources exist", () 
     : "sw.js";
   const worker = Deno.readTextFileSync(workerPath);
   assert(/phylosaur-shell-v\d+/.test(worker), "Service worker cache version is invalid.");
+  const stateSource = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const releaseVersion = stateSource.match(/PHYLOSAUR_RELEASE_VERSION = (\d+)/)?.[1];
+  assert(releaseVersion && worker.includes(`phylosaur-shell-v${releaseVersion}`),
+    "The application release and service-worker cache versions must advance together.");
+  assert(stateSource.includes("const PHYLOSAUR_STORAGE_KEYS = Object.freeze") &&
+    stateSource.includes("function escapeHtml(value)"),
+    "Shared storage keys and HTML escaping must remain centralized.");
 
   const requiredSources = localSourceLayout
     ? [

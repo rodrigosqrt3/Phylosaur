@@ -39,7 +39,7 @@ const ACHIEVEMENT_DEFINITIONS = [
     ...CLADE_ACHIEVEMENT_DEFINITIONS
 ];
 
-const GUEST_ACHIEVEMENT_PROGRESS_KEY = 'phylosaur-guest-achievements-v1';
+const GUEST_ACHIEVEMENT_PROGRESS_KEY = PHYLOSAUR_STORAGE_KEYS.guestAchievements;
 
 function readGuestAchievementProgress() {
     try {
@@ -987,8 +987,8 @@ async function loadDailyDatabase(difficulty, forceClean = false, resumeAutomatic
 // DISCOVERY GALLERY / MUSEUM OPERATIONS
 // ═══════════════════════════════════════════════════════════════════════
 
-const DISCOVERY_EVENTS_KEY = 'phylosaur-discovery-events-v1';
-const ACCOUNT_DISCOVERY_CACHE_PREFIX = 'phylosaur-account-discoveries-v1:';
+const DISCOVERY_EVENTS_KEY = PHYLOSAUR_STORAGE_KEYS.discoveryEvents;
+const ACCOUNT_DISCOVERY_CACHE_PREFIX = PHYLOSAUR_STORAGE_KEYS.accountDiscoveryPrefix;
 
 function getAccountDiscoveryCacheKey(userId) {
     return `${ACCOUNT_DISCOVERY_CACHE_PREFIX}${userId}`;
@@ -1027,7 +1027,7 @@ function discoveryEventBelongsToActiveCollection(event) {
 
 function readLocalDiscoveryNames() {
     try {
-        const names = JSON.parse(localStorage.getItem('phylosaur-discoveries') || '[]');
+        const names = JSON.parse(localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.legacyDiscoveries) || '[]');
         return Array.isArray(names) ? names.filter(Boolean) : [];
     } catch (error) {
         console.warn('Could not read the legacy discovery list:', error);
@@ -1064,7 +1064,7 @@ function registerDiscovery(dinoName, museumProof = null) {
 
     if (!currentUserId && !wasAlreadyUnlocked) {
         localDiscoveries.push(dinoName);
-        localStorage.setItem('phylosaur-discoveries', JSON.stringify(localDiscoveries));
+        localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.legacyDiscoveries, JSON.stringify(localDiscoveries));
     }
 
     const discoveredAt = new Date().toISOString();

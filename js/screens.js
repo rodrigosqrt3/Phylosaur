@@ -2,9 +2,7 @@
 // SCREENS AND INTERFACE LOGIC
 // ═══════════════════════════════════════════════
 function escapeChallengeHtml(value) {
-    return String(value ?? '').replace(/[&<>'"]/g, character => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    })[character]);
+    return escapeHtml(value);
 }
 
 async function showDifficultySelection() {
@@ -527,7 +525,7 @@ async function showHowToPlay() {
     if (action === 'tutorial') showInteractiveTutorial();
 }
 
-const FIRST_RUN_TUTORIAL_KEY = 'phylosaur-tutorial-v1-complete';
+const FIRST_RUN_TUTORIAL_KEY = PHYLOSAUR_STORAGE_KEYS.tutorialComplete;
 let tutorialStepIndex = 0;
 let tutorialDemoTried = false;
 let tutorialKeyHandler = null;
@@ -922,6 +920,60 @@ let museumOverrideCatalogPromise = null;
 let museumFallbackCatalogPromise = null;
 let museumPaleodataCatalogPromise = null;
 let museumLineageCatalogPromise = null;
+let museumImageCacheMemory = null;
+let museumImageCacheWriteTimer = null;
+let museumImageCacheDirty = false;
+const MUSEUM_IMAGE_CACHE_WRITE_DELAY_MS = 250;
+
+function getMuseumImageCache() {
+    if (museumImageCacheMemory) return museumImageCacheMemory;
+
+    try {
+        const stored = JSON.parse(
+            localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.museumImageCache) || '{}'
+        );
+        museumImageCacheMemory = stored && typeof stored === 'object' && !Array.isArray(stored)
+            ? stored
+            : {};
+    } catch (error) {
+        console.warn('Museum image cache could not be read:', error);
+        museumImageCacheMemory = {};
+    }
+
+    return museumImageCacheMemory;
+}
+
+function flushMuseumImageCache() {
+    if (museumImageCacheWriteTimer) {
+        clearTimeout(museumImageCacheWriteTimer);
+        museumImageCacheWriteTimer = null;
+    }
+    if (!museumImageCacheDirty || !museumImageCacheMemory) return;
+
+    try {
+        localStorage.setItem(
+            PHYLOSAUR_STORAGE_KEYS.museumImageCache,
+            JSON.stringify(museumImageCacheMemory)
+        );
+        museumImageCacheDirty = false;
+    } catch (error) {
+        console.warn('Museum image cache could not be saved:', error);
+    }
+}
+
+function scheduleMuseumImageCacheWrite() {
+    museumImageCacheDirty = true;
+    clearTimeout(museumImageCacheWriteTimer);
+    museumImageCacheWriteTimer = setTimeout(
+        flushMuseumImageCache,
+        MUSEUM_IMAGE_CACHE_WRITE_DELAY_MS
+    );
+}
+
+window.addEventListener('pagehide', flushMuseumImageCache);
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) flushMuseumImageCache();
+});
 
 async function ensureMuseumCatalogLineages(catalog) {
     const dinosaurs = Array.isArray(catalog) ? catalog : [];
@@ -1153,7 +1205,7 @@ async function loadMuseumFallbackCatalog() {
 }
 
 async function getCachedDinoMedia(name) {
-    let cache = JSON.parse(localStorage.getItem('phylosaur-image-cache-v5') || '{}');
+    const cache = getMuseumImageCache();
     const overrideCatalog = await loadMuseumOverrideCatalog();
     const override = overrideCatalog[name];
 
@@ -1165,7 +1217,7 @@ async function getCachedDinoMedia(name) {
         };
         if (cache[name]?.url !== media.url) {
             cache[name] = media;
-            localStorage.setItem('phylosaur-image-cache-v5', JSON.stringify(cache));
+            scheduleMuseumImageCacheWrite();
         }
         return media;
     }
@@ -1186,7 +1238,7 @@ async function getCachedDinoMedia(name) {
             source: 'totaldino'
         };
         cache[name] = media;
-        localStorage.setItem('phylosaur-image-cache-v5', JSON.stringify(cache));
+        scheduleMuseumImageCacheWrite();
         return media;
     }
 
@@ -1199,7 +1251,7 @@ async function getCachedDinoMedia(name) {
             source: fallback.source || 'wikimedia'
         };
         cache[name] = media;
-        localStorage.setItem('phylosaur-image-cache-v5', JSON.stringify(cache));
+        scheduleMuseumImageCacheWrite();
         return media;
     }
 
@@ -1214,12 +1266,24 @@ let museumMediaObserver = null;
 let museumMediaLoadQueue = [];
 let museumMediaLoadsInFlight = 0;
 let museumMediaGeneration = 0;
+let museumFilterCards = [];
+let museumFilterFrame = null;
 
 function stopMuseumCardMediaLoading() {
     museumMediaGeneration += 1;
     museumMediaObserver?.disconnect();
     museumMediaObserver = null;
     museumMediaLoadQueue = [];
+}
+
+function releaseMuseumViewResources() {
+    stopMuseumCardMediaLoading();
+    museumFilterCards = [];
+    if (museumFilterFrame !== null) {
+        cancelAnimationFrame(museumFilterFrame);
+        museumFilterFrame = null;
+    }
+    flushMuseumImageCache();
 }
 
 function queueMuseumCardMedia(card, generation) {
@@ -1795,9 +1859,10 @@ async function showMuseum() {
             const catalog = await callGameApi('catalog');
             fullDatabase = catalog.dinosaurs || [];
         }
-        fullDatabase = await ensureMuseumCatalogLineages(fullDatabase);
-
-        museumDiscoveryRecords = await getDiscoveryRecords();
+        [fullDatabase, museumDiscoveryRecords] = await Promise.all([
+            ensureMuseumCatalogLineages(fullDatabase),
+            getDiscoveryRecords()
+        ]);
         if (!currentUserId) synchronizeGuestAchievements();
         const unlockedList = Object.values(museumDiscoveryRecords)
             .map(record => record.name);
@@ -1944,6 +2009,9 @@ async function showMuseum() {
             </div>
             <div id="clade-info"></div>`;
         appContent.innerHTML = html;
+        museumFilterCards = [...appContent.querySelectorAll(
+            '.museum-card[data-museum-level]'
+        )];
 
         updateMuseumCladeFilterDisplay();
         switchMuseumView(museumView);
@@ -1969,11 +2037,17 @@ function switchMuseumLevel(level) {
 
 function updateMuseumSearch(value) {
     museumSearchQuery = String(value || '').trim().toLowerCase();
-    applyMuseumFilters();
+    if (museumFilterFrame !== null) return;
+    museumFilterFrame = requestAnimationFrame(() => {
+        museumFilterFrame = null;
+        applyMuseumFilters();
+    });
 }
 
 function applyMuseumFilters() {
-    const cards = [...document.querySelectorAll('.museum-card[data-museum-level]')];
+    const cards = museumFilterCards.length
+        ? museumFilterCards
+        : [...document.querySelectorAll('.museum-card[data-museum-level]')];
     if (cards.length === 0) return;
 
     let visibleCount = 0;
@@ -1985,7 +2059,7 @@ function applyMuseumFilters() {
         const matchesSearch = !museumSearchQuery
             || card.dataset.museumName.includes(museumSearchQuery);
         const matchesClade = selectedMuseumClade === 'all'
-            || String(card.dataset.museumLineage || '').split('|').includes(selectedMuseumClade);
+            || `|${card.dataset.museumLineage || ''}|`.includes(`|${selectedMuseumClade}|`);
         const isVisible = matchesLevel && matchesSearch && matchesClade;
 
         card.hidden = !isVisible;

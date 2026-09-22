@@ -163,7 +163,7 @@ window.addEventListener('resize', () => {
 });
 
 document.addEventListener('DOMContentLoaded', async function() {
-  const savedTheme = localStorage.getItem('phylosaur-theme');
+  const savedTheme = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.theme);
   if (savedTheme === 'light') toggleTheme();
 
   const hash = window.location.hash;

@@ -1,6 +1,24 @@
 // ═══════════════════════════════════════════════
 // GLOBAL STATE
 // ═══════════════════════════════════════════════
+const PHYLOSAUR_RELEASE_VERSION = 42;
+const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
+  theme: 'phylosaur-theme',
+  visitorId: 'phylosaur-visitor-id',
+  guestAchievements: 'phylosaur-guest-achievements-v1',
+  tutorialComplete: 'phylosaur-tutorial-v1-complete',
+  museumImageCache: 'phylosaur-image-cache-v5',
+  legacyDiscoveries: 'phylosaur-discoveries',
+  discoveryEvents: 'phylosaur-discovery-events-v1',
+  accountDiscoveryPrefix: 'phylosaur-account-discoveries-v1:'
+});
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  })[character]);
+}
+
 let fullDatabase = [];
 let database = [];
 let targetDino = null;
