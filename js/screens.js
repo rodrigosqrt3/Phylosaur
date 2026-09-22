@@ -199,13 +199,13 @@ function showPracticeMode() {
     const appContent = document.getElementById('app-content');
     
     appContent.innerHTML = `
-    <div class="game-card practice-menu">
-        <h2 class="screen-title">Practice Mode</h2>
-        <p class="screen-subtitle">
+    <div class="game-card difficulty-home practice-menu">
+        <h2 class="difficulty-home-title screen-title">Practice Mode</h2>
+        <p class="difficulty-home-date">
         Choose a level and play as often as you like
         </p>
 
-        <div class="practice-levels">
+        <div class="difficulty-home-levels">
         ${generatePracticeDifficultyButton('muito_facil', 'LEVEL I', 'I')}
         ${generatePracticeDifficultyButton('facil', 'LEVEL II', 'II')}
         ${generatePracticeDifficultyButton('normal', 'LEVEL III', 'III')}
@@ -224,12 +224,12 @@ function generatePracticeDifficultyButton(difficulty, name, level) {
     }
     
     return `
-    <button class="difficulty-btn practice-difficulty difficulty-${DIFFICULTY_MAP[difficulty]}" 
+    <button class="difficulty-btn difficulty-${DIFFICULTY_MAP[difficulty]}" 
             onclick="startPracticeChallenge('${difficulty}')">
-        <div class="practice-level-title">
+        <div class="difficulty-level-name">
         ${name}
         </div>
-        <div class="practice-tier-row">
+        <div class="difficulty-level-tiers">
         ${tiers}
         </div>
     </button>
