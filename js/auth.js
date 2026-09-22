@@ -511,6 +511,7 @@ function continueAsGuest() {
   currentUserId = null;
   isAnalyticsAdmin = false;
   analyticsAccessChecked = true;
+  if (typeof museumDiscoveryRecords !== 'undefined') museumDiscoveryRecords = {};
   showDifficultySelection();
 }
 
@@ -524,11 +525,11 @@ async function logout() {
 
   if (confirm === 'true') {
     await sb.auth.signOut();
-    localStorage.removeItem('phylosaur-discoveries');
     currentUser = null;
     currentUserId = null;
     isAnalyticsAdmin = false;
     analyticsAccessChecked = true;
+    if (typeof museumDiscoveryRecords !== 'undefined') museumDiscoveryRecords = {};
     userStats = {
       gamesPlayed: 0,
       gamesWon: 0,

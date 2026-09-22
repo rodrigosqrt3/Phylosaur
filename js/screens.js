@@ -48,6 +48,7 @@ async function showDifficultySelection() {
     `;
     startCountdown();
     void refreshDifficultySelectionAccountState();
+    focusAppScreenHeading();
 }
 
 function emptyDailyCompletionStatus() {
@@ -145,6 +146,7 @@ function showFriendChallenges(prefilledCode = '') {
     </div>`;
 
     if (code) document.getElementById('challenge-join-name')?.focus();
+    else focusAppScreenHeading();
 }
 
 async function createFriendChallenge() {
@@ -214,6 +216,7 @@ function showPracticeMode() {
         </div>
     </div>
     `;
+    focusAppScreenHeading();
 }
 
 function generatePracticeDifficultyButton(difficulty, name, level) {
@@ -364,6 +367,7 @@ async function showStatsDashboard() {
         </div>
     </div>
     `;
+    focusAppScreenHeading();
 }
 
 function generateStreakDisplay(streakData) {
@@ -456,6 +460,7 @@ async function showAbout() {
                 <div class="about-screen-body">${article.innerHTML}</div>
                 <button class="btn-new-game" onclick="navigateToAppRoute('/')">Return to Levels</button>
             </div>`;
+        focusAppScreenHeading();
         const aboutCard = appContent.querySelector('.about-screen');
         await ensureMathRenderer();
         if (!aboutCard?.isConnected || !window.renderMathInElement) return;
@@ -832,7 +837,7 @@ function generateAchievements(unlockedSet, progressById = {}) {
 
 function generateRecentGames(recentGames) {
     if (!recentGames || recentGames.length === 0) {
-    return '<p style="color:var(--color-muted); font-style:italic; padding:20px; text-align:center;">No recent games.</p>';
+    return '<p class="empty-stats">No recent games.</p>';
     }
 
     const diffNames = {
@@ -845,32 +850,37 @@ function generateRecentGames(recentGames) {
 
     const today = getTodayString();
 
-    let html = '';
+    let html = '<div class="recent-games-list">';
     recentGames.forEach(game => {
     const date = new Date(game.created_at).toLocaleDateString();
-    
+    const guesses = Number(game.guess_count || 0);
     const isToday = game.played_date === today;
     const spoiler = isToday && !game.won;
     const dinoDisplay = spoiler 
-        ? '<span style="color:var(--border-subtle); font-style:italic;">[ today\'s answer is hidden ]</span>' 
-        : `<span style="color:var(--color-text-light); font-style:italic;">${game.target_dino}</span>`;
+        ? '<span class="recent-game-name recent-game-name-hidden">Today\'s answer is hidden</span>'
+        : `<span class="recent-game-name"><i>${escapeChallengeHtml(game.target_dino)}</i></span>`;
 
     html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin:8px 0; background:var(--bg-panel-darker); border-left:4px solid ${game.won ? 'var(--color-success)' : 'var(--border-base)'}; border-radius:4px;">
-        <div style="flex:1;">
-            <div style="display:flex; align-items:center; margin-bottom:5px;">
-            <span style="color:${game.won ? '#c8e6c9' : '#d4a574'}; font-weight:700; margin-right:12px; font-size:1.1em;">${game.won ? '✓' : '…'}</span>
-            ${dinoDisplay}
+        <article class="recent-game-card ${game.won ? 'recent-game-won' : 'recent-game-incomplete'}">
+            <div class="recent-game-primary">
+                <span class="recent-game-status" aria-label="${game.won ? 'Completed' : 'Not completed'}">${game.won ? '✓' : '—'}</span>
+                <div class="recent-game-identification">
+                    ${dinoDisplay}
+                    <div class="recent-game-meta">
+                        <span>${escapeChallengeHtml(diffNames[game.difficulty] || game.difficulty)}</span>
+                        <span aria-hidden="true">·</span>
+                        <time datetime="${escapeChallengeHtml(game.created_at)}">${escapeChallengeHtml(date)}</time>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div style="text-align:right;">
-            <div style="color:var(--color-accent); font-size:1em; font-weight:600; margin-bottom:3px;">${game.guess_count} ${game.guess_count === 1 ? 'guess' : 'guesses'}</div>
-            <div style="color:var(--color-muted); font-size:0.8em;">${diffNames[game.difficulty]} • ${date}</div>
-        </div>
-        </div>
+            <div class="recent-game-result">
+                <strong>${guesses}</strong>
+                <span>${guesses === 1 ? 'guess' : 'guesses'}</span>
+            </div>
+        </article>
     `;
     });
-    return html;
+    return `${html}</div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1937,6 +1947,7 @@ async function showMuseum() {
 
         updateMuseumCladeFilterDisplay();
         switchMuseumView(museumView);
+        focusAppScreenHeading();
 
     } catch (err) {
         console.error('Museum Error:', err);
@@ -2157,4 +2168,5 @@ async function showAnalyticsDashboard(days = 30) {
         ${hasTruncatedData ? '<p class="analytics-data-warning">The safety limit was reached for at least one dataset. Some totals may be partial.</p>' : ''}
         <p class="analytics-generated">Generated ${escapeChallengeHtml(new Date(data.generatedAt).toLocaleString())}</p>
     </div>`;
+    focusAppScreenHeading('.analytics-header h2');
 }

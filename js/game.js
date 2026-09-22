@@ -1,6 +1,63 @@
 // ═══════════════════════════════════════════════
 // GAME INITIALIZATION AND MAIN LOGIC
 // ═══════════════════════════════════════════════
+function renderGameSessionShell(loadingMessage, { contextLabel = '' } = {}) {
+    const context = contextLabel
+        ? `<p class="game-mode-context">${escapeChallengeHtml(contextLabel)}</p>`
+        : '';
+
+    return `
+    <div class="game-card game-session-card">
+        ${context}
+        <div class="stats game-session-stats">
+            <div class="stat">
+                <div class="stat-value" id="attempts">0</div>
+                <div class="stat-label">Attempts</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="hints">3</div>
+                <div class="stat-label">Hints</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="best-match">0</div>
+                <div class="stat-label">Deepest Node</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="clades-revealed">0</div>
+                <div class="stat-label">Clades Shown</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="possible-specimens">-</div>
+                <div class="stat-label">Possible Answers</div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="guess-primary-row">
+                <div class="guess-field">
+                    <label class="visually-hidden" for="dino-input">Dinosaur guess</label>
+                    <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
+                    <div id="suggestions"></div>
+                </div>
+                <button class="btn-guess" onclick="makeGuess()">Submit</button>
+            </div>
+            <div class="guess-secondary-row">
+                <button class="btn-hint btn-game-hint" onclick="useHint()" disabled title="Make 2 guesses before using a hint">Hint · 2 guesses</button>
+                <button class="btn-giveup" onclick="giveUp()">Give Up</button>
+            </div>
+        </div>
+
+        <div id="tree-container">
+            <div id="tree-scroll-wrapper">
+                ${renderAppState(loadingMessage, { compact: true })}
+            </div>
+        </div>
+
+        <div id="clade-info"></div>
+        <div id="guess-history"></div>
+    </div>`;
+}
+
 async function startPracticeChallenge(difficulty, { restoreExisting = false } = {}) {
     setAppRoute(`/game/practice/${difficulty}`);
     setHeaderControls('practice');
@@ -9,63 +66,9 @@ async function startPracticeChallenge(difficulty, { restoreExisting = false } = 
     
     const appContent = document.getElementById('app-content');
     
-    appContent.innerHTML = `
-
-    <div style="text-align:center; padding:15px; background:rgba(139,115,85,0.2); border-radius:8px; margin-bottom:20px; border:2px solid var(--color-muted);">
-        <div style="color:var(--color-accent); font-weight:600; letter-spacing:2px; font-size:1.1em;">
-        PRACTICE MODE
-        </div>
-    </div>
-
-    <div class="game-card">
-        <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
-        <div class="stat">
-            <div class="stat-value" id="attempts">0</div>
-            <div class="stat-label">Attempts</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value" id="hints">3</div>
-            <div class="stat-label">Hints</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value" id="best-match">0</div>
-            <div class="stat-label">Deepest Node</div>
-        </div>
-        <div class="stat">
-        <div class="stat-value" id="clades-revealed">0</div>
-        <div class="stat-label">Clades Shown</div>
-        </div>
-        <div class="stat">
-        <div class="stat-value" id="possible-specimens">-</div>
-        <div class="stat-label">Possible Answers</div>
-        </div>
-        </div>
-
-        <div class="input-section">
-        <div class="guess-primary-row">
-            <div class="guess-field">
-            <label class="visually-hidden" for="dino-input">Dinosaur guess</label>
-            <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
-            <div id="suggestions"></div>
-            </div>
-            <button class="btn-guess" onclick="makeGuess()">Submit</button>
-        </div>
-        <div class="guess-secondary-row">
-            <button class="btn-hint btn-game-hint" onclick="useHint()" disabled title="Make 2 guesses before using a hint">Hint · 2 guesses</button>
-            <button class="btn-giveup" onclick="giveUp()">Give Up</button>
-        </div>
-        </div>
-
-        <div id="tree-container">
-        <div id="tree-scroll-wrapper">
-            ${renderAppState('Loading practice challenge…', { compact: true })}
-        </div>
-        </div>
-
-        <div id="clade-info"></div>
-        <div id="guess-history"></div>
-    </div>
-    `;
+    appContent.innerHTML = renderGameSessionShell('Loading practice challenge…', {
+        contextLabel: 'Practice mode'
+    });
     await loadPracticeDatabase(difficulty, !restoreExisting, restoreExisting);
 }
 
@@ -77,56 +80,7 @@ async function startDailyChallenge(difficulty, { restoreExisting = false } = {})
     selectedDifficulty = difficulty;
     const appContent = document.getElementById('app-content');
     
-    appContent.innerHTML = `
-    <div class="game-card">
-        <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
-        <div class="stat">
-            <div class="stat-value" id="attempts">0</div>
-            <div class="stat-label">Attempts</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value" id="hints">3</div>
-            <div class="stat-label">Hints</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value" id="best-match">0</div>
-            <div class="stat-label">Deepest Node</div>
-        </div>
-        <div class="stat">
-        <div class="stat-value" id="clades-revealed">0</div>
-        <div class="stat-label">Clades Shown</div>
-        </div>
-        <div class="stat">
-        <div class="stat-value" id="possible-specimens">-</div>
-        <div class="stat-label">Possible Answers</div>
-        </div>
-        </div>
-
-        <div class="input-section">
-        <div class="guess-primary-row">
-            <div class="guess-field">
-            <label class="visually-hidden" for="dino-input">Dinosaur guess</label>
-            <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
-            <div id="suggestions"></div>
-            </div>
-            <button class="btn-guess" onclick="makeGuess()">Submit</button>
-        </div>
-        <div class="guess-secondary-row">
-            <button class="btn-hint btn-game-hint" onclick="useHint()" disabled title="Make 2 guesses before using a hint">Hint · 2 guesses</button>
-            <button class="btn-giveup" onclick="giveUp()">Give Up</button>
-        </div>
-        </div>
-
-        <div id="tree-container">
-        <div id="tree-scroll-wrapper">
-            ${renderAppState('Loading daily challenge…', { compact: true })}
-        </div>
-        </div>
-
-        <div id="clade-info"></div>
-        <div id="guess-history"></div>
-    </div>
-    `;
+    appContent.innerHTML = renderGameSessionShell('Loading daily challenge…');
 
     await loadDailyDatabase(difficulty, false, restoreExisting);
 }
@@ -162,7 +116,7 @@ async function startFriendChallengeFromPayload(data) {
     challengeRaceClosing = false;
 
     const appContent = document.getElementById('app-content');
-    appContent.innerHTML = `
+    const challengeBanner = `
     <div class="challenge-banner">
         <div>
             <span>Friend Challenge</span>
@@ -173,33 +127,8 @@ async function startFriendChallengeFromPayload(data) {
             <button class="btn-hint btn-header" onclick="showChallengeStandings()">Standings</button>
         </div>
         <div class="challenge-race-progress" id="challenge-race-status">Updating challenge…</div>
-    </div>
-    <div class="game-card">
-        <div class="stats" style="grid-template-columns: repeat(5, 1fr); gap: 12px;">
-            <div class="stat"><div class="stat-value" id="attempts">0</div><div class="stat-label">Attempts</div></div>
-            <div class="stat"><div class="stat-value" id="hints">3</div><div class="stat-label">Hints</div></div>
-            <div class="stat"><div class="stat-value" id="best-match">0</div><div class="stat-label">Deepest Node</div></div>
-            <div class="stat"><div class="stat-value" id="clades-revealed">0</div><div class="stat-label">Clades Shown</div></div>
-            <div class="stat"><div class="stat-value" id="possible-specimens">-</div><div class="stat-label">Possible Answers</div></div>
-        </div>
-        <div class="input-section">
-            <div class="guess-primary-row">
-                <div class="guess-field">
-                    <label class="visually-hidden" for="dino-input">Dinosaur guess</label>
-                    <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go">
-                    <div id="suggestions"></div>
-                </div>
-                <button class="btn-guess" onclick="makeGuess()">Submit</button>
-            </div>
-            <div class="guess-secondary-row">
-                <button class="btn-hint btn-game-hint" onclick="useHint()" disabled title="Make 2 guesses before using a hint">Hint · 2 guesses</button>
-                <button class="btn-giveup" onclick="giveUp()">Give Up</button>
-            </div>
-        </div>
-        <div id="tree-container"><div id="tree-scroll-wrapper">${renderAppState('Loading friend challenge…', { compact: true })}</div></div>
-        <div id="clade-info"></div>
-        <div id="guess-history"></div>
     </div>`;
+    appContent.innerHTML = challengeBanner + renderGameSessionShell('Loading friend challenge…');
 
     applyServerGamePayload(data);
     updateServerGameDisplay(data);

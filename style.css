@@ -1035,6 +1035,15 @@ h1 {
 display: none;
 }
 
+.game-mode-context {
+  margin: -4px 0 20px;
+  color: var(--color-muted);
+  font-size: 0.82em;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
 .input-section {
   display: flex;
   gap: 10px;
@@ -1290,6 +1299,11 @@ textarea:focus-visible {
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   margin-bottom: 30px;
+}
+
+.game-session-stats {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .stat {
@@ -6367,6 +6381,106 @@ body.light-mode .stat-label {
   color: var(--color-text-light);
   border-bottom: 2px solid var(--border-subtle);
   font-size: 1.3em;
+}
+
+.recent-games-list {
+  display: grid;
+  gap: 10px;
+}
+
+.recent-game-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 16px;
+  background: var(--bg-panel-darker);
+  border: 1px solid var(--border-inner);
+  border-left: 4px solid var(--border-base);
+  border-radius: var(--radius-control);
+}
+
+.recent-game-card.recent-game-won {
+  border-left-color: var(--color-success);
+}
+
+.recent-game-primary {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.recent-game-status {
+  flex: 0 0 auto;
+  width: 24px;
+  color: var(--color-warning);
+  font-size: 1.05em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.recent-game-won .recent-game-status {
+  color: var(--color-success);
+}
+
+.recent-game-identification {
+  min-width: 0;
+}
+
+.recent-game-name {
+  display: block;
+  color: var(--color-text-light);
+  overflow-wrap: anywhere;
+}
+
+.recent-game-name-hidden {
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+.recent-game-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 7px;
+  margin-top: 5px;
+  color: var(--color-muted);
+  font-size: 0.8em;
+}
+
+.recent-game-result {
+  display: grid;
+  justify-items: end;
+  color: var(--color-secondary);
+  font-size: 0.78em;
+}
+
+.recent-game-result strong {
+  color: var(--color-accent);
+  font-size: 1.25em;
+  font-weight: 600;
+}
+
+.screen-title[tabindex="-1"]:focus,
+.analytics-header h2[tabindex="-1"]:focus {
+  outline: none;
+}
+
+@media (max-width: 600px) {
+  .recent-game-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .recent-game-result {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 5px;
+    padding-top: 9px;
+    border-top: 1px solid var(--border-inner);
+  }
 }
 
 .streak-card {

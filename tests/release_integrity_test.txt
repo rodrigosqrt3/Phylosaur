@@ -233,7 +233,8 @@ Deno.test("shared UI states, account controls and motion remain standardized", (
   const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
 
   assert(uiSource.includes("function renderAppState(") &&
-    gameSource.includes("renderAppState('Loading practice challenge…'") &&
+    gameSource.includes("renderAppState(loadingMessage, { compact: true })") &&
+    gameSource.includes("renderGameSessionShell('Loading practice challenge…'") &&
     dbSource.includes("renderAppState('Could not load challenge.'") &&
     screensSource.includes("renderAppState('Loading Museum…'"),
     "Loading and error feedback must use the shared application-state component.");
@@ -322,6 +323,63 @@ Deno.test("clade collection achievements count unique Museum genera and synchron
       edgeSource.includes("cladeCounts[definition.clade] >= definition.target"),
       "Account clade progress must be derived retroactively from unique discovered genera.");
   }
+});
+
+Deno.test("Museum discoveries remain separated across guest, account and logout states", async () => {
+  const dbSource = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const authSource = Deno.readTextFileSync(`${javascriptRoot}/auth.${javascriptExtension}`);
+  const discoverySource = dbSource.slice(
+    dbSource.indexOf("const DISCOVERY_EVENTS_KEY"),
+    dbSource.indexOf("async function getUnlockedDinos("),
+  );
+  const storage = new Map<string, string>([
+    ["phylosaur-discoveries", JSON.stringify(["LocalLegacy"])],
+    ["phylosaur-discovery-events-v1", JSON.stringify([
+      { eventKey: "guest", dinoName: "GuestEvent", ownerId: null },
+      { eventKey: "account-a", dinoName: "OwnedByA", ownerId: "user-a" },
+      { eventKey: "account-b", dinoName: "OwnedByB", ownerId: "user-b" },
+    ])],
+  ]);
+  const localStorage = {
+    getItem: (key: string) => storage.get(key) ?? null,
+    setItem: (key: string, value: string) => storage.set(key, value),
+  };
+  const buildDiscoveryReader = (userId: string | null, callGameApi: Function) =>
+    new Function(
+      "localStorage", "currentUserId", "callGameApi", "console",
+      `${discoverySource}; return getDiscoveryRecords;`,
+    )(localStorage, userId, callGameApi, { log() {}, warn() {}, error() {} });
+
+  const accountRecords = await buildDiscoveryReader(
+    "user-a",
+    async () => ({
+      discoveries: [{ eventKey: "server-a", dinoName: "ServerA", source: "daily" }],
+    }),
+  )();
+  assert(accountRecords.locallegacy && accountRecords.guestevent &&
+    accountRecords.ownedbya && accountRecords.servera && !accountRecords.ownedbyb,
+    "The active account did not receive the correct guest, local and account discoveries.");
+  assert(storage.has("phylosaur-account-discoveries-v1:user-a"),
+    "Account discoveries were not cached under the account-specific key.");
+
+  const guestRecords = await buildDiscoveryReader(
+    null,
+    async () => { throw new Error("Guest mode must not request account discoveries."); },
+  )();
+  assert(guestRecords.locallegacy && guestRecords.guestevent &&
+    !guestRecords.ownedbya && !guestRecords.ownedbyb && !guestRecords.servera,
+    "Logout did not restore an isolated browser guest collection.");
+
+  const offlineAccountRecords = await buildDiscoveryReader(
+    "user-a",
+    async () => { throw new Error("Offline"); },
+  )();
+  assert(offlineAccountRecords.servera,
+    "The account-specific cache did not preserve the Museum during an offline synchronization.");
+  assert(!authSource.includes("localStorage.removeItem('phylosaur-discoveries')") &&
+    dbSource.includes("ownerId: currentUserId || null") &&
+    !dbSource.includes("JSON.stringify(unlockedNames)"),
+    "Logout or account merging can still erase or overwrite the guest discovery list.");
 });
 
 Deno.test("Museum Clade Atlas exposes the three principal branches without hiding early dinosaurs", async () => {
@@ -422,18 +480,68 @@ Deno.test("guess input accessibility contract remains present in every mode", ()
   );
 
   assert(
-    gameSource.match(/<label class="visually-hidden" for="dino-input">/g)?.length === 3,
-    "Daily, Practice and Friend modes must all label the guess input.",
+    gameSource.match(/<label class="visually-hidden" for="dino-input">/g)?.length === 1 &&
+      (gameSource.match(/renderGameSessionShell\(/g)?.length ?? 0) === 4,
+    "The shared Daily, Practice and Friend shell must label the guess input.",
   );
   assert(
-    gameSource.match(/spellcheck="false" enterkeyhint="go"/g)?.length === 3,
-    "Every guess input must preserve mobile keyboard attributes.",
+    gameSource.match(/spellcheck="false" enterkeyhint="go"/g)?.length === 1,
+    "The shared guess input must preserve mobile keyboard attributes.",
   );
   assert(
     autocompleteSource.includes("input.addEventListener('dblclick'") &&
       autocompleteSource.includes("input.select()"),
     "Double-click select-all behavior is missing.",
   );
+});
+
+Deno.test("Daily, Practice and Friend games share one restrained session shell", () => {
+  const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  assert(gameSource.includes("function renderGameSessionShell(") &&
+    gameSource.includes("renderGameSessionShell('Loading practice challenge…'") &&
+    gameSource.includes("renderGameSessionShell('Loading daily challenge…'") &&
+    gameSource.includes("renderGameSessionShell('Loading friend challenge…'") &&
+    gameSource.includes('class="game-card game-session-card"') &&
+    gameSource.includes('class="stats game-session-stats"'),
+    "All game modes must render the same session structure.");
+  assert(gameSource.includes("contextLabel: 'Practice mode'") &&
+    gameSource.includes('class="game-mode-context"') &&
+    !gameSource.includes("PRACTICE MODE") &&
+    !gameSource.includes('style="grid-template-columns: repeat(5, 1fr); gap: 12px;"'),
+    "Practice identification must remain quiet and the shared stat grid must not use inline styling.");
+  assert(styleSource.includes(".game-mode-context") &&
+    styleSource.includes(".game-session-stats") &&
+    styleSource.includes("grid-template-columns: repeat(5, minmax(0, 1fr))"),
+    "The shared game shell styling is missing.");
+});
+
+Deno.test("Statistics records and SPA navigation use shared responsive accessibility patterns", () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const recentGamesSource = screensSource.slice(
+    screensSource.indexOf("function generateRecentGames("),
+    screensSource.indexOf("let selectedMuseumLevel = 'all';"),
+  );
+  assert(recentGamesSource.includes('class="recent-games-list"') &&
+    recentGamesSource.includes('class="recent-game-card') &&
+    recentGamesSource.includes('class="recent-game-primary"') &&
+    recentGamesSource.includes('class="recent-game-result"') &&
+    recentGamesSource.includes('<time datetime=') &&
+    !recentGamesSource.includes('style="'),
+    "Recent Statistics games must use semantic responsive classes instead of inline layout.");
+  assert(styleSource.includes(".recent-games-list") &&
+    styleSource.includes(".recent-game-card") &&
+    styleSource.includes(".recent-game-won") &&
+    styleSource.includes("@media (max-width: 600px)"),
+    "Recent-game cards are missing their shared responsive presentation.");
+  assert(uiSource.includes("function focusAppScreenHeading(") &&
+    uiSource.includes("heading.setAttribute('tabindex', '-1')") &&
+    uiSource.includes("heading.focus({ preventScroll: true })") &&
+    uiSource.includes("document.title = `${label} - Phylosaur`") &&
+    (screensSource.match(/focusAppScreenHeading\(/g)?.length ?? 0) >= 7,
+    "Primary SPA screens must move focus to their heading without scrolling the viewport.");
 });
 
 Deno.test("autocomplete ranks exact names, prefixes and interior matches before limiting", () => {

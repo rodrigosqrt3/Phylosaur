@@ -988,6 +988,42 @@ async function loadDailyDatabase(difficulty, forceClean = false, resumeAutomatic
 // ═══════════════════════════════════════════════════════════════════════
 
 const DISCOVERY_EVENTS_KEY = 'phylosaur-discovery-events-v1';
+const ACCOUNT_DISCOVERY_CACHE_PREFIX = 'phylosaur-account-discoveries-v1:';
+
+function getAccountDiscoveryCacheKey(userId) {
+    return `${ACCOUNT_DISCOVERY_CACHE_PREFIX}${userId}`;
+}
+
+function readAccountDiscoveryCache(userId) {
+    if (!userId) return [];
+    try {
+        const discoveries = JSON.parse(
+            localStorage.getItem(getAccountDiscoveryCacheKey(userId)) || '[]'
+        );
+        return Array.isArray(discoveries) ? discoveries : [];
+    } catch (error) {
+        console.warn('Could not read the account discovery cache:', error);
+        return [];
+    }
+}
+
+function writeAccountDiscoveryCache(userId, discoveries) {
+    if (!userId || !Array.isArray(discoveries)) return;
+    try {
+        localStorage.setItem(
+            getAccountDiscoveryCacheKey(userId),
+            JSON.stringify(discoveries)
+        );
+    } catch (error) {
+        console.warn('Could not cache account discoveries:', error);
+    }
+}
+
+function discoveryEventBelongsToActiveCollection(event) {
+    const ownerId = typeof event?.ownerId === 'string' ? event.ownerId : null;
+    if (!ownerId) return true;
+    return Boolean(currentUserId && ownerId === currentUserId);
+}
 
 function readLocalDiscoveryNames() {
     try {
@@ -1017,11 +1053,16 @@ function registerDiscovery(dinoName, museumProof = null) {
     const normalizedDinoName = dinoName.trim().toLowerCase();
     const localDiscoveries = readLocalDiscoveryNames();
     const events = readLocalDiscoveryEvents();
+    const relevantEvents = events.filter(discoveryEventBelongsToActiveCollection);
+    const cachedAccountDiscoveries = readAccountDiscoveryCache(currentUserId);
     const wasAlreadyUnlocked =
         localDiscoveries.some(name => name.trim().toLowerCase() === normalizedDinoName) ||
-        events.some(event => event?.dinoName?.trim().toLowerCase() === normalizedDinoName);
+        relevantEvents.some(event => event?.dinoName?.trim().toLowerCase() === normalizedDinoName) ||
+        cachedAccountDiscoveries.some(
+            event => event?.dinoName?.trim().toLowerCase() === normalizedDinoName
+        );
 
-    if (!wasAlreadyUnlocked) {
+    if (!currentUserId && !wasAlreadyUnlocked) {
         localDiscoveries.push(dinoName);
         localStorage.setItem('phylosaur-discoveries', JSON.stringify(localDiscoveries));
     }
@@ -1035,7 +1076,7 @@ function registerDiscovery(dinoName, museumProof = null) {
             : currentGameMode === 'challenge'
                 ? `challenge:${currentChallengeCode}:${dinoName}`
                 : `practice:${discoveredAt}:${Math.random().toString(36).slice(2, 9)}`;
-    const priorEventCount = events.filter(
+    const priorEventCount = relevantEvents.filter(
         event => event?.dinoName?.trim().toLowerCase() === normalizedDinoName
     ).length;
 
@@ -1050,6 +1091,7 @@ function registerDiscovery(dinoName, museumProof = null) {
             source,
             difficulty: selectedDifficulty,
             sessionId: gameSessionId || null,
+            ownerId: currentUserId || null,
             firstKnownUnlock: !wasAlreadyUnlocked,
             museumProof: museumProof || null
         });
@@ -1063,8 +1105,9 @@ function registerDiscovery(dinoName, museumProof = null) {
     }
 
     console.log(`Dinosaur discovery recorded: ${dinoName} (${source})`);
-    const recordedEventCount = events.filter(
-        event => event?.dinoName?.trim().toLowerCase() === normalizedDinoName
+    const recordedEventCount = events.filter(event =>
+        discoveryEventBelongsToActiveCollection(event) &&
+        event?.dinoName?.trim().toLowerCase() === normalizedDinoName
     ).length;
     const legacyDiscoveryBaseline = wasAlreadyUnlocked && priorEventCount === 0 ? 1 : 0;
 
@@ -1077,7 +1120,8 @@ function registerDiscovery(dinoName, museumProof = null) {
 
 async function getDiscoveryRecords() {
     const legacyNames = readLocalDiscoveryNames();
-    const localEvents = readLocalDiscoveryEvents();
+    const localEvents = readLocalDiscoveryEvents()
+        .filter(discoveryEventBelongsToActiveCollection);
     const allEvents = new Map();
     const serverDinoNames = new Set();
 
@@ -1091,16 +1135,15 @@ async function getDiscoveryRecords() {
             source: event.source || 'local',
             difficulty: event.difficulty || null,
             sessionId: event.sessionId || null,
+            ownerId: event.ownerId || null,
             firstKnownUnlock: event.firstKnownUnlock === true,
             museumProof: event.museumProof || null
         });
     });
 
     if (currentUserId) {
-        try {
-            const progress = await callGameApi('account_discoveries');
-
-            (progress.discoveries || []).forEach((row, index) => {
+        const addAccountDiscoveries = discoveries => {
+            (discoveries || []).forEach((row, index) => {
                 if (!row.dinoName) return;
                 const eventKey = row.eventKey || `account:${index}:${row.dinoName}`;
                 serverDinoNames.add(row.dinoName.toLowerCase());
@@ -1122,9 +1165,19 @@ async function getDiscoveryRecords() {
                     source: row.source || 'account',
                     difficulty: row.difficulty || null,
                     sessionId: row.sessionId || null,
+                    ownerId: currentUserId,
                     firstKnownUnlock: true
                 });
             });
+        };
+
+        addAccountDiscoveries(readAccountDiscoveryCache(currentUserId));
+
+        try {
+            const progress = await callGameApi('account_discoveries');
+            const accountDiscoveries = progress.discoveries || [];
+            writeAccountDiscoveryCache(currentUserId, accountDiscoveries);
+            addAccountDiscoveries(accountDiscoveries);
         } catch (err) {
             console.error('Error syncing discovery history from Supabase:', err);
         }
@@ -1186,8 +1239,6 @@ async function getDiscoveryRecords() {
         }
     });
 
-    const unlockedNames = Object.values(records).map(record => record.name);
-    localStorage.setItem('phylosaur-discoveries', JSON.stringify(unlockedNames));
     return records;
 }
 

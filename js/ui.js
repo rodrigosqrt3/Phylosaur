@@ -72,6 +72,25 @@ function renderAppState(message, { type = 'loading', detail = '', compact = fals
     </div>`;
 }
 
+function focusAppScreenHeading(selector = '.screen-title') {
+    queueMicrotask(() => {
+        if (document.querySelector('.modal-overlay, .tutorial-overlay, [aria-modal="true"]')) return;
+        const appContent = document.getElementById('app-content');
+        const heading = appContent?.querySelector(selector);
+        if (!heading || !heading.isConnected) return;
+
+        heading.setAttribute('tabindex', '-1');
+        try {
+            heading.focus({ preventScroll: true });
+        } catch (_error) {
+            heading.focus();
+        }
+
+        const label = heading.textContent?.replace(/\s+/g, ' ').trim();
+        if (label) document.title = `${label} - Phylosaur`;
+    });
+}
+
 function showModal(options) {
     return new Promise((resolve) => {
     const overlay = document.createElement('div');
