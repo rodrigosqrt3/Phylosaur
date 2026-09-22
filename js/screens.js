@@ -273,10 +273,16 @@ async function showStatsDashboard() {
     }
     setAppRoute('/stats');
     setHeaderControls('stats');
+    const appContent = document.getElementById('app-content');
+    appContent.innerHTML = `<div class="game-card stats-dashboard">${renderAppState(
+        'Loading player statistics…'
+    )}</div>`;
 
-    const [statsResult, diffStatsResult, recentGamesResult, achievementsResult, achievementHistoryResult] = await Promise.all([
+    const [statsResult, difficultyHistoryResult, recentGamesResult, achievementsResult, achievementHistoryResult] = await Promise.all([
         sb.from('statistics').select('*').eq('user_id', currentUserId).single(),
-        sb.from('difficulty_stats').select('*').eq('user_id', currentUserId),
+        sb.from('daily_results')
+            .select('difficulty, guess_count, won')
+            .eq('user_id', currentUserId),
         sb.from('daily_results').select('*').eq('user_id', currentUserId)
             .order('created_at', { ascending: false }).limit(10),
         sb.from('achievements').select('achievement_id').eq('user_id', currentUserId),
@@ -286,7 +292,7 @@ async function showStatsDashboard() {
             .eq('won', true)
     ]);
     const stats = statsResult.data;
-    const diffStats = diffStatsResult.data;
+    const difficultyHistory = difficultyHistoryResult.data || [];
     const recentGames = recentGamesResult.data;
     const achievements = achievementsResult.data;
     const achievementHistory = achievementHistoryResult.data || [];
@@ -325,30 +331,53 @@ async function showStatsDashboard() {
     const unlockedAchievementCount = ACHIEVEMENT_DEFINITIONS
         .filter(achievement => unlockedAchievements.has(achievement.id)).length;
 
-    const appContent = document.getElementById('app-content');
+    const safeCurrentUser = escapeChallengeHtml(currentUser);
 
     appContent.innerHTML = `
+    <div class="game-card stats-dashboard">
+        <header class="stats-header">
+            <div>
+                <p class="stats-kicker">Player record</p>
+                <h2 class="screen-title">Statistics</h2>
+                <p class="screen-subtitle stats-subtitle">
+                    Daily performance, winning patterns and collection milestones.
+                </p>
+            </div>
+            <div class="stats-player-badge" aria-label="Statistics for ${safeCurrentUser}">
+                <span>Player</span>
+                <strong>${safeCurrentUser}</strong>
+            </div>
+        </header>
 
-
-    <div class="game-card">
-        <h2 class="screen-title">Statistics</h2>
-
-        <div class="stats-player">
-        Player: <span>${currentUser}</span>
+        <div class="stats stats-overview" aria-label="Player overview">
+            <div class="stat"><div class="stat-value">${gamesPlayed}</div><div class="stat-label">Games Played</div></div>
+            <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">Games Won</div></div>
+            <div class="stat"><div class="stat-value">${winRate}%</div><div class="stat-label">Success Rate</div></div>
+            <div class="stat"><div class="stat-value">${stats?.best_score || '-'}</div><div class="stat-label">Best Score</div></div>
         </div>
 
-        <div class="stats stats-overview">
-        <div class="stat"><div class="stat-value">${gamesPlayed}</div><div class="stat-label">Games Played</div></div>
-        <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">Games Won</div></div>
-        <div class="stat"><div class="stat-value">${winRate}%</div><div class="stat-label">Success Rate</div></div>
-        <div class="stat"><div class="stat-value">${stats?.best_score || '-'}</div><div class="stat-label">Best Score</div></div>
+        <div class="stats-insights-grid">
+            ${generateStreakDisplay(streakData)}
+            <section class="stats-section stats-histogram-section" aria-labelledby="guess-distribution-title">
+                <div class="stats-section-heading">
+                    <div>
+                        <p class="stats-section-kicker">Winning pattern</p>
+                        <h3 class="stats-section-title" id="guess-distribution-title">Guesses per Win</h3>
+                    </div>
+                    <span>${gamesWon} ${gamesWon === 1 ? 'win' : 'wins'}</span>
+                </div>
+                ${generateGuessHistogram(achievementHistory)}
+            </section>
         </div>
-
-        ${generateStreakDisplay(streakData)}
 
         <div class="stats-section">
-        <h3 class="stats-section-title">Performance by Level</h3>
-        ${generateDifficultyStats(diffStats)}
+            <div class="stats-section-heading">
+                <div>
+                    <p class="stats-section-kicker">Difficulty profile</p>
+                    <h3 class="stats-section-title">Performance by Level</h3>
+                </div>
+            </div>
+            ${generateDifficultyStats(difficultyHistory)}
         </div>
 
         <div class="achievements-panel">
@@ -360,8 +389,13 @@ async function showStatsDashboard() {
         </div>
 
         <div class="stats-section">
-        <h3 class="stats-section-title">Recent Games</h3>
-        ${generateRecentGames(recentGames)}
+            <div class="stats-section-heading">
+                <div>
+                    <p class="stats-section-kicker">Latest activity</p>
+                    <h3 class="stats-section-title">Recent Games</h3>
+                </div>
+            </div>
+            ${generateRecentGames(recentGames)}
         </div>
     </div>
     `;
@@ -758,34 +792,97 @@ function showInteractiveTutorial({ firstRun = false } = {}) {
     overlay.querySelector('.tutorial-dialog').focus();
 }
 
-function generateDifficultyStats(diffStats) {
-    const diffNames = {
-    'muito_facil': 'Level I',
-    'facil': 'Level II',
-    'normal': 'Level III',
-    'dificil': 'Level IV',
-    'muito_dificil': 'Level V'
-    };
+function generateGuessHistogram(wonResults) {
+    const buckets = Array.from({ length: 9 }, (_, index) => ({
+        label: index < 8 ? String(index + 1) : '9+',
+        count: 0
+    }));
 
-    if (!diffStats || diffStats.length === 0) {
-    return '<p class="empty-stats">No games completed yet.</p>';
+    (wonResults || []).forEach(result => {
+        const guesses = Number(result.guess_count || 0);
+        if (!Number.isFinite(guesses) || guesses < 1) return;
+        buckets[Math.min(guesses, 9) - 1].count += 1;
+    });
+
+    const total = buckets.reduce((sum, bucket) => sum + bucket.count, 0);
+    if (total === 0) {
+        return '<p class="empty-stats">Win a Daily challenge to begin your distribution.</p>';
     }
 
-    let html = '';
-    diffStats.forEach(stat => {
-    const winRate = stat.played > 0 ? Math.round((stat.won / stat.played) * 100) : 0;
-    html += `
-        <div class="difficulty-stat-row">
-        <span class="diff-name">${diffNames[stat.difficulty] || stat.difficulty}</span>
-        <div class="diff-stats">
-            <span class="diff-record">${stat.won}/${stat.played}</span>
-            <span class="diff-winrate">${winRate}%</span>
-            <span class="diff-avg">Avg: ${Math.round(stat.avg_guesses)} ${Math.round(stat.avg_guesses) === 1 ? 'guess' : 'guesses'}</span>
-        </div>
+    const largest = Math.max(...buckets.map(bucket => bucket.count), 1);
+    return `
+        <div class="stats-histogram" role="img"
+             aria-label="Distribution of ${total} winning games by number of guesses">
+            ${buckets.map(bucket => {
+                const width = bucket.count === 0
+                    ? 0
+                    : Math.max(8, Math.round((bucket.count / largest) * 100));
+                const guessLabel = bucket.label === '1' ? 'guess' : 'guesses';
+                const winLabel = bucket.count === 1 ? 'win' : 'wins';
+                return `
+                    <div class="stats-histogram-row"
+                         aria-label="${bucket.label} ${guessLabel}: ${bucket.count} ${winLabel}">
+                        <span class="stats-histogram-label">${bucket.label}</span>
+                        <span class="stats-histogram-track" aria-hidden="true">
+                            <span class="stats-histogram-fill" style="--histogram-width:${width}%"></span>
+                        </span>
+                        <strong>${bucket.count}</strong>
+                    </div>
+                `;
+            }).join('')}
         </div>
     `;
-    });
-    return html;
+}
+
+function generateDifficultyStats(difficultyHistory) {
+    const diffNames = {
+        'muito_facil': 'Level I',
+        'facil': 'Level II',
+        'normal': 'Level III',
+        'dificil': 'Level IV',
+        'muito_dificil': 'Level V'
+    };
+    const difficultyOrder = [
+        'muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'
+    ];
+    const statsByDifficulty = new Map(difficultyOrder.map(difficulty => [difficulty, {
+        played: 0,
+        won: 0,
+        totalGuesses: 0
+    }]));
+
+    for (const result of difficultyHistory || []) {
+        const stat = statsByDifficulty.get(result.difficulty);
+        if (!stat) continue;
+        stat.played += 1;
+        stat.won += result.won === true ? 1 : 0;
+        stat.totalGuesses += Math.max(0, Number(result.guess_count || 0));
+    }
+
+    return `<div class="difficulty-stats-list">${difficultyOrder.map(difficulty => {
+        const stat = statsByDifficulty.get(difficulty);
+        const played = stat.played;
+        const won = stat.won;
+        const winRate = played > 0 ? Math.round((won / played) * 100) : 0;
+        const average = played > 0 ? Math.round(stat.totalGuesses / played) : 0;
+        return `
+            <article class="difficulty-stat-row">
+                <div class="difficulty-stat-heading">
+                    <span class="diff-name">${escapeChallengeHtml(diffNames[difficulty])}</span>
+                    <span class="diff-record">${won}/${played} won</span>
+                </div>
+                <div class="difficulty-stat-meter" aria-label="${winRate}% success rate">
+                    <span style="--difficulty-stat-width:${winRate}%"></span>
+                </div>
+                <div class="diff-stats">
+                    <span class="diff-winrate">${played ? `${winRate}% success` : 'Not played'}</span>
+                    <span class="diff-avg">${played
+                        ? `Average: ${average} ${average === 1 ? 'guess' : 'guesses'}`
+                        : 'No average yet'}</span>
+                </div>
+            </article>
+        `;
+    }).join('')}</div>`;
 }
 
 function generateAchievements(unlockedSet, progressById = {}) {
@@ -1268,6 +1365,8 @@ let museumMediaLoadsInFlight = 0;
 let museumMediaGeneration = 0;
 let museumFilterCards = [];
 let museumFilterFrame = null;
+let museumSpecimenRenderState = null;
+let museumSpecimenRenderFrame = null;
 
 function stopMuseumCardMediaLoading() {
     museumMediaGeneration += 1;
@@ -1279,9 +1378,14 @@ function stopMuseumCardMediaLoading() {
 function releaseMuseumViewResources() {
     stopMuseumCardMediaLoading();
     museumFilterCards = [];
+    museumSpecimenRenderState = null;
     if (museumFilterFrame !== null) {
         cancelAnimationFrame(museumFilterFrame);
         museumFilterFrame = null;
+    }
+    if (museumSpecimenRenderFrame !== null) {
+        cancelAnimationFrame(museumSpecimenRenderFrame);
+        museumSpecimenRenderFrame = null;
     }
     flushMuseumImageCache();
 }
@@ -1796,6 +1900,104 @@ function renderMuseumAtlas(unlockedSet) {
     `;
 }
 
+function renderMuseumSpecimenCard(dino, unlockedSet) {
+    const normalizedName = String(dino.nome || '').toLowerCase();
+    const safeName = escapeChallengeHtml(dino.nome || 'Unknown genus');
+    const isUnlocked = unlockedSet.has(normalizedName);
+    const lastClade = dino.terminalClade || dino.linhagem?.at(-1) || 'Dinosauria';
+    const lineageData = Array.isArray(dino.linhagem) ? dino.linhagem.join('|') : '';
+    const cardData = `data-museum-level="${escapeChallengeHtml(dino.dificuldade)}" data-museum-name="${escapeChallengeHtml(normalizedName)}" data-museum-unlocked="${isUnlocked}" data-museum-lineage="${escapeChallengeHtml(lineageData)}"`;
+
+    if (!isUnlocked) {
+        return `
+            <div class="museum-card locked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" ${cardData}>
+                <div class="museum-card-art-container">
+                    <span class="museum-card-lock-icon" aria-hidden="true"></span>
+                </div>
+                <div class="museum-card-name">???</div>
+                <div class="museum-card-clade">Locked</div>
+            </div>
+        `;
+    }
+
+    const discovery = getMuseumDiscoverySummary(museumDiscoveryRecords[normalizedName]);
+    return `
+        <div class="museum-card unlocked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" ${cardData}
+             data-museum-entry="${safeName}" role="button" tabindex="0"
+             aria-label="Open museum entry for ${safeName}">
+            <div class="museum-card-art-container">
+                <img class="museum-card-art"
+                     data-museum-media-name="${safeName}"
+                     src="dinosaur-footprint-1-svgrepo-com.svg"
+                     alt="${safeName}" loading="lazy" decoding="async" />
+            </div>
+            <div class="museum-card-name">${safeName}</div>
+            <div class="museum-card-clade">${escapeChallengeHtml(lastClade)}</div>
+            <div class="museum-card-discovery">
+                <span>${escapeChallengeHtml(discovery.firstLabel)}</span>
+                ${museumDiscoveryRecords[normalizedName]?.count > 1
+                    ? `<strong>${escapeChallengeHtml(discovery.countLabel)}</strong>`
+                    : ''}
+            </div>
+            <div class="museum-card-source"></div>
+        </div>
+    `;
+}
+
+function handleMuseumSpecimenActivation(event) {
+    if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+    const card = event.target?.closest?.('.museum-card.unlocked[data-museum-entry]');
+    const grid = document.getElementById('museum-grid');
+    if (!card || !grid?.contains(card)) return;
+    if (event.type === 'keydown') event.preventDefault();
+    showMuseumEntry(card.dataset.museumEntry);
+}
+
+function renderMuseumSpecimensNow() {
+    const grid = document.getElementById('museum-grid');
+    const state = museumSpecimenRenderState;
+    if (!grid || !state) return false;
+
+    grid.innerHTML = state.dinosaurs
+        .map(dino => renderMuseumSpecimenCard(dino, state.unlockedSet))
+        .join('') + `
+            <div class="museum-empty-state" id="museum-empty-state" hidden>
+                No specimens match this search and level filter.
+            </div>
+        `;
+    grid.dataset.renderState = 'rendered';
+    grid.classList.remove('museum-grid-pending');
+    grid.addEventListener('click', handleMuseumSpecimenActivation);
+    grid.addEventListener('keydown', handleMuseumSpecimenActivation);
+    museumFilterCards = [...grid.querySelectorAll('.museum-card[data-museum-level]')];
+    applyMuseumFilters();
+    initializeMuseumCardMediaLoading();
+    return true;
+}
+
+function ensureMuseumSpecimensRendered() {
+    const grid = document.getElementById('museum-grid');
+    if (!grid || !museumSpecimenRenderState) return false;
+    if (grid.dataset.renderState === 'rendered') return true;
+    if (grid.dataset.renderState === 'scheduled') return false;
+
+    grid.dataset.renderState = 'scheduled';
+    grid.classList.add('museum-grid-pending');
+    grid.innerHTML = renderAppState('Preparing specimens…', { compact: true });
+    museumSpecimenRenderFrame = requestAnimationFrame(() => {
+        museumSpecimenRenderFrame = null;
+        if (!grid.isConnected) return;
+        if (museumView !== 'specimens') {
+            grid.dataset.renderState = 'pending';
+            grid.classList.remove('museum-grid-pending');
+            grid.innerHTML = '';
+            return;
+        }
+        renderMuseumSpecimensNow();
+    });
+    return false;
+}
+
 function switchMuseumView(view) {
     museumView = view === 'specimens' ? 'specimens' : 'atlas';
     document.querySelectorAll('[data-museum-view]').forEach(button => {
@@ -1810,8 +2012,10 @@ function switchMuseumView(view) {
     if (specimensPanel) specimensPanel.hidden = museumView !== 'specimens';
 
     if (museumView === 'specimens') {
-        applyMuseumFilters();
-        initializeMuseumCardMediaLoading();
+        if (ensureMuseumSpecimensRendered()) {
+            applyMuseumFilters();
+            initializeMuseumCardMediaLoading();
+        }
     } else {
         stopMuseumCardMediaLoading();
     }
@@ -1870,13 +2074,15 @@ async function showMuseum() {
 
         const museumDinos = [...fullDatabase]
             .sort((a, b) => a.nome.localeCompare(b.nome));
+        museumSpecimenRenderState = { dinosaurs: museumDinos, unlockedSet };
+        museumFilterCards = [];
         
         const totalCount = fullDatabase.length;
         const totalUnlocked = fullDatabase
             .filter(dino => unlockedSet.has(dino.nome.toLowerCase())).length;
         const totalPercent = totalCount > 0 ? Math.round((totalUnlocked / totalCount) * 100) : 0;
 
-        let html = `
+        const html = `
             <div class="game-card">
                 <h2 class="screen-title">Museum</h2>
                 
@@ -1951,67 +2157,12 @@ async function showMuseum() {
                     Showing ${totalCount} specimens · ${totalUnlocked} unlocked
                 </div>
 
-                <div class="museum-grid">
-        `;
-
-        museumDinos.forEach(dino => {
-            const isUnlocked = unlockedSet.has(dino.nome.toLowerCase());
-            const lastClade = dino.terminalClade || dino.linhagem?.at(-1) || 'Dinosauria';
-            const lineageData = Array.isArray(dino.linhagem) ? dino.linhagem.join('|') : '';
-            const cardData = `data-museum-level="${dino.dificuldade}" data-museum-name="${escapeChallengeHtml(dino.nome.toLowerCase())}" data-museum-unlocked="${isUnlocked}" data-museum-lineage="${escapeChallengeHtml(lineageData)}"`;
-
-            if (isUnlocked) {
-                const discovery = getMuseumDiscoverySummary(
-                    museumDiscoveryRecords[dino.nome.toLowerCase()]
-                );
-                html += `
-                    <div class="museum-card unlocked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" ${cardData} role="button" tabindex="0"
-                         aria-label="Open museum entry for ${dino.nome}"
-                         onclick="showMuseumEntry('${dino.nome}')"
-                        onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); showMuseumEntry('${dino.nome}'); }"
-                         style="cursor:pointer;">
-                        <div class="museum-card-art-container">
-                            <img class="museum-card-art"
-                                 data-museum-media-name="${escapeChallengeHtml(dino.nome)}"
-                                 src="dinosaur-footprint-1-svgrepo-com.svg"
-                                 alt="${dino.nome}" loading="lazy" decoding="async" />
-                        </div>
-                        <div class="museum-card-name">${dino.nome}</div>
-                        <div class="museum-card-clade">${lastClade}</div>
-                        <div class="museum-card-discovery">
-                            <span>${discovery.firstLabel}</span>
-                            ${museumDiscoveryRecords[dino.nome.toLowerCase()]?.count > 1
-                                ? `<strong>${discovery.countLabel}</strong>`
-                                : ''}
-                        </div>
-                        <div class="museum-card-source"></div>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div class="museum-card locked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" ${cardData}>
-                        <div class="museum-card-art-container">
-                            <span class="museum-card-lock-icon" aria-hidden="true"></span>
-                        </div>
-                        <div class="museum-card-name">???</div>
-                        <div class="museum-card-clade">Locked</div>
-                    </div>
-                `;
-            }
-        });
-
-        html += `
-                    <div class="museum-empty-state" id="museum-empty-state" hidden>
-                        No specimens match this search and level filter.
-                    </div>
+                <div class="museum-grid" id="museum-grid" data-render-state="pending">
                 </div>
                 </div>
             </div>
             <div id="clade-info"></div>`;
         appContent.innerHTML = html;
-        museumFilterCards = [...appContent.querySelectorAll(
-            '.museum-card[data-museum-level]'
-        )];
 
         updateMuseumCladeFilterDisplay();
         switchMuseumView(museumView);

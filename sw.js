@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v42";
+const CACHE_VERSION = "phylosaur-shell-v46";
 const CORE_ASSETS = [
   "./",
   "./index.html",

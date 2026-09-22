@@ -65,12 +65,14 @@ function showLoginScreen() {
 
   appContent.innerHTML = `
     <div class="game-card login-card">
-      <div class="tab-row">
-        <button class="tab-btn active" id="tab-signin" onclick="loginSwitchTab('signin')">Sign In</button>
-        <button class="tab-btn" id="tab-register" onclick="loginSwitchTab('register')">Create Account</button>
+      <div class="tab-row login-tab-row" role="tablist" aria-label="Account access">
+        <button class="tab-btn active" id="tab-signin" role="tab" aria-selected="true"
+                aria-controls="login-panel-signin" onclick="loginSwitchTab('signin')">Sign In</button>
+        <button class="tab-btn" id="tab-register" role="tab" aria-selected="false"
+                aria-controls="login-panel-register" onclick="loginSwitchTab('register')">Create Account</button>
       </div>
 
-      <div class="login-form-panel active" id="login-panel-signin">
+      <div class="login-form-panel active" id="login-panel-signin" role="tabpanel" aria-labelledby="tab-signin">
         <div class="login-global-error" id="signin-global-error"></div>
         <div class="login-global-success" id="signin-global-success"></div>
         <div class="login-field">
@@ -89,7 +91,7 @@ function showLoginScreen() {
         </button>
       </div>
 
-      <div class="login-form-panel" id="login-panel-register">
+      <div class="login-form-panel" id="login-panel-register" role="tabpanel" aria-labelledby="tab-register">
         <div class="login-global-error" id="register-global-error"></div>
         <div class="login-global-success" id="register-global-success"></div>
         <div class="login-field">
@@ -157,16 +159,16 @@ function showLoginModal() {
   const box = document.createElement('div');
   box.className = 'modal-box login-modal-box';
   box.tabIndex = -1;
-  box.style.maxWidth = '480px';
-  box.style.width = '90%';
   
   box.innerHTML = `
-    <div class="tab-row">
-      <button class="tab-btn active" id="tab-signin" onclick="loginSwitchTab('signin')">Sign In</button>
-      <button class="tab-btn" id="tab-register" onclick="loginSwitchTab('register')">Create Account</button>
+    <div class="tab-row login-tab-row" role="tablist" aria-label="Account access">
+      <button class="tab-btn active" id="tab-signin" role="tab" aria-selected="true"
+              aria-controls="login-panel-signin" onclick="loginSwitchTab('signin')">Sign In</button>
+      <button class="tab-btn" id="tab-register" role="tab" aria-selected="false"
+              aria-controls="login-panel-register" onclick="loginSwitchTab('register')">Create Account</button>
     </div>
 
-    <div class="login-form-panel active" id="login-panel-signin">
+    <div class="login-form-panel active" id="login-panel-signin" role="tabpanel" aria-labelledby="tab-signin">
       <div class="login-global-error" id="signin-global-error"></div>
       <div class="login-global-success" id="signin-global-success"></div>
       <div class="login-field">
@@ -185,7 +187,7 @@ function showLoginModal() {
       </button>
     </div>
 
-    <div class="login-form-panel" id="login-panel-register">
+    <div class="login-form-panel" id="login-panel-register" role="tabpanel" aria-labelledby="tab-register">
       <div class="login-global-error" id="register-global-error"></div>
       <div class="login-global-success" id="register-global-success"></div>
       <div class="login-field">
@@ -349,21 +351,29 @@ async function handleRegisterModal() {
 }
 
 function loginSwitchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.login-tab-row .tab-btn').forEach(button => {
+    const active = button.id === 'tab-' + tab;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
   document.querySelectorAll('.login-form-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('login-panel-' + tab).classList.add('active');
   loginClearErrors();
 }
 
 function loginShowReset(show = true) {
   document.querySelectorAll('.login-form-panel').forEach(p => p.classList.remove('active'));
-  document.querySelector('.tab-row').style.display = show ? 'none' : 'grid';
+  document.querySelector('.login-tab-row').style.display = show ? 'none' : 'grid';
   if (show) {
     document.getElementById('login-panel-reset').classList.add('active');
   } else {
     document.getElementById('login-panel-signin').classList.add('active');
-    document.querySelector('.tab-row').style.display = 'grid';
+    document.querySelector('.login-tab-row').style.display = 'grid';
+    document.querySelectorAll('.login-tab-row .tab-btn').forEach(button => {
+      const active = button.id === 'tab-signin';
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
   }
 }
 

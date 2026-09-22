@@ -611,7 +611,34 @@ Deno.test("Daily, Practice and Friend games share one restrained session shell",
 Deno.test("Statistics records and SPA navigation use shared responsive accessibility patterns", () => {
   const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
   const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const authSource = Deno.readTextFileSync(`${javascriptRoot}/auth.${javascriptExtension}`);
   const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const normalizedStyleSource = styleSource.replaceAll("\r\n", "\n");
+  const statsScreenSource = screensSource.slice(
+    screensSource.indexOf("async function showStatsDashboard()"),
+    screensSource.indexOf("function generateStreakDisplay("),
+  );
+  const histogramSource = screensSource.slice(
+    screensSource.indexOf("function generateGuessHistogram("),
+    screensSource.indexOf("function generateDifficultyStats("),
+  );
+  const histogram = new Function(`${histogramSource}; return generateGuessHistogram;`)();
+  const histogramMarkup = histogram([
+    { guess_count: 2 }, { guess_count: 2 }, { guess_count: 5 }, { guess_count: 12 },
+  ]);
+  const difficultyStatsSource = screensSource.slice(
+    screensSource.indexOf("function generateDifficultyStats("),
+    screensSource.indexOf("function generateAchievements("),
+  );
+  const renderDifficultyStats = new Function(
+    "escapeChallengeHtml",
+    `${difficultyStatsSource}; return generateDifficultyStats;`,
+  )((value: unknown) => String(value));
+  const difficultyMarkup = renderDifficultyStats([
+    { difficulty: "facil", won: true, guess_count: 1 },
+    { difficulty: "muito_facil", won: true, guess_count: 2 },
+    { difficulty: "muito_facil", won: false, guess_count: 4 },
+  ]);
   const recentGamesSource = screensSource.slice(
     screensSource.indexOf("function generateRecentGames("),
     screensSource.indexOf("let selectedMuseumLevel = 'all';"),
@@ -628,6 +655,40 @@ Deno.test("Statistics records and SPA navigation use shared responsive accessibi
     styleSource.includes(".recent-game-won") &&
     styleSource.includes("@media (max-width: 600px)"),
     "Recent-game cards are missing their shared responsive presentation.");
+  assert(statsScreenSource.includes('class="game-card stats-dashboard"') &&
+    statsScreenSource.includes('class="stats-header"') &&
+    statsScreenSource.includes('class="stats-player-badge"') &&
+    statsScreenSource.includes(".select('difficulty, guess_count, won')") &&
+    !statsScreenSource.includes("sb.from('difficulty_stats')") &&
+    statsScreenSource.includes("generateGuessHistogram(achievementHistory)") &&
+    histogramMarkup.includes('aria-label="2 guesses: 2 wins"') &&
+    histogramMarkup.includes('aria-label="9+ guesses: 1 win"'),
+    "Statistics must use the shared profile hierarchy and an accessible winning histogram.");
+  assert(styleSource.includes(".stats-insights-grid") &&
+    styleSource.includes(".stats-histogram-fill") &&
+    styleSource.includes(".difficulty-stat-meter") &&
+    styleSource.includes(".stats-player-badge"),
+    "The responsive Statistics dashboard presentation is incomplete.");
+  assert(difficultyMarkup.indexOf("Level I") < difficultyMarkup.indexOf("Level II") &&
+    difficultyMarkup.indexOf("Level II") < difficultyMarkup.indexOf("Level III") &&
+    difficultyMarkup.indexOf("Level III") < difficultyMarkup.indexOf("Level IV") &&
+    difficultyMarkup.indexOf("Level IV") < difficultyMarkup.indexOf("Level V") &&
+    difficultyMarkup.includes("1/2 won") &&
+    difficultyMarkup.includes("Average: 3 guesses") &&
+    difficultyMarkup.includes("Not played") &&
+    difficultyMarkup.includes("No average yet"),
+    "Difficulty performance must always show all five levels in canonical order.");
+  assert(normalizedStyleSource.includes(".stats-dashboard {\n  width: 100%;") &&
+    normalizedStyleSource.includes("align-items: start;") &&
+    !normalizedStyleSource.includes(".stats-insights-grid .stats-section {\n  height: 100%;"),
+    "Statistics must use the full game-card width without stretching insight cards vertically.");
+  assert(authSource.includes('class="tab-row login-tab-row" role="tablist"') &&
+    authSource.includes("button.setAttribute('aria-selected', String(active))") &&
+    !authSource.includes("box.style.maxWidth = '480px'") &&
+    styleSource.includes(".login-card .login-tab-row") &&
+    styleSource.includes("justify-content: center") &&
+    styleSource.includes("white-space: normal"),
+    "Mobile account tabs must remain centered, responsive and semantically grouped.");
   assert(uiSource.includes("function focusAppScreenHeading(") &&
     uiSource.includes("heading.setAttribute('tabindex', '-1')") &&
     uiSource.includes("heading.focus({ preventScroll: true })") &&
@@ -939,6 +1000,17 @@ Deno.test("Museum cache writes, filtering and offscreen rendering avoid repeated
     screensSource.includes("museumFilterFrame = requestAnimationFrame") &&
     !screensSource.includes("String(card.dataset.museumLineage || '').split('|')"),
     "Museum loading and filters must avoid sequential waits and repeated DOM/string allocation.");
+  const museumScreenSource = screensSource.slice(
+    screensSource.indexOf("async function showMuseum()"),
+    screensSource.indexOf("function switchMuseumLevel("),
+  );
+  assert(screensSource.includes("function ensureMuseumSpecimensRendered()") &&
+    screensSource.includes("function renderMuseumSpecimensNow()") &&
+    screensSource.includes("museumSpecimenRenderFrame = requestAnimationFrame") &&
+    screensSource.includes("grid.addEventListener('click', handleMuseumSpecimenActivation)") &&
+    museumScreenSource.includes('id="museum-grid" data-render-state="pending"') &&
+    !museumScreenSource.includes("museumDinos.forEach("),
+    "The Atlas must defer specimen-card construction until the Specimens view is opened.");
   assert(styleSource.includes("content-visibility: auto") &&
     styleSource.includes("contain-intrinsic-size: auto 235px"),
     "Offscreen Museum cards must defer layout and painting work.");

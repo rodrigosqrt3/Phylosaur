@@ -404,6 +404,10 @@ to   { opacity: 1; transform: translateX(0); }
   padding: 40px;
 }
 
+.login-modal-box {
+  width: min(480px, 100%);
+}
+
 .password-update-card {
   text-align: left;
 }
@@ -2255,6 +2259,38 @@ body:not(.light-mode) .tree-node-group:hover rect {
 }
 
 @media (max-width: 600px) {
+  .login-card {
+    margin: 16px auto;
+    padding: 22px 16px;
+  }
+
+  .login-card .login-tab-row,
+  .login-modal-box .login-tab-row {
+    margin: -22px -16px 28px;
+  }
+
+  .login-tab-row .tab-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 54px;
+    padding: 12px 8px;
+    font-size: clamp(0.72rem, 3.4vw, 0.82rem);
+    line-height: 1.2;
+    letter-spacing: 0.7px;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .login-form-panel {
+    text-align: left;
+  }
+
+  .login-guest-action {
+    margin-bottom: 0;
+  }
+
   .victory {
     padding: 24px 14px;
   }
@@ -3505,6 +3541,18 @@ body.light-mode .theme-switch-thumb {
 .museum-card.unlocked:hover {
     transform: translateY(-2px);
     border-color: var(--color-accent);
+}
+
+.museum-card.unlocked {
+    cursor: pointer;
+}
+
+.museum-grid-pending {
+    display: block;
+}
+
+.museum-grid-pending .app-state {
+    min-height: 180px;
 }
 
 .museum-card.unlocked:focus-visible {
@@ -6362,22 +6410,86 @@ body.light-mode .stat-label {
   text-align: center;
 }
 
-.stats-player {
-  margin-bottom: 30px;
-  color: var(--color-secondary);
-  font-size: 1.1em;
-  letter-spacing: 2px;
-  text-align: center;
+.stats-dashboard {
+  width: 100%;
 }
 
-.stats-player span {
+.stats-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 30px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.stats-header .screen-title {
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.stats-kicker,
+.stats-section-kicker {
+  margin-bottom: 7px;
   color: var(--color-accent);
-  font-weight: 600;
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.stats-subtitle {
+  max-width: 660px;
+  margin: 0;
+  text-align: left;
+}
+
+.stats-player-badge {
+  display: grid;
+  justify-items: end;
+  min-width: 180px;
+  padding: 14px 16px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+}
+
+.stats-player-badge span {
+  color: var(--color-muted);
+  font-size: 0.67em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.stats-player-badge strong {
+  max-width: 260px;
+  color: var(--color-primary);
+  font-size: 1.05em;
+  overflow-wrap: anywhere;
 }
 
 .stats-overview {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-bottom: 40px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stats-overview .stat {
+  min-height: 116px;
+}
+
+.stats-insights-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.75fr) minmax(340px, 1.25fr);
+  align-items: start;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.stats-insights-grid .streak-card,
+.stats-insights-grid .stats-section {
+  margin-bottom: 0;
 }
 
 .stats-section {
@@ -6391,11 +6503,129 @@ body.light-mode .stat-label {
 .stats-section:last-child { margin-bottom: 0; }
 
 .stats-section-title {
-  margin-bottom: 20px;
-  padding-bottom: 12px;
+  margin: 0;
+  padding: 0;
   color: var(--color-text-light);
-  border-bottom: 2px solid var(--border-subtle);
   font-size: 1.3em;
+}
+
+.stats-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.stats-section-heading > span {
+  color: var(--color-muted);
+  font-size: 0.75em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stats-histogram-section {
+  min-width: 0;
+}
+
+.stats-histogram {
+  display: grid;
+  gap: 7px;
+}
+
+.stats-histogram-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 9px;
+  min-height: 24px;
+}
+
+.stats-histogram-label,
+.stats-histogram-row strong {
+  color: var(--color-secondary);
+  font-size: 0.78em;
+  font-weight: 600;
+  text-align: center;
+}
+
+.stats-histogram-track {
+  height: 18px;
+  overflow: hidden;
+  background: var(--bg-darkest);
+  border: 1px solid var(--border-inner);
+  border-radius: 3px;
+}
+
+.stats-histogram-fill {
+  display: block;
+  width: var(--histogram-width);
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+  border-radius: 2px;
+  transition: width var(--motion-standard) var(--motion-ease);
+}
+
+.difficulty-stats-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.difficulty-stat-row {
+  display: grid;
+  gap: 11px;
+  padding: 16px;
+  background: var(--bg-panel-darker);
+  border: 1px solid var(--border-inner);
+  border-radius: var(--radius-control);
+}
+
+.difficulty-stat-heading,
+.diff-stats {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.diff-record {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.76em;
+  font-weight: 400;
+}
+
+.difficulty-stat-meter {
+  height: 7px;
+  overflow: hidden;
+  background: var(--bg-darkest);
+  border-radius: 999px;
+}
+
+.difficulty-stat-meter span {
+  display: block;
+  width: var(--difficulty-stat-width);
+  height: 100%;
+  background: var(--color-success);
+  border-radius: inherit;
+}
+
+.diff-stats {
+  color: var(--color-secondary);
+  font-size: 0.78em;
+  text-align: left;
+}
+
+.diff-winrate {
+  margin: 0;
+  color: var(--color-primary);
+}
+
+.diff-avg {
+  font-size: 1em;
 }
 
 .recent-games-list {
@@ -6482,6 +6712,61 @@ body.light-mode .stat-label {
 }
 
 @media (max-width: 600px) {
+  .stats-dashboard {
+    padding: 22px 14px;
+  }
+
+  .stats-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 22px;
+    padding-bottom: 20px;
+  }
+
+  .stats-header .screen-title,
+  .stats-subtitle {
+    text-align: center;
+  }
+
+  .stats-player-badge {
+    justify-items: center;
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .stats-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .stats-overview .stat {
+    min-height: 96px;
+  }
+
+  .stats-insights-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stats-section {
+    padding: 18px 14px;
+  }
+
+  .stats-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .difficulty-stats-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stats-histogram-row {
+    grid-template-columns: 24px minmax(0, 1fr) 24px;
+    gap: 7px;
+  }
+
   .recent-game-card {
     grid-template-columns: minmax(0, 1fr);
     gap: 10px;
