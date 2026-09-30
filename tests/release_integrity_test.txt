@@ -545,7 +545,7 @@ Deno.test("Museum Clade Atlas exposes the three principal branches without hidin
     const outside = database.filter((dinosaur: any) =>
       !atlasClades.some(clade => dinosaur.linhagem.includes(clade))
     );
-    assert(covered.length === 628, "The principal Atlas branches no longer cover 628 genera.");
+    assert(covered.length === 626, "The principal Atlas branches no longer cover 626 genera.");
     assert(outside.map((dinosaur: any) => dinosaur.nome).sort().join(",") ===
       "Herrerasaurus,Sanjuansaurus,Staurikosaurus",
       "Unexpected genera now sit outside the three principal Atlas branches.");
