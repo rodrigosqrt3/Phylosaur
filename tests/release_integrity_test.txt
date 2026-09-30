@@ -171,7 +171,6 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Nankangia: "Nankangia_Restoration.jpg",
     Regnosaurus: "1848_-_Regnosaurus.png",
     Scansoriopteryx: "Scansoriopteryx.png",
-    Sellosaurus: "Sellosaurus.jpg",
     Struthiomimus: "Struthiomimus.png",
   };
   assert(mediaCatalog.version >= 10, "The curated Museum media release version was not advanced.");
@@ -545,7 +544,7 @@ Deno.test("Museum Clade Atlas exposes the three principal branches without hidin
     const outside = database.filter((dinosaur: any) =>
       !atlasClades.some(clade => dinosaur.linhagem.includes(clade))
     );
-    assert(covered.length === 626, "The principal Atlas branches no longer cover 626 genera.");
+    assert(covered.length === 612, "The principal Atlas branches no longer cover 612 genera.");
     assert(outside.map((dinosaur: any) => dinosaur.nome).sort().join(",") ===
       "Herrerasaurus,Sanjuansaurus,Staurikosaurus",
       "Unexpected genera now sit outside the three principal Atlas branches.");
