@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Centrosaurus": {
@@ -314,13 +314,13 @@
       "source": "wikimedia"
     },
     "Sinraptor": {
-      "file_title": "File:Sinraptor dongi.jpg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Sinraptor_dongi.jpg/960px-Sinraptor_dongi.jpg",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Sinraptor_dongi.jpg",
-      "artist": "Ian Armstrong",
-      "license": "CC BY-SA 2.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
-      "usage_terms": "Creative Commons Attribution-Share Alike 2.0 Generic",
+      "file_title": "File:Sinraptor NT (no bg).png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/9/96/Sinraptor_NT_%28no_bg%29.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Sinraptor_NT_(no_bg).png",
+      "artist": "Nobu Tamura",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
       "source": "wikimedia"
     },
     "Sinosauropteryx": {
@@ -582,6 +582,26 @@
       "license": "CC BY-SA 3.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Barosaurus": {
+      "file_title": "File:Barosaurus lentus1.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Barosaurus_lentus1.jpg/960px-Barosaurus_lentus1.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Barosaurus_lentus1.jpg",
+      "artist": "Fred Wierum",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Teratophoneus": {
+      "file_title": "File:Teratophoneus2 NT.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Teratophoneus2_NT.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Teratophoneus2_NT.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia"
     },
     "Struthiomimus": {

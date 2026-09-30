@@ -171,9 +171,12 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Nankangia: "Nankangia_Restoration.jpg",
     Regnosaurus: "1848_-_Regnosaurus.png",
     Scansoriopteryx: "Scansoriopteryx.png",
+    Sinraptor: "Sinraptor_NT_%28no_bg%29.png",
     Struthiomimus: "Struthiomimus.png",
+    Teratophoneus: "Teratophoneus2_NT.jpg",
+    Barosaurus: "Barosaurus_lentus1.jpg",
   };
-  assert(mediaCatalog.version >= 10, "The curated Museum media release version was not advanced.");
+  assert(mediaCatalog.version >= 11, "The curated Museum media release version was not advanced.");
   for (const [name, filename] of Object.entries(requestedFiles)) {
     assert(replacements[name], `The requested Museum replacement is missing: ${name}`);
     assert(replacements[name].url.includes(filename), `${name} does not use the requested image.`);
