@@ -160,7 +160,7 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Tylocephale: "Tylocephale_pair.jpg",
     Cumnoria: "Cumnoria_NT_flipped_transparent.png",
     Dakotadon: "Dakotadon_restoration.png",
-    Graciliceratops: "Graciliceratops_BW_flipped_transparent.png",
+    Graciliceratops: "Graciliceratops_BW_flipped.jpg",
     Guaibasaurus: "Guaibasaurus-mingau.png",
     Hulsanpes: "Hulsanpes_no_background.png",
     Hypacrosaurus: "Hypacrosaurus_altispinus.jpg",
@@ -175,8 +175,13 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Struthiomimus: "Struthiomimus.png",
     Teratophoneus: "Teratophoneus2_NT.jpg",
     Barosaurus: "Barosaurus_lentus1.jpg",
+    Camposaurus: "Camposaurus_arizonensis.png",
+    Dracovenator: "Dracovenator_regenti.jpg",
+    Homalocephale: "Homalocephale_body.jpg",
+    Lirainosaurus: "Lirainosaurus.jpg",
+    Overosaurus: "Overosaurus_life_restoration.jpg",
   };
-  assert(mediaCatalog.version >= 11, "The curated Museum media release version was not advanced.");
+  assert(mediaCatalog.version >= 12, "The curated Museum media release version was not advanced.");
   for (const [name, filename] of Object.entries(requestedFiles)) {
     assert(replacements[name], `The requested Museum replacement is missing: ${name}`);
     assert(replacements[name].url.includes(filename), `${name} does not use the requested image.`);
@@ -547,7 +552,7 @@ Deno.test("Museum Clade Atlas exposes the three principal branches without hidin
     const outside = database.filter((dinosaur: any) =>
       !atlasClades.some(clade => dinosaur.linhagem.includes(clade))
     );
-    assert(covered.length === 607, "The principal Atlas branches no longer cover 607 genera.");
+    assert(covered.length === 605, "The principal Atlas branches no longer cover 605 genera.");
     assert(outside.map((dinosaur: any) => dinosaur.nome).sort().join(",") ===
       "Herrerasaurus,Sanjuansaurus,Staurikosaurus",
       "Unexpected genera now sit outside the three principal Atlas branches.");

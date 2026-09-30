@@ -1,5 +1,5 @@
 {
-  "version": 11,
+  "version": 12,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Centrosaurus": {
@@ -393,17 +393,6 @@
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia"
     },
-    "Titanosaurus": {
-      "file_title": "File:Titanosaurus indicus holotype silhouette.jpg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Titanosaurus_indicus_holotype_silhouette.jpg/960px-Titanosaurus_indicus_holotype_silhouette.jpg",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Titanosaurus_indicus_holotype_silhouette.jpg",
-      "artist": "Unofficial Jurassic World",
-      "license": "CC0 1.0",
-      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
-      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
-      "editorial_note": "Highly hypothetical silhouette: Titanosaurus indicus is based on only two caudal vertebrae, and the missing anatomy is inferred from other titanosaurs.",
-      "source": "wikimedia"
-    },
     "Limusaurus": {
       "file_title": "File:Limusaurus inextricabilis.jpg",
       "url": "https://upload.wikimedia.org/wikipedia/commons/8/89/Limusaurus_inextricabilis.jpg",
@@ -475,13 +464,13 @@
       "source": "wikimedia"
     },
     "Graciliceratops": {
-      "file_title": "File:Graciliceratops BW flipped transparent.png",
-      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Graciliceratops_BW_flipped_transparent.png?width=960",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Graciliceratops_BW_flipped_transparent.png",
+      "file_title": "File:Graciliceratops BW flipped.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Graciliceratops_BW_flipped.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Graciliceratops_BW_flipped.jpg",
       "artist": "Nobu Tamura",
-      "license": "CC BY-SA 3.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
       "source": "wikimedia"
     },
     "Guaibasaurus": {
@@ -612,6 +601,56 @@
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Camposaurus": {
+      "file_title": "File:Camposaurus arizonensis.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Camposaurus_arizonensis.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Camposaurus_arizonensis.png",
+      "artist": "Tomozosaurus",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Dracovenator": {
+      "file_title": "File:Dracovenator regenti.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Dracovenator_regenti.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Dracovenator_regenti.jpg",
+      "artist": "Antonio Rares Mihaila",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Homalocephale": {
+      "file_title": "File:Homalocephale body.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Homalocephale_body.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Homalocephale_body.jpg",
+      "artist": "FunkMonk",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Lirainosaurus": {
+      "file_title": "File:Lirainosaurus.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Lirainosaurus.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Lirainosaurus.jpg",
+      "artist": "Verónica Díez Díaz, Xabier Pereda Suberbiola, and José Luis Sanz",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "usage_terms": "Creative Commons Attribution 2.0 Generic",
+      "source": "wikimedia"
+    },
+    "Overosaurus": {
+      "file_title": "File:Overosaurus life restoration.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Overosaurus_life_restoration.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Overosaurus_life_restoration.jpg",
+      "artist": "Danny Cicchetti",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
       "source": "wikimedia"
     }
   }
