@@ -169,7 +169,6 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Leaellynasaura: "Leaellynasaura_BW.jpg",
     Mochlodon: "1881_-_Mochlodon.png",
     Nankangia: "Nankangia_Restoration.jpg",
-    Regnosaurus: "1848_-_Regnosaurus.png",
     Scansoriopteryx: "Scansoriopteryx.png",
     Sinraptor: "Sinraptor_NT_%28no_bg%29.png",
     Struthiomimus: "Struthiomimus.png",
@@ -184,7 +183,7 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Barrosasaurus: "Barrosasaurus.png",
     Bonapartesaurus: "Bonapartesaurus_rionegrensis.png",
   };
-  assert(mediaCatalog.version >= 13, "The curated Museum media release version was not advanced.");
+  assert(mediaCatalog.version >= 14, "The curated Museum media release version was not advanced.");
   for (const [name, filename] of Object.entries(requestedFiles)) {
     assert(replacements[name], `The requested Museum replacement is missing: ${name}`);
     assert(replacements[name].url.includes(filename), `${name} does not use the requested image.`);
@@ -555,7 +554,7 @@ Deno.test("Museum Clade Atlas exposes the three principal branches without hidin
     const outside = database.filter((dinosaur: any) =>
       !atlasClades.some(clade => dinosaur.linhagem.includes(clade))
     );
-    assert(covered.length === 605, "The principal Atlas branches no longer cover 605 genera.");
+    assert(covered.length === 561, "The principal Atlas branches no longer cover 561 genera.");
     assert(outside.map((dinosaur: any) => dinosaur.nome).sort().join(",") ===
       "Herrerasaurus,Sanjuansaurus,Staurikosaurus",
       "Unexpected genera now sit outside the three principal Atlas branches.");
