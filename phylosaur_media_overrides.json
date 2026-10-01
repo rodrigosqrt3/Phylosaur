@@ -1,5 +1,5 @@
 {
-  "version": 14,
+  "version": 15,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Centrosaurus": {
@@ -672,6 +672,37 @@
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia"
+    },
+    "Miragaia": {
+      "file_title": "File:Miragaia longicollum.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Miragaia_longicollum.png/960px-Miragaia_longicollum.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Miragaia_longicollum.png",
+      "artist": "Connor Ashbridge",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Scolosaurus": {
+      "file_title": "File:Scolosaurus SW.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Scolosaurus_SW.png/960px-Scolosaurus_SW.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Scolosaurus_SW.png",
+      "artist": "Slate Weasel",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
+      "source": "wikimedia"
+    },
+    "Pinacosaurus": {
+      "file_title": "File:Pinacosaurus Jack Wood 2017 flipped transparent.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Pinacosaurus_Jack_Wood_2017_flipped_transparent.png/960px-Pinacosaurus_Jack_Wood_2017_flipped_transparent.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Pinacosaurus_Jack_Wood_2017_flipped_transparent.png",
+      "artist": "Jack Mayer Wood",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia",
+      "editorial_note": "Uses the 2023 revision with a reduced speculative dewlap."
     }
   }
 }
