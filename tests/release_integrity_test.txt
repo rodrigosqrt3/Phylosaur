@@ -158,7 +158,7 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Xiaotingia: "Xiaotingia_.jpg",
     Unenlagia: "Unenlagia_comahuensis_.jpg",
     Tylocephale: "Tylocephale_pair.jpg",
-    Cumnoria: "Cumnoria_NT_flipped_transparent.png",
+    Cumnoria: "Cumnoria_NT_flipped.jpg",
     Dakotadon: "Dakotadon_restoration.png",
     Graciliceratops: "Graciliceratops_BW_flipped.jpg",
     Guaibasaurus: "Guaibasaurus-mingau.png",
@@ -180,8 +180,11 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Homalocephale: "Homalocephale_body.jpg",
     Lirainosaurus: "Lirainosaurus.jpg",
     Overosaurus: "Overosaurus_life_restoration.jpg",
+    Austrocheirus: "Austrocheirus_isasii.png",
+    Barrosasaurus: "Barrosasaurus.png",
+    Bonapartesaurus: "Bonapartesaurus_rionegrensis.png",
   };
-  assert(mediaCatalog.version >= 12, "The curated Museum media release version was not advanced.");
+  assert(mediaCatalog.version >= 13, "The curated Museum media release version was not advanced.");
   for (const [name, filename] of Object.entries(requestedFiles)) {
     assert(replacements[name], `The requested Museum replacement is missing: ${name}`);
     assert(replacements[name].url.includes(filename), `${name} does not use the requested image.`);

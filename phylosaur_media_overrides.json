@@ -1,5 +1,5 @@
 {
-  "version": 12,
+  "version": 13,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Centrosaurus": {
@@ -444,9 +444,9 @@
       "source": "wikimedia"
     },
     "Cumnoria": {
-      "file_title": "File:Cumnoria NT flipped transparent.png",
-      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cumnoria_NT_flipped_transparent.png?width=960",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Cumnoria_NT_flipped_transparent.png",
+      "file_title": "File:Cumnoria NT flipped.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cumnoria_NT_flipped.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Cumnoria_NT_flipped.jpg",
       "artist": "Nobu Tamura",
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
@@ -651,6 +651,36 @@
       "license": "CC BY-SA 3.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Austrocheirus": {
+      "file_title": "File:Austrocheirus isasii.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Austrocheirus_isasii.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Austrocheirus_isasii.png",
+      "artist": "Levi Bernardo",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Barrosasaurus": {
+      "file_title": "File:Barrosasaurus.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Barrosasaurus.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Barrosasaurus.png",
+      "artist": "Leonardo Salgado and Rodolfo A. Coria",
+      "license": "See Wikimedia Commons file page",
+      "license_url": "https://commons.wikimedia.org/wiki/File:Barrosasaurus.png",
+      "usage_terms": "Reuse terms are recorded on the Wikimedia Commons file page",
+      "source": "wikimedia"
+    },
+    "Bonapartesaurus": {
+      "file_title": "File:Bonapartesaurus rionegrensis.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bonapartesaurus_rionegrensis.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Bonapartesaurus_rionegrensis.png",
+      "artist": "Connor Ashbridge",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia"
     }
   }
