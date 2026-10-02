@@ -474,7 +474,7 @@ async function showAbout() {
     setAppRoute('/about');
     setHeaderControls('about');
     const appContent = document.getElementById('app-content');
-    appContent.innerHTML = `<div class="game-card about-screen">${renderAppState('Loading About Phylosaur…')}</div>`;
+    appContent.innerHTML = `<div class="game-card about-screen">${renderAppState(t('about.loading'))}</div>`;
 
     try {
         const response = await fetch('about.html');
@@ -488,9 +488,9 @@ async function showAbout() {
 
         appContent.innerHTML = `
             <div class="game-card about-screen">
-                <h2 class="screen-title about-screen-title">About Phylosaur</h2>
+                <h2 class="screen-title about-screen-title">${t('about.title')}</h2>
                 <div class="about-screen-body">${article.innerHTML}</div>
-                <button class="btn-new-game" onclick="navigateToAppRoute('/')">Return to Levels</button>
+                <button class="btn-new-game" onclick="navigateToAppRoute('/')">${t('about.return')}</button>
             </div>`;
         focusAppScreenHeading();
         const aboutCard = appContent.querySelector('.about-screen');
@@ -506,8 +506,8 @@ async function showAbout() {
     } catch (error) {
         if (getCurrentAppRoute() !== '/about') return;
         appContent.innerHTML = `<div class="game-card about-screen">${renderAppState(
-            'Could not load About Phylosaur.', { type: 'error', detail: error.message }
-        )}<button class="btn-new-game" onclick="navigateToAppRoute('/')">Return to Levels</button></div>`;
+            t('about.error'), { type: 'error', detail: error.message }
+        )}<button class="btn-new-game" onclick="navigateToAppRoute('/')">${t('about.return')}</button></div>`;
     }
 }
 
