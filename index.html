@@ -62,6 +62,7 @@
   
   <script defer src="js/config.js"></script> 
   <script defer src="js/state.js"></script>
+  <script defer src="js/i18n.js"></script>
   <script defer src="js/api.js"></script>
   <script defer src="js/autocomplete.js"></script> 
   <script defer src="js/db.js"></script>
@@ -79,10 +80,19 @@
       <div class="site-header-spacer" aria-hidden="true"></div>
       <div class="site-brand">
         <h1><a class="site-brand-home" href="#" onclick="navigateToAppRoute('/'); return false;">Phylosaur</a></h1>
-        <p class="subtitle">A phylogenetic classification challenge</p>
+        <p class="subtitle" data-i18n="brand.subtitle">A phylogenetic classification challenge</p>
       </div>
       <div class="site-header-utility">
         <div class="header-theme-row">
+          <label class="language-picker" for="language-select">
+            <span class="visually-hidden" data-i18n="language.label">Language</span>
+            <select id="language-select" onchange="changeLanguage(this.value)"
+                    aria-label="Language">
+              <option value="en">EN</option>
+              <option value="pt-BR">PT</option>
+              <option value="es">ES</option>
+            </select>
+          </label>
           <button class="theme-switch header-theme-switch" onclick="toggleTheme()" id="theme-toggle"
                   type="button" aria-label="Switch to light mode" aria-pressed="false">
             <span class="theme-switch-track" aria-hidden="true">
@@ -98,7 +108,7 @@
       <div class="game-card">
         <div class="app-state app-state-loading" role="status" aria-live="polite">
           <span class="app-state-icon" aria-hidden="true"></span>
-          <div class="app-state-message">Preparing Phylosaur…</div>
+          <div class="app-state-message" data-i18n="app.preparing">Preparing Phylosaur…</div>
         </div>
       </div>
     </div>
@@ -106,10 +116,10 @@
 
   <footer class="site-description" aria-label="About Phylosaur">
     <p>
-      <strong>Phylosaur</strong> is an educational dinosaur guessing game based on phylogenetic classification.
-      Identify the hidden genus by using each guess to follow its path through the dinosaur family tree.
+      <strong>Phylosaur</strong>
+      <span data-i18n="footer.description">is an educational dinosaur guessing game based on phylogenetic classification. Identify the hidden genus by using each guess to follow its path through the dinosaur family tree.</span>
     </p>
-    <a href="#/about" onclick="showAbout(); return false;">About the game and its methodology</a>
+    <a href="#/about" onclick="showAbout(); return false;" data-i18n="footer.about">About the game and its methodology</a>
   </footer>
 
   <script>

@@ -11,7 +11,7 @@ const gameRoot = localSourceLayout ? "game" : ".";
 const javascriptRoot = localSourceLayout ? "game/js" : "js";
 const javascriptExtension = localSourceLayout ? "txt" : "js";
 const javascriptNames = [
-  "config", "state", "api", "autocomplete", "db", "auth",
+  "config", "state", "i18n", "api", "autocomplete", "db", "auth",
   "ui", "screens", "tree", "game", "main",
 ];
 const javascriptSources = javascriptNames.map(
@@ -47,6 +47,43 @@ Deno.test("all game JSON files are valid", () => {
     if (!entry.isFile || !entry.name.endsWith(".json")) continue;
     readJson(assetPath(entry.name));
   }
+});
+
+Deno.test("English, Portuguese and Spanish localization catalogs stay complete", () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/i18n.${javascriptExtension}`);
+  const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
+  const workerSource = Deno.readTextFileSync(localSourceLayout ? "game/sw_service_worker.txt" : "sw.js");
+  const evaluate = (language: string) => new Function(
+    "window", "localStorage", "navigator", "PHYLOSAUR_STORAGE_KEYS",
+    `${source}; return { messages: PHYLOSAUR_MESSAGES, locale: currentLocale,
+      normalize: normalizePhylosaurLocale, translate: t };`,
+  )(
+    { location: { search: "", href: "https://example.test/" } },
+    { getItem: () => null, setItem() {} },
+    { language, languages: [language] },
+    { language: "phylosaur-language" },
+  );
+
+  const runtime = evaluate("pt-BR");
+  const englishKeys = Object.keys(runtime.messages.en).sort();
+  for (const locale of ["pt-BR", "es"]) {
+    assert(
+      JSON.stringify(Object.keys(runtime.messages[locale]).sort()) === JSON.stringify(englishKeys),
+      `${locale} does not contain exactly the English catalog keys.`,
+    );
+  }
+  assert(runtime.locale === "pt-BR" && evaluate("es-MX").locale === "es" &&
+    evaluate("ja-JP").locale === "en",
+    "Browser-language detection must select PT-BR or Spanish and otherwise fall back to English.");
+  assert(runtime.translate("home.daily") === "Desafio Diário",
+    "The Portuguese catalog is not active.");
+  assert(htmlSource.indexOf('src="js/state.js"') < htmlSource.indexOf('src="js/i18n.js"') &&
+    htmlSource.indexOf('src="js/i18n.js"') < htmlSource.indexOf('src="js/api.js"') &&
+    htmlSource.includes('id="language-select"') &&
+    htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"'),
+    "The language module or selector is missing from the production shell.");
+  assert(workerSource.includes('"./js/i18n.js"'),
+    "The localization module must be available offline.");
 });
 
 Deno.test("playable dinosaur database preserves tree invariants", () => {
@@ -224,8 +261,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "The home-page About link must use the in-app route instead of leaving the application shell.");
   assert(screensSource.includes('class="difficulty-home-title screen-title"') &&
     screensSource.includes('class="screen-title about-screen-title"') &&
-    screensSource.includes('class="difficulty-home-title screen-title">Practice Mode') &&
-    screensSource.includes('class="screen-title">Museum'),
+    screensSource.includes("class=\"difficulty-home-title screen-title\">${t('home.practice')}") &&
+    screensSource.includes("class=\"screen-title\">${t('museum.title')}"),
     "Primary screens must use the shared title hierarchy.");
   assert(styleSource.includes(".screen-title") &&
     styleSource.includes(".screen-subtitle") &&
@@ -251,9 +288,9 @@ Deno.test("shared UI states, account controls and motion remain standardized", (
 
   assert(uiSource.includes("function renderAppState(") &&
     gameSource.includes("renderAppState(loadingMessage, { compact: true })") &&
-    gameSource.includes("renderGameSessionShell('Loading practice challenge…'") &&
+    gameSource.includes("renderGameSessionShell(t('game.loadingPractice')") &&
     dbSource.includes("renderAppState('Could not load challenge.'") &&
-    screensSource.includes("renderAppState('Loading Museum…'"),
+    screensSource.includes("renderAppState(t('museum.loading')"),
     "Loading and error feedback must use the shared application-state component.");
   assert(authSource.includes("login-text-action") &&
     authSource.includes("aria-modal', 'true'") &&
@@ -508,7 +545,7 @@ Deno.test("Museum Clade Atlas exposes the three principal branches without hidin
   for (const clade of atlasClades) {
     assert(screensSource.includes(`clade: '${clade}'`), `${clade} is missing from the Atlas.`);
   }
-  assert(screensSource.includes('role="tablist" aria-label="Museum view"') &&
+  assert(screensSource.includes('role="tablist" aria-label="${t(\'museum.view\')}"') &&
     screensSource.includes('data-museum-view="atlas"') &&
     screensSource.includes('data-museum-view="specimens"') &&
     screensSource.includes('data-museum-lineage='),
@@ -608,13 +645,13 @@ Deno.test("Daily, Practice and Friend games share one restrained session shell",
   const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
   const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
   assert(gameSource.includes("function renderGameSessionShell(") &&
-    gameSource.includes("renderGameSessionShell('Loading practice challenge…'") &&
-    gameSource.includes("renderGameSessionShell('Loading daily challenge…'") &&
-    gameSource.includes("renderGameSessionShell('Loading friend challenge…'") &&
+    gameSource.includes("renderGameSessionShell(t('game.loadingPractice')") &&
+    gameSource.includes("renderGameSessionShell(t('game.loadingDaily'))") &&
+    gameSource.includes("renderGameSessionShell(t('game.loadingFriend'))") &&
     gameSource.includes('class="game-card game-session-card"') &&
     gameSource.includes('class="stats game-session-stats"'),
     "All game modes must render the same session structure.");
-  assert(gameSource.includes("contextLabel: 'Practice mode'") &&
+  assert(gameSource.includes("contextLabel: t('game.practiceContext')") &&
     gameSource.includes('class="game-mode-context"') &&
     !gameSource.includes("PRACTICE MODE") &&
     !gameSource.includes('style="grid-template-columns: repeat(5, 1fr); gap: 12px;"'),
@@ -764,7 +801,7 @@ Deno.test("guess input displays ranked suggestions and submits the typed name", 
     addEventListener() {}, contains: () => true,
   };
   const initialize = new Function(
-    "document", "window", "database", "guessedNames", "makeGuess", "escapeHtml",
+    "document", "window", "database", "guessedNames", "makeGuess", "escapeHtml", "t",
     `${source}; return initializeAutocomplete;`,
   )(
     {
@@ -778,6 +815,10 @@ Deno.test("guess input displays ranked suggestions and submits the typed name", 
     (value: unknown) => String(value).replace(/[&<>'"]/g, character => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
     })[character]!),
+    (key: string) => ({
+      'autocomplete.label': 'Dinosaur suggestions',
+      'autocomplete.none': 'No dinosaur suggestions available.'
+    }[key] || key),
   );
   initialize();
   handlers.input.call(input);
@@ -933,7 +974,7 @@ Deno.test("mobile Practice selection reuses the Daily level composition", () => 
   const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
   const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
   assert(screensSource.includes('class="game-card difficulty-home practice-menu"') &&
-    screensSource.includes('class="difficulty-home-title screen-title">Practice Mode') &&
+    screensSource.includes("class=\"difficulty-home-title screen-title\">${t('home.practice')}") &&
     screensSource.includes('class="difficulty-home-date"') &&
     screensSource.includes('class="difficulty-home-levels"') &&
     screensSource.includes('onclick="startPracticeChallenge') &&

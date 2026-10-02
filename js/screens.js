@@ -14,12 +14,12 @@ async function showDifficultySelection() {
     
     appContent.innerHTML = `            
         <div class="game-card difficulty-home">
-        <h2 class="difficulty-home-title screen-title">Daily Challenge</h2>
+        <h2 class="difficulty-home-title screen-title">${t('home.daily')}</h2>
         <p class="difficulty-home-date">
-            ${getCurrentDateFormatted()} - Choose a level
+            ${getCurrentDateFormatted()} — ${t('home.chooseLevel')}
         </p>
         <p class="difficulty-home-countdown">
-        Next daily challenge in <span id="countdown-timer">--:--:--</span>
+        ${t('home.nextDaily')} <span id="countdown-timer">--:--:--</span>
         </p>
 
         <div class="difficulty-home-levels">
@@ -33,13 +33,13 @@ async function showDifficultySelection() {
         <div class="difficulty-home-actions-wrap">
             <div class="difficulty-home-actions">
             <button class="btn-hint btn-large btn-menu-action" onclick="showHowToPlay()">
-                How to Play
+                ${t('home.howToPlay')}
             </button>
             <button class="btn-hint btn-large btn-menu-action" onclick="showPracticeMode()">
-                Practice Mode
+                ${t('home.practice')}
             </button>
             <button class="btn-hint btn-friends btn-large btn-menu-action" onclick="showFriendChallenges()">
-                Play with Friends
+                ${t('home.friends')}
             </button>
             </div>
         </div>
@@ -70,7 +70,7 @@ function updateDifficultyCompletionStatus(status) {
         if (completed && !mark) {
             mark = document.createElement('span');
             mark.className = 'difficulty-completion-mark';
-            mark.setAttribute('aria-label', 'Completed');
+            mark.setAttribute('aria-label', t('common.completed'));
             mark.textContent = '✓';
             button.appendChild(mark);
         } else if (!completed) {
@@ -101,18 +101,18 @@ function showFriendChallenges(prefilledCode = '') {
     appContent.innerHTML = `
     <div class="game-card friends-hub">
         <div class="friends-heading">
-            <div class="friends-kicker">Private Challenge</div>
-            <h2 class="screen-title">Play with Friends</h2>
-            <p>Create a private challenge or enter a six-character code. Everyone receives the same hidden dinosaur and plays on their own tree.</p>
+            <div class="friends-kicker">${t('friends.private')}</div>
+            <h2 class="screen-title">${t('home.friends')}</h2>
+            <p>${t('friends.intro')}</p>
         </div>
 
         <div class="friends-grid">
             <section class="friend-panel">
-                <h3>Create a Challenge</h3>
-                <label class="friend-label" for="challenge-create-name">Your name</label>
-                <input class="friend-input" id="challenge-create-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="Player name">
+                <h3>${t('friends.create')}</h3>
+                <label class="friend-label" for="challenge-create-name">${t('friends.yourName')}</label>
+                <input class="friend-input" id="challenge-create-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="${t('friends.playerName')}">
 
-                <label class="friend-label" for="challenge-difficulty">Level</label>
+                <label class="friend-label" for="challenge-difficulty">${t('friends.level')}</label>
                 <select class="friend-input" id="challenge-difficulty">
                     <option value="muito_facil">Level I</option>
                     <option value="facil">Level II</option>
@@ -121,26 +121,26 @@ function showFriendChallenges(prefilledCode = '') {
                     <option value="muito_dificil">Level V</option>
                 </select>
 
-                <button class="btn-guess friend-action" id="create-challenge-btn" onclick="createFriendChallenge()">Create Code</button>
+                <button class="btn-guess friend-action" id="create-challenge-btn" onclick="createFriendChallenge()">${t('friends.createCode')}</button>
             </section>
 
-            <div class="friends-divider" aria-hidden="true"><span>or</span></div>
+            <div class="friends-divider" aria-hidden="true"><span>${t('friends.or')}</span></div>
 
             <section class="friend-panel">
-                <h3>Join a Challenge</h3>
-                <label class="friend-label" for="challenge-join-name">Your name</label>
-                <input class="friend-input" id="challenge-join-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="Player name">
+                <h3>${t('friends.join')}</h3>
+                <label class="friend-label" for="challenge-join-name">${t('friends.yourName')}</label>
+                <input class="friend-input" id="challenge-join-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="${t('friends.playerName')}">
 
-                <label class="friend-label" for="challenge-code">Challenge code</label>
+                <label class="friend-label" for="challenge-code">${t('friends.challengeCode')}</label>
                 <input class="friend-input challenge-code-input" id="challenge-code" maxlength="6" value="${escapeChallengeHtml(code)}" placeholder="RAPTOR" autocomplete="off" autocapitalize="characters" spellcheck="false"
                        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)"
                        onkeydown="if(event.key==='Enter') joinFriendChallenge()">
 
-                <button class="btn-hint friend-action" id="join-challenge-btn" onclick="joinFriendChallenge()">Enter Challenge</button>
+                <button class="btn-hint friend-action" id="join-challenge-btn" onclick="joinFriendChallenge()">${t('friends.enter')}</button>
             </section>
         </div>
 
-        <p class="friends-note">Codes expire after seven days. Friend challenges can unlock Museum entries, but do not affect Daily streaks or statistics.</p>
+        <p class="friends-note">${t('friends.note')}</p>
     </div>`;
 
     if (code) document.getElementById('challenge-join-name')?.focus();
@@ -154,7 +154,7 @@ async function createFriendChallenge() {
     const playerName = nameInput?.value.trim().slice(0, 24) || 'Player';
 
     button.disabled = true;
-    button.textContent = 'Creating…';
+    button.textContent = t('friends.creating');
     try {
         const data = await callGameApi('create_challenge', {
             difficulty: difficultyInput.value,
@@ -165,7 +165,7 @@ async function createFriendChallenge() {
     } catch (error) {
         await customAlert('Could Not Create Challenge', error.message);
         button.disabled = false;
-        button.textContent = 'Create Code';
+        button.textContent = t('friends.createCode');
     }
 }
 
@@ -177,19 +177,19 @@ async function joinFriendChallenge() {
     const code = codeInput?.value.toUpperCase().replace(/[^A-Z0-9]/g, '') || '';
 
     if (code.length !== 6) {
-        await customAlert('Invalid Code', 'Enter the complete six-character challenge code.');
+        await customAlert(t('friends.invalidCode'), t('friends.invalidCodeCopy'));
         codeInput?.focus();
         return;
     }
 
     button.disabled = true;
-    button.textContent = 'Entering…';
+    button.textContent = t('friends.entering');
     try {
         await loadChallengeDatabase(code, playerName);
     } catch (error) {
         await customAlert('Could Not Enter Challenge', error.message);
         button.disabled = false;
-        button.textContent = 'Enter Challenge';
+        button.textContent = t('friends.enter');
     }
 }
 
@@ -200,9 +200,9 @@ function showPracticeMode() {
     
     appContent.innerHTML = `
     <div class="game-card difficulty-home practice-menu">
-        <h2 class="difficulty-home-title screen-title">Practice Mode</h2>
+        <h2 class="difficulty-home-title screen-title">${t('home.practice')}</h2>
         <p class="difficulty-home-date">
-        Choose a level and play as often as you like
+        ${t('home.practiceCopy')}
         </p>
 
         <div class="difficulty-home-levels">
@@ -245,7 +245,7 @@ function generateDifficultyButton(difficulty, name, level, description, complete
     }
 
     const statusIndicator = completed 
-        ? '<span class="difficulty-completion-mark" aria-label="Completed">✓</span>'
+        ? `<span class="difficulty-completion-mark" aria-label="${t('common.completed')}">✓</span>`
         : '';
 
     const borderClass = completed ? 'difficulty-completed' : '';
@@ -2056,7 +2056,7 @@ async function showMuseum() {
     setHeaderControls('museum');
     const appContent = document.getElementById('app-content');
     
-    appContent.innerHTML = `<div class="game-card">${renderAppState('Loading Museum…')}</div>`;
+    appContent.innerHTML = `<div class="game-card">${renderAppState(t('museum.loading'))}</div>`;
     
     try {
         if (!fullDatabase || fullDatabase.length === 0) {
@@ -2084,31 +2084,31 @@ async function showMuseum() {
 
         const html = `
             <div class="game-card">
-                <h2 class="screen-title">Museum</h2>
+                <h2 class="screen-title">${t('museum.title')}</h2>
                 
                 <div class="museum-progress-container">
                     <div style="font-size:1.1em; color:var(--color-secondary); font-weight:600;">
-                        Unlocked: ${totalUnlocked} / ${totalCount} (${totalPercent}%)
+                        ${t('museum.progress', { unlocked: totalUnlocked, total: totalCount, percent: totalPercent })}
                     </div>
                     <div class="museum-progress-bar">
                         <div class="museum-progress-fill" style="width: ${totalPercent}%;"></div>
                     </div>
                     <div style="font-size:0.85em; color:var(--color-muted); font-style:italic;">
-                        Complete challenges or practice games to unlock dinosaurs.
+                        ${t('museum.unlockCopy')}
                     </div>
                 </div>
 
-                <div class="museum-view-switch" role="tablist" aria-label="Museum view">
+                <div class="museum-view-switch" role="tablist" aria-label="${t('museum.view')}">
                     <button type="button" role="tab" data-museum-view="atlas"
                             class="${museumView === 'atlas' ? 'active' : ''}"
                             aria-selected="${museumView === 'atlas'}"
                             aria-controls="museum-atlas-panel"
-                            onclick="switchMuseumView('atlas')">Clade Atlas</button>
+                            onclick="switchMuseumView('atlas')">${t('museum.atlas')}</button>
                     <button type="button" role="tab" data-museum-view="specimens"
                             class="${museumView === 'specimens' ? 'active' : ''}"
                             aria-selected="${museumView === 'specimens'}"
                             aria-controls="museum-specimens-panel"
-                            onclick="switchMuseumView('specimens')">Specimens</button>
+                            onclick="switchMuseumView('specimens')">${t('museum.specimens')}</button>
                 </div>
 
                 <div id="museum-atlas-panel" role="tabpanel" ${museumView === 'atlas' ? '' : 'hidden'}>
@@ -2117,24 +2117,24 @@ async function showMuseum() {
 
                 <div id="museum-specimens-panel" role="tabpanel" ${museumView === 'specimens' ? '' : 'hidden'}>
                 <div class="museum-clade-filter" id="museum-clade-filter" ${selectedMuseumClade === 'all' ? 'hidden' : ''}>
-                    <span>Exploring <strong id="museum-clade-filter-name">${escapeChallengeHtml(selectedMuseumClade === 'all' ? '' : selectedMuseumClade)}</strong></span>
-                    <button type="button" onclick="clearMuseumCladeFilter()">Show all clades</button>
+                    <span>${t('museum.exploring')} <strong id="museum-clade-filter-name">${escapeChallengeHtml(selectedMuseumClade === 'all' ? '' : selectedMuseumClade)}</strong></span>
+                    <button type="button" onclick="clearMuseumCladeFilter()">${t('museum.showAllClades')}</button>
                 </div>
 
                 <div class="museum-toolbar">
                     <label class="museum-search" for="museum-search-input">
-                        <span>Search the collection</span>
+                        <span>${t('museum.search')}</span>
                         <input id="museum-search-input" type="search"
                                value="${escapeChallengeHtml(museumSearchQuery)}"
-                               placeholder="Search by genus…"
+                               placeholder="${t('museum.searchPlaceholder')}"
                                autocomplete="off"
                                oninput="updateMuseumSearch(this.value)">
                     </label>
 
-                    <div class="tab-row museum-tabs" role="group" aria-label="Filter Museum by level">
+                    <div class="tab-row museum-tabs" role="group" aria-label="${t('museum.filterLevel')}">
                         <button class="tab-btn museum-filter-all ${selectedMuseumLevel === 'all' ? 'active' : ''}"
                                 data-museum-filter="all" aria-pressed="${selectedMuseumLevel === 'all'}"
-                                onclick="switchMuseumLevel('all')">All</button>
+                                onclick="switchMuseumLevel('all')">${t('museum.all')}</button>
                         <button class="tab-btn museum-filter-very-easy ${selectedMuseumLevel === 'muito_facil' ? 'active' : ''}"
                                 data-museum-filter="muito_facil" aria-pressed="${selectedMuseumLevel === 'muito_facil'}"
                                 onclick="switchMuseumLevel('muito_facil')">Level I</button>
@@ -2154,7 +2154,12 @@ async function showMuseum() {
                 </div>
 
                 <div class="museum-filter-summary" id="museum-filter-summary" aria-live="polite">
-                    Showing ${totalCount} specimens · ${totalUnlocked} unlocked
+                    ${t('museum.showing', {
+                        count: totalCount,
+                        specimens: t('museum.specimenMany'),
+                        clade: '',
+                        unlocked: totalUnlocked
+                    })}
                 </div>
 
                 <div class="museum-grid" id="museum-grid" data-render-state="pending">
@@ -2222,17 +2227,26 @@ function applyMuseumFilters() {
 
     const summary = document.getElementById('museum-filter-summary');
     if (summary) {
-        const specimenLabel = visibleCount === 1 ? 'specimen' : 'specimens';
-        const cladeLabel = selectedMuseumClade === 'all' ? '' : ` in ${selectedMuseumClade}`;
-        summary.textContent = `Showing ${visibleCount} ${specimenLabel}${cladeLabel} · ${visibleUnlocked} unlocked`;
+        const specimenLabel = visibleCount === 1
+            ? t('museum.specimenOne')
+            : t('museum.specimenMany');
+        const cladeLabel = selectedMuseumClade === 'all'
+            ? ''
+            : t('museum.inClade', { clade: selectedMuseumClade });
+        summary.textContent = t('museum.showing', {
+            count: visibleCount,
+            specimens: specimenLabel,
+            clade: cladeLabel,
+            unlocked: visibleUnlocked
+        });
     }
 
     const emptyState = document.getElementById('museum-empty-state');
     if (emptyState) {
         emptyState.hidden = visibleCount !== 0;
         emptyState.textContent = selectedMuseumClade === 'all'
-            ? 'No specimens match this search and level filter.'
-            : `No ${selectedMuseumClade} specimens match these filters.`;
+            ? t('museum.noMatch')
+            : t('museum.noCladeMatch', { clade: selectedMuseumClade });
     }
 }
 

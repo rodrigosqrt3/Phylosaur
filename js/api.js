@@ -148,35 +148,45 @@ function getChallengeSessionStorageKey(code) {
 }
 
 async function fetchWikipediaInfo(cladeName) {
-  const cacheKey = String(cladeName || '').trim().toLowerCase();
-  if (!cacheKey) return null;
+  const normalizedName = String(cladeName || '').trim();
+  if (!normalizedName) return null;
+  const wikiLanguage = currentLocale === 'pt-BR' ? 'pt' : currentLocale === 'es' ? 'es' : 'en';
+  const cacheKey = `${wikiLanguage}:${normalizedName.toLowerCase()}`;
   if (wikipediaInfoCache.has(cacheKey)) return wikipediaInfoCache.get(cacheKey);
 
   const request = (async () => {
-    try {
-    const searchRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cladeName)}&format=json&origin=*`
-    );
-    const searchData = await searchRes.json();
-    
-    if (!searchData.query.search.length) return null;
+    const fetchFromWikipedia = async language => {
+      const endpoint = `https://${language}.wikipedia.org/w/api.php`;
+      const searchRes = await fetch(
+        `${endpoint}?action=query&list=search&srsearch=${encodeURIComponent(normalizedName)}&format=json&origin=*`
+      );
+      if (!searchRes.ok) return null;
+      const searchData = await searchRes.json();
+      if (!searchData.query?.search?.length) return null;
 
-    const pageTitle = searchData.query.search[0].title;
-    const pageUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`;
+      const pageTitle = searchData.query.search[0].title;
+      const pageUrl = `https://${language}.wikipedia.org/wiki/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`;
+      const extractRes = await fetch(
+        `${endpoint}?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages|extracts&format=json&pithumbsize=300&exintro=1&explaintext=1&origin=*`
+      );
+      if (!extractRes.ok) return null;
+      const extractData = await extractRes.json();
+      const pages = extractData.query?.pages || {};
+      const page = pages[Object.keys(pages)[0]];
+      if (!page || page.missing !== undefined) return null;
 
-    const extractRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages|extracts&format=json&pithumbsize=300&exintro=1&explaintext=1&origin=*`
-    );
-    const extractData = await extractRes.json();
-    const pages = extractData.query.pages;
-    const page = pages[Object.keys(pages)[0]];
-
-    return {
-      title: pageTitle,
-      url: pageUrl,
-      image: page.thumbnail?.source || null,
-      description: page.extract || null
+      return {
+        title: pageTitle,
+        url: pageUrl,
+        image: page.thumbnail?.source || null,
+        description: page.extract || null,
+        language
+      };
     };
+
+    try {
+      return await fetchFromWikipedia(wikiLanguage)
+        || (wikiLanguage === 'en' ? null : await fetchFromWikipedia('en'));
     } catch (e) {
       console.error('Wiki info error:', e);
       wikipediaInfoCache.delete(cacheKey);

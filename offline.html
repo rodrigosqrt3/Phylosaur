@@ -46,10 +46,39 @@
 </head>
 <body>
   <main>
-    <img src="pwa-icon-192.png" alt="Phylosaur footprint">
-    <h1>The trail went offline</h1>
-    <p>Phylosaur needs an internet connection to create and validate challenges. Reconnect and try again.</p>
-    <button type="button" onclick="window.location.reload()">Try again</button>
+    <img src="pwa-icon-192.png" alt="Phylosaur footprint" id="offline-logo">
+    <h1 id="offline-title">The trail went offline</h1>
+    <p id="offline-copy">Phylosaur needs an internet connection to create and validate challenges. Reconnect and try again.</p>
+    <button id="offline-retry" type="button" onclick="window.location.reload()">Try again</button>
   </main>
+  <script>
+    const offlineMessages = {
+      en: {
+        title: 'The trail went offline',
+        copy: 'Phylosaur needs an internet connection to create and validate challenges. Reconnect and try again.',
+        retry: 'Try again', alt: 'Phylosaur footprint'
+      },
+      'pt-BR': {
+        title: 'A trilha ficou sem conexão',
+        copy: 'O Phylosaur precisa de conexão com a internet para criar e validar desafios. Reconecte-se e tente novamente.',
+        retry: 'Tentar novamente', alt: 'Pegada do Phylosaur'
+      },
+      es: {
+        title: 'El camino quedó sin conexión',
+        copy: 'Phylosaur necesita conexión a internet para crear y validar desafíos. Vuelve a conectarte e inténtalo de nuevo.',
+        retry: 'Intentar de nuevo', alt: 'Huella de Phylosaur'
+      }
+    };
+    const storedLanguage = localStorage.getItem('phylosaur-language');
+    const browserLanguage = storedLanguage || navigator.language || 'en';
+    const locale = browserLanguage.toLowerCase().startsWith('pt')
+      ? 'pt-BR' : browserLanguage.toLowerCase().startsWith('es') ? 'es' : 'en';
+    const message = offlineMessages[locale];
+    document.documentElement.lang = locale;
+    document.getElementById('offline-title').textContent = message.title;
+    document.getElementById('offline-copy').textContent = message.copy;
+    document.getElementById('offline-retry').textContent = message.retry;
+    document.getElementById('offline-logo').alt = message.alt;
+  </script>
 </body>
 </html>

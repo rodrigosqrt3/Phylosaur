@@ -10,33 +10,33 @@ function setHeaderControls(screen) {
     const controls = document.getElementById('header-controls');
     if (!controls) return;
 
-    const statsBtn = currentUser 
-      ? `<button class="btn-hint btn-header" onclick="showStatsDashboard()">Stats</button>` 
+    const statsBtn = currentUser
+      ? `<button class="btn-hint btn-header" onclick="showStatsDashboard()">${t('nav.stats')}</button>`
       : '';
 
     const analyticsBtn = isAnalyticsAdmin
-      ? `<button class="btn-hint btn-header" onclick="showAnalyticsDashboard()">Analytics</button>`
+      ? `<button class="btn-hint btn-header" onclick="showAnalyticsDashboard()">${t('nav.analytics')}</button>`
       : '';
 
     const safeCurrentUser = escapeHtml(currentUser);
-    const logoutBtn = currentUser 
-      ? `<button class="btn-hint btn-header btn-account" onclick="logout()" title="Sign out: ${safeCurrentUser}">${safeCurrentUser}</button>` 
+    const logoutBtn = currentUser
+      ? `<button class="btn-hint btn-header btn-account" onclick="logout()" title="${escapeHtml(t('nav.signOut', { name: currentUser }))}">${safeCurrentUser}</button>`
       : '';
 
-    const backBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`;
+    const backBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.levels')}</span></button>`;
 
 const map = {
       'login':        '',
-      'difficulty': `<button class="btn-hint btn-header" onclick="showMuseum()">Museum</button>` + analyticsBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
-      'game': backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">Sign In</button>`),
-      'stats':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'museum':       `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'about':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'difficulty': `<button class="btn-hint btn-header" onclick="showMuseum()">${t('nav.museum')}</button>` + analyticsBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">${t('nav.signIn')}</button>`),
+      'game': backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">${t('nav.signIn')}</button>`),
+      'stats':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
+      'museum':       `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
+      'about':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
       'practice-menu':`<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`,
       'practice':     `<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Levels</span></button>`,
-      'friends':      `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
-      'challenge':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/friends')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Friends</span></button>`,
-      'analytics':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>`,
+      'friends':      `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
+      'challenge':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/friends')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.friends')}</span></button>`,
+      'analytics':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
     };
 
     controls.innerHTML = map[screen] || '';
@@ -55,7 +55,7 @@ function updateThemeToggleState() {
 
     const isLight = currentTheme === 'light';
     toggle.setAttribute('aria-pressed', String(isLight));
-    toggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+    toggle.setAttribute('aria-label', isLight ? t('theme.toDark') : t('theme.toLight'));
 }
 
 function escapeAppStateText(value) {

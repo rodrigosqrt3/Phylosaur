@@ -727,7 +727,7 @@ function updateHintButtonState() {
     if (gameWon) {
         button.title = 'This game is complete';
     } else if (hintsRemaining <= 0) {
-        button.title = 'No hints remaining';
+        button.title = t('game.noHints');
     } else if (guessesRequired > 0) {
         button.title = `Make ${guessesRequired} more ${guessesRequired === 1 ? 'guess' : 'guesses'} before using a hint`;
     } else {
@@ -735,8 +735,11 @@ function updateHintButtonState() {
     }
 
     button.textContent = guessesRequired > 0
-        ? `Hint · ${guessesRequired} ${guessesRequired === 1 ? 'guess' : 'guesses'}`
-        : 'Hint';
+        ? t('game.hintCount', {
+            count: guessesRequired,
+            unit: t(guessesRequired === 1 ? 'game.guessOne' : 'game.guessMany')
+        })
+        : t('game.hint');
 }
 
 function updateServerGameDisplay(data) {
@@ -765,7 +768,7 @@ function updateServerGameDisplay(data) {
     if (data.tree && (guesses.length > 0 || hintHistory.length > 0 || data.complete)) {
         renderTreeSnapshot(data.tree);
     } else if (wrapper) {
-        wrapper.innerHTML = '<div class="empty-state">The tree will appear after your first guess or hint.</div>';
+        wrapper.innerHTML = `<div class="empty-state">${t('game.treeEmpty')}</div>`;
     }
 
     updateCladeInfo();
@@ -792,11 +795,11 @@ async function showRestoredServerCompletion(data) {
     panel.className = `victory${resultWasRevealed ? ' victory--revealed' : ''}`;
     panel.innerHTML = `
         <div class="victory-heading">
-            <h2>${wasRaceEliminated ? 'RACE COMPLETE' : data.gaveUp ? 'ANSWER REVEALED' : 'CHALLENGE COMPLETE'}</h2>
+            <h2>${wasRaceEliminated ? t('result.raceComplete') : data.gaveUp ? t('result.answerRevealedTitle') : t('result.completeTitle')}</h2>
             <div class="victory-dino">${targetName}</div>
             <div class="victory-summary" aria-label="Game result summary">
-                <span>${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}</span>
-                ${resultWasRevealed ? '<span>Answer revealed</span>' : ''}
+                <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
+                ${resultWasRevealed ? `<span>${t('result.answerRevealed')}</span>` : ''}
             </div>
         </div>
 
@@ -853,7 +856,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
     currentAccountProgress = null;
 
     const wrapper = document.getElementById('tree-scroll-wrapper');
-    if (wrapper) wrapper.innerHTML = renderAppState('Loading challenge…', { compact: true });
+    if (wrapper) wrapper.innerHTML = renderAppState(t('game.loadingChallenge'), { compact: true });
 
     const storageKey = getGameSessionStorageKey(mode, difficulty);
     if (forceClean) localStorage.removeItem(storageKey);
@@ -868,16 +871,16 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
             const hasSavedProgress = !data.complete && Number(data.attempts || 0) > 0;
             if (hasSavedProgress && !resumeAutomatically) {
                 const savedGameChoice = await showModal({
-                    title: 'Progress Found',
-                    message: 'You have an unfinished game at this level.',
+                    title: t('game.progressFound'),
+                    message: t('game.progressCopy'),
                     info: [
                         { label: 'Attempts made', value: Number(data.attempts || 0) },
                         { label: 'Hints remaining', value: Number(data.hintsRemaining ?? 3) },
                         { label: 'Clades revealed', value: Array.isArray(data.revealedClades) ? data.revealedClades.length : 0 }
                     ],
                     buttons: [
-                        { text: 'Continue Game', value: 'continue', primary: true },
-                        { text: 'Start Fresh', value: 'fresh', primary: false }
+                        { text: t('game.continue'), value: 'continue', primary: true },
+                        { text: t('game.startFresh'), value: 'fresh', primary: false }
                     ],
                     closeOnOverlay: false
                 });

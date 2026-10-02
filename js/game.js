@@ -12,38 +12,38 @@ function renderGameSessionShell(loadingMessage, { contextLabel = '' } = {}) {
         <div class="stats game-session-stats">
             <div class="stat">
                 <div class="stat-value" id="attempts">0</div>
-                <div class="stat-label">Attempts</div>
+                <div class="stat-label">${t('game.attempts')}</div>
             </div>
             <div class="stat">
                 <div class="stat-value" id="hints">3</div>
-                <div class="stat-label">Hints</div>
+                <div class="stat-label">${t('game.hints')}</div>
             </div>
             <div class="stat">
                 <div class="stat-value" id="best-match">0</div>
-                <div class="stat-label">Deepest Node</div>
+                <div class="stat-label">${t('game.deepestNode')}</div>
             </div>
             <div class="stat">
                 <div class="stat-value" id="clades-revealed">0</div>
-                <div class="stat-label">Clades Shown</div>
+                <div class="stat-label">${t('game.cladesShown')}</div>
             </div>
             <div class="stat">
                 <div class="stat-value" id="possible-specimens">-</div>
-                <div class="stat-label">Possible Answers</div>
+                <div class="stat-label">${t('game.possibleAnswers')}</div>
             </div>
         </div>
 
         <div class="input-section">
             <div class="guess-primary-row">
                 <div class="guess-field">
-                    <label class="visually-hidden" for="dino-input">Dinosaur guess</label>
-                    <input type="text" id="dino-input" placeholder="Enter a dinosaur name..." autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
+                    <label class="visually-hidden" for="dino-input">${t('game.guessLabel')}</label>
+                    <input type="text" id="dino-input" placeholder="${t('game.guessPlaceholder')}" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
                     <div id="suggestions"></div>
                 </div>
-                <button class="btn-guess" onclick="makeGuess()">Submit</button>
+                <button class="btn-guess" onclick="makeGuess()">${t('game.submit')}</button>
             </div>
             <div class="guess-secondary-row">
                 <button class="btn-hint btn-game-hint" onclick="useHint()" disabled title="Make 2 guesses before using a hint">Hint · 2 guesses</button>
-                <button class="btn-giveup" onclick="giveUp()">Give Up</button>
+                <button class="btn-giveup" onclick="giveUp()">${t('game.giveUp')}</button>
             </div>
         </div>
 
@@ -66,8 +66,8 @@ async function startPracticeChallenge(difficulty, { restoreExisting = false } = 
     
     const appContent = document.getElementById('app-content');
     
-    appContent.innerHTML = renderGameSessionShell('Loading practice challenge…', {
-        contextLabel: 'Practice mode'
+    appContent.innerHTML = renderGameSessionShell(t('game.loadingPractice'), {
+        contextLabel: t('game.practiceContext')
     });
     await loadPracticeDatabase(difficulty, !restoreExisting, restoreExisting);
 }
@@ -80,7 +80,7 @@ async function startDailyChallenge(difficulty, { restoreExisting = false } = {})
     selectedDifficulty = difficulty;
     const appContent = document.getElementById('app-content');
     
-    appContent.innerHTML = renderGameSessionShell('Loading daily challenge…');
+    appContent.innerHTML = renderGameSessionShell(t('game.loadingDaily'));
 
     await loadDailyDatabase(difficulty, false, restoreExisting);
 }
@@ -119,16 +119,16 @@ async function startFriendChallengeFromPayload(data) {
     const challengeBanner = `
     <div class="challenge-banner">
         <div>
-            <span>Friend Challenge</span>
+            <span>${t('friends.challenge')}</span>
             <strong>${escapeChallengeHtml(currentChallengeCode)}</strong>
         </div>
         <div class="challenge-banner-actions">
-            <button class="btn-hint btn-header" onclick="copyChallengeCode()">Copy Code</button>
-            <button class="btn-hint btn-header" onclick="showChallengeStandings()">Standings</button>
+            <button class="btn-hint btn-header" onclick="copyChallengeCode()">${t('friends.copyCode')}</button>
+            <button class="btn-hint btn-header" onclick="showChallengeStandings()">${t('friends.standings')}</button>
         </div>
-        <div class="challenge-race-progress" id="challenge-race-status">Updating challenge…</div>
+        <div class="challenge-race-progress" id="challenge-race-status">${t('friends.updating')}</div>
     </div>`;
-    appContent.innerHTML = challengeBanner + renderGameSessionShell('Loading friend challenge…');
+    appContent.innerHTML = challengeBanner + renderGameSessionShell(t('game.loadingFriend'));
 
     applyServerGamePayload(data);
     updateServerGameDisplay(data);
@@ -156,7 +156,7 @@ function updateChallengeRaceStatus(data) {
         const total = Number(data.race.totalPlayers || 0);
         const completed = Number(data.race.completedPlayers || 0);
         status.textContent = total < 2
-            ? 'Waiting for another player to join'
+            ? t('friends.waiting')
             : `${total} players · ${completed} finished`;
     }
 }
@@ -292,7 +292,7 @@ function setGuessRequestPending(pending) {
     const button = document.querySelector('.btn-guess');
 
     if (button) {
-        button.textContent = pending ? 'Analyzing…' : 'Submit';
+        button.textContent = pending ? t('game.analyzing') : t('game.submit');
         button.disabled = pending || gameWon;
     }
     if (input) input.disabled = pending || gameWon;
@@ -627,11 +627,11 @@ async function giveUp() {
 
     v.innerHTML = `
         <div class="victory-heading">
-            <h2>ANSWER REVEALED</h2>
+            <h2>${t('result.answerRevealedTitle')}</h2>
             <div class="victory-dino">${targetDino.nome}</div>
             <div class="victory-summary" aria-label="Game result summary">
-                <span>${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}</span>
-                <span>Gave up</span>
+                <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
+                <span>${t('result.gaveUp')}</span>
             </div>
         </div>
 
@@ -648,7 +648,7 @@ async function giveUp() {
                 View Tree
             </button>
             <button class="btn-hint victory-action-secondary" onclick="shareResult()" id="share-btn">
-                Share Result
+                ${t('result.share')}
             </button>
 
             ${currentGameMode === 'challenge' ? `
@@ -902,11 +902,11 @@ async function showVictory() {
         v.innerHTML = `
             ${modeHTML}
             <div class="victory-heading">
-                <h2>CHALLENGE COMPLETE</h2>
+                <h2>${t('result.completeTitle')}</h2>
                 <div class="victory-dino">${targetDino.nome}</div>
                 <div class="victory-summary" aria-label="Game result summary">
-                    <span>${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}</span>
-                    <span>${revealedClades.size} ${revealedClades.size === 1 ? 'clade' : 'clades'} revealed</span>
+                    <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
+                    <span>${revealedClades.size} ${t(revealedClades.size === 1 ? 'game.cladeOne' : 'game.cladeMany')} ${t('game.revealed')}</span>
                 </div>
             </div>
 
@@ -923,7 +923,7 @@ async function showVictory() {
                     View Tree
                 </button>
                 <button class="btn-hint victory-action-secondary" data-victory-action onclick="shareResult()" id="share-btn" disabled>
-                    Share Result
+                    ${t('result.share')}
                 </button>
                 ${currentGameMode === 'challenge' ? `
                 <button class="btn-hint victory-action-secondary" data-victory-action onclick="showChallengeStandings()" disabled>View Standings</button>
@@ -1093,7 +1093,7 @@ function getCurrentDateFormatted() {
         day: 'numeric',
         timeZone: 'UTC'
     };
-    return today.toLocaleDateString('en-US', options);
+    return formatPhylosaurDate(today, options);
 }
 
 function startCountdown() {

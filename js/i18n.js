@@ -1,0 +1,636 @@
+// ═══════════════════════════════════════════════
+// LOCALIZATION
+// English is the source language and universal fallback. Scientific genus
+// and clade names remain unchanged in every locale.
+// ═══════════════════════════════════════════════
+const PHYLOSAUR_SUPPORTED_LOCALES = Object.freeze(['en', 'pt-BR', 'es']);
+const PHYLOSAUR_DEFAULT_LOCALE = 'en';
+
+const PHYLOSAUR_MESSAGES = Object.freeze({
+  en: {
+    'language.label': 'Language',
+    'language.english': 'English',
+    'language.portuguese': 'Portuguese',
+    'language.spanish': 'Spanish',
+    'brand.subtitle': 'A phylogenetic classification challenge',
+    'app.preparing': 'Preparing Phylosaur…',
+    'theme.toDark': 'Switch to dark mode',
+    'theme.toLight': 'Switch to light mode',
+    'nav.levels': 'Levels',
+    'nav.back': 'Back',
+    'nav.friends': 'Friends',
+    'nav.museum': 'Museum',
+    'nav.stats': 'Stats',
+    'nav.analytics': 'Analytics',
+    'nav.signIn': 'Sign In',
+    'nav.signOut': 'Sign out: {name}',
+    'common.close': 'Close',
+    'common.cancel': 'Cancel',
+    'common.continue': 'Continue',
+    'common.loading': 'Loading…',
+    'common.player': 'Player',
+    'common.completed': 'Completed',
+    'common.never': 'Never',
+    'home.daily': 'Daily Challenge',
+    'home.chooseLevel': 'Choose a level',
+    'home.nextDaily': 'Next daily challenge in',
+    'home.howToPlay': 'How to Play',
+    'home.practice': 'Practice Mode',
+    'home.friends': 'Play with Friends',
+    'home.practiceCopy': 'Choose a level and play as often as you like',
+    'level.1': 'LEVEL I',
+    'level.2': 'LEVEL II',
+    'level.3': 'LEVEL III',
+    'level.4': 'LEVEL IV',
+    'level.5': 'LEVEL V',
+    'friends.private': 'Private Challenge',
+    'friends.intro': 'Create a private challenge or enter a six-character code. Everyone receives the same hidden dinosaur and plays on their own tree.',
+    'friends.create': 'Create a Challenge',
+    'friends.join': 'Join a Challenge',
+    'friends.yourName': 'Your name',
+    'friends.playerName': 'Player name',
+    'friends.level': 'Level',
+    'friends.createCode': 'Create Code',
+    'friends.challengeCode': 'Challenge code',
+    'friends.enter': 'Enter Challenge',
+    'friends.or': 'or',
+    'friends.note': 'Codes expire after seven days. Friend challenges can unlock Museum entries, but do not affect Daily streaks or statistics.',
+    'friends.creating': 'Creating…',
+    'friends.entering': 'Entering…',
+    'friends.invalidCode': 'Invalid Code',
+    'friends.invalidCodeCopy': 'Enter the complete six-character challenge code.',
+    'friends.copyCode': 'Copy Code',
+    'friends.standings': 'Standings',
+    'friends.challenge': 'Friend Challenge',
+    'friends.updating': 'Updating challenge…',
+    'friends.waiting': 'Waiting for another player to join',
+    'game.attempts': 'Attempts',
+    'game.hints': 'Hints',
+    'game.deepestNode': 'Deepest Node',
+    'game.cladesShown': 'Clades Shown',
+    'game.possibleAnswers': 'Possible Answers',
+    'game.guessLabel': 'Dinosaur guess',
+    'game.guessPlaceholder': 'Enter a dinosaur name...',
+    'game.submit': 'Submit',
+    'game.hint': 'Hint',
+    'game.giveUp': 'Give Up',
+    'game.practiceContext': 'Practice mode',
+    'game.loadingPractice': 'Loading practice challenge…',
+    'game.loadingDaily': 'Loading daily challenge…',
+    'game.loadingFriend': 'Loading friend challenge…',
+    'game.loadingChallenge': 'Loading challenge…',
+    'game.treeEmpty': 'The tree will appear after your first guess or hint.',
+    'game.viewTree': 'View Tree',
+    'game.viewStandings': 'View Standings',
+    'game.playAgain': 'Play Again',
+    'game.returnLevels': 'Return to Level Selection',
+    'game.returnFriends': 'Return to Friend Challenges',
+    'game.progressFound': 'Progress Found',
+    'game.progressCopy': 'You have an unfinished game at this level.',
+    'game.continue': 'Continue Game',
+    'game.startFresh': 'Start Fresh',
+    'game.noHints': 'No hints remaining',
+    'game.hintCount': 'Hint · {count} {unit}',
+    'game.guessOne': 'guess', 'game.guessMany': 'guesses',
+    'game.attemptOne': 'attempt', 'game.attemptMany': 'attempts',
+    'game.cladeOne': 'clade', 'game.cladeMany': 'clades',
+    'game.revealed': 'revealed', 'game.analyzing': 'Analyzing…',
+    'result.gaveUp': 'Gave up', 'result.share': 'Share Result',
+    'result.raceComplete': 'RACE COMPLETE',
+    'autocomplete.label': 'Dinosaur suggestions',
+    'autocomplete.none': 'No dinosaur suggestions available.',
+    'museum.loading': 'Loading Museum…',
+    'museum.title': 'Museum',
+    'museum.unlocked': 'Unlocked',
+    'museum.unlockCopy': 'Complete challenges or practice games to unlock dinosaurs.',
+    'museum.view': 'Museum view',
+    'museum.atlas': 'Clade Atlas',
+    'museum.specimens': 'Specimens',
+    'museum.exploring': 'Exploring',
+    'museum.showAllClades': 'Show all clades',
+    'museum.search': 'Search the collection',
+    'museum.searchPlaceholder': 'Search by genus…',
+    'museum.filterLevel': 'Filter Museum by level',
+    'museum.all': 'All',
+    'museum.noMatch': 'No specimens match this search and level filter.',
+    'museum.progress': 'Unlocked: {unlocked} / {total} ({percent}%)',
+    'museum.showing': 'Showing {count} {specimens}{clade} · {unlocked} unlocked',
+    'museum.specimenOne': 'specimen',
+    'museum.specimenMany': 'specimens',
+    'museum.inClade': ' in {clade}',
+    'museum.noCladeMatch': 'No {clade} specimens match these filters.',
+    'stats.loading': 'Loading player statistics…',
+    'stats.title': 'Statistics',
+    'stats.record': 'Player record',
+    'stats.subtitle': 'Daily performance, winning patterns and collection milestones.',
+    'stats.gamesPlayed': 'Games Played',
+    'stats.gamesWon': 'Games Won',
+    'stats.successRate': 'Success Rate',
+    'stats.bestScore': 'Best Score',
+    'stats.achievements': 'Achievements',
+    'stats.recentGames': 'Recent Games',
+    'stats.noStreak': 'No streak yet',
+    'stats.noStreakCopy': 'Play a daily challenge to start one.',
+    'stats.currentStreak': 'Current streak',
+    'auth.accountAccess': 'Account access',
+    'auth.createAccount': 'Create Account',
+    'auth.email': 'Email',
+    'auth.password': 'Password',
+    'auth.confirmPassword': 'Confirm Password',
+    'auth.forgot': 'Forgot password?',
+    'auth.backSignIn': 'Back to sign in',
+    'auth.playGuest': 'Play Without Account',
+    'about.loading': 'Loading About Phylosaur…',
+    'about.title': 'About Phylosaur',
+    'about.return': 'Return to Levels',
+    'tutorial.interactive': 'Interactive Tutorial',
+    'tutorial.skip': 'Skip tutorial',
+    'tutorial.next': 'Next',
+    'tutorial.start': 'Start Playing',
+    'howto.intro': 'A mystery dinosaur is hidden each day. Your goal is to identify it using the clues revealed by each guess.',
+    'howto.step1': '1. Guess a genus',
+    'howto.step1Copy': 'Type any dinosaur name and submit. The tree will reveal how closely related your guess is to the target.',
+    'howto.step2': '2. Read the tree',
+    'howto.step2Copy': 'Each guess reveals the deepest clade shared with the mystery dinosaur. The closer on the tree, the warmer you are.',
+    'howto.step3': '3. Hints',
+    'howto.step3Copy': 'You have 3 hints per challenge. Hints reveal the next clade, then clues about the genus name once the full lineage is known. You must make 2 guesses between hints.',
+    'howto.step4': '4. Five difficulty levels',
+    'howto.step4Copy': 'Level I features well-known genera. Level V features obscure taxa requiring broad taxonomic knowledge.',
+    'howto.tip': 'Tip',
+    'howto.tipCopy': 'Click any node on the tree to read about that clade. New here? Start with Level I.',
+    'tutorial.works': 'How Phylosaur Works',
+    'tutorial.hiddenTitle': 'Find the hidden dinosaur',
+    'tutorial.hiddenCopy': 'Phylosaur is a deduction game. Every guess teaches you where the mystery genus belongs on the evolutionary tree.',
+    'tutorial.makeGuess': 'Make a guess',
+    'tutorial.makeGuessCopy': 'Choose a dinosaur genus from the suggestions. Try the sample below to see the kind of clue a guess creates.',
+    'tutorial.followTrail': 'Follow the best trail',
+    'tutorial.followTrailCopy': 'The brightest connected branch is your strongest route so far. A warmer guess reaches deeper into the target lineage.',
+    'tutorial.usingHints': 'Using hints',
+    'tutorial.usingHintsCopy': 'A hint reveals the next clade in the hidden lineage. Once the full lineage is known, remaining hints reveal clues about the genus name. You have three, and must make two guesses before requesting another.',
+    'tutorial.chooseLevel': 'Choose a Level',
+    'tutorial.beginLevel': 'Begin with Level I',
+    'tutorial.beginLevelCopy': 'Daily levels share the same rules but use different pools of dinosaurs. Start familiar, then work toward the obscure taxa in Level V.',
+    'result.answerRevealedTitle': 'ANSWER REVEALED',
+    'result.completeTitle': 'CHALLENGE COMPLETE',
+    'result.answerRevealed': 'Answer revealed',
+    'result.back': 'Back to Result',
+    'result.achievement': 'Achievement Unlocked!',
+    'result.saving': 'Saving result…',
+    'tree.bestTrail': 'Best known trail',
+    'tree.revealedPath': 'Revealed path to the target:',
+    'tree.expandAll': 'Expand all',
+    'museum.classification': 'Classification',
+    'museum.clickEnlarge': 'Click to enlarge',
+    'museum.entry': 'Museum entry',
+    'museum.loadingImage': 'Loading image…',
+    'museum.loadingIllustration': 'Loading illustration…',
+    'museum.loadingOverview': 'Loading encyclopedia overview…',
+    'museum.loadingFossils': 'Loading fossil record…',
+    'museum.noIllustration': 'No illustration is currently available for this entry.',
+    'museum.noReviewedIllustration': 'No reviewed illustration is available yet.',
+    'museum.noSummary': 'No encyclopedia summary is available for this genus yet.',
+    'museum.readWikipedia': 'Read the full Wikipedia article',
+    'museum.reviewedSources': 'Reviewed sources',
+    'museum.when': 'When',
+    'museum.where': 'Where fossils were found',
+    'museum.rockUnits': 'Rock units',
+    'museum.locked': 'Locked',
+    'auth.validEmail': 'Please enter a valid email address.',
+    'auth.passwordRequired': 'Password is required.',
+    'auth.passwordLength': 'Password must be at least 6 characters.',
+    'auth.passwordMismatch': 'Passwords do not match.',
+    'auth.resetPassword': 'Reset Password',
+    'auth.newPassword': 'New Password',
+    'auth.setPassword': 'Set New Password',
+    'stats.latestActivity': 'Latest activity',
+    'stats.winningPattern': 'Winning pattern',
+    'stats.guessesPerWin': 'Guesses per Win',
+    'stats.difficultyProfile': 'Difficulty profile',
+    'stats.performanceLevel': 'Performance by Level',
+    'stats.noRecent': 'No recent games.',
+    'footer.label': 'About Phylosaur',
+    'footer.copy': 'Phylosaur is an educational dinosaur guessing game based on phylogenetic classification. Identify the hidden genus by using each guess to follow its path through the dinosaur family tree.',
+    'footer.description': 'is an educational dinosaur guessing game based on phylogenetic classification. Identify the hidden genus by using each guess to follow its path through the dinosaur family tree.',
+    'footer.about': 'About the game and its methodology'
+  },
+  'pt-BR': {
+    'language.label': 'Idioma',
+    'language.english': 'Inglês',
+    'language.portuguese': 'Português',
+    'language.spanish': 'Espanhol',
+    'brand.subtitle': 'Um desafio de classificação filogenética',
+    'app.preparing': 'Preparando o Phylosaur…',
+    'theme.toDark': 'Mudar para o modo escuro',
+    'theme.toLight': 'Mudar para o modo claro',
+    'nav.levels': 'Níveis', 'nav.back': 'Voltar', 'nav.friends': 'Amigos',
+    'nav.museum': 'Museu', 'nav.stats': 'Estatísticas', 'nav.analytics': 'Análises',
+    'nav.signIn': 'Entrar', 'nav.signOut': 'Sair: {name}',
+    'common.close': 'Fechar', 'common.cancel': 'Cancelar', 'common.continue': 'Continuar',
+    'common.loading': 'Carregando…', 'common.player': 'Jogador',
+    'common.completed': 'Concluído', 'common.never': 'Nunca',
+    'home.daily': 'Desafio Diário', 'home.chooseLevel': 'Escolha um nível',
+    'home.nextDaily': 'Próximo desafio diário em', 'home.howToPlay': 'Como Jogar',
+    'home.practice': 'Modo Prática', 'home.friends': 'Jogar com Amigos',
+    'home.practiceCopy': 'Escolha um nível e jogue quantas vezes quiser',
+    'level.1': 'NÍVEL I', 'level.2': 'NÍVEL II', 'level.3': 'NÍVEL III',
+    'level.4': 'NÍVEL IV', 'level.5': 'NÍVEL V',
+    'friends.private': 'Desafio Privado',
+    'friends.intro': 'Crie um desafio privado ou insira um código de seis caracteres. Todos recebem o mesmo dinossauro oculto e jogam em sua própria árvore.',
+    'friends.create': 'Criar um Desafio', 'friends.join': 'Entrar em um Desafio',
+    'friends.yourName': 'Seu nome', 'friends.playerName': 'Nome do jogador',
+    'friends.level': 'Nível', 'friends.createCode': 'Criar Código',
+    'friends.challengeCode': 'Código do desafio', 'friends.enter': 'Entrar no Desafio',
+    'friends.or': 'ou',
+    'friends.note': 'Os códigos expiram após sete dias. Desafios entre amigos podem liberar itens do Museu, mas não afetam sequências ou estatísticas diárias.',
+    'friends.creating': 'Criando…', 'friends.entering': 'Entrando…',
+    'friends.invalidCode': 'Código Inválido',
+    'friends.invalidCodeCopy': 'Insira o código completo de seis caracteres.',
+    'friends.copyCode': 'Copiar Código', 'friends.standings': 'Classificação',
+    'friends.challenge': 'Desafio entre Amigos', 'friends.updating': 'Atualizando desafio…',
+    'friends.waiting': 'Aguardando outro jogador entrar',
+    'game.attempts': 'Tentativas', 'game.hints': 'Dicas',
+    'game.deepestNode': 'Nó Mais Profundo', 'game.cladesShown': 'Clados Revelados',
+    'game.possibleAnswers': 'Respostas Possíveis', 'game.guessLabel': 'Palpite de dinossauro',
+    'game.guessPlaceholder': 'Digite o nome de um dinossauro...', 'game.submit': 'Enviar',
+    'game.hint': 'Dica', 'game.giveUp': 'Desistir', 'game.practiceContext': 'Modo prática',
+    'game.loadingPractice': 'Carregando desafio de prática…',
+    'game.loadingDaily': 'Carregando desafio diário…',
+    'game.loadingFriend': 'Carregando desafio entre amigos…',
+    'game.loadingChallenge': 'Carregando desafio…',
+    'game.treeEmpty': 'A árvore aparecerá após seu primeiro palpite ou dica.',
+    'game.viewTree': 'Ver Árvore', 'game.viewStandings': 'Ver Classificação',
+    'game.playAgain': 'Jogar Novamente', 'game.returnLevels': 'Voltar aos Níveis',
+    'game.returnFriends': 'Voltar aos Desafios', 'game.progressFound': 'Progresso Encontrado',
+    'game.progressCopy': 'Você possui uma partida inacabada neste nível.',
+    'game.continue': 'Continuar Partida', 'game.startFresh': 'Começar de Novo',
+    'game.noHints': 'Nenhuma dica restante',
+    'game.hintCount': 'Dica · {count} {unit}',
+    'game.guessOne': 'palpite', 'game.guessMany': 'palpites',
+    'game.attemptOne': 'tentativa', 'game.attemptMany': 'tentativas',
+    'game.cladeOne': 'clado', 'game.cladeMany': 'clados',
+    'game.revealed': 'revelados', 'game.analyzing': 'Analisando…',
+    'result.gaveUp': 'Desistiu', 'result.share': 'Compartilhar Resultado',
+    'result.raceComplete': 'CORRIDA CONCLUÍDA',
+    'autocomplete.label': 'Sugestões de dinossauros',
+    'autocomplete.none': 'Nenhuma sugestão de dinossauro disponível.',
+    'museum.loading': 'Carregando Museu…', 'museum.title': 'Museu',
+    'museum.unlocked': 'Desbloqueados',
+    'museum.unlockCopy': 'Conclua desafios ou partidas de prática para liberar dinossauros.',
+    'museum.view': 'Visualização do Museu', 'museum.atlas': 'Atlas de Clados',
+    'museum.specimens': 'Espécimes', 'museum.exploring': 'Explorando',
+    'museum.showAllClades': 'Mostrar todos os clados', 'museum.search': 'Pesquisar na coleção',
+    'museum.searchPlaceholder': 'Pesquisar por gênero…',
+    'museum.filterLevel': 'Filtrar o Museu por nível', 'museum.all': 'Todos',
+    'museum.noMatch': 'Nenhum espécime corresponde à pesquisa e ao filtro de nível.',
+    'museum.progress': 'Desbloqueados: {unlocked} / {total} ({percent}%)',
+    'museum.showing': 'Exibindo {count} {specimens}{clade} · {unlocked} desbloqueados',
+    'museum.specimenOne': 'espécime', 'museum.specimenMany': 'espécimes',
+    'museum.inClade': ' em {clade}',
+    'museum.noCladeMatch': 'Nenhum espécime de {clade} corresponde a estes filtros.',
+    'stats.loading': 'Carregando estatísticas do jogador…', 'stats.title': 'Estatísticas',
+    'stats.record': 'Histórico do jogador',
+    'stats.subtitle': 'Desempenho diário, padrões de vitória e marcos da coleção.',
+    'stats.gamesPlayed': 'Partidas Jogadas', 'stats.gamesWon': 'Partidas Vencidas',
+    'stats.successRate': 'Taxa de Sucesso', 'stats.bestScore': 'Melhor Pontuação',
+    'stats.achievements': 'Conquistas', 'stats.recentGames': 'Partidas Recentes',
+    'stats.noStreak': 'Nenhuma sequência ainda',
+    'stats.noStreakCopy': 'Jogue um desafio diário para iniciar uma.',
+    'stats.currentStreak': 'Sequência atual',
+    'auth.accountAccess': 'Acesso à conta', 'auth.createAccount': 'Criar Conta',
+    'auth.email': 'E-mail', 'auth.password': 'Senha', 'auth.confirmPassword': 'Confirmar Senha',
+    'auth.forgot': 'Esqueceu a senha?', 'auth.backSignIn': 'Voltar para entrar',
+    'auth.playGuest': 'Jogar sem Conta', 'about.loading': 'Carregando Sobre o Phylosaur…',
+    'about.title': 'Sobre o Phylosaur', 'about.return': 'Voltar aos Níveis',
+    'tutorial.interactive': 'Tutorial Interativo', 'tutorial.skip': 'Pular tutorial',
+    'tutorial.next': 'Próximo', 'tutorial.start': 'Começar a Jogar',
+    'howto.intro': 'Um dinossauro misterioso é escondido a cada dia. Seu objetivo é identificá-lo usando as pistas reveladas por cada palpite.',
+    'howto.step1': '1. Dê um palpite',
+    'howto.step1Copy': 'Digite o nome de qualquer dinossauro e envie. A árvore revelará o grau de parentesco entre seu palpite e o alvo.',
+    'howto.step2': '2. Leia a árvore',
+    'howto.step2Copy': 'Cada palpite revela o clado mais profundo compartilhado com o dinossauro misterioso. Quanto mais próximo na árvore, mais perto você está.',
+    'howto.step3': '3. Dicas',
+    'howto.step3Copy': 'Você tem 3 dicas por desafio. Elas revelam o próximo clado e, quando toda a linhagem já é conhecida, pistas sobre o nome do gênero. É necessário fazer 2 palpites entre as dicas.',
+    'howto.step4': '4. Cinco níveis de dificuldade',
+    'howto.step4Copy': 'O Nível I apresenta gêneros conhecidos. O Nível V reúne táxons obscuros que exigem conhecimento taxonômico amplo.',
+    'howto.tip': 'Dica',
+    'howto.tipCopy': 'Clique em qualquer nó da árvore para conhecer o clado. Está começando? Experimente o Nível I.',
+    'tutorial.works': 'Como o Phylosaur Funciona',
+    'tutorial.hiddenTitle': 'Encontre o dinossauro oculto',
+    'tutorial.hiddenCopy': 'Phylosaur é um jogo de dedução. Cada palpite ensina onde o gênero misterioso está na árvore evolutiva.',
+    'tutorial.makeGuess': 'Dê um palpite',
+    'tutorial.makeGuessCopy': 'Escolha um gênero de dinossauro entre as sugestões. Experimente o exemplo abaixo para ver a pista criada por um palpite.',
+    'tutorial.followTrail': 'Siga o melhor caminho',
+    'tutorial.followTrailCopy': 'O ramo conectado mais brilhante é sua melhor rota até agora. Um palpite mais próximo alcança uma região mais profunda da linhagem do alvo.',
+    'tutorial.usingHints': 'Usando dicas',
+    'tutorial.usingHintsCopy': 'Uma dica revela o próximo clado da linhagem oculta. Quando toda a linhagem é conhecida, as dicas restantes revelam pistas sobre o nome do gênero. Você tem três e precisa fazer dois palpites antes de pedir outra.',
+    'tutorial.chooseLevel': 'Escolha um Nível',
+    'tutorial.beginLevel': 'Comece pelo Nível I',
+    'tutorial.beginLevelCopy': 'Os níveis diários usam as mesmas regras, mas diferentes grupos de dinossauros. Comece pelos familiares e avance até os táxons obscuros do Nível V.',
+    'result.answerRevealedTitle': 'RESPOSTA REVELADA',
+    'result.completeTitle': 'DESAFIO CONCLUÍDO',
+    'result.answerRevealed': 'Resposta revelada',
+    'result.back': 'Voltar ao Resultado',
+    'result.achievement': 'Conquista Desbloqueada!',
+    'result.saving': 'Salvando resultado…',
+    'tree.bestTrail': 'Melhor caminho conhecido',
+    'tree.revealedPath': 'Caminho revelado até o alvo:',
+    'tree.expandAll': 'Expandir tudo',
+    'museum.classification': 'Classificação',
+    'museum.clickEnlarge': 'Clique para ampliar',
+    'museum.entry': 'Item do Museu',
+    'museum.loadingImage': 'Carregando imagem…',
+    'museum.loadingIllustration': 'Carregando ilustração…',
+    'museum.loadingOverview': 'Carregando resumo enciclopédico…',
+    'museum.loadingFossils': 'Carregando registro fóssil…',
+    'museum.noIllustration': 'Nenhuma ilustração está disponível para este item.',
+    'museum.noReviewedIllustration': 'Ainda não há uma ilustração revisada disponível.',
+    'museum.noSummary': 'Ainda não há um resumo enciclopédico disponível para este gênero.',
+    'museum.readWikipedia': 'Ler o artigo completo na Wikipédia',
+    'museum.reviewedSources': 'Fontes revisadas',
+    'museum.when': 'Quando',
+    'museum.where': 'Onde os fósseis foram encontrados',
+    'museum.rockUnits': 'Unidades rochosas',
+    'museum.locked': 'Bloqueado',
+    'auth.validEmail': 'Insira um endereço de e-mail válido.',
+    'auth.passwordRequired': 'A senha é obrigatória.',
+    'auth.passwordLength': 'A senha deve ter pelo menos 6 caracteres.',
+    'auth.passwordMismatch': 'As senhas não coincidem.',
+    'auth.resetPassword': 'Redefinir Senha',
+    'auth.newPassword': 'Nova Senha',
+    'auth.setPassword': 'Definir Nova Senha',
+    'stats.latestActivity': 'Atividade recente',
+    'stats.winningPattern': 'Padrão de vitórias',
+    'stats.guessesPerWin': 'Palpites por Vitória',
+    'stats.difficultyProfile': 'Perfil de dificuldade',
+    'stats.performanceLevel': 'Desempenho por Nível',
+    'stats.noRecent': 'Nenhuma partida recente.',
+    'footer.label': 'Sobre o Phylosaur',
+    'footer.copy': 'Phylosaur é um jogo educativo de adivinhação de dinossauros baseado em classificação filogenética. Identifique o gênero oculto usando cada palpite para seguir seu caminho pela árvore evolutiva dos dinossauros.',
+    'footer.description': 'é um jogo educativo de adivinhação de dinossauros baseado em classificação filogenética. Identifique o gênero oculto usando cada palpite para seguir seu caminho pela árvore evolutiva dos dinossauros.',
+    'footer.about': 'Sobre o jogo e sua metodologia'
+  },
+  es: {
+    'language.label': 'Idioma',
+    'language.english': 'Inglés', 'language.portuguese': 'Portugués', 'language.spanish': 'Español',
+    'brand.subtitle': 'Un desafío de clasificación filogenética',
+    'app.preparing': 'Preparando Phylosaur…',
+    'theme.toDark': 'Cambiar al modo oscuro', 'theme.toLight': 'Cambiar al modo claro',
+    'nav.levels': 'Niveles', 'nav.back': 'Volver', 'nav.friends': 'Amigos',
+    'nav.museum': 'Museo', 'nav.stats': 'Estadísticas', 'nav.analytics': 'Análisis',
+    'nav.signIn': 'Ingresar', 'nav.signOut': 'Salir: {name}',
+    'common.close': 'Cerrar', 'common.cancel': 'Cancelar', 'common.continue': 'Continuar',
+    'common.loading': 'Cargando…', 'common.player': 'Jugador',
+    'common.completed': 'Completado', 'common.never': 'Nunca',
+    'home.daily': 'Desafío Diario', 'home.chooseLevel': 'Elige un nivel',
+    'home.nextDaily': 'Próximo desafío diario en', 'home.howToPlay': 'Cómo Jugar',
+    'home.practice': 'Modo Práctica', 'home.friends': 'Jugar con Amigos',
+    'home.practiceCopy': 'Elige un nivel y juega tantas veces como quieras',
+    'level.1': 'NIVEL I', 'level.2': 'NIVEL II', 'level.3': 'NIVEL III',
+    'level.4': 'NIVEL IV', 'level.5': 'NIVEL V',
+    'friends.private': 'Desafío Privado',
+    'friends.intro': 'Crea un desafío privado o introduce un código de seis caracteres. Todos reciben el mismo dinosaurio oculto y juegan en su propio árbol.',
+    'friends.create': 'Crear un Desafío', 'friends.join': 'Unirse a un Desafío',
+    'friends.yourName': 'Tu nombre', 'friends.playerName': 'Nombre del jugador',
+    'friends.level': 'Nivel', 'friends.createCode': 'Crear Código',
+    'friends.challengeCode': 'Código del desafío', 'friends.enter': 'Entrar al Desafío',
+    'friends.or': 'o',
+    'friends.note': 'Los códigos caducan después de siete días. Los desafíos entre amigos pueden desbloquear elementos del Museo, pero no afectan las rachas ni las estadísticas diarias.',
+    'friends.creating': 'Creando…', 'friends.entering': 'Ingresando…',
+    'friends.invalidCode': 'Código Inválido',
+    'friends.invalidCodeCopy': 'Introduce el código completo de seis caracteres.',
+    'friends.copyCode': 'Copiar Código', 'friends.standings': 'Clasificación',
+    'friends.challenge': 'Desafío entre Amigos', 'friends.updating': 'Actualizando desafío…',
+    'friends.waiting': 'Esperando que se una otro jugador',
+    'game.attempts': 'Intentos', 'game.hints': 'Pistas',
+    'game.deepestNode': 'Nodo Más Profundo', 'game.cladesShown': 'Clados Revelados',
+    'game.possibleAnswers': 'Respuestas Posibles', 'game.guessLabel': 'Intento de dinosaurio',
+    'game.guessPlaceholder': 'Introduce el nombre de un dinosaurio...', 'game.submit': 'Enviar',
+    'game.hint': 'Pista', 'game.giveUp': 'Rendirse', 'game.practiceContext': 'Modo práctica',
+    'game.loadingPractice': 'Cargando desafío de práctica…',
+    'game.loadingDaily': 'Cargando desafío diario…',
+    'game.loadingFriend': 'Cargando desafío entre amigos…',
+    'game.loadingChallenge': 'Cargando desafío…',
+    'game.treeEmpty': 'El árbol aparecerá después de tu primer intento o pista.',
+    'game.viewTree': 'Ver Árbol', 'game.viewStandings': 'Ver Clasificación',
+    'game.playAgain': 'Jugar de Nuevo', 'game.returnLevels': 'Volver a los Niveles',
+    'game.returnFriends': 'Volver a los Desafíos', 'game.progressFound': 'Progreso Encontrado',
+    'game.progressCopy': 'Tienes una partida sin terminar en este nivel.',
+    'game.continue': 'Continuar Partida', 'game.startFresh': 'Comenzar de Nuevo',
+    'game.noHints': 'No quedan pistas',
+    'game.hintCount': 'Pista · {count} {unit}',
+    'game.guessOne': 'intento', 'game.guessMany': 'intentos',
+    'game.attemptOne': 'intento', 'game.attemptMany': 'intentos',
+    'game.cladeOne': 'clado', 'game.cladeMany': 'clados',
+    'game.revealed': 'revelados', 'game.analyzing': 'Analizando…',
+    'result.gaveUp': 'Se rindió', 'result.share': 'Compartir Resultado',
+    'result.raceComplete': 'CARRERA COMPLETADA',
+    'autocomplete.label': 'Sugerencias de dinosaurios',
+    'autocomplete.none': 'No hay sugerencias de dinosaurios disponibles.',
+    'museum.loading': 'Cargando Museo…', 'museum.title': 'Museo',
+    'museum.unlocked': 'Desbloqueados',
+    'museum.unlockCopy': 'Completa desafíos o partidas de práctica para desbloquear dinosaurios.',
+    'museum.view': 'Vista del Museo', 'museum.atlas': 'Atlas de Clados',
+    'museum.specimens': 'Especímenes', 'museum.exploring': 'Explorando',
+    'museum.showAllClades': 'Mostrar todos los clados', 'museum.search': 'Buscar en la colección',
+    'museum.searchPlaceholder': 'Buscar por género…',
+    'museum.filterLevel': 'Filtrar el Museo por nivel', 'museum.all': 'Todos',
+    'museum.noMatch': 'Ningún espécimen coincide con la búsqueda y el filtro de nivel.',
+    'museum.progress': 'Desbloqueados: {unlocked} / {total} ({percent}%)',
+    'museum.showing': 'Mostrando {count} {specimens}{clade} · {unlocked} desbloqueados',
+    'museum.specimenOne': 'espécimen', 'museum.specimenMany': 'especímenes',
+    'museum.inClade': ' en {clade}',
+    'museum.noCladeMatch': 'Ningún espécimen de {clade} coincide con estos filtros.',
+    'stats.loading': 'Cargando estadísticas del jugador…', 'stats.title': 'Estadísticas',
+    'stats.record': 'Historial del jugador',
+    'stats.subtitle': 'Rendimiento diario, patrones de victoria e hitos de la colección.',
+    'stats.gamesPlayed': 'Partidas Jugadas', 'stats.gamesWon': 'Partidas Ganadas',
+    'stats.successRate': 'Tasa de Éxito', 'stats.bestScore': 'Mejor Puntuación',
+    'stats.achievements': 'Logros', 'stats.recentGames': 'Partidas Recientes',
+    'stats.noStreak': 'Aún no hay racha',
+    'stats.noStreakCopy': 'Juega un desafío diario para comenzar una.',
+    'stats.currentStreak': 'Racha actual',
+    'auth.accountAccess': 'Acceso a la cuenta', 'auth.createAccount': 'Crear Cuenta',
+    'auth.email': 'Correo electrónico', 'auth.password': 'Contraseña',
+    'auth.confirmPassword': 'Confirmar Contraseña', 'auth.forgot': '¿Olvidaste tu contraseña?',
+    'auth.backSignIn': 'Volver al ingreso', 'auth.playGuest': 'Jugar sin Cuenta',
+    'about.loading': 'Cargando Acerca de Phylosaur…', 'about.title': 'Acerca de Phylosaur',
+    'about.return': 'Volver a los Niveles', 'tutorial.interactive': 'Tutorial Interactivo',
+    'tutorial.skip': 'Omitir tutorial', 'tutorial.next': 'Siguiente',
+    'tutorial.start': 'Comenzar a Jugar', 'footer.label': 'Acerca de Phylosaur',
+    'howto.intro': 'Cada día se oculta un dinosaurio misterioso. Tu objetivo es identificarlo usando las pistas reveladas por cada intento.',
+    'howto.step1': '1. Intenta un género',
+    'howto.step1Copy': 'Escribe el nombre de cualquier dinosaurio y envíalo. El árbol revelará qué tan relacionado está tu intento con el objetivo.',
+    'howto.step2': '2. Lee el árbol',
+    'howto.step2Copy': 'Cada intento revela el clado más profundo compartido con el dinosaurio misterioso. Cuanto más cerca esté en el árbol, más cerca estás.',
+    'howto.step3': '3. Pistas',
+    'howto.step3Copy': 'Tienes 3 pistas por desafío. Revelan el siguiente clado y, cuando se conoce toda la línea, pistas sobre el nombre del género. Debes realizar 2 intentos entre pistas.',
+    'howto.step4': '4. Cinco niveles de dificultad',
+    'howto.step4Copy': 'El Nivel I presenta géneros conocidos. El Nivel V reúne taxones poco conocidos que requieren amplios conocimientos taxonómicos.',
+    'howto.tip': 'Consejo',
+    'howto.tipCopy': 'Haz clic en cualquier nodo del árbol para conocer ese clado. ¿Eres nuevo? Comienza con el Nivel I.',
+    'tutorial.works': 'Cómo Funciona Phylosaur',
+    'tutorial.hiddenTitle': 'Encuentra el dinosaurio oculto',
+    'tutorial.hiddenCopy': 'Phylosaur es un juego de deducción. Cada intento te enseña dónde se encuentra el género misterioso en el árbol evolutivo.',
+    'tutorial.makeGuess': 'Haz un intento',
+    'tutorial.makeGuessCopy': 'Elige un género de dinosaurio entre las sugerencias. Prueba el ejemplo para ver el tipo de pista que crea un intento.',
+    'tutorial.followTrail': 'Sigue el mejor camino',
+    'tutorial.followTrailCopy': 'La rama conectada más brillante es tu mejor ruta hasta ahora. Un intento más cercano alcanza una parte más profunda de la línea del objetivo.',
+    'tutorial.usingHints': 'Usar pistas',
+    'tutorial.usingHintsCopy': 'Una pista revela el siguiente clado de la línea oculta. Cuando se conoce toda la línea, las pistas restantes revelan datos sobre el nombre del género. Tienes tres y debes hacer dos intentos antes de pedir otra.',
+    'tutorial.chooseLevel': 'Elige un Nivel',
+    'tutorial.beginLevel': 'Comienza con el Nivel I',
+    'tutorial.beginLevelCopy': 'Los niveles diarios comparten las mismas reglas, pero usan distintos grupos de dinosaurios. Comienza con los familiares y avanza hacia los taxones poco conocidos del Nivel V.',
+    'result.answerRevealedTitle': 'RESPUESTA REVELADA',
+    'result.completeTitle': 'DESAFÍO COMPLETADO',
+    'result.answerRevealed': 'Respuesta revelada',
+    'result.back': 'Volver al Resultado',
+    'result.achievement': '¡Logro Desbloqueado!',
+    'result.saving': 'Guardando resultado…',
+    'tree.bestTrail': 'Mejor camino conocido',
+    'tree.revealedPath': 'Camino revelado hacia el objetivo:',
+    'tree.expandAll': 'Expandir todo',
+    'museum.classification': 'Clasificación',
+    'museum.clickEnlarge': 'Haz clic para ampliar',
+    'museum.entry': 'Entrada del Museo',
+    'museum.loadingImage': 'Cargando imagen…',
+    'museum.loadingIllustration': 'Cargando ilustración…',
+    'museum.loadingOverview': 'Cargando resumen enciclopédico…',
+    'museum.loadingFossils': 'Cargando registro fósil…',
+    'museum.noIllustration': 'No hay ninguna ilustración disponible para esta entrada.',
+    'museum.noReviewedIllustration': 'Aún no hay una ilustración revisada disponible.',
+    'museum.noSummary': 'Aún no hay un resumen enciclopédico disponible para este género.',
+    'museum.readWikipedia': 'Leer el artículo completo en Wikipedia',
+    'museum.reviewedSources': 'Fuentes revisadas',
+    'museum.when': 'Cuándo',
+    'museum.where': 'Dónde se encontraron los fósiles',
+    'museum.rockUnits': 'Unidades rocosas',
+    'museum.locked': 'Bloqueado',
+    'auth.validEmail': 'Introduce una dirección de correo válida.',
+    'auth.passwordRequired': 'La contraseña es obligatoria.',
+    'auth.passwordLength': 'La contraseña debe tener al menos 6 caracteres.',
+    'auth.passwordMismatch': 'Las contraseñas no coinciden.',
+    'auth.resetPassword': 'Restablecer Contraseña',
+    'auth.newPassword': 'Nueva Contraseña',
+    'auth.setPassword': 'Definir Nueva Contraseña',
+    'stats.latestActivity': 'Actividad reciente',
+    'stats.winningPattern': 'Patrón de victorias',
+    'stats.guessesPerWin': 'Intentos por Victoria',
+    'stats.difficultyProfile': 'Perfil de dificultad',
+    'stats.performanceLevel': 'Rendimiento por Nivel',
+    'stats.noRecent': 'No hay partidas recientes.',
+    'footer.copy': 'Phylosaur es un juego educativo de adivinanza de dinosaurios basado en la clasificación filogenética. Identifica el género oculto usando cada intento para seguir su camino por el árbol evolutivo de los dinosaurios.',
+    'footer.description': 'es un juego educativo de adivinanza de dinosaurios basado en la clasificación filogenética. Identifica el género oculto usando cada intento para seguir su camino por el árbol evolutivo de los dinosaurios.',
+    'footer.about': 'Acerca del juego y su metodología'
+  }
+});
+
+function normalizePhylosaurLocale(value) {
+  const locale = String(value || '').trim().toLowerCase();
+  if (locale === 'pt' || locale.startsWith('pt-')) return 'pt-BR';
+  if (locale === 'es' || locale.startsWith('es-')) return 'es';
+  return 'en';
+}
+
+function detectPhylosaurLocale() {
+  const queryLocale = new URLSearchParams(window.location.search).get('lang');
+  if (queryLocale) return normalizePhylosaurLocale(queryLocale);
+  try {
+    const saved = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.language);
+    if (saved) return normalizePhylosaurLocale(saved);
+  } catch (_error) {}
+  const preferred = navigator.languages?.[0] || navigator.language || PHYLOSAUR_DEFAULT_LOCALE;
+  return normalizePhylosaurLocale(preferred);
+}
+
+let currentLocale = detectPhylosaurLocale();
+
+function t(key, replacements = {}) {
+  const fallback = PHYLOSAUR_MESSAGES.en[key] ?? key;
+  const message = PHYLOSAUR_MESSAGES[currentLocale]?.[key] ?? fallback;
+  return String(message).replace(/\{([A-Za-z0-9_]+)\}/g, (_match, name) =>
+    replacements[name] ?? `{${name}}`
+  );
+}
+
+function getPhylosaurLocaleTag() {
+  return currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale;
+}
+
+function formatPhylosaurDate(value, options = {}) {
+  return new Intl.DateTimeFormat(getPhylosaurLocaleTag(), options).format(value);
+}
+
+function changeLanguage(locale) {
+  const normalized = normalizePhylosaurLocale(locale);
+  try {
+    localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.language, normalized);
+  } catch (_error) {}
+  const url = new URL(window.location.href);
+  url.searchParams.delete('lang');
+  window.location.assign(url.toString());
+}
+
+const PHYLOSAUR_ENGLISH_TO_KEY = new Map(
+  Object.entries(PHYLOSAUR_MESSAGES.en).map(([key, value]) => [value, key])
+);
+
+function translateKnownText(value) {
+  const key = PHYLOSAUR_ENGLISH_TO_KEY.get(value);
+  return key ? t(key) : value;
+}
+
+function localizeTextNode(node) {
+  if (!node?.nodeValue || currentLocale === 'en') return;
+  const match = node.nodeValue.match(/^(\s*)(.*?)(\s*)$/s);
+  if (!match || !match[2]) return;
+  const translated = translateKnownText(match[2]);
+  if (translated !== match[2]) node.nodeValue = `${match[1]}${translated}${match[3]}`;
+}
+
+function localizeElement(element) {
+  if (!(element instanceof Element)) return;
+  const key = element.dataset.i18n;
+  if (key) element.textContent = t(key);
+  ['aria-label', 'title', 'placeholder'].forEach(attribute => {
+    const value = element.getAttribute(attribute);
+    if (!value) return;
+    const translated = translateKnownText(value);
+    if (translated !== value) element.setAttribute(attribute, translated);
+  });
+}
+
+function localizeDocument(root = document) {
+  if (root instanceof Element) localizeElement(root);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.nodeType === Node.TEXT_NODE) localizeTextNode(node);
+    else localizeElement(node);
+  }
+}
+
+let phylosaurLocalizationObserver = null;
+
+function initializeI18n() {
+  document.documentElement.lang = getPhylosaurLocaleTag();
+  const selector = document.getElementById('language-select');
+  if (selector) {
+    selector.value = currentLocale;
+    selector.setAttribute('aria-label', t('language.label'));
+    const labels = {
+      en: t('language.english'), 'pt-BR': t('language.portuguese'), es: t('language.spanish')
+    };
+    [...selector.options].forEach(option => {
+      option.title = labels[option.value] || option.textContent;
+    });
+  }
+  localizeDocument(document);
+  phylosaurLocalizationObserver?.disconnect();
+  phylosaurLocalizationObserver = new MutationObserver(mutations => {
+    mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE) localizeTextNode(node);
+      else if (node.nodeType === Node.ELEMENT_NODE) localizeDocument(node);
+    }));
+  });
+  phylosaurLocalizationObserver.observe(document.body, { childList: true, subtree: true });
+}

@@ -29,7 +29,7 @@ function initializeAutocomplete() {
   input.setAttribute('aria-controls', 'suggestions');
   input.setAttribute('aria-expanded', 'false');
   sugDiv.setAttribute('role', 'listbox');
-  sugDiv.setAttribute('aria-label', 'Dinosaur suggestions');
+  sugDiv.setAttribute('aria-label', t('autocomplete.label'));
 
   let status = sugDiv.parentElement?.querySelector('.autocomplete-status');
   if (!status) {
@@ -72,7 +72,7 @@ function initializeAutocomplete() {
     const matches = getRankedDinosaurSuggestions(database, text, guessedNames);
     
     if (!matches.length) {
-      status.textContent = 'No dinosaur suggestions available.';
+      status.textContent = t('autocomplete.none');
       hideSuggestions();
       return;
     }
