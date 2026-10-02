@@ -57,46 +57,48 @@
   <meta name="theme-color" content="#2d2318">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script defer src="js/state.js"></script>
+  <script defer src="js/i18n.js"></script>
 </head>
 <body>
   <div class="info-shell">
     <header class="info-header">
       <h1>Phylosaur</h1>
-      <p>A phylogenetic classification challenge</p>
+      <p data-i18n="brand.subtitle">A phylogenetic classification challenge</p>
       <nav class="info-nav" aria-label="Page navigation">
-        <a href="index.html">Play Phylosaur</a>
-        <a href="#foundations">Foundations</a>
-        <a href="#mechanics">Game mechanics</a>
-        <a href="#data">Data</a>
-        <a href="#mathematics">Mathematics</a>
-        <a href="#limitations">Limitations</a>
-        <a href="#resources">Resources</a>
+        <a href="index.html" data-i18n="about.play">Play Phylosaur</a>
+        <a href="#foundations" data-i18n="about.foundations">Foundations</a>
+        <a href="#mechanics" data-i18n="about.mechanics">Game mechanics</a>
+        <a href="#data" data-i18n="about.data">Data</a>
+        <a href="#mathematics" data-i18n="about.mathematics">Mathematics</a>
+        <a href="#limitations" data-i18n="about.limitations">Limitations</a>
+        <a href="#resources" data-i18n="about.resources">Resources</a>
       </nav>
     </header>
 
     <main class="info-page" id="about-content">
       <article>
-        <h2>About Phylosaur</h2>
-        <p class="info-lead">
+        <h2 data-i18n="about.title">About Phylosaur</h2>
+        <p class="info-lead" data-i18n="about.lead">
           Phylosaur is an independent educational game about the dinosaur family tree. A hidden genus must be
           identified by comparing guesses across a branching classification. Each attempt reveals the deepest named
           clade shared by the guess and the target, turning classification into a process of navigation rather than
           memorization. Gradually, familiar names become landmarks within a larger evolutionary history.
         </p>
-        <p>
+        <p data-i18n-html="about.nameOrigin">
           The name is a deliberate meeting of language and subject. The scientific element <em>phylo-</em>, from Greek
           <em>phylon</em> (a lineage, tribe, or related group), points to phylogeny: the history and pattern of evolutionary
           relationships. Its sound also recalls <em>philo-</em>, from Greek <em>philos</em>, associated with affection or love.
           <em>-saur</em>, from Greek <em>sauros</em> (lizard), is the historical element familiar from <em>Dinosauria</em>
           and countless dinosaur names.
         </p>
-        <p>
+        <p data-i18n="about.nameMeaning">
           Phylosaur can therefore be read in two complementary ways: a game about dinosaur phylogeny and a small
           expression of love for dinosaurs. The resemblance to "lizard" belongs to the history of the word, not to a
           claim that dinosaurs were merely lizards.
         </p>
 
-        <h2 id="foundations">Phylogenetic foundations</h2>
+        <h2 id="foundations" data-i18n="about.foundationsTitle">Phylogenetic foundations</h2>
         <p>
           Modern biological classification rests upon phylogenetic systematics, a methodology that organizes organisms
           according to their evolutionary relationships rather than superficial morphological similarities. This
@@ -127,7 +129,7 @@
           </cite>
         </blockquote>
 
-        <h2 id="mechanics">Game mechanics and educational objectives</h2>
+        <h2 id="mechanics" data-i18n="about.mechanicsTitle">Game mechanics and educational objectives</h2>
         <p>
           Players are presented with a mystery taxon and infer its phylogenetic position through iterative hypothesis
           testing. Each guess reveals the deepest stored node shared between the proposed taxon and the target, thereby
@@ -156,7 +158,7 @@
           <li>The game currently has no fixed guess limit.</li>
         </ul>
 
-        <h2>Difficulty and public familiarity</h2>
+        <h2 data-i18n="about.difficulty">Difficulty and public familiarity</h2>
         <p>
           The game offers five difficulty tiers determined by taxonomic familiarity as measured through thirty-day
           Wikipedia pageview statistics. This serves as a proxy for public recognition rather than phylogenetic
@@ -171,7 +173,7 @@
           a plant, place, person, or unrelated animal. Genera without reliable traffic data are handled conservatively.
         </p>
 
-        <h2 id="data">Data sources and taxonomic curation</h2>
+        <h2 id="data" data-i18n="about.dataTitle">Data sources and taxonomic curation</h2>
         <p>
           The genus catalogue began with open paleontological occurrence and taxonomic data, particularly records
           assembled through the Paleobiology Database, followed by filtering and manual review. The present lineage
@@ -199,7 +201,7 @@
           available image so that visitors can follow it back to its original record.
         </p>
 
-        <h2 id="mathematics">Mathematical foundations</h2>
+        <h2 id="mathematics" data-i18n="about.mathematicsTitle">Mathematical foundations</h2>
         <p>
           The proximity measure computed by Phylosaur has a precise mathematical interpretation. Let $L_A$ be the
           ordered lineage of a guessed genus $A$, and let $L_B$ be the lineage of the hidden target $B$. Both sequences
@@ -244,12 +246,14 @@
         </p>
         <p>
           Difficulty stratification also has a statistical basis. Let $V=\{v_1,v_2,\ldots,v_n\}$ be the sorted vector
-          of usable thirty-day pageview totals. Boundaries near the 20th, 40th, 60th, and 80th percentiles divide the
-          observed distribution into five familiarity bands. These are empirical game-design categories rather than
-          universal measures of difficulty.
+          of usable thirty-day pageview totals. Fixed thresholds assign Level I at 4,500 views or more, Level II at
+          1,300–4,499, Level III at 550–1,299, Level IV at 250–549, and Level V below 250. Fixed boundaries preserve
+          the meaning of each level as the catalogue grows. To avoid abrupt changes between releases, an existing
+          genus moves by no more than two levels during one recalibration. These are empirical game-design categories
+          rather than universal measures of difficulty.
         </p>
 
-        <h2 id="limitations">Methodological considerations and limitations</h2>
+        <h2 id="limitations" data-i18n="about.limitationsTitle">Methodological considerations and limitations</h2>
         <p>
           Phylogenetic trees are hypotheses of evolutionary relationships, not immutable facts. The topology presented
           here represents one interpretation of available data and may differ from analyses that use different
@@ -279,7 +283,7 @@
           For formal research, classifications and claims should be checked against the relevant systematic literature.
         </div>
 
-        <h2 id="resources">Acknowledgments and further resources</h2>
+        <h2 id="resources" data-i18n="about.resourcesTitle">Acknowledgments and further resources</h2>
         <p>
           This project acknowledges the foundational work of paleontologists whose systematic research underlies our
           current understanding of dinosaurian phylogeny. Readers seeking deeper engagement with the primary literature
@@ -295,7 +299,7 @@
         </p>
 
         <section class="info-references" aria-labelledby="landmarks-title">
-          <h3 id="landmarks-title">Selected scientific landmarks</h3>
+          <h3 id="landmarks-title" data-i18n="about.landmarksTitle">Selected scientific landmarks</h3>
           <ul>
             <li>Owen, R. (1842). <em>Report on British Fossil Reptiles, Part II.</em></li>
             <li>Seeley, H. G. (1888). <em>On the Classification of the Fossil Animals Commonly Named Dinosauria.</em></li>
@@ -323,12 +327,16 @@
     </main>
 
     <footer class="info-footer">
-      <p><a href="index.html">Return to Phylosaur</a></p>
+      <p><a href="index.html" data-i18n="about.returnSite">Return to Phylosaur</a></p>
     </footer>
   </div>
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
+      initializeI18n();
+      document.title = t('about.metaTitle');
+      const description = document.querySelector('meta[name="description"]');
+      if (description) description.setAttribute('content', t('about.metaDescription'));
       if (!window.renderMathInElement) return;
       renderMathInElement(document.getElementById('about-content'), {
         delimiters: [
