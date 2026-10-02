@@ -57,3 +57,10 @@ interface problems, missing genera, and other suggestions are welcome at
 [rodrigo03.villa@gmail.com](mailto:rodrigo03.villa@gmail.com).
 
 The original game concept was inspired by [Metazooa](https://metazooa.com/).
+
+## License
+
+Copyright © 2026 Rodrigo Fonseca Villa. All rights reserved. The source code is
+publicly visible, but permission is not granted to copy, modify, redistribute,
+rehost, or create derivative works. Third-party materials retain their original
+licences. See [LICENSE](LICENSE) for the complete terms.
