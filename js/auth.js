@@ -65,29 +65,29 @@ function showLoginScreen() {
 
   appContent.innerHTML = `
     <div class="game-card login-card">
-      <div class="tab-row login-tab-row" role="tablist" aria-label="Account access">
+      <div class="tab-row login-tab-row" role="tablist" aria-label="${t('auth.accountAccess')}">
         <button class="tab-btn active" id="tab-signin" role="tab" aria-selected="true"
-                aria-controls="login-panel-signin" onclick="loginSwitchTab('signin')">Sign In</button>
+                aria-controls="login-panel-signin" onclick="loginSwitchTab('signin')">${t('auth.signIn')}</button>
         <button class="tab-btn" id="tab-register" role="tab" aria-selected="false"
-                aria-controls="login-panel-register" onclick="loginSwitchTab('register')">Create Account</button>
+                aria-controls="login-panel-register" onclick="loginSwitchTab('register')">${t('auth.createAccount')}</button>
       </div>
 
       <div class="login-form-panel active" id="login-panel-signin" role="tabpanel" aria-labelledby="tab-signin">
         <div class="login-global-error" id="signin-global-error"></div>
         <div class="login-global-success" id="signin-global-success"></div>
         <div class="login-field">
-          <label for="signin-email">Email</label>
-          <input type="email" id="signin-email" placeholder="your@email.com" autocomplete="email" />
-          <div class="login-field-error" id="signin-email-err">Please enter a valid email address.</div>
+          <label for="signin-email">${t('auth.email')}</label>
+          <input type="email" id="signin-email" placeholder="${t('auth.emailPlaceholder')}" autocomplete="email" />
+          <div class="login-field-error" id="signin-email-err">${t('auth.validEmail')}</div>
         </div>
         <div class="login-field">
-          <label for="signin-password">Password</label>
+          <label for="signin-password">${t('auth.password')}</label>
           <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password" />
-          <div class="login-field-error" id="signin-password-err">Password is required.</div>
+          <div class="login-field-error" id="signin-password-err">${t('auth.passwordRequired')}</div>
         </div>
-        <button type="button" class="login-forgot login-text-action" onclick="loginShowReset()">Forgot password?</button>
+        <button type="button" class="login-forgot login-text-action" onclick="loginShowReset()">${t('auth.forgot')}</button>
         <button class="btn-guess btn-block btn-large" id="signin-btn" onclick="handleSignIn()">
-          Sign In
+          ${t('auth.signIn')}
         </button>
       </div>
 
@@ -95,46 +95,46 @@ function showLoginScreen() {
         <div class="login-global-error" id="register-global-error"></div>
         <div class="login-global-success" id="register-global-success"></div>
         <div class="login-field">
-          <label for="reg-email">Email</label>
-          <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email" />
-          <div class="login-field-error" id="reg-email-err">Please enter a valid email address.</div>
+          <label for="reg-email">${t('auth.email')}</label>
+          <input type="email" id="reg-email" placeholder="${t('auth.emailPlaceholder')}" autocomplete="email" />
+          <div class="login-field-error" id="reg-email-err">${t('auth.validEmail')}</div>
         </div>
         <div class="login-field">
-          <label for="reg-password">Password</label>
-          <input type="password" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password" />
-          <div class="login-field-error" id="reg-password-err">Password must be at least 6 characters.</div>
+          <label for="reg-password">${t('auth.password')}</label>
+          <input type="password" id="reg-password" placeholder="${t('auth.passwordPlaceholder')}" autocomplete="new-password" />
+          <div class="login-field-error" id="reg-password-err">${t('auth.passwordLength')}</div>
         </div>
         <div class="login-field login-field-last">
-          <label for="reg-confirm">Confirm Password</label>
-          <input type="password" id="reg-confirm" placeholder="Repeat password" autocomplete="new-password" />
-          <div class="login-field-error" id="reg-confirm-err">Passwords do not match.</div>
+          <label for="reg-confirm">${t('auth.confirmPassword')}</label>
+          <input type="password" id="reg-confirm" placeholder="${t('auth.repeatPassword')}" autocomplete="new-password" />
+          <div class="login-field-error" id="reg-confirm-err">${t('auth.passwordMismatch')}</div>
         </div>
         <button class="btn-guess btn-block btn-large" id="register-btn" onclick="handleRegister()">
-          Create Account
+          ${t('auth.createAccount')}
         </button>
       </div>
 
       <div class="login-form-panel" id="login-panel-reset">
-        <button type="button" class="login-text-action login-back-link" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back to sign in</span></button>
-        <p class="login-reset-title">Reset Password</p>
+        <button type="button" class="login-text-action login-back-link" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('auth.backSignIn')}</span></button>
+        <p class="login-reset-title">${t('auth.resetPassword')}</p>
         <p class="login-reset-copy">
-          Enter your email and we'll send you a reset link.
+          ${t('auth.resetCopy')}
         </p>
         <div class="login-global-error" id="reset-global-error"></div>
         <div class="login-global-success" id="reset-global-success"></div>
         <div class="login-field login-field-last">
-          <label for="reset-email">Email</label>
-          <input type="email" id="reset-email" placeholder="your@email.com" />
-          <div class="login-field-error" id="reset-email-err">Please enter a valid email address.</div>
+          <label for="reset-email">${t('auth.email')}</label>
+          <input type="email" id="reset-email" placeholder="${t('auth.emailPlaceholder')}" />
+          <div class="login-field-error" id="reset-email-err">${t('auth.validEmail')}</div>
         </div>
         <button class="btn-guess btn-block btn-large" id="reset-btn" onclick="handleReset()">
-          Send Reset Link
+          ${t('auth.sendReset')}
         </button>
       </div>
 
       <p class="login-guest-action">
         <button onclick="continueAsGuest()" class="btn-hint btn-block btn-large btn-spaced">
-          Play Without Account
+          ${t('auth.playGuest')}
         </button>
       </p>
     </div>
@@ -154,36 +154,36 @@ function showLoginModal() {
   overlay.id = 'login-modal-overlay';
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-label', 'Account access');
+  overlay.setAttribute('aria-label', t('auth.accountAccess'));
   
   const box = document.createElement('div');
   box.className = 'modal-box login-modal-box';
   box.tabIndex = -1;
   
   box.innerHTML = `
-    <div class="tab-row login-tab-row" role="tablist" aria-label="Account access">
+    <div class="tab-row login-tab-row" role="tablist" aria-label="${t('auth.accountAccess')}">
       <button class="tab-btn active" id="tab-signin" role="tab" aria-selected="true"
-              aria-controls="login-panel-signin" onclick="loginSwitchTab('signin')">Sign In</button>
+              aria-controls="login-panel-signin" onclick="loginSwitchTab('signin')">${t('auth.signIn')}</button>
       <button class="tab-btn" id="tab-register" role="tab" aria-selected="false"
-              aria-controls="login-panel-register" onclick="loginSwitchTab('register')">Create Account</button>
+              aria-controls="login-panel-register" onclick="loginSwitchTab('register')">${t('auth.createAccount')}</button>
     </div>
 
     <div class="login-form-panel active" id="login-panel-signin" role="tabpanel" aria-labelledby="tab-signin">
       <div class="login-global-error" id="signin-global-error"></div>
       <div class="login-global-success" id="signin-global-success"></div>
       <div class="login-field">
-        <label for="signin-email">Email</label>
-        <input type="email" id="signin-email" placeholder="your@email.com" autocomplete="email" />
-        <div class="login-field-error" id="signin-email-err">Please enter a valid email address.</div>
+        <label for="signin-email">${t('auth.email')}</label>
+        <input type="email" id="signin-email" placeholder="${t('auth.emailPlaceholder')}" autocomplete="email" />
+        <div class="login-field-error" id="signin-email-err">${t('auth.validEmail')}</div>
       </div>
       <div class="login-field">
-        <label for="signin-password">Password</label>
+        <label for="signin-password">${t('auth.password')}</label>
         <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password" />
-        <div class="login-field-error" id="signin-password-err">Password is required.</div>
+        <div class="login-field-error" id="signin-password-err">${t('auth.passwordRequired')}</div>
       </div>
-      <button type="button" class="login-forgot login-text-action" onclick="loginShowReset()">Forgot password?</button>
+      <button type="button" class="login-forgot login-text-action" onclick="loginShowReset()">${t('auth.forgot')}</button>
       <button class="btn-guess btn-block btn-large" id="signin-btn" onclick="handleSignInModal()">
-        Sign In
+        ${t('auth.signIn')}
       </button>
     </div>
 
@@ -191,41 +191,41 @@ function showLoginModal() {
       <div class="login-global-error" id="register-global-error"></div>
       <div class="login-global-success" id="register-global-success"></div>
       <div class="login-field">
-        <label for="reg-email">Email</label>
-        <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email" />
-        <div class="login-field-error" id="reg-email-err">Please enter a valid email address.</div>
+        <label for="reg-email">${t('auth.email')}</label>
+        <input type="email" id="reg-email" placeholder="${t('auth.emailPlaceholder')}" autocomplete="email" />
+        <div class="login-field-error" id="reg-email-err">${t('auth.validEmail')}</div>
       </div>
       <div class="login-field">
-        <label for="reg-password">Password</label>
-        <input type="password" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password" />
-        <div class="login-field-error" id="reg-password-err">Password must be at least 6 characters.</div>
+        <label for="reg-password">${t('auth.password')}</label>
+        <input type="password" id="reg-password" placeholder="${t('auth.passwordPlaceholder')}" autocomplete="new-password" />
+        <div class="login-field-error" id="reg-password-err">${t('auth.passwordLength')}</div>
       </div>
       <div class="login-field login-field-last">
-        <label for="reg-confirm">Confirm Password</label>
-        <input type="password" id="reg-confirm" placeholder="Repeat password" autocomplete="new-password" />
-        <div class="login-field-error" id="reg-confirm-err">Passwords do not match.</div>
+        <label for="reg-confirm">${t('auth.confirmPassword')}</label>
+        <input type="password" id="reg-confirm" placeholder="${t('auth.repeatPassword')}" autocomplete="new-password" />
+        <div class="login-field-error" id="reg-confirm-err">${t('auth.passwordMismatch')}</div>
       </div>
       <button class="btn-guess btn-block btn-large" id="register-btn" onclick="handleRegisterModal()">
-        Create Account
+        ${t('auth.createAccount')}
       </button>
     </div>
 
     <div class="login-form-panel" id="login-panel-reset">
-      <button type="button" class="login-text-action login-back-link" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back to sign in</span></button>
+      <button type="button" class="login-text-action login-back-link" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('auth.backSignIn')}</span></button>
       <div class="login-global-error" id="reset-global-error"></div>
       <div class="login-global-success" id="reset-global-success"></div>
       <div class="login-field login-field-last">
-        <label for="reset-email">Email</label>
-        <input type="email" id="reset-email" placeholder="your@email.com" />
-        <div class="login-field-error" id="reset-email-err">Please enter a valid email address.</div>
+        <label for="reset-email">${t('auth.email')}</label>
+        <input type="email" id="reset-email" placeholder="${t('auth.emailPlaceholder')}" />
+        <div class="login-field-error" id="reset-email-err">${t('auth.validEmail')}</div>
       </div>
       <button class="btn-guess btn-block btn-large" id="reset-btn" onclick="handleReset()">
-        Send Reset Link
+        ${t('auth.sendReset')}
       </button>
     </div>
 
     <button onclick="closeLoginModal()" class="btn-hint btn-block btn-spaced">
-      Continue Without Account
+      ${t('auth.continueGuest')}
     </button>
   `;
 
@@ -297,7 +297,7 @@ async function handleSignInModal() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
   if (error) {
-    loginShowGlobalError('signin', 'Invalid email or password. Please try again.');
+    loginShowGlobalError('signin', t('auth.invalidCredentials'));
     loginSetLoading('signin-btn', false);
     return;
   }
@@ -347,7 +347,7 @@ async function handleRegisterModal() {
   }
 
   loginSetLoading('register-btn', false);
-  loginShowGlobalSuccess('register', 'Account created! Check your email to confirm, then sign in.');
+  loginShowGlobalSuccess('register', t('auth.accountCreated'));
 }
 
 function loginSwitchTab(tab) {
@@ -445,7 +445,7 @@ async function handleSignIn() {
 
   if (error) {
     if (error.message.includes('Invalid login credentials')) {
-      loginShowGlobalError('signin', 'Invalid email or password. Please try again.');
+      loginShowGlobalError('signin', t('auth.invalidCredentials'));
     } else {
       loginShowGlobalError('signin', error.message);
     }
@@ -496,7 +496,7 @@ async function handleRegister() {
   }
 
   loginSetLoading('register-btn', false);
-  loginShowGlobalSuccess('register', 'Account created! Check your email to confirm, then sign in.');
+  loginShowGlobalSuccess('register', t('auth.accountCreated'));
 }
 
 async function handleReset() {
@@ -516,7 +516,7 @@ async function handleReset() {
   if (error) {
     loginShowGlobalError('reset', error.message);
   } else {
-    loginShowGlobalSuccess('reset', 'Reset link sent! Check your inbox.');
+    loginShowGlobalSuccess('reset', t('auth.resetSent'));
   }
 }
 
@@ -531,10 +531,10 @@ function continueAsGuest() {
 
 async function logout() {
   const confirm = await customConfirm(
-    'Confirm Logout',
-    'Are you sure you want to sign out?',
-    'Logout',
-    'Cancel'
+    t('auth.confirmLogout'),
+    t('auth.confirmLogoutCopy'),
+    t('auth.logout'),
+    t('common.cancel')
   );
 
   if (confirm === 'true') {
@@ -569,26 +569,26 @@ function showPasswordUpdateForm() {
 
   appContent.innerHTML = `
     <div class="game-card login-card password-update-card">
-      <h2 class="screen-title password-update-title">Set New Password</h2>
+      <h2 class="screen-title password-update-title">${t('auth.setPassword')}</h2>
       <p class="login-reset-copy password-update-copy">
-        Choose a new password for your account.
+        ${t('auth.choosePassword')}
       </p>
       <div class="login-global-error" id="update-global-error" role="alert"></div>
       <div class="login-global-success" id="update-global-success" role="status" aria-live="polite"></div>
       <div class="login-field">
-        <label for="update-password">New Password</label>
-        <input type="password" id="update-password" placeholder="At least 6 characters"
+        <label for="update-password">${t('auth.newPassword')}</label>
+        <input type="password" id="update-password" placeholder="${t('auth.passwordPlaceholder')}"
                autocomplete="new-password" aria-describedby="update-password-err" />
-        <div class="login-field-error" id="update-password-err">Password must be at least 6 characters.</div>
+        <div class="login-field-error" id="update-password-err">${t('auth.passwordLength')}</div>
       </div>
       <div class="login-field login-field-last">
-        <label for="update-confirm">Confirm Password</label>
-        <input type="password" id="update-confirm" placeholder="Repeat password"
+        <label for="update-confirm">${t('auth.confirmPassword')}</label>
+        <input type="password" id="update-confirm" placeholder="${t('auth.repeatPassword')}"
                autocomplete="new-password" aria-describedby="update-confirm-err" />
-        <div class="login-field-error" id="update-confirm-err">Passwords do not match.</div>
+        <div class="login-field-error" id="update-confirm-err">${t('auth.passwordMismatch')}</div>
       </div>
       <button class="btn-guess btn-block btn-large" id="update-btn" onclick="handlePasswordUpdate()">
-        Update Password
+        ${t('auth.updatePassword')}
       </button>
     </div>
   `;
@@ -620,7 +620,7 @@ async function handlePasswordUpdate() {
   }
 
   const el = document.getElementById('update-global-success');
-  el.textContent = 'Password updated! Redirecting…';
+  el.textContent = t('auth.passwordUpdated');
   el.classList.add('visible');
   window.history.replaceState({}, document.title, window.location.pathname);
 

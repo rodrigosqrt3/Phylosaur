@@ -316,9 +316,14 @@ Deno.test("shared UI states, account controls and motion remain standardized", (
     authSource.includes("password-update-card") &&
     authSource.includes('autocomplete="new-password"') &&
     authSource.includes("setAttribute('aria-invalid', 'true')") &&
+    authSource.includes("t('auth.accountAccess')") &&
+    authSource.includes("t('auth.invalidCredentials')") &&
+    authSource.includes("t('auth.passwordUpdated')") &&
+    !authSource.includes("Invalid email or password. Please try again.") &&
+    !authSource.includes("Continue Without Account") &&
     !authSource.includes('<div class="game-card" style="max-width:480px;') &&
     !authSource.includes('<span class="login-forgot"'),
-    "Account dialogs must use semantic controls and preserve keyboard focus.");
+    "Account dialogs must be localized, use semantic controls and preserve keyboard focus.");
   assert(uiSource.includes("const safeCurrentUser = escapeHtml(currentUser)") &&
     !uiSource.includes('title="Sign out: ${currentUser}"'),
     "Account names must be escaped before being inserted into the application header.");
