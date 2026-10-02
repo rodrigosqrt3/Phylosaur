@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 17,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Centrosaurus": {
@@ -703,6 +703,171 @@
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia",
       "editorial_note": "Uses the 2023 revision with a reduced speculative dewlap."
+    },
+    "Loricatosaurus": {
+      "file_title": "File:Loricatosaurus priscus.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Loricatosaurus_priscus.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Loricatosaurus_priscus.png",
+      "artist": "Connor Ashbridge",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Patagotitan": {
+      "file_title": "File:Patagotitan mayorum.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Patagotitan_mayorum.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Patagotitan_mayorum.jpg",
+      "artist": "Levi Martinez-Reza",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Shunosaurus": {
+      "file_title": "File:Shunosaurus life restoration.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shunosaurus_life_restoration.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Shunosaurus_life_restoration.jpg",
+      "artist": "Smokeybjb; edits by Paleocolour",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Monolophosaurus": {
+      "file_title": "File:Monolophosaurus.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Monolophosaurus.jpg?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Monolophosaurus.jpg",
+      "artist": "R. Love",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "usage_terms": "Creative Commons Attribution 2.0 Generic",
+      "source": "wikimedia",
+      "editorial_note": "Uses a skull photograph rather than a whole-body reconstruction because the genus has had unstable higher-level placement."
+    },
+    "Tenontosaurus": {
+      "file_title": "File:Tenontosaurus TD.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tenontosaurus_TD.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Tenontosaurus_TD.png",
+      "artist": "TotalDino",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0 International",
+      "source": "wikimedia"
+    },
+    "Nasutoceratops": {
+      "file_title": "File:Nasutoceratops TD.png",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Nasutoceratops_TD.png?width=960",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Nasutoceratops_TD.png",
+      "artist": "TotalDino",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
+      "source": "wikimedia"
+    },
+    "Stegouros": {
+      "file_title": "File:Stegouros elengassen original Luis Pérez López.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Stegouros_elengassen_original_Luis_P%C3%A9rez_L%C3%B3pez.jpg/960px-Stegouros_elengassen_original_Luis_P%C3%A9rez_L%C3%B3pez.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Stegouros_elengassen_original_Luis_P%C3%A9rez_L%C3%B3pez.jpg",
+      "artist": "Luis Enrique Pérez López",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Europasaurus": {
+      "file_title": "File:Europasaurus holgeri scene modified.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Europasaurus_holgeri_scene_modified.jpg/960px-Europasaurus_holgeri_scene_modified.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Europasaurus_holgeri_scene_modified.jpg",
+      "artist": "Gerhard Boeggemann; anatomy corrected by FunkMonk",
+      "license": "CC BY-SA 2.5",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.5",
+      "usage_terms": "Creative Commons Attribution-Share Alike 2.5 Generic",
+      "source": "wikimedia"
+    },
+    "Maip": {
+      "file_title": "File:Maip macrothorax.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Maip_macrothorax.png/960px-Maip_macrothorax.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Maip_macrothorax.png",
+      "artist": "Alexis M. Aranciaga Rolando, Matías J. Motta, Federico L. Agnolín, Makoto Manabe, Takanobu Tsuihiji, and Fernando E. Novas",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia",
+      "editorial_note": "Descriptive-paper figure showing preserved material, thoracic reconstruction and excavation layout rather than speculative whole-body art."
+    },
+    "Meraxes": {
+      "file_title": "File:Meraxes gigas skull reconstruction.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/Meraxes_gigas_skull_reconstruction.png/960px-Meraxes_gigas_skull_reconstruction.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Meraxes_gigas_skull_reconstruction.png",
+      "artist": "Eotyrannu5",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia",
+      "editorial_note": "White regions represent preserved material; grey regions are comparative reconstruction."
+    },
+    "Gastonia": {
+      "file_title": "File:Gastonia burgei dinosaur.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Gastonia_burgei_dinosaur.png/960px-Gastonia_burgei_dinosaur.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Gastonia_burgei_dinosaur.png",
+      "artist": "Mariana Ruiz Villarreal (LadyofHats)",
+      "license": "Public domain",
+      "license_url": "",
+      "usage_terms": "Public domain",
+      "source": "wikimedia"
+    },
+    "Edmontonia": {
+      "file_title": "File:Edmontonia TD.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Edmontonia_TD.png/960px-Edmontonia_TD.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Edmontonia_TD.png",
+      "artist": "TotalDino",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0 International",
+      "source": "wikimedia"
+    },
+    "Turiasaurus": {
+      "file_title": "File:Turiasaurus1.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Turiasaurus1.jpg/960px-Turiasaurus1.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Turiasaurus1.jpg",
+      "artist": "Levi Bernardo",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Bashanosaurus": {
+      "file_title": "File:Bashanosaurus Skeletal.svg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Bashanosaurus_Skeletal.svg/960px-Bashanosaurus_Skeletal.svg.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Bashanosaurus_Skeletal.svg",
+      "artist": "SlvrHwk",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia",
+      "editorial_note": "Known-element diagram distinguishing holotype, referred and unknown material."
+    },
+    "Gigantspinosaurus": {
+      "file_title": "File:Gigantspinosaurus sichuanensis.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Gigantspinosaurus_sichuanensis.png/960px-Gigantspinosaurus_sichuanensis.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Gigantspinosaurus_sichuanensis.png",
+      "artist": "Connor Ashbridge",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Adratiklit": {
+      "file_title": "File:Adratiklit holotype.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Adratiklit_holotype.png/960px-Adratiklit_holotype.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Adratiklit_holotype.png",
+      "artist": "The Trustees of the Natural History Museum, London",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
+      "source": "wikimedia",
+      "editorial_note": "Holotype dorsal vertebrae shown in multiple views; selected because the genus is known from limited material."
     }
   }
 }
