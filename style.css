@@ -990,6 +990,7 @@ header {
 .language-picker {
   display: inline-flex;
   align-items: center;
+  order: 1;
 }
 
 .language-picker select {
@@ -1025,6 +1026,7 @@ header {
 
 .header-theme-switch {
   position: static;
+  order: 2;
 }
 
 header::before,
@@ -4745,8 +4747,27 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
         position: absolute;
         top: 12px;
         right: 12px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
         width: auto;
         min-height: 0;
+    }
+
+    .header-theme-switch {
+        order: 2;
+    }
+
+    .language-picker {
+        order: 1;
+    }
+
+    .language-picker select {
+        min-width: 68px;
+        min-height: 34px;
+        padding-top: 5px;
+        padding-bottom: 5px;
     }
 
     .game-card {

@@ -53,6 +53,7 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
   const source = Deno.readTextFileSync(`${javascriptRoot}/i18n.${javascriptExtension}`);
   const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
   const workerSource = Deno.readTextFileSync(localSourceLayout ? "game/sw_service_worker.txt" : "sw.js");
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
   const evaluate = (language: string) => new Function(
     "window", "localStorage", "navigator", "PHYLOSAUR_STORAGE_KEYS",
     `${source}; return { messages: PHYLOSAUR_MESSAGES, locale: currentLocale,
@@ -84,6 +85,14 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     "The language module or selector is missing from the production shell.");
   assert(workerSource.includes('"./js/i18n.js"'),
     "The localization module must be available offline.");
+  assert(styleSource.includes(".header-theme-switch") &&
+    styleSource.includes("order: 2") &&
+    styleSource.includes(".language-picker") &&
+    styleSource.includes("order: 1") &&
+    styleSource.includes("position: absolute") &&
+    styleSource.includes("top: 12px") &&
+    styleSource.includes("right: 12px"),
+    "Language must precede the theme control, including the upper-right phone stack.");
 });
 
 Deno.test("playable dinosaur database preserves tree invariants", () => {
