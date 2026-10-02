@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="game/pwa-icon.svg" width="144" height="144" alt="Phylosaur golden dinosaur footprint">
+  <img src="pwa-icon.svg" width="144" height="144" alt="Phylosaur golden dinosaur footprint">
 </p>
 
 <h1 align="center">Phylosaur</h1>
@@ -49,12 +49,6 @@ Phylogenetic placements change as new specimens and analyses are published.
 Phylosaur therefore records conservative, game-compatible paths and documents
 uncertain cases instead of presenting the tree as immutable. The application is
 an educational resource and should not be cited as a primary scientific source.
-
-## Repository structure
-
-- `game/` — web application, catalogues, Museum data, migrations, and tests;
-- `game/tools/` — reproducible taxonomic, paleontological, media, and difficulty workflows;
-- `main.tex` — scientific poster describing the project and its methodology.
 
 ## Development and feedback
 
