@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════
 // GLOBAL STATE
 // ═══════════════════════════════════════════════
-const PHYLOSAUR_RELEASE_VERSION = 68;
+const PHYLOSAUR_RELEASE_VERSION = 69;
 const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   theme: 'phylosaur-theme',
   visitorId: 'phylosaur-visitor-id',
