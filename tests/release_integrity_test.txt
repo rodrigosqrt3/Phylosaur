@@ -182,6 +182,14 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     Austrocheirus: "Austrocheirus_isasii.png",
     Barrosasaurus: "Barrosasaurus.png",
     Bonapartesaurus: "Bonapartesaurus_rionegrensis.png",
+    Genyodectes: "Genyodectes_restoration_%28cropped%29.png",
+    Procompsognathus: "Procompsognathus.jpg",
+    Antetonitrus: "Antetonitrus_reconstruction.jpg",
+    Kritosaurus: "Kritosaurus_BW.jpg",
+    Aorun: "Aorun.png",
+    Breviceratops: "Breviceratops_Restoration.png",
+    Duriatitan: "Duriatitan.png",
+    Neuquensaurus: "Neuquensaurus_restoration.jpg",
   };
   assert(mediaCatalog.version >= 14, "The curated Museum media release version was not advanced.");
   for (const [name, filename] of Object.entries(requestedFiles)) {
@@ -491,7 +499,7 @@ Deno.test("Museum Clade Atlas exposes the three principal branches without hidin
 
   assert(screensSource.includes("const MUSEUM_ATLAS_COLLECTIONS") &&
     screensSource.includes("async function ensureMuseumCatalogLineages(") &&
-    screensSource.includes("fetch('phylosaur_db.json?v=atlas-1')") &&
+    screensSource.includes("fetch('phylosaur_db.json?v=atlas-2')") &&
     screensSource.includes("function renderMuseumAtlas(") &&
     screensSource.includes("function getMuseumAtlasCollection(") &&
     screensSource.includes("function openMuseumClade(") &&

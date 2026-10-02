@@ -1,5 +1,5 @@
 {
-  "version": 17,
+  "version": 18,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Centrosaurus": {
@@ -868,6 +868,87 @@
       "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
       "source": "wikimedia",
       "editorial_note": "Holotype dorsal vertebrae shown in multiple views; selected because the genus is known from limited material."
+    },
+    "Genyodectes": {
+      "file_title": "File:Genyodectes restoration (cropped).png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Genyodectes_restoration_%28cropped%29.png/960px-Genyodectes_restoration_%28cropped%29.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Genyodectes_restoration_(cropped).png",
+      "artist": "Paleocolour",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Procompsognathus": {
+      "file_title": "File:Procompsognathus.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Procompsognathus.jpg/960px-Procompsognathus.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Procompsognathus.jpg",
+      "artist": "FunkMonk (Michael B. H.)",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Antetonitrus": {
+      "file_title": "File:Antetonitrus reconstruction.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Antetonitrus_reconstruction.jpg/960px-Antetonitrus_reconstruction.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Antetonitrus_reconstruction.jpg",
+      "artist": "PaleoEquii",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Kritosaurus": {
+      "file_title": "File:Kritosaurus BW.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Kritosaurus_BW.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Kritosaurus_BW.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY 2.5",
+      "license_url": "https://creativecommons.org/licenses/by/2.5",
+      "usage_terms": "Creative Commons Attribution 2.5 Generic",
+      "source": "wikimedia"
+    },
+    "Aorun": {
+      "file_title": "File:Aorun.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Aorun.png/960px-Aorun.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Aorun.png",
+      "artist": "J-H. Jang (Palaeotaku)",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Breviceratops": {
+      "file_title": "File:Breviceratops Restoration.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Breviceratops_Restoration.png/960px-Breviceratops_Restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Breviceratops_Restoration.png",
+      "artist": "PaleoNeolitic",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0 International",
+      "source": "wikimedia"
+    },
+    "Duriatitan": {
+      "file_title": "File:Duriatitan.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Duriatitan.png/960px-Duriatitan.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Duriatitan.png",
+      "artist": "John Whitaker Hulke",
+      "license": "Public domain",
+      "license_url": "",
+      "usage_terms": "Public-domain historical illustration",
+      "source": "wikimedia",
+      "editorial_note": "Historical illustration of the holotype humerus rather than a speculative whole-body restoration."
+    },
+    "Neuquensaurus": {
+      "file_title": "File:Neuquensaurus restoration.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Neuquensaurus_restoration.jpg/960px-Neuquensaurus_restoration.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Neuquensaurus_restoration.jpg",
+      "artist": "FunkMonk (Michael B. H.)",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
     }
   }
 }
