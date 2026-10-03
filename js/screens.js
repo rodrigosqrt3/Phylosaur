@@ -268,14 +268,14 @@ function generateDifficultyButton(difficulty, name, level, description, complete
 
 async function showStatsDashboard() {
     if (!currentUser) {
-    alert('Login to view statistics');
+    alert(t('stats.loginRequired'));
     return;
     }
     setAppRoute('/stats');
     setHeaderControls('stats');
     const appContent = document.getElementById('app-content');
     appContent.innerHTML = `<div class="game-card stats-dashboard">${renderAppState(
-        'Loading player statistics…'
+        t('stats.loading')
     )}</div>`;
 
     const [statsResult, difficultyHistoryResult, recentGamesResult, achievementsResult, achievementHistoryResult] = await Promise.all([
@@ -571,13 +571,13 @@ const INTERACTIVE_TUTORIAL_STEPS = [
         copy: t('tutorial.hiddenCopy'),
         visual: `
             <svg class="tutorial-welcome-tree" viewBox="0 0 280 150" aria-hidden="true">
-                <path class="tutorial-welcome-branch" d="M140 132V98M140 98H62V62M140 98H218V62M62 62H30V28M62 62H94V28M218 62H186V28M218 62H250V28"></path>
-                <circle class="tutorial-welcome-node" cx="30" cy="28" r="8"></circle>
-                <circle class="tutorial-welcome-node" cx="94" cy="28" r="8"></circle>
-                <circle class="tutorial-welcome-node" cx="186" cy="28" r="8"></circle>
-                <circle class="tutorial-welcome-node is-target" cx="250" cy="28" r="15"></circle>
-                <text class="tutorial-welcome-question" x="250" y="29">?</text>
-                <circle class="tutorial-welcome-root" cx="140" cy="132" r="7"></circle>
+                <path class="tutorial-welcome-branch" d="M140 18V52M140 52H62V88M140 52H218V88M62 88H30V122M62 88H94V122M218 88H186V122M218 88H250V122"></path>
+                <circle class="tutorial-welcome-node" cx="30" cy="122" r="8"></circle>
+                <circle class="tutorial-welcome-node" cx="94" cy="122" r="8"></circle>
+                <circle class="tutorial-welcome-node" cx="186" cy="122" r="8"></circle>
+                <circle class="tutorial-welcome-node is-target" cx="250" cy="122" r="15"></circle>
+                <text class="tutorial-welcome-question" x="250" y="123">?</text>
+                <circle class="tutorial-welcome-root" cx="140" cy="18" r="7"></circle>
             </svg>
             <div class="tutorial-welcome-line">
                 <span>${t('tutorial.guess')}</span><i class="ui-icon ui-icon-arrow-right" aria-hidden="true"></i>
@@ -806,19 +806,19 @@ function generateGuessHistogram(wonResults) {
 
     const total = buckets.reduce((sum, bucket) => sum + bucket.count, 0);
     if (total === 0) {
-        return '<p class="empty-stats">Win a Daily challenge to begin your distribution.</p>';
+        return `<p class="empty-stats">${t('stats.histogramEmpty')}</p>`;
     }
 
     const largest = Math.max(...buckets.map(bucket => bucket.count), 1);
     return `
         <div class="stats-histogram" role="img"
-             aria-label="Distribution of ${total} winning games by number of guesses">
+             aria-label="${t('stats.distributionLabel', { count: total })}">
             ${buckets.map(bucket => {
                 const width = bucket.count === 0
                     ? 0
                     : Math.max(8, Math.round((bucket.count / largest) * 100));
-                const guessLabel = bucket.label === '1' ? 'guess' : 'guesses';
-                const winLabel = bucket.count === 1 ? 'win' : 'wins';
+                const guessLabel = t(bucket.label === '1' ? 'game.guessOne' : 'game.guessMany');
+                const winLabel = t(bucket.count === 1 ? 'stats.winLabelOne' : 'stats.winLabelMany');
                 return `
                     <div class="stats-histogram-row"
                          aria-label="${bucket.label} ${guessLabel}: ${bucket.count} ${winLabel}">
@@ -836,11 +836,11 @@ function generateGuessHistogram(wonResults) {
 
 function generateDifficultyStats(difficultyHistory) {
     const diffNames = {
-        'muito_facil': 'Level I',
-        'facil': 'Level II',
-        'normal': 'Level III',
-        'dificil': 'Level IV',
-        'muito_dificil': 'Level V'
+        'muito_facil': t('level.name1'),
+        'facil': t('level.name2'),
+        'normal': t('level.name3'),
+        'dificil': t('level.name4'),
+        'muito_dificil': t('level.name5')
     };
     const difficultyOrder = [
         'muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'
@@ -869,16 +869,21 @@ function generateDifficultyStats(difficultyHistory) {
             <article class="difficulty-stat-row">
                 <div class="difficulty-stat-heading">
                     <span class="diff-name">${escapeChallengeHtml(diffNames[difficulty])}</span>
-                    <span class="diff-record">${won}/${played} won</span>
+                    <span class="diff-record">${t('stats.recordWon', { won, played })}</span>
                 </div>
-                <div class="difficulty-stat-meter" aria-label="${winRate}% success rate">
+                <div class="difficulty-stat-meter" aria-label="${t('stats.successRateValue', { rate: winRate })}">
                     <span style="--difficulty-stat-width:${winRate}%"></span>
                 </div>
                 <div class="diff-stats">
-                    <span class="diff-winrate">${played ? `${winRate}% success` : 'Not played'}</span>
+                    <span class="diff-winrate">${played
+                        ? t('stats.successValue', { rate: winRate })
+                        : t('stats.notPlayed')}</span>
                     <span class="diff-avg">${played
-                        ? `Average: ${average} ${average === 1 ? 'guess' : 'guesses'}`
-                        : 'No average yet'}</span>
+                        ? t('stats.averageGuesses', {
+                            count: average,
+                            unit: t(average === 1 ? 'game.guessOne' : 'game.guessMany')
+                        })
+                        : t('stats.noAverage')}</span>
                 </div>
             </article>
         `;
@@ -902,21 +907,31 @@ function generateAchievements(unlockedSet, progressById = {}) {
     const percent = unlocked
         ? 100
         : Math.max(0, Math.min(100, Math.round((progress.current / progress.target) * 100)));
+    const legacyUnitKeys = {
+        win: 'achievement.unit.win', wins: 'achievement.unit.wins', games: 'achievement.unit.games',
+        levels: 'achievement.unit.levels', days: 'achievement.unit.days',
+        genera: 'achievement.unit.genera', branches: 'achievement.unit.branches'
+    };
+    const unitKey = legacyUnitKeys[progress.unit] || progress.unit;
     const progressText = unlocked
-        ? 'Completed'
-        : progress.unit
-            ? `${progress.current} / ${progress.target} ${progress.unit}`
-            : 'Not completed';
+        ? t('common.completed')
+        : unitKey
+            ? t('achievement.progress', {
+                current: progress.current,
+                target: progress.target,
+                unit: t(unitKey)
+            })
+            : t('achievement.notCompleted');
     html += `
         <div class="achievement-card ${ach.category === 'clade' ? 'achievement-card-clade' : ''} ${unlocked ? 'achievement-unlocked' : 'achievement-locked'}">
         <div class="achievement-card-heading">
             <span class="achievement-medal" aria-hidden="true"></span>
             <div>
-                ${ach.category === 'clade' ? '<div class="achievement-category">Clade collection</div>' : ''}
-                <div class="achievement-title">${ach.name}</div>
+                ${ach.category === 'clade' ? `<div class="achievement-category">${t('achievement.cladeCollection')}</div>` : ''}
+                <div class="achievement-title">${escapeChallengeHtml(getAchievementName(ach))}</div>
             </div>
         </div>
-        <div class="achievement-desc">${ach.desc}</div>
+        <div class="achievement-desc">${escapeChallengeHtml(getAchievementDescription(ach))}</div>
         <div class="achievement-progress" aria-label="${progressText}">
             <div class="achievement-progress-track">
                 <div class="achievement-progress-fill" style="width:${percent}%;"></div>
@@ -932,33 +947,35 @@ function generateAchievements(unlockedSet, progressById = {}) {
 
 function generateRecentGames(recentGames) {
     if (!recentGames || recentGames.length === 0) {
-    return '<p class="empty-stats">No recent games.</p>';
+    return `<p class="empty-stats">${t('stats.noRecent')}</p>`;
     }
 
     const diffNames = {
-    'muito_facil': 'Level I',
-    'facil': 'Level II',
-    'normal': 'Level III',
-    'dificil': 'Level IV',
-    'muito_dificil': 'Level V'
+    'muito_facil': t('level.name1'),
+    'facil': t('level.name2'),
+    'normal': t('level.name3'),
+    'dificil': t('level.name4'),
+    'muito_dificil': t('level.name5')
     };
 
     const today = getTodayString();
 
     let html = '<div class="recent-games-list">';
     recentGames.forEach(game => {
-    const date = new Date(game.created_at).toLocaleDateString();
+    const date = new Date(game.created_at).toLocaleDateString(
+        currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale
+    );
     const guesses = Number(game.guess_count || 0);
     const isToday = game.played_date === today;
     const spoiler = isToday && !game.won;
     const dinoDisplay = spoiler 
-        ? '<span class="recent-game-name recent-game-name-hidden">Today\'s answer is hidden</span>'
+        ? `<span class="recent-game-name recent-game-name-hidden">${t('stats.todayHidden')}</span>`
         : `<span class="recent-game-name"><i>${escapeChallengeHtml(game.target_dino)}</i></span>`;
 
     html += `
         <article class="recent-game-card ${game.won ? 'recent-game-won' : 'recent-game-incomplete'}">
             <div class="recent-game-primary">
-                <span class="recent-game-status" aria-label="${game.won ? 'Completed' : 'Not completed'}">${game.won ? '✓' : '—'}</span>
+                <span class="recent-game-status" aria-label="${t(game.won ? 'common.completed' : 'achievement.notCompleted')}">${game.won ? '✓' : '—'}</span>
                 <div class="recent-game-identification">
                     ${dinoDisplay}
                     <div class="recent-game-meta">
@@ -970,7 +987,7 @@ function generateRecentGames(recentGames) {
             </div>
             <div class="recent-game-result">
                 <strong>${guesses}</strong>
-                <span>${guesses === 1 ? 'guess' : 'guesses'}</span>
+                <span>${t(guesses === 1 ? 'game.guessOne' : 'game.guessMany')}</span>
             </div>
         </article>
     `;
@@ -990,7 +1007,7 @@ const MUSEUM_ATLAS_COLLECTIONS = [
     {
         clade: 'Theropoda',
         title: 'Theropoda',
-        description: 'A saurischian clade ancestrally characterized by bipedal locomotion. It includes ceratosaurs, tetanurans, and avialans.',
+        descriptionKey: 'museum.atlasTheropoda',
         achievementId: 'theropod_tracker',
         achievementClade: 'Theropoda',
         subclades: ['Ceratosauria', 'Tyrannosauroidea', 'Maniraptora']
@@ -998,7 +1015,7 @@ const MUSEUM_ATLAS_COLLECTIONS = [
     {
         clade: 'Sauropodomorpha',
         title: 'Sauropodomorpha',
-        description: 'A saurischian clade of predominantly herbivorous dinosaurs that includes early-diverging forms and Sauropoda.',
+        descriptionKey: 'museum.atlasSauropodomorpha',
         achievementId: 'sauropod_collector',
         achievementClade: 'Sauropoda',
         subclades: ['Massopoda', 'Sauropoda', 'Macronaria']
@@ -1006,7 +1023,7 @@ const MUSEUM_ATLAS_COLLECTIONS = [
     {
         clade: 'Ornithischia',
         title: 'Ornithischia',
-        description: 'A primarily herbivorous dinosaur clade diagnosed by features including the predentary bone and a retroverted pubis.',
+        descriptionKey: 'museum.atlasOrnithischia',
         achievementId: 'ornithischian_explorer',
         achievementClade: 'Ornithischia',
         subclades: ['Thyreophora', 'Ornithopoda', 'Marginocephalia']
@@ -1134,6 +1151,59 @@ function formatMuseumAge(value) {
     return Number.isInteger(age) ? String(age) : age.toFixed(1);
 }
 
+const MUSEUM_PALEODATA_TERM_KEYS = Object.freeze({
+    'Late Triassic': 'museum.termLateTriassic',
+    'Early Jurassic': 'museum.termEarlyJurassic',
+    'Middle Jurassic': 'museum.termMiddleJurassic',
+    'Late Jurassic': 'museum.termLateJurassic',
+    'Early Cretaceous': 'museum.termEarlyCretaceous',
+    'Late Cretaceous': 'museum.termLateCretaceous',
+    'Aptian–Albian': 'museum.ageAptianAlbian',
+    'Bathonian': 'museum.ageBathonian',
+    'Callovian': 'museum.ageCallovian',
+    'Carnian': 'museum.ageCarnian',
+    'Cenomanian–Turonian': 'museum.ageCenomanianTuronian',
+    'Early Maastrichtian': 'museum.ageEarlyMaastrichtian',
+    'Early Tithonian': 'museum.ageEarlyTithonian',
+    'Kimmeridgian–Tithonian': 'museum.ageKimmeridgianTithonian',
+    'Late Campanian': 'museum.ageLateCampanian',
+    'Late Campanian–Early Maastrichtian': 'museum.ageLateCampanianEarlyMaastrichtian',
+    'Late Kimmeridgian': 'museum.ageLateKimmeridgian',
+    'Latest Albian, approximately 101.62 ± 0.18 Ma': 'museum.ageLatestAlbian',
+    'Maastrichtian': 'museum.ageMaastrichtian',
+    'Middle–Late Campanian': 'museum.ageMiddleLateCampanian',
+    'Santonian–Campanian': 'museum.ageSantonianCampanian',
+    'Tithonian': 'museum.ageTithonian',
+    'Triassic': 'museum.triassic',
+    'Jurassic': 'museum.jurassic',
+    'Cretaceous': 'museum.cretaceous',
+    'Europe': 'museum.placeEurope',
+    'North America': 'museum.placeNorthAmerica',
+    'South America': 'museum.placeSouthAmerica',
+    'Antarctica': 'museum.placeAntarctica',
+    'Africa': 'museum.placeAfrica',
+    'Asia': 'museum.placeAsia',
+    'Germany': 'museum.placeGermany',
+    'United States': 'museum.placeUnitedStates',
+    'Argentina': 'museum.placeArgentina',
+    'Madagascar': 'museum.placeMadagascar',
+    'Canada': 'museum.placeCanada',
+    'Portugal': 'museum.placePortugal',
+    'China': 'museum.placeChina',
+    'Mongolia': 'museum.placeMongolia',
+    'France': 'museum.placeFrance',
+    'United Kingdom': 'museum.placeUnitedKingdom',
+    'Chile': 'museum.placeChile',
+    'Spain': 'museum.placeSpain',
+    'Morocco': 'museum.placeMorocco'
+});
+
+function localizeMuseumPaleodataTerm(value) {
+    const text = String(value || '');
+    const key = MUSEUM_PALEODATA_TERM_KEYS[text];
+    return key ? t(key) : text;
+}
+
 function getMuseumPaleodataSourceUrl(value) {
     try {
         const url = new URL(String(value || ''));
@@ -1154,7 +1224,7 @@ function renderMuseumPaleodataSources(record) {
     if (reviewedSources.length === 0) return '';
 
     const links = reviewedSources.map(source => {
-        const citation = escapeChallengeHtml(source?.citation || 'Scientific source');
+        const citation = escapeChallengeHtml(source?.citation || t('museum.scientificSource'));
         const url = getMuseumPaleodataSourceUrl(source?.url);
         return url
             ? `<a href="${escapeChallengeHtml(url)}" target="_blank" rel="noopener">${citation}</a>`
@@ -1163,7 +1233,7 @@ function renderMuseumPaleodataSources(record) {
 
     return `
         <div class="museum-entry-paleo-sources">
-            <strong>Reviewed sources</strong>
+            <strong>${t('museum.reviewedSources')}</strong>
             <div>${links}</div>
         </div>
     `;
@@ -1200,30 +1270,37 @@ function renderMuseumPaleodata(record, timeline = {}) {
     const ageLabel = record.age_text
         ? String(record.age_text)
         : hasAgeRange
-            ? `${formatMuseumAge(maxMa)}–${formatMuseumAge(minMa)} million years ago`
-            : 'Numerical age not asserted';
+            ? t('museum.millionYearsAgo', {
+                oldest: formatMuseumAge(maxMa),
+                youngest: formatMuseumAge(minMa)
+            })
+            : t('museum.ageNotAsserted');
     const countries = Array.isArray(record.countries) ? record.countries : [];
     const continents = Array.isArray(record.continents) ? record.continents : [];
     const formations = Array.isArray(record.formations) ? record.formations : [];
     const locationLabel = countries.length
-        ? countries.join(' · ')
+        ? countries.map(localizeMuseumPaleodataTerm).join(' · ')
         : continents.length
-            ? continents.join(' · ')
-            : 'Discovery locations under review';
+            ? continents.map(localizeMuseumPaleodataTerm).join(' · ')
+            : t('museum.locationsReview');
 
     return `
-        <section class="museum-entry-paleodata" aria-label="Time and fossil locations">
+        <section class="museum-entry-paleodata" aria-label="${t('museum.timeAndLocations')}">
             <div class="museum-entry-paleo-grid">
                 <div class="museum-entry-paleo-card museum-entry-paleo-time">
-                    <div class="museum-entry-paleo-label">When</div>
-                    <strong>${escapeChallengeHtml(record.period || 'Geologic interval under review')}</strong>
-                    <span>${escapeChallengeHtml(ageLabel)}</span>
+                    <div class="museum-entry-paleo-label">${t('museum.when')}</div>
+                    <strong>${escapeChallengeHtml(record.period
+                        ? localizeMuseumPaleodataTerm(record.period)
+                        : t('museum.intervalReview'))}</strong>
+                    <span>${escapeChallengeHtml(localizeMuseumPaleodataTerm(ageLabel))}</span>
                     ${hasAgeRange ? `
                         <div class="museum-time-scale"
                              role="img"
-                             aria-label="${escapeChallengeHtml(record.period || 'Age range')}, ${escapeChallengeHtml(ageLabel)}">
+                             aria-label="${escapeChallengeHtml(record.period
+                                 ? localizeMuseumPaleodataTerm(record.period)
+                                 : t('museum.ageRange'))}, ${escapeChallengeHtml(localizeMuseumPaleodataTerm(ageLabel))}">
                             <div class="museum-time-periods" aria-hidden="true">
-                                <span>Triassic</span><span>Jurassic</span><span>Cretaceous</span>
+                                <span>${t('museum.triassic')}</span><span>${t('museum.jurassic')}</span><span>${t('museum.cretaceous')}</span>
                             </div>
                             <div class="museum-time-track" aria-hidden="true">
                                 <span class="museum-time-segment triassic"></span>
@@ -1239,27 +1316,27 @@ function renderMuseumPaleodata(record, timeline = {}) {
                 </div>
 
                 <div class="museum-entry-paleo-card museum-entry-paleo-place">
-                    <div class="museum-entry-paleo-label">Where fossils were found</div>
+                    <div class="museum-entry-paleo-label">${t('museum.where')}</div>
                     <strong>${escapeChallengeHtml(locationLabel)}</strong>
                     ${continents.length ? `
                         <div class="museum-paleo-chips">
-                            ${continents.map(continent => `<span>${escapeChallengeHtml(continent)}</span>`).join('')}
+                            ${continents.map(continent => `<span>${escapeChallengeHtml(localizeMuseumPaleodataTerm(continent))}</span>`).join('')}
                         </div>
                     ` : ''}
                     ${formations.length ? `
                         <div class="museum-paleo-formations">
-                            <b>Rock units</b>
+                            <b>${t('museum.rockUnits')}</b>
                             <span>${escapeChallengeHtml(formations.join(' · '))}</span>
                         </div>
                     ` : ''}
                 </div>
             </div>
             <p class="museum-entry-paleo-note">
-                Locations use modern geography and summarize reported fossil occurrences; they are not a reconstruction of ancient political or continental boundaries.
+                ${t('museum.modernGeographyNote')}
             </p>
-            ${record.verification?.scope ? `
+            ${currentLocale === 'en' && record.verification?.scope ? `
                 <p class="museum-entry-paleo-scope">
-                    <strong>Reviewed scope:</strong> ${escapeChallengeHtml(record.verification.scope)}
+                    <strong>${t('museum.reviewedScope')}</strong> ${escapeChallengeHtml(record.verification.scope)}
                 </p>
             ` : ''}
             ${renderMuseumPaleodataSources(record)}
@@ -1476,7 +1553,7 @@ function formatMuseumDiscoveryDate(value) {
     }
 
     if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
@@ -1486,8 +1563,8 @@ function formatMuseumDiscoveryDate(value) {
 function getMuseumDiscoverySummary(record) {
     if (!record) {
         return {
-            firstLabel: 'Unlock date unavailable',
-            countLabel: 'Unlocked once',
+            firstLabel: t('museum.unlockDateUnavailable'),
+            countLabel: t('museum.unlockedOnce'),
             lastLabel: ''
         };
     }
@@ -1495,25 +1572,25 @@ function getMuseumDiscoverySummary(record) {
     const firstDate = formatMuseumDiscoveryDate(record.firstDiscoveredAt);
     const lastDate = formatMuseumDiscoveryDate(record.lastDiscoveredAt);
     const firstLabel = record.firstDateUnknown
-        ? 'Unlocked before date tracking'
+        ? t('museum.unlockedBeforeTracking')
         : firstDate
-            ? `First unlocked ${firstDate}`
-            : 'Unlock date unavailable';
+            ? t('museum.firstUnlocked', { date: firstDate })
+            : t('museum.unlockDateUnavailable');
 
     return {
         firstLabel,
         countLabel: record.count === 1
-            ? 'Unlocked once'
-            : `Unlocked ${record.count} times`,
+            ? t('museum.unlockedOnce')
+            : t('museum.unlockedTimes', { count: record.count }),
         lastLabel: record.count > 1 && lastDate
-            ? `Last unlocked ${lastDate}`
+            ? t('museum.lastUnlocked', { date: lastDate })
             : ''
     };
 }
 
 function getMuseumMediaCredit(name, media) {
     if (!media) {
-        return '<span>No illustration is currently available for this entry.</span>';
+        return `<span>${t('museum.noIllustration')}</span>`;
     }
 
     if (media.source === 'wikimedia' || media.source === 'dinopedia') {
@@ -1521,12 +1598,14 @@ function getMuseumMediaCredit(name, media) {
             ? `<a href="${media.license_url}" target="_blank" rel="noopener">${media.license}</a>`
             : media.license;
         const sourceName = media.source === 'dinopedia' ? 'Dinopedia' : 'Wikimedia Commons';
-        const contributor = media.artist || `${sourceName} contributor`;
-        const editorialNote = media.editorial_note
+        const contributor = escapeChallengeHtml(
+            media.artist || t('media.contributor', { source: sourceName })
+        );
+        const editorialNote = currentLocale === 'en' && media.editorial_note
             ? `<span class="museum-entry-media-note">${escapeChallengeHtml(media.editorial_note)}</span>`
             : '';
         return `
-            Image by ${contributor} · ${license}
+            ${t('media.imageBy', { contributor })} · ${license}
             · <a href="${media.file_page}" target="_blank" rel="noopener">${sourceName}</a>
             ${editorialNote}
         `;
@@ -1534,7 +1613,7 @@ function getMuseumMediaCredit(name, media) {
 
     const commonsPage = `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(name + ' TD.png')}`;
     return `
-        Image source: <a href="${commonsPage}" target="_blank" rel="noopener">Wikimedia Commons</a>
+        ${t('media.imageSource')} <a href="${commonsPage}" target="_blank" rel="noopener">Wikimedia Commons</a>
     `;
 }
 
@@ -1591,7 +1670,7 @@ function openMuseumImageViewer() {
     viewer.id = 'museum-image-viewer';
     viewer.className = 'museum-image-viewer';
     viewer.innerHTML = `
-        <button class="museum-image-viewer-close" type="button" aria-label="Close image">×</button>
+        <button class="museum-image-viewer-close" type="button" aria-label="${t('museum.closeImage')}">×</button>
         <img src="${activeMuseumEntryMedia.url}" alt="${activeMuseumEntryMedia.name}">
         <div class="museum-image-viewer-caption">
             <em>${activeMuseumEntryMedia.name}</em>
@@ -1614,6 +1693,7 @@ async function showMuseumEntry(name) {
 
     const dino = fullDatabase.find(item => item.nome === name);
     if (!dino) return;
+    const safeName = escapeChallengeHtml(name);
 
     const overlay = document.createElement('div');
     overlay.id = 'museum-entry-overlay';
@@ -1626,9 +1706,9 @@ async function showMuseumEntry(name) {
             .find(card => card.dataset.museumName === name.toLowerCase()) || document.activeElement
     };
     overlay.innerHTML = `
-        <article class="museum-entry-dialog" role="dialog" aria-modal="true" aria-label="${name}">
-            <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="Close">×</button>
-            <div class="museum-entry-loading">Opening ${name}…</div>
+        <article class="museum-entry-dialog" role="dialog" aria-modal="true" aria-label="${safeName}">
+            <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="${t('common.close')}">×</button>
+            <div class="museum-entry-loading">${t('museum.openingName', { name: safeName })}</div>
         </article>
     `;
 
@@ -1658,9 +1738,9 @@ async function showMuseumEntry(name) {
             Object.assign(dino, entry.dinosaur);
         } catch (error) {
             overlay.querySelector('.museum-entry-dialog').innerHTML = `
-                <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="Close">×</button>
+                <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="${t('common.close')}">×</button>
                 <div class="museum-entry-loading" style="color:var(--color-danger);">
-                    Could not open ${name}.<br>${error.message}
+                    ${t('museum.openNameError', { name: safeName })}<br>${escapeChallengeHtml(error.message)}
                 </div>
             `;
             return;
@@ -1673,11 +1753,11 @@ async function showMuseumEntry(name) {
     const wikiPromise = fetchWikipediaInfo(name);
     const paleodataPromise = loadMuseumPaleodataCatalog();
     const levelNames = {
-        muito_facil: 'Level I',
-        facil: 'Level II',
-        normal: 'Level III',
-        dificil: 'Level IV',
-        muito_dificil: 'Level V'
+        muito_facil: t('level.name1'),
+        facil: t('level.name2'),
+        normal: t('level.name3'),
+        dificil: t('level.name4'),
+        muito_dificil: t('level.name5')
     };
     const lineage = (dino.linhagem || [])
         .map(clade => `<span>${escapeChallengeHtml(clade)}</span>`)
@@ -1693,11 +1773,11 @@ async function showMuseumEntry(name) {
     };
 
     overlay.querySelector('.museum-entry-dialog').innerHTML = `
-            <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="Close">×</button>
+            <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="${t('common.close')}">×</button>
 
         <header class="museum-entry-header">
-            <div class="museum-entry-kicker">Museum entry</div>
-            <h2>${escapeChallengeHtml(name)}</h2>
+            <div class="museum-entry-kicker">${t('museum.entry')}</div>
+            <h2>${safeName}</h2>
             <div class="museum-entry-meta">
                 ${levelNames[dino.dificuldade] || dino.dificuldade}
                 · ${(dino.linhagem || []).at(-1) || 'Dinosauria'}
@@ -1714,23 +1794,23 @@ async function showMuseumEntry(name) {
                 <button class="museum-entry-image-button" type="button"
                         onclick="openMuseumImageViewer()"
                         disabled
-                        aria-label="View larger image of ${name}">
-                    <img src="dinosaur-footprint-1-svgrepo-com.svg" alt="${name}">
+                        aria-label="${t('museum.viewLarger', { name: safeName })}">
+                    <img src="dinosaur-footprint-1-svgrepo-com.svg" alt="${safeName}">
                 </button>
-                <figcaption>Loading illustration…</figcaption>
+                <figcaption>${t('museum.loadingIllustration')}</figcaption>
             </figure>
 
             <section class="museum-entry-copy">
                 <div class="museum-entry-ornament">◆</div>
                 <p class="museum-entry-description">
-                    Loading encyclopedia overview…
+                    ${t('museum.loadingOverview')}
                 </p>
 
                 <div class="museum-entry-paleodata-slot">
-                    <div class="museum-entry-section-loading">Loading fossil record…</div>
+                    <div class="museum-entry-section-loading">${t('museum.loadingFossils')}</div>
                 </div>
 
-                <h3>Classification</h3>
+                <h3>${t('museum.classification')}</h3>
                 <div class="museum-entry-lineage">${lineage || '<span>Dinosauria</span>'}</div>
 
                 <div class="museum-entry-read-more-slot"></div>
@@ -1749,16 +1829,16 @@ async function showMuseumEntry(name) {
         const hasImage = Boolean(media?.url);
         const credit = hasImage
             ? getMuseumMediaCredit(name, media)
-            : 'No reviewed illustration is available yet.';
+            : t('museum.noIllustration');
         image.src = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
         button.disabled = !hasImage;
-        if (hasImage) button.insertAdjacentHTML('beforeend', '<span>Click to enlarge</span>');
+        if (hasImage) button.insertAdjacentHTML('beforeend', `<span>${t('museum.clickEnlarge')}</span>`);
         caption.innerHTML = credit;
         activeMuseumEntryMedia = { name, url: media?.url || null, credit };
     }).catch(error => {
         console.warn(`Museum illustration unavailable for ${name}:`, error);
         const caption = overlay.querySelector('.museum-entry-figure figcaption');
-        if (caption) caption.textContent = 'No reviewed illustration is available yet.';
+        if (caption) caption.textContent = t('museum.noIllustration');
     });
 
     void wikiPromise.then(wikiInfo => {
@@ -1766,7 +1846,7 @@ async function showMuseumEntry(name) {
         const description = overlay.querySelector('.museum-entry-description');
         if (description) {
             description.textContent = wikiInfo?.description
-                || 'No encyclopedia summary is available for this genus yet.';
+                || t('museum.noSummary');
         }
 
         const readMoreSlot = overlay.querySelector('.museum-entry-read-more-slot');
@@ -1774,7 +1854,7 @@ async function showMuseumEntry(name) {
             readMoreSlot.innerHTML = `
                 <a class="museum-entry-read-more" href="${escapeChallengeHtml(wikiInfo.url)}"
                    target="_blank" rel="noopener">
-                    <span>Read the full Wikipedia article</span>
+                    <span>${t('museum.readWikipedia')}</span>
                     <i class="ui-icon ui-icon-external" aria-hidden="true"></i>
                 </a>
             `;
@@ -1820,7 +1900,9 @@ function getMuseumAtlasCollection(definition, unlockedSet) {
         total: specimens.length,
         unlocked: unlockedSpecimens.length,
         percent: specimens.length ? Math.round((unlockedSpecimens.length / specimens.length) * 100) : 0,
-        achievementName: achievementDefinition?.name || 'Collection milestone',
+        achievementName: achievementDefinition
+            ? getAchievementName(achievementDefinition)
+            : t('achievement.collectionMilestone'),
         achievementTarget,
         achievementCount,
         achievementComplete: achievementCount >= achievementTarget,
@@ -1837,11 +1919,8 @@ function renderMuseumAtlas(unlockedSet) {
         <section class="museum-atlas" aria-labelledby="museum-atlas-title">
             <div class="museum-atlas-intro">
                 <div>
-                    <h3 id="museum-atlas-title">Taxonomic overview</h3>
-                    <p>
-                        Museum specimens are organized here by three broad clades represented in the current
-                        classification. The totals follow the stored lineage of each genus.
-                    </p>
+                    <h3 id="museum-atlas-title">${t('museum.taxonomicOverview')}</h3>
+                    <p>${t('museum.atlasIntro')}</p>
                 </div>
             </div>
 
@@ -1855,7 +1934,10 @@ function renderMuseumAtlas(unlockedSet) {
                         (achievementCurrent / collection.achievementTarget) * 100
                     );
                     const subclades = collection.subclades.map(subclade => `
-                        <span title="${subclade.unlocked} of ${subclade.total} discovered">
+                        <span title="${t('museum.discoveredTitle', {
+                            unlocked: subclade.unlocked,
+                            total: subclade.total
+                        })}">
                             ${escapeChallengeHtml(subclade.clade)}
                             <small>${subclade.unlocked}/${subclade.total}</small>
                         </span>
@@ -1864,20 +1946,24 @@ function renderMuseumAtlas(unlockedSet) {
                         <button class="museum-atlas-card museum-atlas-${collection.clade.toLowerCase()}"
                                 type="button"
                                 onclick="openMuseumClade('${collection.clade}')"
-                                aria-label="Explore ${collection.title}: ${collection.unlocked} of ${collection.total} genera discovered">
+                                aria-label="${t('museum.exploreClade', {
+                                    clade: collection.title,
+                                    unlocked: collection.unlocked,
+                                    total: collection.total
+                                })}">
                             <strong class="museum-atlas-card-title">${collection.title}</strong>
-                            <span class="museum-atlas-card-description">${collection.description}</span>
+                            <span class="museum-atlas-card-description">${t(collection.descriptionKey)}</span>
 
                             <span class="museum-atlas-count">
                                 <strong>${collection.unlocked}</strong>
-                                <span>of ${collection.total} discovered</span>
-                                <small>${collection.percent}% of this branch</small>
+                                <span>${t('museum.discoveredCount', { total: collection.total })}</span>
+                                <small>${t('museum.branchPercent', { percent: collection.percent })}</small>
                             </span>
                             <span class="museum-atlas-progress" aria-hidden="true">
                                 <span style="width:${collection.percent}%"></span>
                             </span>
 
-                            <span class="museum-atlas-subclades-label">Selected subordinate clades</span>
+                            <span class="museum-atlas-subclades-label">${t('museum.selectedSubclades')}</span>
                             <span class="museum-atlas-subclades">${subclades}</span>
 
                             <span class="museum-atlas-achievement ${collection.achievementComplete ? 'is-complete' : ''}">
@@ -1886,15 +1972,14 @@ function renderMuseumAtlas(unlockedSet) {
                                 <i><span style="width:${achievementPercent}%"></span></i>
                             </span>
 
-                            <span class="museum-atlas-open">Filter specimens by this clade</span>
+                            <span class="museum-atlas-open">${t('museum.filterByClade')}</span>
                         </button>
                     `;
                 }).join('')}
             </div>
 
             <p class="museum-atlas-note">
-                Herrerasaurus, Sanjuansaurus, and Staurikosaurus are retained outside these three collections because
-                their stored lineages do not place them within Theropoda, Sauropodomorpha, or Ornithischia.
+                ${t('museum.atlasOutsideNote')}
             </p>
         </section>
     `;
@@ -1902,7 +1987,7 @@ function renderMuseumAtlas(unlockedSet) {
 
 function renderMuseumSpecimenCard(dino, unlockedSet) {
     const normalizedName = String(dino.nome || '').toLowerCase();
-    const safeName = escapeChallengeHtml(dino.nome || 'Unknown genus');
+    const safeName = escapeChallengeHtml(dino.nome || t('museum.unknownGenus'));
     const isUnlocked = unlockedSet.has(normalizedName);
     const lastClade = dino.terminalClade || dino.linhagem?.at(-1) || 'Dinosauria';
     const lineageData = Array.isArray(dino.linhagem) ? dino.linhagem.join('|') : '';
@@ -1915,7 +2000,7 @@ function renderMuseumSpecimenCard(dino, unlockedSet) {
                     <span class="museum-card-lock-icon" aria-hidden="true"></span>
                 </div>
                 <div class="museum-card-name">???</div>
-                <div class="museum-card-clade">Locked</div>
+                <div class="museum-card-clade">${t('museum.locked')}</div>
             </div>
         `;
     }
@@ -1924,7 +2009,7 @@ function renderMuseumSpecimenCard(dino, unlockedSet) {
     return `
         <div class="museum-card unlocked difficulty-${DIFFICULTY_MAP[dino.dificuldade]}" ${cardData}
              data-museum-entry="${safeName}" role="button" tabindex="0"
-             aria-label="Open museum entry for ${safeName}">
+             aria-label="${t('museum.openEntryFor', { name: safeName })}">
             <div class="museum-card-art-container">
                 <img class="museum-card-art"
                      data-museum-media-name="${safeName}"
@@ -1962,7 +2047,7 @@ function renderMuseumSpecimensNow() {
         .map(dino => renderMuseumSpecimenCard(dino, state.unlockedSet))
         .join('') + `
             <div class="museum-empty-state" id="museum-empty-state" hidden>
-                No specimens match this search and level filter.
+                ${t('museum.noMatch')}
             </div>
         `;
     grid.dataset.renderState = 'rendered';
@@ -1983,7 +2068,7 @@ function ensureMuseumSpecimensRendered() {
 
     grid.dataset.renderState = 'scheduled';
     grid.classList.add('museum-grid-pending');
-    grid.innerHTML = renderAppState('Preparing specimens…', { compact: true });
+    grid.innerHTML = renderAppState(t('museum.preparingSpecimens'), { compact: true });
     museumSpecimenRenderFrame = requestAnimationFrame(() => {
         museumSpecimenRenderFrame = null;
         if (!grid.isConnected) return;
@@ -2137,19 +2222,19 @@ async function showMuseum() {
                                 onclick="switchMuseumLevel('all')">${t('museum.all')}</button>
                         <button class="tab-btn museum-filter-very-easy ${selectedMuseumLevel === 'muito_facil' ? 'active' : ''}"
                                 data-museum-filter="muito_facil" aria-pressed="${selectedMuseumLevel === 'muito_facil'}"
-                                onclick="switchMuseumLevel('muito_facil')">Level I</button>
+                                onclick="switchMuseumLevel('muito_facil')">${t('level.name1')}</button>
                         <button class="tab-btn museum-filter-easy ${selectedMuseumLevel === 'facil' ? 'active' : ''}"
                                 data-museum-filter="facil" aria-pressed="${selectedMuseumLevel === 'facil'}"
-                                onclick="switchMuseumLevel('facil')">Level II</button>
+                                onclick="switchMuseumLevel('facil')">${t('level.name2')}</button>
                         <button class="tab-btn museum-filter-normal ${selectedMuseumLevel === 'normal' ? 'active' : ''}"
                                 data-museum-filter="normal" aria-pressed="${selectedMuseumLevel === 'normal'}"
-                                onclick="switchMuseumLevel('normal')">Level III</button>
+                                onclick="switchMuseumLevel('normal')">${t('level.name3')}</button>
                         <button class="tab-btn museum-filter-hard ${selectedMuseumLevel === 'dificil' ? 'active' : ''}"
                                 data-museum-filter="dificil" aria-pressed="${selectedMuseumLevel === 'dificil'}"
-                                onclick="switchMuseumLevel('dificil')">Level IV</button>
+                                onclick="switchMuseumLevel('dificil')">${t('level.name4')}</button>
                         <button class="tab-btn museum-filter-very-hard ${selectedMuseumLevel === 'muito_dificil' ? 'active' : ''}"
                                 data-museum-filter="muito_dificil" aria-pressed="${selectedMuseumLevel === 'muito_dificil'}"
-                                onclick="switchMuseumLevel('muito_dificil')">Level V</button>
+                                onclick="switchMuseumLevel('muito_dificil')">${t('level.name5')}</button>
                     </div>
                 </div>
 
@@ -2175,7 +2260,7 @@ async function showMuseum() {
 
     } catch (err) {
         console.error('Museum Error:', err);
-        appContent.innerHTML = `<div class="game-card">${renderAppState('Could not load Museum.', {
+        appContent.innerHTML = `<div class="game-card">${renderAppState(t('museum.loadError'), {
             type: 'error', detail: err.message
         })}</div>`;
     }

@@ -4,40 +4,37 @@
 let dailyCompletionCache = null;
 
 const CLADE_ACHIEVEMENT_DEFINITIONS = [
-    { id: 'theropod_tracker', name: 'Theropod Tracker', desc: 'Discover 10 theropod genera', clade: 'Theropoda', target: 10, category: 'clade' },
-    { id: 'sauropod_collector', name: 'Long-Necked Collection', desc: 'Discover 10 sauropod genera', clade: 'Sauropoda', target: 10, category: 'clade' },
-    { id: 'ornithischian_explorer', name: 'Ornithischian Explorer', desc: 'Discover 10 ornithischian genera', clade: 'Ornithischia', target: 10, category: 'clade' },
-    { id: 'horned_gallery', name: 'Horned Gallery', desc: 'Discover 10 ceratopsian genera', clade: 'Ceratopsia', target: 10, category: 'clade' },
-    { id: 'armored_archive', name: 'Armored Archive', desc: 'Discover 10 thyreophoran genera', clade: 'Thyreophora', target: 10, category: 'clade' },
-    { id: 'duck_billed_collection', name: 'Duck-Billed Collection', desc: 'Discover 10 hadrosaurid genera', clade: 'Hadrosauridae', target: 10, category: 'clade' },
-    { id: 'feathered_branch', name: 'Feathered Branch', desc: 'Discover 10 maniraptoran genera', clade: 'Maniraptora', target: 10, category: 'clade' }
+    { id: 'theropod_tracker', clade: 'Theropoda', target: 10, category: 'clade' },
+    { id: 'sauropod_collector', clade: 'Sauropoda', target: 10, category: 'clade' },
+    { id: 'ornithischian_explorer', clade: 'Ornithischia', target: 10, category: 'clade' },
+    { id: 'horned_gallery', clade: 'Ceratopsia', target: 10, category: 'clade' },
+    { id: 'armored_archive', clade: 'Thyreophora', target: 10, category: 'clade' },
+    { id: 'duck_billed_collection', clade: 'Hadrosauridae', target: 10, category: 'clade' },
+    { id: 'feathered_branch', clade: 'Maniraptora', target: 10, category: 'clade' }
 ];
 
 const ACHIEVEMENT_DEFINITIONS = [
-    { id: 'first_win', name: 'First Win', desc: 'Complete your first challenge' },
-    { id: 'perfect_game', name: 'Three Guesses', desc: 'Find the answer in 3 guesses or fewer' },
-    { id: 'ten_wins', name: '10 Wins', desc: 'Complete 10 challenges' },
-    { id: 'fifty_wins', name: '50 Wins', desc: 'Complete 50 challenges' },
-    { id: 'hard_win', name: 'Level IV', desc: 'Complete a Level IV challenge' },
-    { id: 'very_hard_win', name: 'Level V', desc: 'Complete a Level V challenge' },
-    { id: 'field_researcher', name: 'Field Researcher', desc: 'Complete 10 Daily challenges' },
-    { id: 'persistence_pays', name: 'Persistence Pays', desc: 'Win a Daily challenge after 10 or more attempts' },
-    { id: 'independent_thinker', name: 'Independent Thinker', desc: 'Win a Daily challenge without using a hint' },
-    { id: 'complete_classification', name: 'Complete Classification', desc: 'Win a Daily challenge on every level' },
-    { id: 'three_day_expedition', name: 'Three-Day Expedition', desc: 'Reach a 3-day streak' },
-    { id: 'seven_day_expedition', name: 'Seven-Day Expedition', desc: 'Reach a 7-day streak' },
-    { id: 'museum_apprentice', name: 'Museum Apprentice', desc: 'Discover 10 unique genera' },
-    { id: 'museum_curator', name: 'Museum Curator', desc: 'Discover 50 unique genera' },
-    { id: 'across_dinosauria', name: 'Across Dinosauria', desc: 'Discover a theropod, sauropodomorph, and ornithischian' },
-    { id: 'warmer_every_time', name: 'Warmer Every Time', desc: 'Get closer with every guess in a game of at least 4 guesses' },
-    { id: 'deep_classification', name: 'Deep Classification', desc: 'Complete Level V without using a hint' },
-    { id: 'full_field_day', name: 'Full Field Day', desc: 'Complete all five Daily levels on the same day' },
-    { id: 'fourteen_day_expedition', name: 'Fourteen-Day Expedition', desc: 'Reach a 14-day streak' },
-    { id: 'expedition_leader', name: 'Expedition Leader', desc: 'Win your first friend challenge' },
-    { id: 'podium_finish', name: 'Podium Finish', desc: 'Finish in the top three of a friend challenge' },
-    { id: 'against_all_odds', name: 'Against All Odds', desc: 'Win after at least 10 guesses without using a hint' },
+    { id: 'first_win' }, { id: 'perfect_game' }, { id: 'ten_wins' },
+    { id: 'fifty_wins' }, { id: 'hard_win' }, { id: 'very_hard_win' },
+    { id: 'field_researcher' }, { id: 'persistence_pays' }, { id: 'independent_thinker' },
+    { id: 'complete_classification' }, { id: 'three_day_expedition' },
+    { id: 'seven_day_expedition' }, { id: 'museum_apprentice' },
+    { id: 'museum_curator' }, { id: 'across_dinosauria' }, { id: 'warmer_every_time' },
+    { id: 'deep_classification' }, { id: 'full_field_day' },
+    { id: 'fourteen_day_expedition' }, { id: 'expedition_leader' },
+    { id: 'podium_finish' }, { id: 'against_all_odds' },
     ...CLADE_ACHIEVEMENT_DEFINITIONS
 ];
+
+function getAchievementName(achievement) {
+    const id = typeof achievement === 'string' ? achievement : achievement?.id;
+    return t(`achievement.${id}.name`);
+}
+
+function getAchievementDescription(achievement) {
+    const id = typeof achievement === 'string' ? achievement : achievement?.id;
+    return t(`achievement.${id}.desc`);
+}
 
 const GUEST_ACHIEVEMENT_PROGRESS_KEY = PHYLOSAUR_STORAGE_KEYS.guestAchievements;
 
@@ -401,31 +398,31 @@ function buildAchievementProgress(stats = {}, wonResults = [], supplementalProgr
     });
 
     return {
-        first_win: numeric(gamesWon, 1, 'win'),
+        first_win: numeric(gamesWon, 1, 'achievement.unit.win'),
         perfect_game: binary(hasPerfectGame),
-        ten_wins: numeric(gamesWon, 10, 'wins'),
-        fifty_wins: numeric(gamesWon, 50, 'wins'),
+        ten_wins: numeric(gamesWon, 10, 'achievement.unit.wins'),
+        fifty_wins: numeric(gamesWon, 50, 'achievement.unit.wins'),
         hard_win: binary(wonLevels.has('dificil')),
         very_hard_win: binary(wonLevels.has('muito_dificil')),
-        field_researcher: numeric(gamesPlayed, 10, 'games'),
+        field_researcher: numeric(gamesPlayed, 10, 'achievement.unit.games'),
         persistence_pays: binary(hasPersistenceWin),
         independent_thinker: binary(hasHintlessWin),
-        complete_classification: numeric(completedLevelCount, 5, 'levels'),
-        three_day_expedition: numeric(bestStreak, 3, 'days'),
-        seven_day_expedition: numeric(bestStreak, 7, 'days'),
-        museum_apprentice: numeric(0, 10, 'genera'),
-        museum_curator: numeric(0, 50, 'genera'),
-        across_dinosauria: numeric(0, 3, 'branches'),
+        complete_classification: numeric(completedLevelCount, 5, 'achievement.unit.levels'),
+        three_day_expedition: numeric(bestStreak, 3, 'achievement.unit.days'),
+        seven_day_expedition: numeric(bestStreak, 7, 'achievement.unit.days'),
+        museum_apprentice: numeric(0, 10, 'achievement.unit.genera'),
+        museum_curator: numeric(0, 50, 'achievement.unit.genera'),
+        across_dinosauria: numeric(0, 3, 'achievement.unit.branches'),
         warmer_every_time: binary(false),
         deep_classification: binary(false),
-        full_field_day: numeric(0, 5, 'levels'),
-        fourteen_day_expedition: numeric(bestStreak, 14, 'days'),
+        full_field_day: numeric(0, 5, 'achievement.unit.levels'),
+        fourteen_day_expedition: numeric(bestStreak, 14, 'achievement.unit.days'),
         expedition_leader: binary(false),
         podium_finish: binary(false),
         against_all_odds: binary(false),
         ...Object.fromEntries(CLADE_ACHIEVEMENT_DEFINITIONS.map(definition => [
             definition.id,
-            numeric(0, definition.target, 'genera')
+            numeric(0, definition.target, 'achievement.unit.genera')
         ])),
         ...supplementalProgress
     };
@@ -459,22 +456,22 @@ async function syncHistoricalAchievements(stats, wonResults, unlockedSet = new S
 
 function showAchievementNotification(name) {
     const definition = ACHIEVEMENT_DEFINITIONS.find(achievement => achievement.id === name);
-    const displayName = definition?.name || name;
+    const displayName = definition ? getAchievementName(definition) : name;
     let stack = document.getElementById('achievement-notification-stack');
     if (!stack) {
         stack = document.createElement('div');
         stack.id = 'achievement-notification-stack';
         stack.className = 'achievement-notification-stack';
         stack.setAttribute('aria-live', 'polite');
-        stack.setAttribute('aria-label', 'Achievement notifications');
+        stack.setAttribute('aria-label', t('achievement.notifications'));
         document.body.appendChild(stack);
     }
 
     const notif = document.createElement('div');
     notif.className = 'achievement-notification';
       notif.innerHTML = `
-        <div class="achievement-notification-kicker">Achievement Unlocked!</div>
-        <div class="achievement-notification-title">${displayName}</div>
+        <div class="achievement-notification-kicker">${t('result.achievement')}</div>
+        <div class="achievement-notification-title">${escapeHtml(displayName)}</div>
       `;
       stack.appendChild(notif);
       

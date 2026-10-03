@@ -156,14 +156,14 @@ function ensureTreeToolbar(container) {
         toolbar.className = 'tree-toolbar';
         toolbar.innerHTML = `
             <div class="tree-toolbar-copy" aria-live="polite">
-                <span class="tree-toolbar-kicker">Best known trail</span>
+                <span class="tree-toolbar-kicker">${t('tree.bestTrail')}</span>
                 <strong class="tree-toolbar-clade">Dinosauria</strong>
             </div>
             <div class="tree-toolbar-actions">
-                <button type="button" class="tree-toolbar-btn" data-tree-action="best">Best trail</button>
-                <button type="button" class="tree-toolbar-btn" data-tree-action="latest">Latest move</button>
-                <button type="button" class="tree-toolbar-btn" data-tree-action="root">Root</button>
-                <button type="button" class="tree-toolbar-btn" data-tree-action="expand">Expand all</button>
+                <button type="button" class="tree-toolbar-btn" data-tree-action="best">${t('tree.bestAction')}</button>
+                <button type="button" class="tree-toolbar-btn" data-tree-action="latest">${t('tree.latestMove')}</button>
+                <button type="button" class="tree-toolbar-btn" data-tree-action="root">${t('tree.root')}</button>
+                <button type="button" class="tree-toolbar-btn" data-tree-action="expand">${t('tree.expandAll')}</button>
             </div>
         `;
         toolbar.addEventListener('click', event => {
@@ -183,8 +183,8 @@ function ensureTreeToolbar(container) {
     if (latestButton) {
         latestButton.disabled = !window.treeViewState.latestFocusKey;
         latestButton.title = window.treeViewState.latestLabel
-            ? `Center ${window.treeViewState.latestLabel}`
-            : 'No guess to center yet';
+            ? t('tree.center', { label: window.treeViewState.latestLabel })
+            : t('tree.nothingToCenter');
     }
     if (expandButton) expandButton.disabled = window.collapsedClades.size === 0;
 }
@@ -244,7 +244,7 @@ function renderCurrentGameTree() {
 function renderTreeSnapshot(treeSnapshot) {
   if (!treeSnapshot || !Array.isArray(treeSnapshot.nodes) || !Array.isArray(treeSnapshot.leaves)) {
     const wrapper = document.getElementById('tree-scroll-wrapper');
-    if (wrapper) wrapper.innerHTML = '<div class="empty-state">No tree data.</div>';
+    if (wrapper) wrapper.innerHTML = `<div class="empty-state">${t('tree.noData')}</div>`;
     return;
   }
 
@@ -496,7 +496,7 @@ function renderTreeModel(nodes, leaves, animation = {}) {
   ];
   
   if (!allX.length || !allY.length) {
-    wrapper.innerHTML = '<div class="empty-state">No tree data.</div>';
+    wrapper.innerHTML = `<div class="empty-state">${t('tree.noData')}</div>`;
     return;
   }
   
@@ -609,7 +609,7 @@ nodes.forEach((data, clade) => {
       toggleG.style.cursor = 'pointer';
       makeTreeElementInteractive(
         toggleG,
-        `${isCollapsed ? 'Expand' : 'Collapse'} descendants of ${clade}`,
+        t(isCollapsed ? 'tree.expandDesc' : 'tree.collapseDesc', { clade }),
         e => {
         e.stopPropagation();
         toggleCladeCollapse(clade);

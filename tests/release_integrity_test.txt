@@ -78,6 +78,12 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     "Browser-language detection must select PT-BR or Spanish and otherwise fall back to English.");
   assert(runtime.translate("home.daily") === "Desafio Diário",
     "The Portuguese catalog is not active.");
+  assert(runtime.translate("achievement.first_win.name") === "Primeira vitória" &&
+    runtime.translate("stats.todayHidden") === "A resposta de hoje está oculta" &&
+    runtime.translate("about.dataBody1").includes("Paleobiology Database") &&
+    runtime.translate("museum.taxonomicOverview") === "Visão geral taxonômica" &&
+    runtime.translate("museum.atlasOutsideNote").includes("permanecem fora"),
+    "Statistics, achievements, About or Museum copy are missing from Portuguese.");
   assert(source.includes("const nextUrl = `${url.pathname}${url.search}${url.hash}`") &&
     source.includes("window.history.replaceState(window.history.state, document.title, nextUrl)") &&
     source.includes("window.location.reload()") &&
@@ -298,6 +304,12 @@ Deno.test("About navigation and primary screen titles share the application shel
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
     aboutSource.includes('data-i18n="about.mechanicsBody3"') &&
     aboutSource.includes('data-i18n="about.difficultyBody2"') &&
+    aboutSource.includes('data-i18n-html="about.dataBody1"') &&
+    aboutSource.includes('data-i18n-html="about.mathBody1"') &&
+    aboutSource.includes('data-i18n="about.mathBody7"') &&
+    aboutSource.includes('data-i18n="about.limitationsBody3"') &&
+    aboutSource.includes('data-i18n-html="about.resourcesBody2"') &&
+    aboutSource.includes('data-i18n-html="about.activeDevelopment"') &&
     aboutSource.includes('data-i18n-html="about.nameOrigin"'),
     "The standalone About page must detect the locale and localize its structured content.");
   assert(screensSource.includes("await fetch('about.html')") &&
@@ -469,7 +481,13 @@ Deno.test("clade collection achievements count unique Museum genera and synchron
   assert(dbSource.includes("function synchronizeGuestAchievements") &&
     screensSource.includes("synchronizeGuestAchievements()"),
     "Guest clade achievements must be re-evaluated after the Museum catalogue loads.");
-  assert(screensSource.includes("Clade collection") &&
+  assert(screensSource.includes("t('achievement.cladeCollection')") &&
+    screensSource.includes("getAchievementName(ach)") &&
+    screensSource.includes("getAchievementDescription(ach)") &&
+    dbSource.includes("function getAchievementName(") &&
+    dbSource.includes("function getAchievementDescription(") &&
+    !dbSource.includes("name: 'Theropod Tracker'") &&
+    !dbSource.includes("desc: 'Discover 10 theropod genera'") &&
     styleSource.includes(".achievement-card-clade") &&
     styleSource.includes(".achievement-category"),
     "Clade achievements must remain visually identifiable in the achievement gallery.");
@@ -590,12 +608,16 @@ Deno.test("Museum Clade Atlas exposes the three principal branches without hidin
     screensSource.includes('data-museum-view="specimens"') &&
     screensSource.includes('data-museum-lineage='),
     "Atlas and specimen views must remain accessible and filterable by lineage.");
-  assert(screensSource.includes("saurischian clade ancestrally characterized by bipedal locomotion") &&
-    screensSource.includes("includes early-diverging forms and Sauropoda") &&
-    screensSource.includes("diagnosed by features including the predentary bone") &&
+  assert(screensSource.includes("descriptionKey: 'museum.atlasTheropoda'") &&
+    screensSource.includes("descriptionKey: 'museum.atlasSauropodomorpha'") &&
+    screensSource.includes("descriptionKey: 'museum.atlasOrnithischia'") &&
+    screensSource.includes("t('museum.taxonomicOverview')") &&
+    screensSource.includes("t('museum.atlasOutsideNote')") &&
+    !screensSource.includes("saurischian clade ancestrally characterized by bipedal locomotion") &&
+    !screensSource.includes("Herrerasaurus, Sanjuansaurus, and Staurikosaurus are retained") &&
     !screensSource.includes('class="museum-atlas-branch"') &&
     !screensSource.includes("Recent discoveries"),
-    "Atlas copy must remain scientific and free of unnecessary decorative content.");
+    "Atlas copy must remain localized, scientific and free of unnecessary decorative content.");
   assert(styleSource.includes(".museum-view-switch") &&
     styleSource.includes(".museum-atlas-grid") &&
     styleSource.includes(".museum-atlas-card") &&
@@ -704,6 +726,7 @@ Deno.test("Daily, Practice and Friend games share one restrained session shell",
     gameSource.includes("t('friends.raceCompleteCopy')") &&
     gameSource.includes("t('friends.standingsError')") &&
     gameSource.includes("t('result.shareErrorCopy')") &&
+    gameSource.includes("t('media.imageSource')") &&
     gameSource.includes("escapeHtml(error.message)") &&
     dbSource.includes("t('game.hintUnlock'") &&
     dbSource.includes("t('game.revealNextClue')") &&
@@ -712,6 +735,7 @@ Deno.test("Daily, Practice and Friend games share one restrained session shell",
     !gameSource.includes("Are you sure you want to reveal the answer?") &&
     !gameSource.includes("The remaining positions have been decided.") &&
     !gameSource.includes("Your result could not be copied.") &&
+    !gameSource.includes("`Image source:") &&
     gameSource.includes('class="game-mode-context"') &&
     !gameSource.includes("PRACTICE MODE") &&
     !gameSource.includes('style="grid-template-columns: repeat(5, 1fr); gap: 12px;"'),
@@ -720,9 +744,15 @@ Deno.test("Daily, Practice and Friend games share one restrained session shell",
     screensSource.includes("t('tutorial.followBranches')") &&
     screensSource.includes("t('tutorial.trySample')") &&
     screensSource.includes("t('tutorial.progress'") &&
+    screensSource.includes("t('museum.noIllustration')") &&
+    screensSource.includes("t('media.imageBy'") &&
+    screensSource.includes('d="M140 18V52') &&
+    screensSource.includes('class="tutorial-welcome-root" cx="140" cy="18"') &&
+    screensSource.includes('class="tutorial-welcome-node is-target" cx="250" cy="122"') &&
+    !screensSource.includes('d="M140 132V98') &&
     !screensSource.includes("Every guess teaches you") &&
     !screensSource.includes("The game currently has no guess limit while I evaluate"),
-    "How-to and tutorial copy must use the localized catalogue instead of embedded English.");
+    "How-to copy must be localized and the tutorial tree must branch downward like the game tree.");
   assert(styleSource.includes(".game-mode-context") &&
     styleSource.includes(".game-session-stats") &&
     styleSource.includes("grid-template-columns: repeat(5, minmax(0, 1fr))"),
@@ -743,7 +773,23 @@ Deno.test("Statistics records and SPA navigation use shared responsive accessibi
     screensSource.indexOf("function generateGuessHistogram("),
     screensSource.indexOf("function generateDifficultyStats("),
   );
-  const histogram = new Function(`${histogramSource}; return generateGuessHistogram;`)();
+  const translate = (key: string, values: Record<string, unknown> = {}) => {
+    const messages: Record<string, string> = {
+      'stats.histogramEmpty': 'Win a Daily challenge to begin your distribution.',
+      'stats.distributionLabel': 'Distribution of {count} winning games by number of guesses',
+      'stats.winLabelOne': 'win', 'stats.winLabelMany': 'wins',
+      'game.guessOne': 'guess', 'game.guessMany': 'guesses',
+      'level.name1': 'Level I', 'level.name2': 'Level II', 'level.name3': 'Level III',
+      'level.name4': 'Level IV', 'level.name5': 'Level V',
+      'stats.recordWon': '{won}/{played} won',
+      'stats.successRateValue': '{rate}% success rate',
+      'stats.successValue': '{rate}% success',
+      'stats.notPlayed': 'Not played', 'stats.noAverage': 'No average yet',
+      'stats.averageGuesses': 'Average: {count} {unit}',
+    };
+    return (messages[key] || key).replace(/\{(\w+)\}/g, (_match, name) => String(values[name] ?? ''));
+  };
+  const histogram = new Function("t", `${histogramSource}; return generateGuessHistogram;`)(translate);
   const histogramMarkup = histogram([
     { guess_count: 2 }, { guess_count: 2 }, { guess_count: 5 }, { guess_count: 12 },
   ]);
@@ -752,9 +798,9 @@ Deno.test("Statistics records and SPA navigation use shared responsive accessibi
     screensSource.indexOf("function generateAchievements("),
   );
   const renderDifficultyStats = new Function(
-    "escapeChallengeHtml",
+    "escapeChallengeHtml", "t",
     `${difficultyStatsSource}; return generateDifficultyStats;`,
-  )((value: unknown) => String(value));
+  )((value: unknown) => String(value), translate);
   const difficultyMarkup = renderDifficultyStats([
     { difficulty: "facil", won: true, guess_count: 1 },
     { difficulty: "muito_facil", won: true, guess_count: 2 },
@@ -908,6 +954,7 @@ Deno.test("guess input displays ranked suggestions and submits the typed name", 
 
 Deno.test("tree nodes remain accessible by keyboard", () => {
   const treeSource = Deno.readTextFileSync(`${javascriptRoot}/tree.${javascriptExtension}`);
+  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
   assert(
     treeSource.includes("function makeTreeElementInteractive") &&
       treeSource.includes("element.setAttribute('role', 'button')") &&
@@ -917,6 +964,20 @@ Deno.test("tree nodes remain accessible by keyboard", () => {
   assert(
     treeSource.includes("event.key !== 'Enter'") && treeSource.includes("event.key !== ' '"),
     "Tree elements must support Enter and Space activation.",
+  );
+  assert(
+    treeSource.includes("${t('tree.bestTrail')}") &&
+      treeSource.includes("${t('tree.latestMove')}") &&
+      treeSource.includes("t('tree.nothingToCenter')") &&
+      treeSource.includes("t('tree.noData')") &&
+      treeSource.includes("'tree.expandDesc' : 'tree.collapseDesc'") &&
+      uiSource.includes("t('history.title')") &&
+      uiSource.includes("t('history.lastCommon'") &&
+      uiSource.includes("t('history.nodes'") &&
+      uiSource.includes("t('tree.noEncyclopedia')") &&
+      uiSource.includes("t('media.closeAnywhere')") &&
+      uiSource.includes("escapeHtml(guess.dino.nome)"),
+    "Tree controls and exploration history must remain localized and safely rendered.",
   );
 });
 
@@ -1077,7 +1138,7 @@ Deno.test("Museum media loads near the viewport with bounded concurrency and pro
   assert(screensSource.includes("const mediaPromise = getCachedDinoMedia(name)") &&
     screensSource.includes("const wikiPromise = fetchWikipediaInfo(name)") &&
     screensSource.includes("const paleodataPromise = loadMuseumPaleodataCatalog()") &&
-    screensSource.includes("Loading encyclopedia overview…") &&
+    screensSource.includes("t('museum.loadingOverview')") &&
     screensSource.includes("void mediaPromise.then") &&
     screensSource.includes("void wikiPromise.then") &&
     screensSource.includes("void paleodataPromise.then"),

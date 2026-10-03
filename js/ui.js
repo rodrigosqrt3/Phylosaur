@@ -261,7 +261,7 @@ function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
     const overlay = document.createElement('div');
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', `${name} image viewer`);
+    overlay.setAttribute('aria-label', t('media.imageViewer', { name }));
     overlay.tabIndex = -1;
     overlay.style.cssText = `
     position:fixed; top:0; left:0; right:0; bottom:0;
@@ -273,8 +273,8 @@ function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
     `;
     
     const fallbackCredit = `
-        ${sourcePage ? `Image source: <a href="${sourcePage}" target="_blank"
-            style="color:var(--color-muted); text-decoration:none;">Wikimedia Commons</a>` : 'Image source: Wikimedia Commons'}
+        ${t('media.imageSource')} ${sourcePage ? `<a href="${sourcePage}" target="_blank"
+            style="color:var(--color-muted); text-decoration:none;">Wikimedia Commons</a>` : 'Wikimedia Commons'}
     `;
 
     overlay.innerHTML = `
@@ -287,7 +287,7 @@ function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
         ${creditHtml || fallbackCredit}
     </div>
     <div style="margin-top:16px; color:var(--border-subtle); font-size:0.8em; letter-spacing:2px;">
-        CLICK ANYWHERE TO CLOSE
+        ${t('media.closeAnywhere')}
     </div>
     `;
     
@@ -325,11 +325,11 @@ async function showCladeInfo(cladeName, options = {}) {
     if (!infoDiv || !cladeName) return;
 
     const requestId = ++cladeInfoRequestId;
-    const heading = options.heading || 'Clade';
+    const heading = options.heading || t('tree.clade');
     const includeRevealedPath = options.includeRevealedPath === true;
     infoDiv.innerHTML = `
     <div class="clade-info">
-        <div class="loading">Loading information about ${escapeChallengeHtml(cladeName)}…</div>
+        <div class="loading">${t('tree.loadingInfo', { clade: escapeChallengeHtml(cladeName) })}</div>
     </div>
     `;
 
@@ -338,7 +338,7 @@ async function showCladeInfo(cladeName, options = {}) {
 
     const revealedPathHtml = includeRevealedPath
         ? `
-            <div class="phylo-path"><h4>Revealed path to the target:</h4>
+            <div class="phylo-path"><h4>${t('tree.revealedPath')}</h4>
                 ${Array.from(revealedClades).map(clade => `
                     <div class="phylo-step">
                         <span class="phylo-step-name">${escapeChallengeHtml(clade)}</span>
@@ -352,7 +352,7 @@ async function showCladeInfo(cladeName, options = {}) {
     infoDiv.innerHTML = `
         <div class="clade-info">
         <h3>${escapeChallengeHtml(heading)}: ${escapeChallengeHtml(cladeName)}</h3>
-        <p style="color:#999;font-style:italic;">No encyclopedia entry found.</p>
+        <p style="color:#999;font-style:italic;">${t('tree.noEncyclopedia')}</p>
         ${revealedPathHtml}
         </div>
     `;
@@ -369,9 +369,9 @@ async function showCladeInfo(cladeName, options = {}) {
     <div class="clade-text">
         ${wikiInfo.description 
         ? `<p>${wikiInfo.description}</p>` 
-        : '<p style="color:#999;font-style:italic;">Description unavailable.</p>'
+        : `<p style="color:#999;font-style:italic;">${t('tree.descriptionUnavailable')}</p>`
         }
-        <a href="${wikiInfo.url}" target="_blank" class="clade-link">View Encyclopedia Entry</a>
+        <a href="${wikiInfo.url}" target="_blank" class="clade-link">${t('tree.encyclopedia')}</a>
     </div>
     `;
     
@@ -408,7 +408,7 @@ async function updateCladeInfo() {
     }
 
     await showCladeInfo(selectedClade, {
-        heading: useHintClade ? 'Deepest Revealed Clade' : 'Most Recent Common Ancestor',
+        heading: useHintClade ? t('tree.deepestRevealed') : t('tree.recentAncestor'),
         includeRevealedPath: true
     });
 }
@@ -423,17 +423,17 @@ function updateGuessHistory() {
     return;
     }
     
-    let html = '<div class="guess-history"><h3>Exploration History</h3>';
+    let html = `<div class="guess-history"><h3>${t('history.title')}</h3>`;
     
     if (hintHistory.length > 0) {
     hintHistory.slice().reverse().forEach(hint => {
         const isCladeHint = Boolean(hint.cladeName);
         const hintName = isCladeHint
-            ? `[HINT: ${hint.cladeName}]`
-            : '[NAME HINT]';
+            ? t('history.cladeHint', { clade: escapeHtml(hint.cladeName) })
+            : t('history.nameHint');
         const hintDetail = isCladeHint
-            ? `Revealed clade at depth ${hint.depth}`
-            : hint.message || 'A clue about the target name was revealed.';
+            ? t('history.revealedDepth', { depth: hint.depth })
+            : escapeHtml(hint.message || t('game.nameHintFallback'));
         html += `
         <div class="guess-item guess-item-hint">
             <span class="guess-name">${hintName}</span>
@@ -445,13 +445,17 @@ function updateGuessHistory() {
     
     guesses.slice().reverse().forEach(guess => {
     const divInfo = guess.proximity.lastCommonClade 
-        ? ` → Last common: ${guess.proximity.lastCommonClade}` 
+        ? ` → ${t('history.lastCommon', { clade: escapeHtml(guess.proximity.lastCommonClade) })}`
         : '';
     
     html += `
         <div class="guess-item">
-        <span class="guess-name">${guess.dino.nome}${divInfo}</span>
-        <span class="guess-match">${guess.proximity.matches}/${currentTargetDepth} nodes (${guess.proximity.percentage}%)</span>
+        <span class="guess-name">${escapeHtml(guess.dino.nome)}${divInfo}</span>
+        <span class="guess-match">${t('history.nodes', {
+            matches: guess.proximity.matches,
+            depth: currentTargetDepth,
+            percent: guess.proximity.percentage
+        })}</span>
         </div>
     `;
     });

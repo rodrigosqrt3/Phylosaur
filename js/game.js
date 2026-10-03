@@ -450,7 +450,7 @@ async function loadResultMedia(dinoName) {
         const sourcePage = media.file_page || defaultSourcePage;
         const credit = typeof getMuseumMediaCredit === 'function'
             ? getMuseumMediaCredit(dinoName, media)
-            : `Image source: <a href="${sourcePage}" target="_blank" rel="noopener">Wikimedia Commons</a>`;
+            : `${t('media.imageSource')} <a href="${sourcePage}" target="_blank" rel="noopener">Wikimedia Commons</a>`;
 
         return {
             ...media,
