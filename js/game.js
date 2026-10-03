@@ -145,7 +145,21 @@ async function startFriendChallengeFromPayload(data) {
     }
 }
 
+function getChallengeSessionGuard() {
+    const generation = challengeStatusPollGeneration;
+    const sessionId = gameSessionId;
+    const code = currentChallengeCode;
+    const ownerId = currentUserId;
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    return () => Boolean(wrapper) && document.getElementById('tree-scroll-wrapper') === wrapper
+        && currentGameMode === 'challenge' && gameSessionId === sessionId
+        && currentChallengeCode === code && currentUserId === ownerId
+        && challengeStatusPollGeneration === generation;
+}
+
 function stopChallengeStatusPolling() {
+    challengeStatusPollGeneration++;
+    challengeStatusPollInFlight = false;
     if (challengeStatusPollTimer) clearInterval(challengeStatusPollTimer);
     challengeStatusPollTimer = null;
 }
@@ -160,7 +174,7 @@ function updateChallengeRaceStatus(data) {
         const completed = Number(data.race.completedPlayers || 0);
         status.textContent = total < 2
             ? t('friends.waiting')
-            : `${total} players · ${completed} finished`;
+            : t('friends.raceProgress', { total, completed });
     }
 }
 
@@ -168,11 +182,13 @@ async function handleChallengeRaceClosure(statusData) {
     if (challengeRaceClosing || currentGameMode !== 'challenge') return;
     challengeRaceClosing = true;
     stopChallengeStatusPolling();
+    const isCurrentRequest = getChallengeSessionGuard();
     updateChallengeRaceStatus(statusData);
     currentChallengeEliminated = true;
 
     try {
         const state = await callGameApi('state', { sessionId: gameSessionId });
+        if (!isCurrentRequest()) return;
         applyServerGamePayload(state);
         currentChallengeEliminated = true;
         currentChallengePlacement = statusData.race?.requesterPlacement ||
@@ -181,6 +197,7 @@ async function handleChallengeRaceClosure(statusData) {
         updateServerGameDisplay(state);
         await showRestoredServerCompletion(state);
     } catch (error) {
+        if (!isCurrentRequest()) return;
         await customAlert(t('friends.raceComplete'), t('friends.raceCompleteCopy'));
     }
 }
@@ -191,6 +208,12 @@ async function pollChallengeRaceStatus() {
         return;
     }
     if (document.hidden || challengeStatusPollInFlight) return;
+    const generation = challengeStatusPollGeneration;
+    const isCurrentRequest = getChallengeSessionGuard();
+    if (!isCurrentRequest()) {
+        stopChallengeStatusPolling();
+        return;
+    }
 
     challengeStatusPollInFlight = true;
     try {
@@ -198,6 +221,7 @@ async function pollChallengeRaceStatus() {
             code: currentChallengeCode,
             sessionId: gameSessionId
         });
+        if (!isCurrentRequest()) return;
         updateChallengeRaceStatus(data);
         if (data.race?.closedRequester) {
             await handleChallengeRaceClosure(data);
@@ -207,7 +231,7 @@ async function pollChallengeRaceStatus() {
     } catch (error) {
         console.warn('Challenge race status unavailable:', error);
     } finally {
-        challengeStatusPollInFlight = false;
+        if (generation === challengeStatusPollGeneration) challengeStatusPollInFlight = false;
     }
 }
 
@@ -224,11 +248,13 @@ document.addEventListener('visibilitychange', () => {
 async function refreshCurrentChallengePlacement() {
     if (currentGameMode !== 'challenge' || !currentChallengeCode || !gameSessionId) return null;
     stopChallengeStatusPolling();
+    const isCurrentRequest = getChallengeSessionGuard();
     try {
         const data = await callGameApi('challenge_status', {
             code: currentChallengeCode,
             sessionId: gameSessionId
         });
+        if (!isCurrentRequest()) return null;
         updateChallengeRaceStatus(data);
         return data;
     } catch (error) {
@@ -293,20 +319,45 @@ function redrawGameTree() {
     renderCurrentGameTree();
 }
 
+function getGameSessionGuard() {
+    const sessionId = gameSessionId;
+    const ownerId = currentUserId;
+    const mode = currentGameMode;
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    return () => Boolean(wrapper) && document.getElementById('tree-scroll-wrapper') === wrapper
+        && gameSessionId === sessionId && currentUserId === ownerId && currentGameMode === mode;
+}
+
+function beginGameAction() {
+    if (gameWon || gameRequestPending || !gameSessionId || challengeRaceClosing
+        || document.querySelector('[data-app-modal="true"]')) return null;
+    const isCurrentSession = getGameSessionGuard();
+    if (!isCurrentSession()) return null;
+    const generation = ++gameActionGeneration;
+    setGuessRequestPending(true);
+    return () => generation === gameActionGeneration && isCurrentSession();
+}
+
 function setGuessRequestPending(pending) {
     gameRequestPending = pending;
+    const unavailable = pending || gameWon || challengeRaceClosing;
     const input = document.getElementById('dino-input');
     const button = document.querySelector('.btn-guess');
 
     if (button) {
         button.textContent = pending ? t('game.analyzing') : t('game.submit');
-        button.disabled = pending || gameWon;
+        button.disabled = unavailable;
     }
-    if (input) input.disabled = pending || gameWon;
+    if (input) input.disabled = unavailable;
+    const giveUpButton = document.querySelector('.btn-giveup');
+    if (giveUpButton) giveUpButton.disabled = unavailable;
+    updateHintButtonState();
 
     if (!pending && !gameWon && input) {
         requestAnimationFrame(() => {
-            input.focus();
+            if (document.getElementById('dino-input') === input && !gameRequestPending
+                && !gameWon && !challengeRaceClosing
+                && !document.querySelector('[data-app-modal="true"]')) input.focus();
         });
     }
 }
@@ -317,7 +368,8 @@ async function makeGuess() {
 }
 
 async function makeServerGuess() {
-    if (gameRequestPending || document.querySelector('[data-app-modal="true"]')) return;
+    if (gameWon || gameRequestPending || !gameSessionId || challengeRaceClosing
+        || document.querySelector('[data-app-modal="true"]')) return;
 
     const input = document.getElementById('dino-input');
     const guessName = input?.value.trim() || '';
@@ -340,7 +392,8 @@ async function makeServerGuess() {
         return;
     }
 
-    setGuessRequestPending(true);
+    const isCurrentRequest = beginGameAction();
+    if (!isCurrentRequest) return;
 
     let data;
     try {
@@ -349,12 +402,15 @@ async function makeServerGuess() {
             guess: available.nome
         });
     } catch (error) {
+        if (!isCurrentRequest()) return;
         setGuessRequestPending(false);
+        if (gameWon || challengeRaceClosing) return;
         await customAlert(t('game.guessRejected'), escapeHtml(error.message));
         return;
     }
 
     try {
+        if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
         guesses.push({
             dino: { nome: data.guess.nome },
             proximity: {
@@ -385,13 +441,14 @@ async function makeServerGuess() {
 
         if (data.won) await showVictory();
     } catch (error) {
+        if (!isCurrentRequest()) return;
         console.error('Error displaying accepted guess:', error);
         await customAlert(
             t('game.displayErrorTitle'),
             t('game.displayErrorCopy')
         );
     } finally {
-        setGuessRequestPending(false);
+        if (isCurrentRequest()) setGuessRequestPending(false);
     }
 }
 
@@ -400,10 +457,12 @@ async function useHint() {
 }
 
 async function useServerHint() {
-    if (gameWon) return;
+    const isCurrentRequest = beginGameAction();
+    if (!isCurrentRequest) return;
 
     try {
         const data = await callGameApi('hint', { sessionId: gameSessionId });
+        if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
         applyServerGamePayload(data);
         guessesSinceLastHint = 0;
         const isCladeHint = Boolean(data.hint?.cladeName);
@@ -418,6 +477,7 @@ async function useServerHint() {
                 t('game.hint'),
                 `${t('game.nextClade')}<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${escapeHtml(data.hint.cladeName)}</strong>`
             );
+            if (!isCurrentRequest()) return;
             await updateCladeInfo();
         } else {
             const nameHintKeys = {
@@ -434,6 +494,7 @@ async function useServerHint() {
             );
         }
     } catch (error) {
+        if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
         const missing = Number(error.data?.guessesRequired || 0);
         const message = missing > 0
             ? t('game.hintWait', {
@@ -442,6 +503,8 @@ async function useServerHint() {
             })
             : escapeHtml(error.message);
         await customAlert(t('game.hintUnavailable'), message);
+    } finally {
+        if (isCurrentRequest()) setGuessRequestPending(false);
     }
 }
 
@@ -595,97 +658,105 @@ function toggleResultTreeView(showTree = true) {
 }
 
 async function giveUp() {
-    if (gameWon) return;
-
-    const confirm = await customConfirm(
-        t('game.giveUpTitle'),
-        t('game.giveUpCopy'),
-        t('game.giveUp'),
-        t('game.keepTrying')
-    );
-
-    if (confirm !== 'true') return;
+    const isCurrentRequest = beginGameAction();
+    if (!isCurrentRequest) return;
 
     try {
-        const data = await callGameApi('give_up', { sessionId: gameSessionId });
-        applyServerGamePayload(data);
-    } catch (error) {
-        await customAlert(t('game.giveUpError'), escapeHtml(error.message));
-        return;
-    }
+        const confirm = await customConfirm(
+            t('game.giveUpTitle'),
+            t('game.giveUpCopy'),
+            t('game.giveUp'),
+            t('game.keepTrying')
+        );
 
-    gameWon = false;
+        if (!isCurrentRequest() || gameWon || challengeRaceClosing || confirm !== 'true') return;
 
-    if (currentUserId && currentGameMode === 'daily') {
         try {
-            await ensureDailyAccountProgress();
-            await syncAccountAchievements();
+            const data = await callGameApi('give_up', { sessionId: gameSessionId });
+            if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
+            applyServerGamePayload(data);
         } catch (error) {
-            console.error('Daily progress finalization failed:', error);
+            if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
+            await customAlert(t('game.giveUpError'), escapeHtml(error.message));
+            return;
         }
-    } else if (currentGameMode === 'daily') {
-        recordGuestDailyResult(false);
-    }
 
-    if (currentGameMode === 'challenge') {
-        currentChallengeEliminated = false;
-        await refreshCurrentChallengePlacement();
-    }
+        if (currentUserId && currentGameMode === 'daily') {
+            try {
+                await ensureDailyAccountProgress();
+                if (!isCurrentRequest()) return;
+                await syncAccountAchievements();
+            } catch (error) {
+                console.error('Daily progress finalization failed:', error);
+            }
+        } else if (currentGameMode === 'daily') {
+            recordGuestDailyResult(false);
+        }
+        if (!isCurrentRequest()) return;
 
-    document.getElementById('dino-input').disabled = true;
-    document.querySelector('.btn-guess').disabled = true;
-    document.querySelector('.btn-game-hint').disabled = true;
-    document.querySelector('.btn-giveup')?.setAttribute('disabled', true);
+        if (currentGameMode === 'challenge') {
+            currentChallengeEliminated = false;
+            await refreshCurrentChallengePlacement();
+        }
+        if (!isCurrentRequest()) return;
 
-    const resultMediaPromise = loadResultMedia(targetDino.nome);
+        document.getElementById('dino-input').disabled = true;
+        document.querySelector('.btn-guess').disabled = true;
+        document.querySelector('.btn-game-hint').disabled = true;
+        document.querySelector('.btn-giveup')?.setAttribute('disabled', true);
 
-    const container = document.getElementById('tree-container');
-    const v = document.createElement('div');
-    v.className = 'victory victory--revealed';
+        const resultMediaPromise = loadResultMedia(targetDino.nome);
 
-    v.innerHTML = `
-        <div class="victory-heading">
-            <h2>${t('result.answerRevealedTitle')}</h2>
-            <div class="victory-dino">${targetDino.nome}</div>
-            <div class="victory-summary" aria-label="${t('game.resultSummary')}">
-                <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
-                <span>${t('result.gaveUp')}</span>
+        const container = document.getElementById('tree-container');
+        const v = document.createElement('div');
+        v.className = 'victory victory--revealed';
+
+        v.innerHTML = `
+            <div class="victory-heading">
+                <h2>${t('result.answerRevealedTitle')}</h2>
+                <div class="victory-dino">${targetDino.nome}</div>
+                <div class="victory-summary" aria-label="${t('game.resultSummary')}">
+                    <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
+                    <span>${t('result.gaveUp')}</span>
+                </div>
             </div>
-        </div>
 
-        ${buildResultMediaSlotMarkup()}
+            ${buildResultMediaSlotMarkup()}
 
-        ${currentGameMode === 'challenge' && currentChallengePlacement ? `
-        <div class="race-placement-card">
-            <strong>#${currentChallengePlacement}</strong>
-            <span>${t('friends.currentRacePosition')}</span>
-        </div>` : ''}
+            ${currentGameMode === 'challenge' && currentChallengePlacement ? `
+            <div class="race-placement-card">
+                <strong>#${currentChallengePlacement}</strong>
+                <span>${t('friends.currentRacePosition')}</span>
+            </div>` : ''}
 
-        <div class="victory-actions">
-            <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">
-                ${t('game.viewTree')}
-            </button>
-            <button class="btn-hint victory-action-secondary" onclick="shareResult()" id="share-btn">
-                ${t('result.share')}
-            </button>
+            <div class="victory-actions">
+                <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">
+                    ${t('game.viewTree')}
+                </button>
+                <button class="btn-hint victory-action-secondary" onclick="shareResult()" id="share-btn">
+                    ${t('result.share')}
+                </button>
 
-            ${currentGameMode === 'challenge' ? `
-            <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
-            <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
-            <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
-                ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
-            </button>`}
-        </div>
-    `;
+                ${currentGameMode === 'challenge' ? `
+                <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
+                <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
+                <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+                    ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
+                </button>`}
+            </div>
+        `;
 
-    container.insertBefore(v, container.firstChild);
-    hydrateResultMedia(v, targetDino.nome, resultMediaPromise);
-    isGiveUpMode = true;
-    gameWon = true;
-    setTreeAnimationMode('reveal');
-    redrawGameTree();
-    updateCladeInfo();
-    revealResultPanel(container, v);
+        container.insertBefore(v, container.firstChild);
+        hydrateResultMedia(v, targetDino.nome, resultMediaPromise);
+        isGiveUpMode = true;
+        gameWon = true;
+        setTreeAnimationMode('reveal');
+        redrawGameTree();
+        updateCladeInfo();
+        revealResultPanel(container, v);
+    } finally {
+        if (isCurrentRequest()) setGuessRequestPending(false);
+    }
 }
 
 function buildVictoryStreakMarkup(streakData, milestone) {
@@ -812,12 +883,14 @@ async function openVictoryMuseumEntry(name, button = null) {
 }
 
 async function persistVictoryResult() {
+    const isCurrentRequest = getGameSessionGuard();
     let streakData = null;
     let milestone = null;
     let newlyUnlockedAchievements = [];
 
     if (currentUserId && currentGameMode === 'daily') {
         streakData = await ensureDailyAccountProgress();
+        if (!isCurrentRequest()) return {};
         milestone = streakData ? checkStreakMilestone(streakData.current) : null;
     } else if (currentGameMode === 'daily') {
         newlyUnlockedAchievements = recordGuestDailyResult(true);
@@ -826,6 +899,7 @@ async function persistVictoryResult() {
     if (currentGameMode === 'challenge') {
         currentChallengeEliminated = false;
         await refreshCurrentChallengePlacement();
+        if (!isCurrentRequest()) return {};
     }
 
     if (!currentUserId && currentGameMode !== 'daily') {
@@ -835,6 +909,7 @@ async function persistVictoryResult() {
     if (currentUserId) {
         try {
             const synchronization = await syncAccountAchievements();
+            if (!isCurrentRequest()) return {};
             newlyUnlockedAchievements = [...new Set([
                 ...newlyUnlockedAchievements,
                 ...synchronization.newlyUnlocked
@@ -853,9 +928,11 @@ async function persistVictoryResult() {
 }
 
 async function hydrateVictoryMetadata(panel, persistencePromise) {
+    const isCurrentRequest = getGameSessionGuard();
     const status = panel.querySelector('.victory-save-status');
     try {
         const result = await persistencePromise;
+        if (!isCurrentRequest() || !panel.isConnected) return;
         const streakSlot = panel.querySelector('.victory-streak-slot');
         const placementSlot = panel.querySelector('.challenge-placement-slot');
         const achievementSlot = panel.querySelector('.victory-achievements-slot');
@@ -875,10 +952,11 @@ async function hydrateVictoryMetadata(panel, persistencePromise) {
         }
         status?.remove();
     } catch (error) {
+        if (!isCurrentRequest() || !panel.isConnected) return;
         console.error('Victory result persistence error:', error);
         if (status) status.textContent = t('result.savedStatsRetry');
     } finally {
-        panel.querySelectorAll('[data-victory-action]').forEach(button => {
+        if (isCurrentRequest() && panel.isConnected) panel.querySelectorAll('[data-victory-action]').forEach(button => {
             button.disabled = false;
         });
     }

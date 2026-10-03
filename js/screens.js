@@ -2142,16 +2142,25 @@ async function showMuseum() {
     const appContent = document.getElementById('app-content');
     
     appContent.innerHTML = `<div class="game-card">${renderAppState(t('museum.loading'))}</div>`;
+    const loadingCard = appContent.firstElementChild;
+    const museumOwnerId = currentUserId;
+    const isCurrentRequest = () => appContent.firstElementChild === loadingCard
+        && currentUserId === museumOwnerId;
     
     try {
+        let museumDatabase = fullDatabase;
         if (!fullDatabase || fullDatabase.length === 0) {
             const catalog = await callGameApi('catalog');
-            fullDatabase = catalog.dinosaurs || [];
+            if (!isCurrentRequest()) return;
+            museumDatabase = catalog.dinosaurs || [];
         }
-        [fullDatabase, museumDiscoveryRecords] = await Promise.all([
-            ensureMuseumCatalogLineages(fullDatabase),
+        const [catalogDatabase, discoveryRecords] = await Promise.all([
+            ensureMuseumCatalogLineages(museumDatabase),
             getDiscoveryRecords()
         ]);
+        if (!isCurrentRequest()) return;
+        fullDatabase = catalogDatabase;
+        museumDiscoveryRecords = discoveryRecords;
         if (!currentUserId) synchronizeGuestAchievements();
         const unlockedList = Object.values(museumDiscoveryRecords)
             .map(record => record.name);
@@ -2260,6 +2269,7 @@ async function showMuseum() {
 
     } catch (err) {
         console.error('Museum Error:', err);
+        if (!isCurrentRequest()) return;
         appContent.innerHTML = `<div class="game-card">${renderAppState(t('museum.loadError'), {
             type: 'error', detail: err.message
         })}</div>`;
@@ -2367,16 +2377,22 @@ async function showAnalyticsDashboard(days = 30) {
     }
 
     appContent.innerHTML = `<div class="game-card">${renderAppState(t('analytics.loading'))}</div>`;
+    const loadingCard = appContent.firstElementChild;
+    const analyticsOwnerId = currentUserId;
+    const isCurrentRequest = () => appContent.firstElementChild === loadingCard
+        && currentUserId === analyticsOwnerId && isAnalyticsAdmin;
 
     let data;
     try {
         data = await callGameApi('analytics_dashboard', { days });
     } catch (error) {
+        if (!isCurrentRequest()) return;
         appContent.innerHTML = `<div class="game-card">${renderAppState(t('analytics.loadError'), {
             type: 'error', detail: error.message
         })}</div>`;
         return;
     }
+    if (!isCurrentRequest()) return;
 
     const summary = data.summary || {};
     const maxStarted = Math.max(1, ...data.byDay.map(day => Number(day.started || 0)));

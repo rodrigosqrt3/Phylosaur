@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════
 // GLOBAL STATE
 // ═══════════════════════════════════════════════
-const PHYLOSAUR_RELEASE_VERSION = 81;
+const PHYLOSAUR_RELEASE_VERSION = 88;
 const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   theme: 'phylosaur-theme',
   language: 'phylosaur-language',
@@ -41,6 +41,7 @@ let currentChallengeTotalPlayers = 0;
 let currentChallengeEliminated = false;
 let challengeStatusPollTimer = null;
 let challengeStatusPollInFlight = false;
+let challengeStatusPollGeneration = 0;
 let challengeRaceClosing = false;
 let isGiveUpMode = false;
 let currentTheme = 'dark';
@@ -48,6 +49,7 @@ let gameSessionId = null;
 let currentTargetDepth = 0;
 let serverPossibleSpecimens = 0;
 let gameRequestPending = false;
+let gameActionGeneration = 0;
 let currentMuseumProof = null;
 let currentAccountProgress = null;
 let isAnalyticsAdmin = false;

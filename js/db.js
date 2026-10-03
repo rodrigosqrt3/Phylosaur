@@ -429,6 +429,7 @@ function buildAchievementProgress(stats = {}, wonResults = [], supplementalProgr
 }
 
 async function syncHistoricalAchievements(stats, wonResults, unlockedSet = new Set()) {
+    const achievementOwnerId = currentUserId;
     if (!currentUserId) {
         return { unlockedSet, newlyUnlocked: [], progress: buildAchievementProgress(stats, wonResults) };
     }
@@ -437,10 +438,12 @@ async function syncHistoricalAchievements(stats, wonResults, unlockedSet = new S
     const newlyUnlocked = [];
 
     for (const definition of ACHIEVEMENT_DEFINITIONS) {
+        if (currentUserId !== achievementOwnerId) break;
         if (!progress[definition.id]?.complete || unlockedSet.has(definition.id)) continue;
 
         const { error } = await sb.from('achievements')
-            .insert({ user_id: currentUserId, achievement_id: definition.id });
+            .insert({ user_id: achievementOwnerId, achievement_id: definition.id });
+        if (currentUserId !== achievementOwnerId) break;
         if (error) {
             console.error(`Could not synchronize achievement ${definition.id}:`, error);
             continue;
@@ -693,9 +696,12 @@ async function ensureDailyAccountProgress() {
     if (!currentUserId || currentGameMode !== 'daily' || !gameSessionId) return null;
     if (currentAccountProgress) return applyAccountProgress(currentAccountProgress);
 
+    const sessionId = gameSessionId;
+    const ownerId = currentUserId;
     const result = await callGameApi('finalize_daily_progress', {
-        sessionId: gameSessionId
+        sessionId
     });
+    if (gameSessionId !== sessionId || currentUserId !== ownerId || currentGameMode !== 'daily') return null;
     return applyAccountProgress(result.accountProgress);
 }
 
@@ -718,7 +724,8 @@ function updateHintButtonState() {
     if (!button) return;
 
     const guessesRequired = Math.max(0, 2 - guessesSinceLastHint);
-    const unavailable = gameWon || hintsRemaining <= 0 || guessesRequired > 0;
+    const unavailable = gameRequestPending || gameWon || challengeRaceClosing
+        || hintsRemaining <= 0 || guessesRequired > 0;
     button.disabled = unavailable;
 
     if (gameWon) {
@@ -786,7 +793,11 @@ async function showRestoredServerCompletion(data) {
     if (!container || container.querySelector('.victory')) return;
 
     const targetName = data.target?.nome || targetDino?.nome || '';
+    const completionSessionId = gameSessionId;
+    const completionOwnerId = currentUserId;
     const resultMedia = targetName ? await loadResultMedia(targetName) : null;
+    if (document.getElementById('tree-container') !== container
+        || gameSessionId !== completionSessionId || currentUserId !== completionOwnerId) return;
 
     const panel = document.createElement('div');
     const wasRaceEliminated = currentGameMode === 'challenge' &&
@@ -827,7 +838,16 @@ async function showRestoredServerCompletion(data) {
     revealResultPanel(container, panel);
 }
 
+let gameLoadGeneration = 0;
+
 async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAutomatically = false) {
+    const generation = ++gameLoadGeneration;
+    const gameOwnerId = currentUserId;
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    if (!wrapper) return;
+    const isCurrentRequest = () => generation === gameLoadGeneration
+        && currentUserId === gameOwnerId
+        && document.getElementById('tree-scroll-wrapper') === wrapper;
     window.collapsedClades.clear();
     window.currentTreeSnapshot = null;
     if (typeof resetTreeAnimationState === 'function') resetTreeAnimationState();
@@ -855,7 +875,6 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
     currentMuseumProof = null;
     currentAccountProgress = null;
 
-    const wrapper = document.getElementById('tree-scroll-wrapper');
     if (wrapper) wrapper.innerHTML = renderAppState(t('game.loadingChallenge'), { compact: true });
 
     const storageKey = getGameSessionStorageKey(mode, difficulty);
@@ -867,6 +886,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
     if (storedSessionId) {
         try {
             data = await callGameApi('state', { sessionId: storedSessionId });
+            if (!isCurrentRequest()) return;
 
             const hasSavedProgress = !data.complete && Number(data.attempts || 0) > 0;
             if (hasSavedProgress && !resumeAutomatically) {
@@ -884,6 +904,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
                     ],
                     closeOnOverlay: false
                 });
+                if (!isCurrentRequest()) return;
 
                 if (savedGameChoice === 'fresh') {
                     localStorage.removeItem(storageKey);
@@ -892,12 +913,19 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
             }
         } catch (error) {
             console.warn('Stored game session could not be restored:', error);
+            if (!isCurrentRequest()) return;
             localStorage.removeItem(storageKey);
         }
     }
 
     if (!data) {
-        data = await callGameApi('start', { mode, difficulty });
+        try {
+            data = await callGameApi('start', { mode, difficulty });
+        } catch (error) {
+            if (!isCurrentRequest()) return;
+            throw error;
+        }
+        if (!isCurrentRequest()) return;
         localStorage.setItem(storageKey, data.sessionId);
     }
 
@@ -909,7 +937,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
     if (data.complete) await showRestoredServerCompletion(data);
 }
 
-async function loadChallengeDatabase(code, playerName) {
+async function loadChallengeDatabase(code, playerName, { isCurrentRequest = () => true } = {}) {
     const normalizedCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     const storageKey = getChallengeSessionStorageKey(normalizedCode);
     let data = null;
@@ -918,12 +946,14 @@ async function loadChallengeDatabase(code, playerName) {
     if (storedSessionId) {
         try {
             const restored = await callGameApi('state', { sessionId: storedSessionId });
+            if (!isCurrentRequest()) return;
             if (restored.mode === 'challenge' && restored.challenge?.code === normalizedCode) {
                 data = restored;
             } else {
                 localStorage.removeItem(storageKey);
             }
         } catch (error) {
+            if (!isCurrentRequest()) return;
             localStorage.removeItem(storageKey);
         }
     }
@@ -933,6 +963,7 @@ async function loadChallengeDatabase(code, playerName) {
             code: normalizedCode,
             playerName
         });
+        if (!isCurrentRequest()) return;
         localStorage.setItem(storageKey, data.sessionId);
     }
 
@@ -963,24 +994,28 @@ async function restoreStoredChallenge(code) {
 }
 
 async function loadPracticeDatabase(difficulty, forceClean = true, resumeAutomatically = false) {
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    const gameOwnerId = currentUserId;
     try {
         await loadServerDatabase('practice', difficulty, forceClean, resumeAutomatically);
     } catch (error) {
         console.error('Server practice game error:', error);
-        const wrapper = document.getElementById('tree-scroll-wrapper');
-        if (wrapper) wrapper.innerHTML = renderAppState(t('game.loadError'), {
+        if (wrapper && document.getElementById('tree-scroll-wrapper') === wrapper
+            && currentUserId === gameOwnerId) wrapper.innerHTML = renderAppState(t('game.loadError'), {
             type: 'error', detail: error.message, compact: true
         });
     }
 }
 
 async function loadDailyDatabase(difficulty, forceClean = false, resumeAutomatically = false) {
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    const gameOwnerId = currentUserId;
     try {
         await loadServerDatabase('daily', difficulty, forceClean, resumeAutomatically);
     } catch (error) {
         console.error('Server daily game error:', error);
-        const wrapper = document.getElementById('tree-scroll-wrapper');
-        if (wrapper) wrapper.innerHTML = renderAppState(t('game.loadError'), {
+        if (wrapper && document.getElementById('tree-scroll-wrapper') === wrapper
+            && currentUserId === gameOwnerId) wrapper.innerHTML = renderAppState(t('game.loadError'), {
             type: 'error', detail: error.message, compact: true
         });
     }
@@ -1122,6 +1157,7 @@ function registerDiscovery(dinoName, museumProof = null) {
 }
 
 async function getDiscoveryRecords() {
+    const discoveryOwnerId = currentUserId;
     const legacyNames = readLocalDiscoveryNames();
     const localEvents = readLocalDiscoveryEvents()
         .filter(discoveryEventBelongsToActiveCollection);
@@ -1144,7 +1180,7 @@ async function getDiscoveryRecords() {
         });
     });
 
-    if (currentUserId) {
+    if (discoveryOwnerId) {
         const addAccountDiscoveries = discoveries => {
             (discoveries || []).forEach((row, index) => {
                 if (!row.dinoName) return;
@@ -1168,19 +1204,21 @@ async function getDiscoveryRecords() {
                     source: row.source || 'account',
                     difficulty: row.difficulty || null,
                     sessionId: row.sessionId || null,
-                    ownerId: currentUserId,
+                    ownerId: discoveryOwnerId,
                     firstKnownUnlock: true
                 });
             });
         };
 
-        addAccountDiscoveries(readAccountDiscoveryCache(currentUserId));
+        addAccountDiscoveries(readAccountDiscoveryCache(discoveryOwnerId));
 
         try {
             const progress = await callGameApi('account_discoveries');
             const accountDiscoveries = progress.discoveries || [];
-            writeAccountDiscoveryCache(currentUserId, accountDiscoveries);
-            addAccountDiscoveries(accountDiscoveries);
+            if (currentUserId === discoveryOwnerId) {
+                writeAccountDiscoveryCache(discoveryOwnerId, accountDiscoveries);
+                addAccountDiscoveries(accountDiscoveries);
+            }
         } catch (err) {
             console.error('Error syncing discovery history from Supabase:', err);
         }
@@ -1300,11 +1338,15 @@ async function claimGuestProgressOnLogin({ showNotice = false } = {}) {
 }
 
 async function syncAccountAchievements({ notify = true } = {}) {
+    const achievementOwnerId = currentUserId;
     if (!currentUserId) {
         return { unlockedIds: [], newlyUnlocked: [], progress: {} };
     }
 
     const result = await callGameApi('account_achievements');
+    if (currentUserId !== achievementOwnerId) {
+        return { unlockedIds: [], newlyUnlocked: [], progress: {} };
+    }
     const newlyUnlocked = Array.isArray(result.newlyUnlocked) ? result.newlyUnlocked : [];
     if (notify) newlyUnlocked.forEach(showAchievementNotification);
     return {

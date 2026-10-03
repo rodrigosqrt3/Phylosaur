@@ -1216,7 +1216,7 @@ Deno.test("Museum cache writes, filtering and offscreen rendering avoid repeated
   assert(writes === 1 && JSON.parse(storedValue).Stegosaurus.url === "new",
     "Repeated Museum cache changes must be persisted as one grouped write.");
 
-  assert(screensSource.includes("[fullDatabase, museumDiscoveryRecords] = await Promise.all") &&
+  assert(screensSource.includes("const [catalogDatabase, discoveryRecords] = await Promise.all") &&
     screensSource.includes("let museumFilterCards = []") &&
     screensSource.includes("museumFilterFrame = requestAnimationFrame") &&
     !screensSource.includes("String(card.dataset.museumLineage || '').split('|')"),
@@ -1235,6 +1235,811 @@ Deno.test("Museum cache writes, filtering and offscreen rendering avoid repeated
   assert(styleSource.includes("content-visibility: auto") &&
     styleSource.includes("contain-intrinsic-size: auto 235px"),
     "Offscreen Museum cards must defer layout and painting work.");
+});
+
+Deno.test("guess, hint and give-up actions serialize and discard obsolete results and errors", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const stateSource = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const dbSource = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const actions = source.slice(source.indexOf("function getGameSessionGuard("),
+    source.indexOf("async function loadResultMedia("));
+  const giveUpSource = source.slice(source.indexOf("async function giveUp("),
+    source.indexOf("function buildVictoryStreakMarkup("));
+  const hintState = dbSource.slice(dbSource.indexOf("function updateHintButtonState("),
+    dbSource.indexOf("function updateServerGameDisplay("));
+  const finalization = dbSource.slice(dbSource.indexOf("async function ensureDailyAccountProgress("),
+    dbSource.indexOf("function setServerStatValue("));
+  const persistence = source.slice(source.indexOf("async function persistVictoryResult("),
+    source.indexOf("async function hydrateVictoryMetadata("));
+  const buildRuntime = (mode = "practice", deferConfirmation = false, deferAlert = false) => {
+    const requests: Array<{ action: string; resolve: Function; reject: Function }> = [];
+    const counters = { applied: 0, displayed: 0, victory: 0, alerts: 0, panels: 0,
+      clade: 0, media: 0, account: 0, achievements: 0, guest: 0 };
+    const callbacks: Function[] = [];
+    const input = { value: "Triceratops", disabled: false, focus() {},
+      setAttribute() {}, removeAttribute() {} };
+    const controls = { guess: { disabled: false, textContent: "" },
+      hint: { disabled: false, textContent: "", title: "" },
+      giveUp: { disabled: false, setAttribute() { this.disabled = true; } } };
+    const environment = { wrapper: {} as object | null, input, controls, counters, requests, callbacks };
+    const runtime = new Function("environment", "mode", "deferConfirmation", "deferAlert", `
+      ${stateSource}
+      const { input, controls, counters, requests, callbacks } = environment;
+      currentUserId = "owner"; currentGameMode = mode; gameSessionId = "original";
+      database = [{ nome: "Triceratops" }]; guessesSinceLastHint = 2;
+      targetDino = { nome: "Triceratops" };
+      const container = { firstChild: null, insertBefore() { counters.panels++; } };
+      const document = {
+        getElementById(id) { return id === "tree-scroll-wrapper" ? environment.wrapper
+          : id === "dino-input" ? input : id === "tree-container" ? container : null; },
+        querySelector(selector) { return selector === ".btn-guess" ? controls.guess
+          : selector === ".btn-game-hint" ? controls.hint
+          : selector === ".btn-giveup" ? controls.giveUp : null; },
+        createElement() { return { innerHTML: "", className: "" }; }
+      };
+      const requestAnimationFrame = callback => callbacks.push(callback);
+      const t = key => key;
+      const console = { error() {}, warn() {} };
+      const defer = action => new Promise((resolve, reject) => requests.push({ action, resolve, reject }));
+      const callGameApi = action => defer(action);
+      const customConfirm = () => deferConfirmation ? defer("confirm") : Promise.resolve("true");
+      const customAlert = () => { counters.alerts++; return deferAlert ? defer("alert") : Promise.resolve(); };
+      const applyServerGamePayload = data => { counters.applied++; gameWon = Boolean(data.complete || data.won); };
+      const updateServerGameDisplay = () => { counters.displayed++; updateHintButtonState(); };
+      const setTreeAnimationMode = () => {};
+      const showVictory = async () => { counters.victory++; };
+      const updateCladeInfo = () => { counters.clade++; };
+      const syncAccountAchievements = async () => { counters.achievements++; return { newlyUnlocked: [] }; };
+      const recordGuestDailyResult = () => { counters.guest++; return []; };
+      const recordGuestGameResult = recordGuestDailyResult;
+      const refreshCurrentChallengePlacement = () => defer("placement");
+      const applyAccountProgress = () => { counters.account++; return { current: 1 }; };
+      const checkStreakMilestone = () => null;
+      const loadResultMedia = () => { counters.media++; return Promise.resolve(null); };
+      const buildResultMediaSlotMarkup = () => "";
+      const hydrateResultMedia = () => {};
+      const redrawGameTree = () => {};
+      const revealResultPanel = () => {};
+      ${hintState}
+      ${finalization}
+      ${actions}
+      ${giveUpSource}
+      ${persistence}
+      return { makeServerGuess, useServerHint, giveUp, ensureDailyAccountProgress, persistVictoryResult,
+        change(kind) {
+          if (kind === "navigate") environment.wrapper = {};
+          if (kind === "account") currentUserId = "another-owner";
+          if (kind === "mode") currentGameMode = currentGameMode === "daily" ? "practice" : "daily";
+          if (kind === "session") gameSessionId = "new-session";
+          if (kind === "closing") { gameWon = true; challengeRaceClosing = true; }
+          if (kind !== "closing") { gameRequestPending = false; gameWon = false; }
+        },
+        snapshot() { return JSON.stringify({ session: gameSessionId, pending: gameRequestPending,
+          won: gameWon, guesses, guessed: [...guessedNames], hintCount: guessesSinceLastHint,
+          controls, counters, inputValue: input.value }); },
+        pending() { return gameRequestPending; },
+        flushFocus() { callbacks.splice(0).forEach(callback => callback()); }
+      };`)(environment, mode, deferConfirmation, deferAlert);
+    return { runtime, requests, counters, controls };
+  };
+  const payload = { guess: { nome: "Triceratops", matches: 3 }, hint: { cladeName: "Ceratopsia" } };
+  const tick = async () => { await Promise.resolve(); await Promise.resolve(); };
+  for (const action of ["makeServerGuess", "useServerHint", "giveUp"] as const) {
+    for (const fails of [false, true]) {
+      for (const scenario of ["navigate", "account", "mode", "session", "current"]) {
+        const { runtime, requests, counters, controls } = buildRuntime();
+        const pending = runtime[action]();
+        await tick();
+        assert(requests.length === 1 && runtime.pending(), `${action}: request was not locked.`);
+        assert(controls.guess.disabled && controls.hint.disabled && controls.giveUp.disabled,
+          "All mutation controls must remain disabled while an action is pending.");
+        await runtime.makeServerGuess(); await runtime.useServerHint(); await runtime.giveUp();
+        assert(requests.length === 1, `${action}: another action overlapped the pending request.`);
+        if (scenario !== "current") runtime.change(scenario);
+        const previous = runtime.snapshot();
+        if (fails) requests[0].reject(new Error("Delayed failure"));
+        else requests[0].resolve({ ...payload, complete: action === "giveUp" });
+        await pending;
+        if (scenario !== "current") {
+          assert(runtime.snapshot() === previous, `${action}/${scenario}: stale action changed state or controls.`);
+        } else {
+          assert(!runtime.pending(), `${action}: current request lock was not released.`);
+          assert(counters.applied === (fails ? 0 : 1), `${action}: active result was not applied correctly.`);
+          assert(counters.alerts === (fails || action === "useServerHint" ? 1 : 0),
+            `${action}: active feedback was not shown.`);
+          if (action === "giveUp" && !fails) assert(counters.panels === 1 && controls.giveUp.disabled,
+            "Revealing the answer must render once and leave completed controls disabled.");
+        }
+      }
+    }
+    for (const fails of [false, true]) {
+      const { runtime, requests } = buildRuntime();
+      const old = runtime[action](); await tick();
+      runtime.change("session");
+      const newer = runtime.useServerHint();
+      if (fails) requests[0].reject(new Error("Old failure")); else requests[0].resolve(payload);
+      await old;
+      assert(runtime.pending(), `${action}: stale completion released the newer action lock.`);
+      requests[1].resolve(payload); await newer;
+      assert(!runtime.pending(), "The current action must release its own lock.");
+    }
+  }
+  for (const scenario of ["navigate", "account", "session", "closing", "current"]) {
+    const { runtime, requests } = buildRuntime("practice", true);
+    const pending = runtime.giveUp();
+    if (scenario !== "current") runtime.change(scenario);
+    requests[0].resolve(scenario === "current" ? "false" : "true"); await pending;
+    assert(requests.length === 1, `${scenario}: obsolete or cancelled confirmation sent a give-up request.`);
+    if (scenario === "current") assert(!runtime.pending(), "Cancelling must release the action lock.");
+  }
+  for (const stage of ["finalize_daily_progress", "placement"]) {
+    for (const scenario of ["navigate", "account", "session"]) {
+      const { runtime, requests, counters } = buildRuntime(stage === "placement" ? "challenge" : "daily");
+      const pending = runtime.giveUp(); await tick();
+      requests[0].resolve({ complete: true }); await tick();
+      assert(requests[1]?.action === stage, `Give-up did not reach ${stage}.`);
+      runtime.change(scenario);
+      requests[1].resolve({ accountProgress: {} }); await pending;
+      assert(counters.panels === 0 && counters.achievements === 0,
+        `${stage}/${scenario}: obsolete post-game work rendered or synchronized another account.`);
+      if (scenario !== "navigate") assert(counters.account === 0, "Stale finalization changed account statistics.");
+    }
+  }
+  const hint = buildRuntime("practice", false, true);
+  const hintPending = hint.runtime.useServerHint(); hint.requests[0].resolve(payload); await tick();
+  hint.runtime.change("session"); hint.requests[1].resolve(); await hintPending;
+  assert(hint.counters.clade === 0, "Dismissing an old hint must not update another game.");
+  for (const action of ["makeServerGuess", "useServerHint", "giveUp"] as const) {
+    for (const fails of [false, true]) {
+      const { runtime, requests, counters } = buildRuntime("challenge");
+      const pending = runtime[action](); await tick();
+      runtime.change("closing");
+      if (fails) requests[0].reject(new Error("Race already closed"));
+      else requests[0].resolve(payload);
+      await pending;
+      assert(counters.applied === 0 && counters.alerts === 0 && counters.panels === 0,
+        `${action}: an action response must not override automatic race closure.`);
+    }
+  }
+  const winning = buildRuntime();
+  const winningGuess = winning.runtime.makeServerGuess();
+  winning.requests[0].resolve({ ...payload, won: true }); await winningGuess;
+  assert(winning.counters.victory === 1 && winning.controls.guess.disabled
+    && winning.controls.hint.disabled && winning.controls.giveUp.disabled,
+    "A current winning guess must render once without re-enabling completed controls.");
+  for (const scenario of ["account", "session", "mode", "current"]) {
+    const { runtime, requests, counters } = buildRuntime("daily");
+    const pending = runtime.persistVictoryResult();
+    if (scenario !== "current") runtime.change(scenario);
+    requests[0].resolve({ accountProgress: {} }); await pending;
+    assert(counters.account === (scenario === "current" ? 1 : 0)
+      && counters.achievements === (scenario === "current" ? 1 : 0),
+      `${scenario}: victory finalization crossed its session or account boundary.`);
+  }
+});
+
+Deno.test("race polling and closure discard obsolete sessions without releasing newer request locks", async () => {
+  const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const stateSource = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const raceSource = gameSource.slice(gameSource.indexOf("function getChallengeSessionGuard("),
+    gameSource.indexOf("async function copyChallengeCode("));
+  const buildRuntime = (deferState = false) => {
+    const requests: Array<{ action: string; resolve: Function; reject: Function }> = [];
+    const counters = { applied: 0, displayed: 0, completed: 0, alerts: 0, clears: 0 };
+    const status = { textContent: "" };
+    const environment = { wrapper: {} as object | null, requests, counters, status };
+    const runtime = new Function("environment", "deferState", `
+      const { requests, counters, status } = environment;
+      ${stateSource}
+      currentUserId = "owner"; currentGameMode = "challenge";
+      currentChallengeCode = "RAPTOR"; gameSessionId = "original";
+      challengeStatusPollTimer = 1;
+      const document = { hidden: false, addEventListener() {},
+        getElementById: id => id === "tree-scroll-wrapper" ? environment.wrapper : status };
+      const clearInterval = () => { counters.clears++; };
+      const setInterval = () => 2;
+      const t = key => key;
+      const callGameApi = action => action === "state" && !deferState
+        ? Promise.resolve({ challenge: { placement: 2 } })
+        : new Promise((resolve, reject) => requests.push({ action, resolve, reject }));
+      const applyServerGamePayload = () => { counters.applied++; };
+      const updateServerGameDisplay = () => { counters.displayed++; };
+      const showRestoredServerCompletion = async () => { counters.completed++; };
+      const customAlert = async () => { counters.alerts++; };
+      const setTreeAnimationMode = () => {}; const console = { warn() {} };
+      ${raceSource}; return {
+        pollChallengeRaceStatus, handleChallengeRaceClosure, refreshCurrentChallengePlacement,
+        stopChallengeStatusPolling,
+        change(kind) {
+          if (kind === "session") { gameSessionId = "new-session"; currentChallengeCode = "NEWRUN"; }
+          if (kind === "account") currentUserId = "another-owner";
+          if (kind === "navigate") environment.wrapper = null;
+          if (kind === "restart") { stopChallengeStatusPolling(); challengeStatusPollTimer = 2; }
+        },
+        snapshot() { return JSON.stringify({ placement: currentChallengePlacement,
+          total: currentChallengeTotalPlayers, eliminated: currentChallengeEliminated,
+          closing: challengeRaceClosing, timer: challengeStatusPollTimer }); }
+      };`)(environment, deferState);
+    return { runtime, requests, counters, status };
+  };
+  for (const response of ["progress", "closed", "complete"]) {
+    for (const scenario of ["navigate", "session", "account", "restart", "current"]) {
+      const { runtime, requests, counters, status } = buildRuntime();
+      const pending = runtime.pollChallengeRaceStatus();
+      await runtime.pollChallengeRaceStatus();
+      assert(requests.length === 1, "Polling must not overlap within one generation.");
+      runtime.change(scenario);
+      const expected = runtime.snapshot();
+      requests[0].resolve({ requesterComplete: response === "complete", race: {
+        closedRequester: response === "closed", totalPlayers: 3, completedPlayers: 1, requesterPlacement: 2,
+      } });
+      await pending;
+      if (scenario === "current") {
+        assert(status.textContent === "friends.raceProgress", "Race progress must use the translation catalogue.");
+        assert(counters.completed === (response === "closed" ? 1 : 0),
+          "Only a valid closure should reveal the current race result.");
+      } else {
+        assert(runtime.snapshot() === expected && status.textContent === "" && counters.applied === 0
+          && counters.completed === 0 && counters.alerts === 0,
+          `${response}/${scenario}: stale polling changed the active race or timer.`);
+      }
+    }
+  }
+  for (const fails of [false, true]) {
+    const { runtime, requests } = buildRuntime();
+    const oldRequest = runtime.pollChallengeRaceStatus();
+    runtime.change("restart");
+    const newRequest = runtime.pollChallengeRaceStatus();
+    if (fails) requests[0].reject(new Error("Delayed failure"));
+    else requests[0].resolve({ requesterComplete: true });
+    await oldRequest;
+    await runtime.pollChallengeRaceStatus();
+    assert(requests.length === 2, "An old finally block must not release a newer request lock.");
+    requests[1].resolve({ race: { totalPlayers: 3 } });
+    await newRequest;
+    const following = runtime.pollChallengeRaceStatus();
+    assert(Number(requests.length) === 3, "The current request must release its own lock.");
+    requests[2].resolve({});
+    await following;
+  }
+  for (const scenario of ["navigate", "session", "account", "restart", "current"]) {
+    for (const fails of [false, true]) {
+      const { runtime, requests, counters } = buildRuntime(true);
+      const pending = runtime.handleChallengeRaceClosure({ race: { requesterPlacement: 2 } });
+      runtime.change(scenario);
+      const expected = runtime.snapshot();
+      if (fails) requests[0].reject(new Error("Delayed failure"));
+      else requests[0].resolve({ challenge: { placement: 2 } });
+      await pending;
+      assert(counters.applied === (scenario === "current" && !fails ? 1 : 0)
+        && counters.alerts === (scenario === "current" && fails ? 1 : 0),
+        `${scenario}: obsolete closure state must not apply or show an alert.`);
+      if (scenario !== "current") assert(runtime.snapshot() === expected,
+        "An old closure must not overwrite current placement or elimination state.");
+    }
+  }
+  for (const scenario of ["navigate", "session", "account", "current"]) {
+    const { runtime, requests, status } = buildRuntime();
+    const pending = runtime.refreshCurrentChallengePlacement();
+    runtime.change(scenario);
+    requests[0].resolve({ race: { totalPlayers: 3, requesterPlacement: 2 } });
+    const result = await pending;
+    assert(Boolean(result) === (scenario === "current")
+      && Boolean(status.textContent) === (scenario === "current"),
+      "A placement refresh must only return and display data for the original session.");
+  }
+});
+
+Deno.test("Friend creation and joining serialize requests and discard obsolete results and errors", async () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const dbSource = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const friendSource = screensSource.slice(screensSource.indexOf("function beginFriendChallengeRequest("),
+    screensSource.indexOf("function showPracticeMode("));
+  const loadSource = dbSource.slice(dbSource.indexOf("async function loadChallengeDatabase("),
+    dbSource.indexOf("async function restoreStoredChallenge("));
+  for (const action of ["create", "join", "restore"]) {
+    for (const scenario of ["navigate", "reopen", "account", "current"]) {
+      for (const fails of [false, true]) {
+        let hub = {};
+        let started = 0;
+        let alerts = 0;
+        const makeElements = () => new Map<string, any>([
+          ["create-challenge-btn", { disabled: false, textContent: "create" }],
+          ["join-challenge-btn", { disabled: false, textContent: "join" }],
+          ["challenge-create-name", { value: "Player" }],
+          ["challenge-join-name", { value: "Player" }],
+          ["challenge-difficulty", { value: "normal" }],
+          ["challenge-code", { value: "RAPTOR", focus() {} }],
+        ]);
+        let elements = makeElements();
+        const appContent = { get firstElementChild() { return hub; } };
+        const storage = new Map<string, string>(action === "restore" ? [["session", "saved"]] : []);
+        const requests: Array<{ resolve: Function; reject: Function }> = [];
+        const payload = { sessionId: "new-session", mode: "challenge", challenge: { code: "RAPTOR" } };
+        const runtime = new Function("environment", `
+          const { document, localStorage, callGameApi, startFriendChallengeFromPayload, customAlert } = environment;
+          let currentUserId = "owner";
+          const t = key => key; const escapeHtml = String;
+          const getChallengeSessionStorageKey = () => "session";
+          ${loadSource} ${friendSource}; return { createFriendChallenge, joinFriendChallenge,
+            switchAccount() { currentUserId = "another-owner"; }
+          };`)(
+          { document: { getElementById: (id: string) => id === "app-content" ? appContent : elements.get(id) ?? null },
+            localStorage: { getItem: (key: string) => storage.get(key) ?? null,
+              setItem: (key: string, value: string) => storage.set(key, value),
+              removeItem: (key: string) => storage.delete(key) },
+            callGameApi: (name: string) => name === (action === "create" ? "create_challenge"
+              : action === "restore" ? "state" : "join_challenge")
+              ? new Promise((resolve, reject) => requests.push({ resolve, reject })) : Promise.resolve(payload),
+            startFriendChallengeFromPayload: async () => { started++; hub = {}; },
+            customAlert: async () => { alerts++; } },
+        );
+        const submit = action === "create" ? runtime.createFriendChallenge : runtime.joinFriendChallenge;
+        const pending = submit();
+        await submit();
+        await runtime.createFriendChallenge();
+        await runtime.joinFriendChallenge();
+        assert(requests.length === 1 && elements.get("create-challenge-btn").disabled
+          && elements.get("join-challenge-btn").disabled,
+          "Repeated Enter and competing Create/Join actions must share one in-flight request.");
+        if (scenario === "navigate") { hub = {}; elements = new Map(); }
+        if (scenario === "reopen") { hub = {}; elements = makeElements(); }
+        if (scenario === "account") runtime.switchAccount();
+        const expectedElements = JSON.stringify([...elements]);
+        const expectedStorage = JSON.stringify([...storage]);
+        if (fails) requests[0].reject(new Error("Delayed failure"));
+        else requests[0].resolve(payload);
+        await pending;
+        if (scenario !== "current") {
+          assert(started === 0 && alerts === 0 && JSON.stringify([...storage]) === expectedStorage
+            && JSON.stringify([...elements]) === expectedElements,
+            `${action}/${scenario}: an obsolete friend response changed navigation, storage or controls.`);
+        } else if (fails && action !== "restore") {
+          assert(started === 0 && alerts === 1 && !elements.get("create-challenge-btn").disabled
+            && !elements.get("join-challenge-btn").disabled,
+            "An active failure must show feedback and release both actions for retry.");
+          const retry = submit();
+          assert(Number(requests.length) === 2, "A failed friend request must allow a new attempt.");
+          requests[1].resolve(payload);
+          await retry;
+          assert(Number(started) === 1, "Retrying after an error must still enter the challenge.");
+        } else {
+          assert(started === 1 && alerts === 0 && storage.get("session") === (action === "restore" && !fails
+            ? "saved" : "new-session"), "Current friend requests must still start or restore normally.");
+        }
+      }
+    }
+  }
+});
+
+Deno.test("Daily and Practice startup discard obsolete responses, errors and saved-game choices", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const stateSource = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const loadSource = source.slice(source.indexOf("let gameLoadGeneration"),
+    source.indexOf("async function loadChallengeDatabase("));
+  const errorSource = source.slice(source.indexOf("async function loadPracticeDatabase("),
+    source.indexOf("const DISCOVERY_EVENTS_KEY"));
+  for (const mode of ["daily", "practice"]) {
+    for (const stage of ["start", "state", "modal"]) {
+      for (const scenario of ["navigate", "reopen", "account", "current"]) {
+        for (const fails of [false, true]) {
+          let wrapper = { innerHTML: "" };
+          let focusCalls = 0;
+          let applied = 0;
+          let modalCalls = 0;
+          const requests: Array<{ resolve: Function; reject: Function }> = [];
+          const storage = new Map<string, string>(stage === "start" ? [] : [["session", "saved"]]);
+          const defer = () => new Promise((resolve, reject) => requests.push({ resolve, reject }));
+          const payload = { sessionId: "new-session", attempts: stage === "modal" ? 1 : 0, complete: false };
+          const environment = {
+            document: { getElementById: (id: string) => id === "tree-scroll-wrapper" ? wrapper
+              : id === "dino-input" ? { focus() { focusCalls++; } } : null },
+            window: { collapsedClades: new Set(), currentTreeSnapshot: null },
+            localStorage: { getItem: (key: string) => storage.get(key) ?? null,
+              setItem: (key: string, value: string) => storage.set(key, value),
+              removeItem: (key: string) => storage.delete(key) },
+            callGameApi: (action: string) => action === stage ? defer() : Promise.resolve(payload),
+            showModal: () => { modalCalls++; return defer(); },
+            recordApplied: () => { applied++; },
+          };
+          const runtime = new Function("environment", `
+            const { document, window, localStorage, callGameApi, showModal, recordApplied } = environment;
+            ${stateSource}
+            currentUserId = "owner";
+            const t = key => key; const renderAppState = t;
+            const getGameSessionStorageKey = () => "session";
+            const applyServerGamePayload = data => { gameSessionId = data.sessionId; recordApplied(); };
+            const updateServerGameDisplay = () => {}; const initializeAutocomplete = () => {};
+            const showRestoredServerCompletion = async () => {};
+            const console = { warn() {}, error() {} };
+            ${loadSource} ${errorSource}
+            return { loadDailyDatabase, loadPracticeDatabase,
+              switchAccount() { currentUserId = "another-owner"; },
+              session() { return gameSessionId; }
+            };`)(environment);
+          const load = mode === "daily" ? runtime.loadDailyDatabase : runtime.loadPracticeDatabase;
+          const pending = load("normal", false);
+          for (let turn = 0; turn < 10 && !requests.length; turn++) await Promise.resolve();
+          assert(requests.length === 1, `${mode}/${stage}: expected a controlled startup request.`);
+          let newer: Promise<void> | undefined;
+          if (scenario === "navigate") wrapper = { innerHTML: "another screen" };
+          if (scenario === "account") runtime.switchAccount();
+          if (scenario === "reopen") {
+            wrapper = { innerHTML: "new game" };
+            newer = load("facil", false);
+            for (let turn = 0; turn < 10 && requests.length < 2; turn++) await Promise.resolve();
+          }
+          const expectedMarkup = wrapper.innerHTML;
+          const expectedStorage = JSON.stringify([...storage]);
+          if (fails) requests[0].reject(new Error("Delayed failure"));
+          else requests[0].resolve(stage === "modal" ? "fresh" : payload);
+          await pending;
+          if (scenario !== "current") {
+            assert(applied === 0 && focusCalls === 0 && runtime.session() === null
+              && wrapper.innerHTML === expectedMarkup && JSON.stringify([...storage]) === expectedStorage,
+              `${mode}/${stage}/${scenario}: obsolete startup changed the active session, screen or storage.`);
+            if (stage === "state") assert(modalCalls === 0,
+              "Obsolete saved-state responses must not open a resume dialog.");
+          } else if (fails && stage === "start") {
+            assert(applied === 0 && wrapper.innerHTML.includes("game.loadError"),
+              "An active startup failure must still show its localized error.");
+          } else {
+            assert(applied === 1 && focusCalls === 1 && runtime.session() === "new-session",
+              "The current startup must still initialize or recover from an invalid saved session.");
+          }
+          if (newer) {
+            requests[1].resolve(stage === "modal" ? "continue" : payload);
+            await newer;
+            assert(applied === 1 && focusCalls === 1 && runtime.session() === "new-session",
+              "The newer startup must initialize normally after an older request is discarded.");
+          }
+        }
+      }
+    }
+  }
+});
+
+Deno.test("restored completion media cannot publish into an obsolete game session", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const completionSource = source.slice(source.indexOf("async function showRestoredServerCompletion("),
+    source.indexOf("let gameLoadGeneration"));
+  const stateSource = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  for (const scenario of ["navigate", "session", "account", "current"]) {
+    let inserted = 0;
+    let resolveMedia: Function = () => {};
+    let container: any = { querySelector: () => null, insertBefore() { inserted++; }, firstChild: null };
+    const runtime = new Function("document", "loadResultMedia", `
+      ${stateSource} gameSessionId = "original"; currentUserId = "owner";
+      const t = key => key; const buildResultMediaMarkup = () => "";
+      const bindResultMedia = () => {}; const revealResultPanel = () => {};
+      ${completionSource}; return { showRestoredServerCompletion,
+        switchSession() { gameSessionId = "new-session"; },
+        switchAccount() { currentUserId = "another-owner"; }
+      };`)(
+      { getElementById: (id: string) => id === "tree-container" ? container : null,
+        querySelector: () => null, createElement: () => ({ className: "", innerHTML: "" }) },
+      () => new Promise(resolve => { resolveMedia = resolve; }),
+    );
+    const pending = runtime.showRestoredServerCompletion({ target: { nome: "Triceratops" } });
+    if (scenario === "navigate") container = null;
+    if (scenario === "session") runtime.switchSession();
+    if (scenario === "account") runtime.switchAccount();
+    resolveMedia(null);
+    await pending;
+    assert(inserted === (scenario === "current" ? 1 : 0),
+      `${scenario}: restored result media must only publish into the original active session.`);
+  }
+});
+
+Deno.test("Statistics loading preserves navigation and account boundaries at every async stage", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const statsSource = source.slice(source.indexOf("async function showStatsDashboard()"),
+    source.indexOf("function generateStreakDisplay("));
+  for (const stage of ["queries", "historical", "account"]) {
+    for (const scenario of ["navigate", "account", "logout", "reopen", "current"]) {
+      for (const fails of stage === "queries" ? [false, true, "reported", "missing"] : [false, true]) {
+        let markup = "";
+        let card: object;
+        let focusCalls = 0;
+        let historicalCalls = 0;
+        let accountCalls = 0;
+        const requests: Array<{ resolve: Function; reject: Function }> = [];
+        const defer = () => new Promise((resolve, reject) => requests.push({ resolve, reject }));
+        const appContent = {
+          get firstElementChild() { return card; },
+          set innerHTML(value: string) { markup = value; card = {}; },
+        };
+        let queryCount = 0;
+        let queryPromise: Promise<unknown>;
+        const query = {
+          promise: Promise.resolve({ data: null }) as Promise<unknown>,
+          table: "",
+          select() { return this; }, eq() { return this; }, single() { return this; },
+          order() { return this; }, limit() { return this; },
+          then(resolve: Function, reject: Function) {
+            return this.promise.then((result: any) => resolve(
+              this.table !== "statistics" && result.error?.code === "PGRST116" ? { data: null } : result
+            ), reject as any);
+          },
+        };
+        const environment = {
+          document: { getElementById: () => appContent },
+          sb: { from(table: string) {
+            if (queryCount++ % 5 === 0) queryPromise = stage === "queries"
+              ? defer() : Promise.resolve({ data: null });
+            return { ...query, promise: queryPromise, table };
+          } },
+          syncHistoricalAchievements: () => {
+            historicalCalls++;
+            return stage === "historical" ? defer() : Promise.resolve({ unlockedSet: new Set() });
+          },
+          syncAccountAchievements: () => {
+            accountCalls++;
+            return stage === "account" ? defer() : Promise.resolve({ unlockedIds: [], progress: {} });
+          },
+          focusAppScreenHeading: () => { focusCalls++; },
+        };
+        const runtime = new Function("environment", `
+          const { document, sb, syncHistoricalAchievements, syncAccountAchievements, focusAppScreenHeading } = environment;
+          let currentUserId = "owner"; let currentUser = "Player A";
+          const setAppRoute = () => {}; const setHeaderControls = () => {};
+          const t = key => key; const renderAppState = t; const escapeChallengeHtml = String;
+          const buildAchievementProgress = () => ({}); const ACHIEVEMENT_DEFINITIONS = [];
+          const generateStreakDisplay = () => ""; const generateGuessHistogram = () => "";
+          const generateDifficultyStats = () => ""; const generateAchievements = () => "";
+          const generateRecentGames = () => ""; const console = { error() {} };
+          ${statsSource}; return { showStatsDashboard,
+            switchAccount(id) { currentUserId = id; currentUser = id ? "Player B" : null; }
+          };`)(environment);
+        const pending = runtime.showStatsDashboard();
+        for (let turn = 0; turn < 10 && !requests.length; turn++) await Promise.resolve();
+        assert(requests.length === 1, `${stage}: the controlled async stage was not reached.`);
+        let newer: Promise<void> | undefined;
+        if (scenario === "navigate") appContent.innerHTML = "another screen";
+        if (scenario === "account") runtime.switchAccount("another-owner");
+        if (scenario === "logout") runtime.switchAccount(null);
+        if (scenario === "reopen") {
+          newer = runtime.showStatsDashboard();
+          for (let turn = 0; turn < 10 && requests.length < 2; turn++) await Promise.resolve();
+        }
+        const expectedMarkup = markup;
+        const loadFailed = fails === true || fails === "reported";
+        const payload = stage === "queries" ? { data: null,
+          error: fails === "reported" ? { code: "42501" }
+            : fails === "missing" ? { code: "PGRST116" } : null }
+          : stage === "historical" ? { unlockedSet: new Set() } : { unlockedIds: [], progress: {} };
+        if (fails === true) requests[0].reject(new Error("Delayed failure"));
+        else requests[0].resolve(payload);
+        await pending;
+        if (scenario === "current") {
+          assert(markup.includes(loadFailed && stage === "queries" ? "stats.loadError" : "stats-player-badge"),
+            "The current Statistics screen must show a result or localized loading error.");
+          assert(focusCalls === (loadFailed && stage === "queries" ? 0 : 1), "Unexpected Statistics focus.");
+        } else {
+          assert(markup === expectedMarkup && focusCalls === 0,
+            `${stage}/${scenario}: a stale Statistics response replaced the current screen.`);
+          if (scenario !== "reopen" && stage === "queries") assert(historicalCalls === 0,
+            "Obsolete query results must not start achievement writes.");
+          if (scenario !== "reopen" && stage === "historical") assert(accountCalls === 0,
+            "Obsolete historical synchronization must not start account synchronization.");
+        }
+        if (newer) {
+          requests[1].resolve(stage === "queries" ? { data: null } : payload);
+          await newer;
+          assert(markup.includes("stats-player-badge") && focusCalls === 1,
+            "The newest Statistics screen must still render.");
+        }
+      }
+    }
+  }
+});
+
+Deno.test("achievement synchronization stops writes and notifications after account switching", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const historicalSource = source.slice(source.indexOf("async function syncHistoricalAchievements("),
+    source.indexOf("function showAchievementNotification("));
+  const accountSource = source.slice(source.indexOf("async function syncAccountAchievements("));
+  for (const nextOwner of [null, "user-b"]) {
+    let resolveResponse: Function = () => {};
+    const writes: unknown[] = [];
+    const notifications: unknown[] = [];
+    const runtime = new Function("defer", "writes", "notifications", `
+      let currentUserId = "user-a";
+      const ACHIEVEMENT_DEFINITIONS = [{ id: "first" }, { id: "second" }];
+      const buildAchievementProgress = () => ({ first: { complete: true }, second: { complete: true } });
+      const showAchievementNotification = id => notifications.push(id);
+      const sb = { from: () => ({ insert: value => { writes.push(value); return defer(); } }) };
+      const callGameApi = defer;
+      ${historicalSource} ${accountSource}; return {
+        syncHistoricalAchievements, syncAccountAchievements,
+        switchAccount(value) { currentUserId = value; }
+      };`)(() => new Promise(resolve => { resolveResponse = resolve; }), writes, notifications);
+    const historical = runtime.syncHistoricalAchievements({}, []);
+    runtime.switchAccount(nextOwner);
+    resolveResponse({ error: null });
+    const result = await historical;
+    assert(JSON.stringify(writes) === JSON.stringify([{ user_id: "user-a", achievement_id: "first" }])
+      && notifications.length === 0 && result.unlockedSet.size === 0,
+      "An in-flight historical write must not continue or notify another account.");
+    runtime.switchAccount("user-a");
+    const account = runtime.syncAccountAchievements();
+    runtime.switchAccount(nextOwner);
+    resolveResponse({ unlockedIds: ["first"], newlyUnlocked: ["first"], progress: { first: {} } });
+    const accountResult = await account;
+    assert(accountResult.unlockedIds.length === 0 && notifications.length === 0,
+      "An old account response must not publish achievements or notifications.");
+  }
+});
+
+Deno.test("Museum loading discards obsolete results before publishing shared state", async () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const museumSource = screensSource.slice(
+    screensSource.indexOf("async function showMuseum()"),
+    screensSource.indexOf("function switchMuseumLevel("),
+  );
+  for (const stage of ["catalog", "discoveries"]) {
+    for (const scenario of ["navigate", "reopen", "account", "current"]) {
+      for (const fails of [false, true]) {
+        let markup = "";
+        let card: object;
+        let focusCalls = 0;
+        let discoveryCalls = 0;
+        const requests: Array<{ resolve: Function; reject: Function }> = [];
+        const appContent = {
+          get firstElementChild() { return card; },
+          set innerHTML(value: string) { markup = value; card = {}; },
+        };
+        const defer = () => new Promise((resolve, reject) => { requests.push({ resolve, reject }); });
+        const runtime = new Function("environment", `
+          const { document, defer, t, focusAppScreenHeading, recordDiscoveryCall } = environment;
+          const setAppRoute = () => {}; const setHeaderControls = () => {};
+          const renderAppState = t; const escapeChallengeHtml = String;
+          const callGameApi = defer;
+          const ensureMuseumCatalogLineages = async database => database;
+          const getDiscoveryRecords = () => { recordDiscoveryCall(); return defer(); };
+          const synchronizeGuestAchievements = () => {};
+          const renderMuseumAtlas = () => "";
+          const updateMuseumCladeFilterDisplay = () => {};
+          const switchMuseumView = () => {};
+          const console = { error() {} };
+          let currentUserId = "owner";
+          let fullDatabase = ${stage === "catalog" ? "[]" : "[{ nome: 'Triceratops' }]"};
+          let museumDiscoveryRecords = { original: { name: "Original" } };
+          let museumSpecimenRenderState = null; let museumFilterCards = [];
+          let museumView = "atlas"; let selectedMuseumClade = "all";
+          let museumSearchQuery = ""; let selectedMuseumLevel = "all";
+          ${museumSource}; return {
+            showMuseum, changeAccount() { currentUserId = "another-owner"; },
+            snapshot() { return JSON.stringify({ fullDatabase, museumDiscoveryRecords, museumSpecimenRenderState }); }
+          };`)(
+          { document: { getElementById: () => appContent }, defer,
+            t: (key: string) => key, focusAppScreenHeading: () => { focusCalls++; },
+            recordDiscoveryCall: () => { discoveryCalls++; } },
+        );
+        const initialState = runtime.snapshot();
+        const pending = runtime.showMuseum();
+        let newerRequest: Promise<void> | undefined;
+        if (scenario === "navigate") appContent.innerHTML = "another screen";
+        if (scenario === "reopen") newerRequest = runtime.showMuseum();
+        if (scenario === "account") runtime.changeAccount();
+        const expectedMarkup = markup;
+        const settle = (index: number, reject: boolean) => {
+          if (reject) requests[index].reject(new Error("Delayed failure"));
+          else requests[index].resolve(stage === "catalog"
+            ? { dinosaurs: [{ nome: "Triceratops" }] } : { triceratops: { name: "Triceratops" } });
+        };
+        settle(0, fails);
+        if (stage === "catalog" && scenario === "current" && !fails) {
+          await Promise.resolve();
+          requests[1].resolve({ triceratops: { name: "Triceratops" } });
+        }
+        await pending;
+        if (scenario === "current") {
+          assert(markup.includes(fails ? "museum.loadError" : "museum-grid"),
+            "The active Museum request must render its result or error.");
+          assert(focusCalls === (fails ? 0 : 1), "Only the active successful Museum render should focus.");
+        } else {
+          assert(markup === expectedMarkup && runtime.snapshot() === initialState && focusCalls === 0,
+            `${stage}/${scenario}: an obsolete Museum response changed the screen or shared collection.`);
+          if (stage === "catalog") assert(discoveryCalls === 0,
+            "An obsolete catalog request must not start discovery synchronization.");
+        }
+        if (newerRequest) {
+          settle(1, false);
+          if (stage === "catalog") {
+            await Promise.resolve();
+            requests[2].resolve({ triceratops: { name: "Triceratops" } });
+          }
+          await newerRequest;
+          assert(markup.includes("museum-grid") && focusCalls === 1,
+            "The newest Museum request must still publish its collection.");
+        }
+      }
+    }
+  }
+});
+
+Deno.test("discovery synchronization cannot cache an old account response under a new account", async () => {
+  const dbSource = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const discoverySource = dbSource.slice(dbSource.indexOf("const DISCOVERY_EVENTS_KEY"),
+    dbSource.indexOf("async function getUnlockedDinos("));
+  for (const nextOwner of [null, "user-b"]) {
+    const storage = new Map<string, string>();
+    let resolveResponse: Function = () => {};
+    const runtime = new Function("localStorage", "callGameApi", "PHYLOSAUR_STORAGE_KEYS", "console", `
+      let currentUserId = "user-a"; ${discoverySource}; return {
+        getDiscoveryRecords, switchAccount(value) { currentUserId = value; }
+      };`)(
+      { getItem: (key: string) => storage.get(key) ?? null,
+        setItem: (key: string, value: string) => storage.set(key, value) },
+      () => new Promise(resolve => { resolveResponse = resolve; }),
+      { legacyDiscoveries: "legacy", discoveryEvents: "events", accountDiscoveryPrefix: "account:" },
+      { log() {}, warn() {}, error() {} },
+    );
+    const pending = runtime.getDiscoveryRecords();
+    runtime.switchAccount(nextOwner);
+    resolveResponse({ discoveries: [{ dinoName: "OwnedByA", eventKey: "server-a" }] });
+    const records = await pending;
+    assert(storage.size === 0 && !records.ownedbya,
+      "A response arriving after logout or account switching must not populate another collection.");
+  }
+});
+
+Deno.test("late Analytics responses preserve navigation, newer requests and account boundaries", async () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const analyticsSource = screensSource.slice(screensSource.indexOf("async function showAnalyticsDashboard("));
+  for (const scenario of ["navigate", "reopen", "account", "access", "current"]) {
+    for (const fails of [false, true]) {
+      let markup = "";
+      let card: object;
+      let focusCalls = 0;
+      const requests: Array<{ resolve: Function; reject: Function }> = [];
+      const appContent = {
+        get firstElementChild() { return card; },
+        set innerHTML(value: string) { markup = value; card = {}; },
+      };
+      const runtime = new Function(
+        "document", "setAppRoute", "setHeaderControls", "renderAppState", "t",
+        "callGameApi", "analyticsMetricCard", "escapeChallengeHtml", "focusAppScreenHeading",
+        `let currentUserId = "owner"; let isAnalyticsAdmin = true; const currentLocale = "en";
+         ${analyticsSource}; return {
+           showAnalyticsDashboard,
+           changeAccount() { currentUserId = "another-owner"; },
+           revokeAccess() { isAnalyticsAdmin = false; }
+         };`,
+      )(
+        { getElementById: () => appContent }, () => {}, () => {},
+        (message: string) => message, (key: string) => key,
+        () => new Promise((resolve, reject) => { requests.push({ resolve, reject }); }),
+        () => "", (value: unknown) => String(value), () => { focusCalls++; },
+      );
+      const pending = runtime.showAnalyticsDashboard(30);
+      let newerRequest: Promise<void> | undefined;
+      if (scenario === "navigate") appContent.innerHTML = "another screen";
+      if (scenario === "reopen") newerRequest = runtime.showAnalyticsDashboard(7);
+      if (scenario === "account") runtime.changeAccount();
+      if (scenario === "access") runtime.revokeAccess();
+      const expectedMarkup = markup;
+      const payload = { summary: {}, byDay: [], days: 30, generatedAt: "2026-10-03T00:00:00Z" };
+      if (fails) requests[0].reject(new Error("Delayed failure"));
+      else requests[0].resolve(payload);
+      await pending;
+      if (scenario === "current") {
+        assert(markup.includes(fails ? "analytics.loadError" : "analytics-dashboard"),
+          "The active Analytics request must still render its result or error.");
+        assert(focusCalls === (fails ? 0 : 1), "Only a successful current render should move focus.");
+      } else {
+        assert(markup === expectedMarkup && focusCalls === 0,
+          `${scenario}: a stale Analytics response replaced the current screen or stole focus.`);
+      }
+      if (newerRequest) {
+        requests[1].resolve({ ...payload, days: 7 });
+        await newerRequest;
+        assert(markup.includes("analytics-dashboard") && focusCalls === 1,
+          "Discarding an older request must not prevent the newer one from rendering.");
+      }
+    }
+  }
 });
 
 Deno.test("Museum routes reuse the gallery but still support direct links", async () => {
