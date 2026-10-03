@@ -83,6 +83,12 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"'),
     "The language module or selector is missing from the production shell.");
+  assert(htmlSource.includes("localStorage.getItem('phylosaur-theme')") &&
+    htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
+    htmlSource.includes("document.body.classList.add('light-mode')") &&
+    htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
+      htmlSource.indexOf('rel="stylesheet" href="style.css"'),
+    "The saved light theme must be applied before the stylesheet can paint the page.");
   assert(workerSource.includes('"./js/i18n.js"'),
     "The localization module must be available offline.");
   assert(styleSource.includes(".header-theme-switch") &&
@@ -327,6 +333,10 @@ Deno.test("shared UI states, account controls and motion remain standardized", (
   assert(uiSource.includes("const safeCurrentUser = escapeHtml(currentUser)") &&
     !uiSource.includes('title="Sign out: ${currentUser}"'),
     "Account names must be escaped before being inserted into the application header.");
+  assert(uiSource.includes("function applyTheme(") &&
+    uiSource.includes("document.documentElement.dataset.theme = currentTheme") &&
+    uiSource.includes("classList.toggle('light-mode', currentTheme === 'light')"),
+    "Theme changes must keep the pre-paint document theme and body state synchronized.");
   assert(htmlSource.includes('class="site-brand-home"') &&
     !htmlSource.includes('<h1 style="cursor:pointer;"'),
     "The main brand must be a keyboard-accessible home link.");
@@ -734,6 +744,9 @@ Deno.test("Statistics records and SPA navigation use shared responsive accessibi
   assert(statsScreenSource.includes('class="game-card stats-dashboard"') &&
     statsScreenSource.includes('class="stats-header"') &&
     statsScreenSource.includes('class="stats-player-badge"') &&
+    !statsScreenSource.includes('class="stats-kicker"') &&
+    statsScreenSource.includes("${t('stats.title')}") &&
+    statsScreenSource.includes("t('stats.unlockedCount'") &&
     statsScreenSource.includes(".select('difficulty, guess_count, won')") &&
     !statsScreenSource.includes("sb.from('difficulty_stats')") &&
     statsScreenSource.includes("generateGuessHistogram(achievementHistory)") &&
@@ -915,6 +928,12 @@ Deno.test("initial route renders before account synchronization finishes", () =>
   const blockingWait = mainSource.indexOf("await userInitialization", initialization);
   assert(initialization >= 0 && immediateRender > initialization && blockingWait > immediateRender,
     "The root screen must render before waiting for account initialization.");
+  assert(mainSource.includes("applyTheme(savedTheme, { persist: false })") &&
+    !mainSource.includes("if (savedTheme === 'light') toggleTheme()"),
+    "Startup must apply the saved theme directly instead of briefly toggling from dark mode.");
+  assert(mainSource.includes("t('auth.resetExpired')") &&
+    !mainSource.includes("Your reset link has expired. Please request a new one."),
+    "Expired password-reset feedback must follow the selected language.");
   const initializeUserSource = authSource.slice(
     authSource.indexOf("async function initializeUserSystem()"),
     authSource.indexOf("async function initUserStatsRow()"),

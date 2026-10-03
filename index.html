@@ -56,6 +56,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,900;1,400&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#2d2318">
+  <script>
+    try {
+      if (localStorage.getItem('phylosaur-theme') === 'light') {
+        document.documentElement.dataset.theme = 'light';
+      }
+    } catch (_error) {}
+  </script>
   
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
@@ -74,6 +81,11 @@
   <script defer src="js/main.js"></script>
 </head>
 <body>
+  <script>
+    if (document.documentElement.dataset.theme === 'light') {
+      document.body.classList.add('light-mode');
+    }
+  </script>
   <div class="container" id="main-container">
   <header class="site-header">
     <div class="site-header-layout">

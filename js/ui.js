@@ -42,12 +42,21 @@ const map = {
     controls.innerHTML = map[screen] || '';
 }
 
-function toggleTheme() {
-        currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.body.classList.toggle('light-mode');
-        localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.theme, currentTheme);
-        updateThemeToggleState();
+function applyTheme(theme, { persist = true } = {}) {
+    currentTheme = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = currentTheme;
+    document.body.classList.toggle('light-mode', currentTheme === 'light');
+    if (persist) {
+        try {
+            localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.theme, currentTheme);
+        } catch (_error) {}
     }
+    updateThemeToggleState();
+}
+
+function toggleTheme() {
+    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+}
 
 function updateThemeToggleState() {
     const toggle = document.getElementById('theme-toggle');

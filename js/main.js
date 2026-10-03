@@ -164,8 +164,11 @@ window.addEventListener('resize', () => {
 
 document.addEventListener('DOMContentLoaded', async function() {
   initializeI18n();
-  const savedTheme = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.theme);
-  if (savedTheme === 'light') toggleTheme();
+  let savedTheme = 'dark';
+  try {
+    savedTheme = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.theme) || 'dark';
+  } catch (_error) {}
+  applyTheme(savedTheme, { persist: false });
 
   const hash = window.location.hash;
   const params = new URLSearchParams(hash.replace('#', ''));
@@ -178,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       setTimeout(() => {
           const el = document.getElementById('signin-global-error');
           if (el) {
-          el.textContent = 'Your reset link has expired. Please request a new one.';
+          el.textContent = t('auth.resetExpired');
           el.classList.add('visible');
           }
           window.history.replaceState({}, document.title, window.location.pathname);

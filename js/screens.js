@@ -337,23 +337,22 @@ async function showStatsDashboard() {
     <div class="game-card stats-dashboard">
         <header class="stats-header">
             <div>
-                <p class="stats-kicker">Player record</p>
-                <h2 class="screen-title">Statistics</h2>
+                <h2 class="screen-title">${t('stats.title')}</h2>
                 <p class="screen-subtitle stats-subtitle">
-                    Daily performance, winning patterns and collection milestones.
+                    ${t('stats.subtitle')}
                 </p>
             </div>
-            <div class="stats-player-badge" aria-label="Statistics for ${safeCurrentUser}">
-                <span>Player</span>
+            <div class="stats-player-badge" aria-label="${t('stats.forPlayer', { name: safeCurrentUser })}">
+                <span>${t('common.player')}</span>
                 <strong>${safeCurrentUser}</strong>
             </div>
         </header>
 
-        <div class="stats stats-overview" aria-label="Player overview">
-            <div class="stat"><div class="stat-value">${gamesPlayed}</div><div class="stat-label">Games Played</div></div>
-            <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">Games Won</div></div>
-            <div class="stat"><div class="stat-value">${winRate}%</div><div class="stat-label">Success Rate</div></div>
-            <div class="stat"><div class="stat-value">${stats?.best_score || '-'}</div><div class="stat-label">Best Score</div></div>
+        <div class="stats stats-overview" aria-label="${t('stats.playerOverview')}">
+            <div class="stat"><div class="stat-value">${gamesPlayed}</div><div class="stat-label">${t('stats.gamesPlayed')}</div></div>
+            <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">${t('stats.gamesWon')}</div></div>
+            <div class="stat"><div class="stat-value">${winRate}%</div><div class="stat-label">${t('stats.successRate')}</div></div>
+            <div class="stat"><div class="stat-value">${stats?.best_score || '-'}</div><div class="stat-label">${t('stats.bestScore')}</div></div>
         </div>
 
         <div class="stats-insights-grid">
@@ -361,10 +360,10 @@ async function showStatsDashboard() {
             <section class="stats-section stats-histogram-section" aria-labelledby="guess-distribution-title">
                 <div class="stats-section-heading">
                     <div>
-                        <p class="stats-section-kicker">Winning pattern</p>
-                        <h3 class="stats-section-title" id="guess-distribution-title">Guesses per Win</h3>
+                        <p class="stats-section-kicker">${t('stats.winningPattern')}</p>
+                        <h3 class="stats-section-title" id="guess-distribution-title">${t('stats.guessesPerWin')}</h3>
                     </div>
-                    <span>${gamesWon} ${gamesWon === 1 ? 'win' : 'wins'}</span>
+                    <span>${t(gamesWon === 1 ? 'stats.winOne' : 'stats.winMany', { count: gamesWon })}</span>
                 </div>
                 ${generateGuessHistogram(achievementHistory)}
             </section>
@@ -373,8 +372,8 @@ async function showStatsDashboard() {
         <div class="stats-section">
             <div class="stats-section-heading">
                 <div>
-                    <p class="stats-section-kicker">Difficulty profile</p>
-                    <h3 class="stats-section-title">Performance by Level</h3>
+                    <p class="stats-section-kicker">${t('stats.difficultyProfile')}</p>
+                    <h3 class="stats-section-title">${t('stats.performanceLevel')}</h3>
                 </div>
             </div>
             ${generateDifficultyStats(difficultyHistory)}
@@ -382,8 +381,8 @@ async function showStatsDashboard() {
 
         <div class="achievements-panel">
         <div class="achievements-heading">
-            <h3>Achievements</h3>
-            <span>${unlockedAchievementCount} / ${ACHIEVEMENT_DEFINITIONS.length} unlocked</span>
+            <h3>${t('stats.achievements')}</h3>
+            <span>${t('stats.unlockedCount', { count: unlockedAchievementCount, total: ACHIEVEMENT_DEFINITIONS.length })}</span>
         </div>
         ${generateAchievements(unlockedAchievements, achievementProgress)}
         </div>
@@ -391,8 +390,8 @@ async function showStatsDashboard() {
         <div class="stats-section">
             <div class="stats-section-heading">
                 <div>
-                    <p class="stats-section-kicker">Latest activity</p>
-                    <h3 class="stats-section-title">Recent Games</h3>
+                    <p class="stats-section-kicker">${t('stats.latestActivity')}</p>
+                    <h3 class="stats-section-title">${t('stats.recentGames')}</h3>
                 </div>
             </div>
             ${generateRecentGames(recentGames)}
@@ -408,8 +407,8 @@ function generateStreakDisplay(streakData) {
     if (!streakData || streakData.current === 0) {
     return `
         <div class="streak-card streak-card-empty">
-        <div class="streak-empty-title">No streak yet</div>
-        <div class="streak-copy">Play a daily challenge to start one.</div>
+        <div class="streak-empty-title">${t('stats.noStreak')}</div>
+        <div class="streak-copy">${t('stats.noStreakCopy')}</div>
         </div>
     `;
     }
@@ -417,9 +416,9 @@ function generateStreakDisplay(streakData) {
     return `
     <div class="streak-card streak-card-active">
         <div class="streak-value">◆ ${streakData.current}</div>
-        <div class="streak-heading">Current streak</div>
-        <div class="streak-copy">Best: ${streakData.best} days</div>
-        <div class="streak-meta">Last played: ${streakData.lastPlayed || 'Never'}</div>
+        <div class="streak-heading">${t('stats.currentStreak')}</div>
+        <div class="streak-copy">${t(streakData.best === 1 ? 'stats.bestDayOne' : 'stats.bestDayMany', { count: streakData.best })}</div>
+        <div class="streak-meta">${t('stats.lastPlayed', { date: streakData.lastPlayed || t('common.never') })}</div>
     </div>
     `;
 }
