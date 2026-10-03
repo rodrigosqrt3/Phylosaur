@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="pwa-icon.svg" width="144" height="144" alt="Phylosaur golden dinosaur footprint">
+  <a href="https://rodrigosqrt3.github.io/Phylosaur/" aria-label="Play Phylosaur">
+    <img src="pwa-icon.svg" width="144" height="144" alt="Phylosaur golden dinosaur footprint">
+  </a>
 </p>
 
 <h1 align="center">Phylosaur</h1>
