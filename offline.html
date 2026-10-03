@@ -54,16 +54,19 @@
   <script>
     const offlineMessages = {
       en: {
+        metaTitle: 'Phylosaur - Offline',
         title: 'The trail went offline',
         copy: 'Phylosaur needs an internet connection to create and validate challenges. Reconnect and try again.',
         retry: 'Try again', alt: 'Phylosaur footprint'
       },
       'pt-BR': {
+        metaTitle: 'Phylosaur - Sem conexão',
         title: 'A trilha ficou sem conexão',
         copy: 'O Phylosaur precisa de conexão com a internet para criar e validar desafios. Reconecte-se e tente novamente.',
         retry: 'Tentar novamente', alt: 'Pegada do Phylosaur'
       },
       es: {
+        metaTitle: 'Phylosaur - Sin conexión',
         title: 'El camino quedó sin conexión',
         copy: 'Phylosaur necesita conexión a internet para crear y validar desafíos. Vuelve a conectarte e inténtalo de nuevo.',
         retry: 'Intentar de nuevo', alt: 'Huella de Phylosaur'
@@ -75,6 +78,7 @@
       ? 'pt-BR' : browserLanguage.toLowerCase().startsWith('es') ? 'es' : 'en';
     const message = offlineMessages[locale];
     document.documentElement.lang = locale;
+    document.title = message.metaTitle;
     document.getElementById('offline-title').textContent = message.title;
     document.getElementById('offline-copy').textContent = message.copy;
     document.getElementById('offline-retry').textContent = message.retry;

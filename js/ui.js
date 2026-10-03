@@ -150,7 +150,7 @@ function showModal(options) {
         html += `<button class="modal-btn ${btnClass}" data-result="${btn.value}">${btn.text}</button>`;
         });
     } else {
-        html += '<button class="modal-btn modal-btn-primary" data-result="ok">OK</button>';
+        html += `<button class="modal-btn modal-btn-primary" data-result="ok">${t('common.ok')}</button>`;
     }
     
     html += '</div>';

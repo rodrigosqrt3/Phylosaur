@@ -111,7 +111,7 @@ async function startFriendChallengeFromPayload(data) {
     selectedDifficulty = data.difficulty;
     currentChallengeCode = data.challenge?.code || currentChallengeCode;
     if (currentChallengeCode) setAppRoute(`/challenge/${currentChallengeCode}`);
-    currentChallengePlayerName = data.challenge?.playerName || currentChallengePlayerName || 'Player';
+    currentChallengePlayerName = data.challenge?.playerName || currentChallengePlayerName || t('common.player');
     currentChallengeCreatorName = data.challenge?.creatorName || currentChallengeCreatorName;
     currentChallengePlacement = data.challenge?.placement ?? null;
     currentChallengeTotalPlayers = Number(data.challenge?.totalPlayers || 0);
@@ -261,24 +261,28 @@ async function showChallengeStandings() {
         }
         const rows = data.participants.map((participant, index) => {
             const status = participant.status === 'solved'
-                ? 'Finished'
+                ? t('friends.finished')
                 : participant.status === 'eliminated'
-                ? 'Race closed'
+                ? t('friends.raceClosed')
                 : participant.status === 'gave_up'
-                ? 'Gave up'
-                : 'Playing';
+                ? t('result.gaveUp')
+                : t('friends.playing');
             const details = data.requesterComplete
-                ? `${participant.attempts} attempts · ${participant.hintsUsed} hints${participant.status === 'playing' ? ' · Playing' : ''}`
+                ? t('friends.standingDetails', {
+                    attempts: participant.attempts,
+                    hints: participant.hintsUsed,
+                    playing: participant.status === 'playing' ? ` · ${t('friends.playing')}` : ''
+                })
                 : status;
             return `<div class="standing-row ${participant.isYou ? 'is-you' : ''}">
                 <span class="standing-rank">${data.requesterComplete ? (participant.placement ? `#${participant.placement}` : '…') : '◆'}</span>
-                <span class="standing-name">${escapeChallengeHtml(participant.name)}${participant.isYou ? ' (you)' : ''}</span>
+                <span class="standing-name">${escapeChallengeHtml(participant.name)}${participant.isYou ? ` ${t('friends.you')}` : ''}</span>
                 <span class="standing-result">${escapeChallengeHtml(details)}</span>
             </div>`;
         }).join('');
         await customAlert(
-            `Challenge ${escapeChallengeHtml(currentChallengeCode)}`,
-            `<div class="standings-list">${rows || '<p>No players have joined yet.</p>'}</div>${data.requesterComplete ? '' : '<p class="standings-lock">Detailed scores appear after you finish, preventing outside information from influencing your game.</p>'}`
+            t('friends.challengeWithCode', { code: escapeChallengeHtml(currentChallengeCode) }),
+            `<div class="standings-list">${rows || `<p>${t('friends.noPlayers')}</p>`}</div>${data.requesterComplete ? '' : `<p class="standings-lock">${t('friends.scoresHidden')}</p>`}`
         );
     } catch (error) {
         await customAlert(t('friends.standingsError'), escapeHtml(error.message));
@@ -416,9 +420,17 @@ async function useServerHint() {
             );
             await updateCladeInfo();
         } else {
+            const nameHintKeys = {
+                initial: 'game.nameStartsWith',
+                length: 'game.nameHasLetters',
+                ending: 'game.nameEndsWith'
+            };
+            const nameHint = data.hint?.clue && nameHintKeys[data.hint.clue]
+                ? t(nameHintKeys[data.hint.clue], { value: data.hint.value })
+                : t('game.nameHintFallback');
             await customAlert(
                 t('game.nameHintTitle'),
-                `<strong style="color:var(--color-primary); font-size:1.2em;">${escapeHtml(data.hint?.message || t('game.nameHintFallback'))}</strong>`
+                `<strong style="color:var(--color-primary); font-size:1.2em;">${escapeHtml(nameHint)}</strong>`
             );
         }
     } catch (error) {
@@ -477,7 +489,7 @@ function buildResultMediaMarkup(dinoName, media) {
 function buildResultMediaSlotMarkup() {
     return `
         <div class="victory-media-slot" aria-live="polite">
-            <div class="victory-media-loading">Loading image…</div>
+            <div class="victory-media-loading">${t('museum.loadingImage')}</div>
         </div>
     `;
 }
@@ -519,14 +531,14 @@ function revealResultPanel(container, panel) {
         returnButton = document.createElement('button');
         returnButton.type = 'button';
         returnButton.className = 'btn-hint btn-with-icon tree-review-return';
-        returnButton.innerHTML = '<i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>Back to Result</span>';
+        returnButton.innerHTML = `<i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('result.back')}</span>`;
         returnButton.addEventListener('click', () => toggleResultTreeView(false));
         container.insertBefore(returnButton, container.firstChild);
     }
 
     panel.setAttribute('tabindex', '-1');
     panel.setAttribute('role', 'region');
-    panel.setAttribute('aria-label', 'Challenge result');
+    panel.setAttribute('aria-label', t('result.challengeResult'));
 
     // The completed game becomes a stable result view instead of remaining
     // inside the draggable tree canvas.
@@ -646,7 +658,7 @@ async function giveUp() {
         ${currentGameMode === 'challenge' && currentChallengePlacement ? `
         <div class="race-placement-card">
             <strong>#${currentChallengePlacement}</strong>
-            <span>Your current race position. It becomes final when the race closes.</span>
+            <span>${t('friends.currentRacePosition')}</span>
         </div>` : ''}
 
         <div class="victory-actions">
@@ -681,17 +693,17 @@ function buildVictoryStreakMarkup(streakData, milestone) {
     if (milestone) {
         return `
             <div class="streak-celebration streak-celebration--milestone">
-            <div class="streak-milestone-title">◆ ${milestone} DAY MILESTONE! ◆</div>
-            <div class="streak-current">Current Streak: ${streakData.current} days</div>
-            <div class="streak-best">Best: ${streakData.best} days</div>
+            <div class="streak-milestone-title">◆ ${t('result.dayMilestone', { count: milestone })} ◆</div>
+            <div class="streak-current">${t('result.currentStreakDays', { count: streakData.current })}</div>
+            <div class="streak-best">${t('result.bestStreakDays', { count: streakData.best })}</div>
             </div>
         `;
     }
 
     return `
         <div class="streak-celebration">
-        <div class="streak-title">◆ ${streakData.current} Day Streak</div>
-        <div class="streak-best">Best: ${streakData.best} days</div>
+        <div class="streak-title">◆ ${t('result.dayStreak', { count: streakData.current })}</div>
+        <div class="streak-best">${t('result.bestStreakDays', { count: streakData.best })}</div>
         </div>
     `;
 }
@@ -705,14 +717,16 @@ function buildVictoryAchievementsMarkup(achievementIds) {
         return `
             <div class="victory-achievement-item">
                 <span class="achievement-medal" aria-hidden="true"></span>
-                <span>${definition.name}</span>
+                <span>${getAchievementName(definition)}</span>
             </div>
         `;
     }).join('');
 
     return `
-        <section class="victory-achievements" aria-label="Achievements unlocked">
-            <div class="victory-achievements-kicker">New achievement${achievementIds.length === 1 ? '' : 's'}</div>
+        <section class="victory-achievements" aria-label="${t('result.achievementsUnlocked')}">
+            <div class="victory-achievements-kicker">${t(achievementIds.length === 1
+                ? 'result.newAchievementOne'
+                : 'result.newAchievementMany')}</div>
             <div class="victory-achievements-list">${rows}</div>
         </section>
     `;
@@ -724,12 +738,12 @@ function buildVictoryDiscoveryMarkup(discovery) {
     const count = Math.max(Number(discovery.discoveryCount) || 1, 1);
     const isNew = discovery.isFirstDiscovery === true;
     const countLabel = count === 1
-        ? 'Now part of your collection'
-        : `Discovered ${count} times`;
+        ? t('result.nowInCollection')
+        : t('result.discoveredTimes', { count });
 
     return `
         <section class="victory-discovery${isNew ? ' victory-discovery--new' : ''}"
-                 aria-label="${isNew ? 'New Museum discovery' : 'Museum discovery updated'}">
+                 aria-label="${t(isNew ? 'result.newMuseumDiscovery' : 'result.museumDiscoveryUpdated')}">
             <span class="victory-discovery-mark" aria-hidden="true">
                 <svg class="victory-discovery-footprint" viewBox="0 0 512 512" focusable="false">
                     <path
@@ -739,12 +753,12 @@ function buildVictoryDiscoveryMarkup(discovery) {
                 </svg>
             </span>
             <div class="victory-discovery-copy">
-                <div class="victory-discovery-kicker">${isNew ? 'New Museum Discovery' : 'Museum Record Updated'}</div>
-                <strong data-victory-discovery-primary>${isNew ? `${targetDino.nome} has been added to the Museum` : countLabel}</strong>
-                <span data-victory-discovery-secondary>${isNew ? countLabel : 'Its entry remains available in your collection.'}</span>
+                <div class="victory-discovery-kicker">${t(isNew ? 'result.newMuseumDiscovery' : 'result.museumRecordUpdated')}</div>
+                <strong data-victory-discovery-primary>${isNew ? t('result.addedToMuseum', { name: targetDino.nome }) : countLabel}</strong>
+                <span data-victory-discovery-secondary>${isNew ? countLabel : t('result.entryRemains')}</span>
             </div>
             <button class="btn-hint victory-discovery-action" type="button" data-open-victory-museum>
-                View Entry
+                ${t('museum.viewEntry')}
             </button>
         </section>
     `;
@@ -755,8 +769,8 @@ async function hydrateVictoryDiscoveryCount(panel, name, isNew) {
         const records = await getDiscoveryRecords();
         const count = Math.max(Number(records[name.toLowerCase()]?.count) || 1, 1);
         const countLabel = count === 1
-            ? 'Now part of your collection'
-            : `Discovered ${count} times`;
+            ? t('result.nowInCollection')
+            : t('result.discoveredTimes', { count });
         const primary = panel.querySelector('[data-victory-discovery-primary]');
         const secondary = panel.querySelector('[data-victory-discovery-secondary]');
 
@@ -855,14 +869,14 @@ async function hydrateVictoryMetadata(panel, persistencePromise) {
             placementSlot.innerHTML = `
                 <div class="race-placement-card">
                     <strong>#${result.placement}</strong>
-                    <span>Your finishing position</span>
+                    <span>${t('friends.finishingPosition')}</span>
                 </div>
             `;
         }
         status?.remove();
     } catch (error) {
         console.error('Victory result persistence error:', error);
-        if (status) status.textContent = 'Game saved; account statistics will retry on your next visit.';
+        if (status) status.textContent = t('result.savedStatsRetry');
     } finally {
         panel.querySelectorAll('[data-victory-action]').forEach(button => {
             button.disabled = false;
@@ -951,11 +965,11 @@ async function showVictory() {
 
 function getShareResultData() {
     const diffNames = {
-        'muito_facil': 'Level I',
-        'facil': 'Level II',
-        'normal': 'Level III',
-        'dificil': 'Level IV',
-        'muito_dificil': 'Level V'
+        'muito_facil': t('level.name1'),
+        'facil': t('level.name2'),
+        'normal': t('level.name3'),
+        'dificil': t('level.name4'),
+        'muito_dificil': t('level.name5')
     };
     const actualGuesses = guesses.filter(guess => guess.isHint !== true);
     const blocks = actualGuesses.map(guess => {
@@ -979,25 +993,27 @@ function getShareResultData() {
     }
 
     const modeLabel = currentGameMode === 'challenge'
-        ? `Friend Challenge ${currentChallengeCode}`
-        : isPracticeMode ? 'Practice' : 'Daily Challenge';
+        ? t('result.friendChallengeCode', { code: currentChallengeCode })
+        : isPracticeMode ? t('analytics.practice') : t('home.daily');
     const hintCount = Array.isArray(hintHistory) ? hintHistory.length : 0;
-    const attemptLabel = `${actualGuesses.length} ${actualGuesses.length === 1 ? 'guess' : 'guesses'}`;
-    const hintLabel = `${hintCount} ${hintCount === 1 ? 'hint' : 'hints'}`;
+    const attemptLabel = `${actualGuesses.length} ${t(actualGuesses.length === 1 ? 'game.guessOne' : 'game.guessMany')}`;
+    const hintLabel = `${hintCount} ${t(hintCount === 1 ? 'game.hintOne' : 'game.hintMany')}`;
     const placementLabel = currentGameMode === 'challenge' && currentChallengePlacement
-        ? ` • #${currentChallengePlacement} place`
+        ? t('result.placement', { placement: currentChallengePlacement })
         : '';
 
     return {
-        title: `Phylosaur - ${diffNames[selectedDifficulty] || 'Challenge'}`,
+        title: `Phylosaur - ${diffNames[selectedDifficulty] || t('friends.challenge')}`,
         modeLabel,
-        difficultyLabel: diffNames[selectedDifficulty] || 'Challenge',
+        difficultyLabel: diffNames[selectedDifficulty] || t('friends.challenge'),
         dateLabel: getCurrentDateFormatted(),
         rows,
         attemptLabel,
         hintLabel,
         placementLabel,
-        outcomeLabel: isGiveUpMode ? `Answer revealed after ${attemptLabel}` : `Solved in ${attemptLabel}`,
+        outcomeLabel: isGiveUpMode
+            ? t('result.answerAfter', { attempts: attemptLabel })
+            : t('result.solvedIn', { attempts: attemptLabel }),
         url: appUrl.toString()
     };
 }
@@ -1057,18 +1073,18 @@ async function shareResult() {
     const result = getShareResultData();
     const text = buildShareResultText(result);
     const action = await showModal({
-        title: 'Share Your Result',
+        title: t('result.shareTitle'),
         message: `
-            <div class="share-result-intro">Spoiler-free: dinosaur and clade names stay hidden.</div>
+            <div class="share-result-intro">${t('result.shareSpoilerFree')}</div>
             <pre class="share-result-preview">${escapeShareResultHtml(text)}</pre>
             <div class="share-result-legend">
-                <span>⬛ distant</span><span>🟥 warmer</span><span>🟧 close</span><span>🟨 very close</span><span>🟩 solved</span>
+                <span>⬛ ${t('result.distanceDistant')}</span><span>🟥 ${t('result.distanceWarmer')}</span><span>🟧 ${t('result.distanceClose')}</span><span>🟨 ${t('result.distanceVeryClose')}</span><span>🟩 ${t('result.distanceSolved')}</span>
             </div>
         `,
         buttons: [
-            { text: navigator.share ? 'Share' : 'Copy Result', value: 'share', primary: true },
-            ...(navigator.share ? [{ text: 'Copy', value: 'copy', primary: false }] : []),
-            { text: 'Cancel', value: 'cancel', primary: false }
+            { text: navigator.share ? t('result.shareAction') : t('result.copyResult'), value: 'share', primary: true },
+            ...(navigator.share ? [{ text: t('result.copy'), value: 'copy', primary: false }] : []),
+            { text: t('common.cancel'), value: 'cancel', primary: false }
         ],
         closeOnOverlay: true
     });
@@ -1078,12 +1094,12 @@ async function shareResult() {
     try {
         if (action === 'share' && navigator.share) {
             await navigator.share({ title: result.title, text });
-            showShareButtonFeedback('Shared!');
+            showShareButtonFeedback(t('result.shared'));
             return;
         }
 
         await copyShareResult(text);
-        showShareButtonFeedback('Copied to Clipboard!');
+        showShareButtonFeedback(t('result.copied'));
     } catch (error) {
         if (error?.name === 'AbortError') return;
         console.error('Result sharing error:', error);

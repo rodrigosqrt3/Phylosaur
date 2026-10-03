@@ -806,9 +806,9 @@ async function showRestoredServerCompletion(data) {
         ${wasRaceEliminated ? `
         <div class="race-placement-card">
             <strong>#${currentChallengePlacement || currentChallengeTotalPlayers}</strong>
-            <span>The other finishing positions were secured, so your race ended automatically.</span>
+            <span>${t('friends.raceEndedAutomatically')}</span>
         </div>` : currentGameMode === 'challenge' && currentChallengePlacement ? `
-        <div class="race-placement-card"><strong>#${currentChallengePlacement}</strong><span>Your current finishing position</span></div>` : ''}
+        <div class="race-placement-card"><strong>#${currentChallengePlacement}</strong><span>${t('friends.currentFinishingPosition')}</span></div>` : ''}
 
         ${buildResultMediaMarkup(targetName, resultMedia)}
 
@@ -874,9 +874,9 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
                     title: t('game.progressFound'),
                     message: t('game.progressCopy'),
                     info: [
-                        { label: 'Attempts made', value: Number(data.attempts || 0) },
-                        { label: 'Hints remaining', value: Number(data.hintsRemaining ?? 3) },
-                        { label: 'Clades revealed', value: Array.isArray(data.revealedClades) ? data.revealedClades.length : 0 }
+                        { label: t('game.attemptsMade'), value: Number(data.attempts || 0) },
+                        { label: t('game.hintsRemaining'), value: Number(data.hintsRemaining ?? 3) },
+                        { label: t('game.cladesRevealed'), value: Array.isArray(data.revealedClades) ? data.revealedClades.length : 0 }
                     ],
                     buttons: [
                         { text: t('game.continue'), value: 'continue', primary: true },
@@ -968,7 +968,7 @@ async function loadPracticeDatabase(difficulty, forceClean = true, resumeAutomat
     } catch (error) {
         console.error('Server practice game error:', error);
         const wrapper = document.getElementById('tree-scroll-wrapper');
-        if (wrapper) wrapper.innerHTML = renderAppState('Could not load challenge.', {
+        if (wrapper) wrapper.innerHTML = renderAppState(t('game.loadError'), {
             type: 'error', detail: error.message, compact: true
         });
     }
@@ -980,7 +980,7 @@ async function loadDailyDatabase(difficulty, forceClean = false, resumeAutomatic
     } catch (error) {
         console.error('Server daily game error:', error);
         const wrapper = document.getElementById('tree-scroll-wrapper');
-        if (wrapper) wrapper.innerHTML = renderAppState('Could not load challenge.', {
+        if (wrapper) wrapper.innerHTML = renderAppState(t('game.loadError'), {
             type: 'error', detail: error.message, compact: true
         });
     }
@@ -1287,8 +1287,8 @@ async function claimGuestProgressOnLogin({ showNotice = false } = {}) {
             || (result.linkedAchievements || []).length > 0
         )) {
             await customAlert(
-                'Progress Saved',
-                'Progress and achievements from this browser are now linked to your account.'
+                t('auth.progressSaved'),
+                t('auth.progressLinked')
             );
         }
 

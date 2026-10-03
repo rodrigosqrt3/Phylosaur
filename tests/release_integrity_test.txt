@@ -73,6 +73,22 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
       `${locale} does not contain exactly the English catalog keys.`,
     );
   }
+  const englishKeySet = new Set(englishKeys);
+  for (const path of javascriptSources) {
+    const javascript = Deno.readTextFileSync(path);
+    for (const match of javascript.matchAll(/\bt\(\s*['"]([^'"]+)['"]/g)) {
+      assert(englishKeySet.has(match[1]), `${path} uses an unknown localization key: ${match[1]}`);
+    }
+  }
+  for (const [path, documentSource] of [
+    [localSourceLayout ? "game/index_pwa_html.txt" : "index.html", htmlSource],
+    [localSourceLayout ? "game/about_html.txt" : "about.html",
+      Deno.readTextFileSync(localSourceLayout ? "game/about_html.txt" : "about.html")],
+  ] as const) {
+    for (const match of documentSource.matchAll(/data-i18n(?:-html)?="([^"]+)"/g)) {
+      assert(englishKeySet.has(match[1]), `${path} uses an unknown localization key: ${match[1]}`);
+    }
+  }
   assert(runtime.locale === "pt-BR" && evaluate("es-MX").locale === "es" &&
     evaluate("ja-JP").locale === "en",
     "Browser-language detection must select PT-BR or Spanish and otherwise fall back to English.");
@@ -332,7 +348,7 @@ Deno.test("shared UI states, account controls and motion remain standardized", (
   assert(uiSource.includes("function renderAppState(") &&
     gameSource.includes("renderAppState(loadingMessage, { compact: true })") &&
     gameSource.includes("renderGameSessionShell(t('game.loadingPractice')") &&
-    dbSource.includes("renderAppState('Could not load challenge.'") &&
+    dbSource.includes("renderAppState(t('game.loadError')") &&
     screensSource.includes("renderAppState(t('museum.loading')"),
     "Loading and error feedback must use the shared application-state component.");
   assert(authSource.includes("login-text-action") &&
@@ -753,6 +769,16 @@ Deno.test("Daily, Practice and Friend games share one restrained session shell",
     !screensSource.includes("Every guess teaches you") &&
     !screensSource.includes("The game currently has no guess limit while I evaluate"),
     "How-to copy must be localized and the tutorial tree must branch downward like the game tree.");
+  assert(screensSource.includes("renderAppState(t('analytics.loading'))") &&
+    screensSource.includes("t('analytics.privacyCopy')") &&
+    screensSource.includes("t('friends.createError')") &&
+    gameSource.includes("t('result.shareSpoilerFree')") &&
+    gameSource.includes("t('friends.standingDetails'") &&
+    dbSource.includes("t('game.attemptsMade')") &&
+    !screensSource.includes("Loading private analytics…") &&
+    !gameSource.includes("Share Your Result") &&
+    !gameSource.includes("No players have joined yet."),
+    "Analytics, Friend and result screens must use the localization catalogue.");
   assert(styleSource.includes(".game-mode-context") &&
     styleSource.includes(".game-session-stats") &&
     styleSource.includes("grid-template-columns: repeat(5, minmax(0, 1fr))"),

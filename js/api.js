@@ -6,6 +6,17 @@ const wikimediaImageCache = new Map();
 window.phylosaurPerformance = window.phylosaurPerformance || [];
 const GAME_API_TIMEOUT_MS = 15000;
 
+function getLocalizedGameApiError(status, serverMessage = '') {
+  if (currentLocale === 'en' && serverMessage) return serverMessage;
+  if (status === 401) return t('api.signInRequired');
+  if (status === 403) return t('api.notAllowed');
+  if (status === 404) return t('api.notFound');
+  if (status === 409) return t('api.conflict');
+  if (status === 410) return t('api.expired');
+  if (status >= 400 && status < 500) return t('api.invalidRequest');
+  return t('api.unavailable');
+}
+
 function recordGameApiPerformance(action, durationMs, ok) {
   const entry = {
     action,
@@ -75,12 +86,12 @@ async function callGameApi(action, payload = {}) {
   } catch (error) {
     recordGameApiPerformance(action, performance.now() - requestStartedAt, false);
     if (error?.name === 'AbortError') {
-      throw new Error('The game server took too long to respond. Please try again.');
+      throw new Error(t('api.timeout'));
     }
     if (navigator.onLine === false) {
-      throw new Error('You appear to be offline. Reconnect and try again.');
+      throw new Error(t('api.offline'));
     }
-    throw new Error('The game server could not be reached. Please try again.');
+    throw new Error(t('api.unreachable'));
   } finally {
     clearTimeout(timeout);
   }
@@ -89,15 +100,17 @@ async function callGameApi(action, payload = {}) {
   try {
     data = await response.json();
   } catch (error) {
-    data = { ok: false, error: 'The game server returned an invalid response.' };
+    data = { ok: false, error: t('api.invalidResponse') };
   }
 
   recordGameApiPerformance(action, performance.now() - requestStartedAt, response.ok && data?.ok);
 
   if (!response.ok || !data?.ok) {
-    const apiError = new Error(data?.error || 'The game server is unavailable.');
+    const serverMessage = data?.error || '';
+    const apiError = new Error(getLocalizedGameApiError(response.status, serverMessage));
     apiError.status = response.status;
     apiError.data = data;
+    apiError.serverMessage = serverMessage;
     throw apiError;
   }
 

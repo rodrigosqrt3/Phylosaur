@@ -23,11 +23,11 @@ async function showDifficultySelection() {
         </p>
 
         <div class="difficulty-home-levels">
-            ${generateDifficultyButton('muito_facil', 'LEVEL I', 'I', '', completionStatus.muito_facil)}
-            ${generateDifficultyButton('facil', 'LEVEL II', 'II', '', completionStatus.facil)}
-            ${generateDifficultyButton('normal', 'LEVEL III', 'III', '', completionStatus.normal)}
-            ${generateDifficultyButton('dificil', 'LEVEL IV', 'IV', '', completionStatus.dificil)}
-            ${generateDifficultyButton('muito_dificil', 'LEVEL V', 'V', '', completionStatus.muito_dificil)}
+            ${generateDifficultyButton('muito_facil', t('level.1'), 'I', '', completionStatus.muito_facil)}
+            ${generateDifficultyButton('facil', t('level.2'), 'II', '', completionStatus.facil)}
+            ${generateDifficultyButton('normal', t('level.3'), 'III', '', completionStatus.normal)}
+            ${generateDifficultyButton('dificil', t('level.4'), 'IV', '', completionStatus.dificil)}
+            ${generateDifficultyButton('muito_dificil', t('level.5'), 'V', '', completionStatus.muito_dificil)}
         </div>
 
         <div class="difficulty-home-actions-wrap">
@@ -114,11 +114,11 @@ function showFriendChallenges(prefilledCode = '') {
 
                 <label class="friend-label" for="challenge-difficulty">${t('friends.level')}</label>
                 <select class="friend-input" id="challenge-difficulty">
-                    <option value="muito_facil">Level I</option>
-                    <option value="facil">Level II</option>
-                    <option value="normal" selected>Level III</option>
-                    <option value="dificil">Level IV</option>
-                    <option value="muito_dificil">Level V</option>
+                    <option value="muito_facil">${t('level.name1')}</option>
+                    <option value="facil">${t('level.name2')}</option>
+                    <option value="normal" selected>${t('level.name3')}</option>
+                    <option value="dificil">${t('level.name4')}</option>
+                    <option value="muito_dificil">${t('level.name5')}</option>
                 </select>
 
                 <button class="btn-guess friend-action" id="create-challenge-btn" onclick="createFriendChallenge()">${t('friends.createCode')}</button>
@@ -151,7 +151,7 @@ async function createFriendChallenge() {
     const nameInput = document.getElementById('challenge-create-name');
     const difficultyInput = document.getElementById('challenge-difficulty');
     const button = document.getElementById('create-challenge-btn');
-    const playerName = nameInput?.value.trim().slice(0, 24) || 'Player';
+    const playerName = nameInput?.value.trim().slice(0, 24) || t('common.player');
 
     button.disabled = true;
     button.textContent = t('friends.creating');
@@ -163,7 +163,7 @@ async function createFriendChallenge() {
         localStorage.setItem(getChallengeSessionStorageKey(data.challenge.code), data.sessionId);
         await startFriendChallengeFromPayload(data);
     } catch (error) {
-        await customAlert('Could Not Create Challenge', error.message);
+        await customAlert(t('friends.createError'), escapeHtml(error.message));
         button.disabled = false;
         button.textContent = t('friends.createCode');
     }
@@ -173,7 +173,7 @@ async function joinFriendChallenge() {
     const nameInput = document.getElementById('challenge-join-name');
     const codeInput = document.getElementById('challenge-code');
     const button = document.getElementById('join-challenge-btn');
-    const playerName = nameInput?.value.trim().slice(0, 24) || 'Player';
+    const playerName = nameInput?.value.trim().slice(0, 24) || t('common.player');
     const code = codeInput?.value.toUpperCase().replace(/[^A-Z0-9]/g, '') || '';
 
     if (code.length !== 6) {
@@ -187,7 +187,7 @@ async function joinFriendChallenge() {
     try {
         await loadChallengeDatabase(code, playerName);
     } catch (error) {
-        await customAlert('Could Not Enter Challenge', error.message);
+        await customAlert(t('friends.enterError'), escapeHtml(error.message));
         button.disabled = false;
         button.textContent = t('friends.enter');
     }
@@ -206,11 +206,11 @@ function showPracticeMode() {
         </p>
 
         <div class="difficulty-home-levels">
-        ${generatePracticeDifficultyButton('muito_facil', 'LEVEL I', 'I')}
-        ${generatePracticeDifficultyButton('facil', 'LEVEL II', 'II')}
-        ${generatePracticeDifficultyButton('normal', 'LEVEL III', 'III')}
-        ${generatePracticeDifficultyButton('dificil', 'LEVEL IV', 'IV')}
-        ${generatePracticeDifficultyButton('muito_dificil', 'LEVEL V', 'V')}
+        ${generatePracticeDifficultyButton('muito_facil', t('level.1'), 'I')}
+        ${generatePracticeDifficultyButton('facil', t('level.2'), 'II')}
+        ${generatePracticeDifficultyButton('normal', t('level.3'), 'III')}
+        ${generatePracticeDifficultyButton('dificil', t('level.4'), 'IV')}
+        ${generatePracticeDifficultyButton('muito_dificil', t('level.5'), 'V')}
         </div>
     </div>
     `;
@@ -2337,14 +2337,15 @@ function applyMuseumFilters() {
 
 function analyticsLabel(value) {
     const labels = {
-        daily: 'Daily', practice: 'Practice', challenge: 'Friends',
-        muito_facil: 'Level I', facil: 'Level II', normal: 'Level III',
-        dificil: 'Level IV', muito_dificil: 'Level V',
-        challenge_created: 'Challenge created', challenge_joined: 'Challenge joined',
-        museum_opened: 'Museum entry viewed', game_started: 'Game started',
-        game_won: 'Game won', game_gave_up: 'Game abandoned', hint_used: 'Hint used'
+        daily: 'analytics.daily', practice: 'analytics.practice', challenge: 'analytics.friends',
+        muito_facil: 'level.name1', facil: 'level.name2', normal: 'level.name3',
+        dificil: 'level.name4', muito_dificil: 'level.name5',
+        challenge_created: 'analytics.challengeCreated', challenge_joined: 'analytics.challengeJoined',
+        museum_opened: 'analytics.museumViewed', game_started: 'analytics.gameStarted',
+        game_won: 'analytics.gameWon', game_gave_up: 'analytics.gameAbandoned',
+        hint_used: 'analytics.hintUsed'
     };
-    return labels[value] || String(value || 'Unknown');
+    return labels[value] ? t(labels[value]) : String(value || t('analytics.unknown'));
 }
 
 function analyticsMetricCard(label, value, detail = '') {
@@ -2361,17 +2362,17 @@ async function showAnalyticsDashboard(days = 30) {
     const appContent = document.getElementById('app-content');
 
     if (!isAnalyticsAdmin) {
-        appContent.innerHTML = '<div class="game-card empty-state">Analytics access is restricted.</div>';
+        appContent.innerHTML = `<div class="game-card empty-state">${t('analytics.restricted')}</div>`;
         return;
     }
 
-    appContent.innerHTML = `<div class="game-card">${renderAppState('Loading private analytics…')}</div>`;
+    appContent.innerHTML = `<div class="game-card">${renderAppState(t('analytics.loading'))}</div>`;
 
     let data;
     try {
         data = await callGameApi('analytics_dashboard', { days });
     } catch (error) {
-        appContent.innerHTML = `<div class="game-card">${renderAppState('Could not load analytics.', {
+        appContent.innerHTML = `<div class="game-card">${renderAppState(t('analytics.loadError'), {
             type: 'error', detail: error.message
         })}</div>`;
         return;
@@ -2381,8 +2382,13 @@ async function showAnalyticsDashboard(days = 30) {
     const maxStarted = Math.max(1, ...data.byDay.map(day => Number(day.started || 0)));
     const chart = data.byDay.map(day => {
         const height = Math.max(3, Math.round((Number(day.started || 0) / maxStarted) * 100));
-        const date = new Date(`${day.date}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
-        return `<div class="analytics-chart-column" title="${escapeChallengeHtml(date)}: ${day.started} games, ${day.visitors} visitors">
+        const date = new Date(`${day.date}T00:00:00Z`).toLocaleDateString(
+            currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale,
+            { month: 'short', day: 'numeric', timeZone: 'UTC' }
+        );
+        return `<div class="analytics-chart-column" title="${escapeChallengeHtml(t('analytics.daySummary', {
+            date, games: day.started, visitors: day.visitors
+        }))}">
             <div class="analytics-chart-value">${day.started || ''}</div>
             <div class="analytics-chart-bar" style="height:${height}%"></div>
             <div class="analytics-chart-date">${escapeChallengeHtml(date)}</div>
@@ -2394,21 +2400,23 @@ async function showAnalyticsDashboard(days = 30) {
         return `<div class="analytics-breakdown-row">
             <span>${escapeChallengeHtml(analyticsLabel(difficulty))}</span>
             <strong>${values.started}</strong>
-            <span>${completionRate}% complete</span>
+            <span>${t('analytics.completeRate', { rate: completionRate })}</span>
         </div>`;
     }).join('');
 
     const modeRows = Object.entries(data.byMode || {}).map(([mode, count]) => `
-        <div class="analytics-breakdown-row"><span>${escapeChallengeHtml(analyticsLabel(mode))}</span><strong>${count}</strong><span>sessions</span></div>
+        <div class="analytics-breakdown-row"><span>${escapeChallengeHtml(analyticsLabel(mode))}</span><strong>${count}</strong><span>${t('analytics.sessions')}</span></div>
     `).join('');
 
     const activityRows = (data.recentActivity || []).map(event => {
-        const when = new Date(event.createdAt).toLocaleString();
+        const when = new Date(event.createdAt).toLocaleString(
+            currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale
+        );
         const context = [
             event.player ? `@${event.player}` : '',
             analyticsLabel(event.mode),
             analyticsLabel(event.difficulty)
-        ].filter(value => value && value !== 'Unknown').join(' · ');
+        ].filter(value => value && value !== t('analytics.unknown')).join(' · ');
         return `<div class="analytics-activity-row">
             <span>◆</span>
             <div><strong>${escapeChallengeHtml(analyticsLabel(event.type))}</strong>${context ? `<small>${escapeChallengeHtml(context)}</small>` : ''}</div>
@@ -2418,14 +2426,20 @@ async function showAnalyticsDashboard(days = 30) {
 
     const playerRows = (data.registeredPlayers || []).map((player, index) => {
         const lastPlayed = player.lastPlayed
-            ? new Date(`${player.lastPlayed}T00:00:00`).toLocaleDateString()
-            : 'Never';
+            ? new Date(`${player.lastPlayed}T00:00:00`).toLocaleDateString(
+                currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale
+            )
+            : t('common.never');
         return `<div class="analytics-player-row">
             <span class="analytics-player-rank">${index + 1}</span>
             <strong>@${escapeChallengeHtml(player.username)}</strong>
-            <span>${player.gamesPlayed} games · ${player.gamesWon} wins (${player.winRate}%)</span>
-            <span>Current ${player.currentStreak} · Best ${player.bestStreak}</span>
-            <time>Last daily: ${escapeChallengeHtml(lastPlayed)}</time>
+            <span>${t('analytics.playerGames', {
+                games: player.gamesPlayed, wins: player.gamesWon, rate: player.winRate
+            })}</span>
+            <span>${t('analytics.playerStreaks', {
+                current: player.currentStreak, best: player.bestStreak
+            })}</span>
+            <time>${t('analytics.lastDaily', { date: escapeChallengeHtml(lastPlayed) })}</time>
         </div>`;
     }).join('');
 
@@ -2436,61 +2450,65 @@ async function showAnalyticsDashboard(days = 30) {
     <div class="game-card analytics-dashboard">
         <div class="analytics-header">
             <div>
-                <div class="friends-kicker">Private Analytics</div>
-                <h2>Phylosaur Analytics</h2>
-                <p>Private administrator view. Registered usernames may be displayed; emails, IP addresses and fingerprints are never included.</p>
+                <div class="friends-kicker">${t('analytics.private')}</div>
+                <h2>${t('analytics.title')}</h2>
+                <p>${t('analytics.privacyCopy')}</p>
             </div>
-            <div class="analytics-range" role="group" aria-label="Analytics period">
-                ${[7, 30, 90].map(period => `<button class="btn-hint btn-header ${period === data.days ? 'active' : ''}" onclick="showAnalyticsDashboard(${period})">${period}d</button>`).join('')}
+            <div class="analytics-range" role="group" aria-label="${t('analytics.period')}">
+                ${[7, 30, 90].map(period => `<button class="btn-hint btn-header ${period === data.days ? 'active' : ''}" onclick="showAnalyticsDashboard(${period})">${t('analytics.days', { count: period })}</button>`).join('')}
             </div>
         </div>
 
         <div class="analytics-metrics">
-            ${analyticsMetricCard('Unique visitors', summary.uniqueVisitors, `${summary.untrackedSessions || 0} older sessions untracked`)}
-            ${analyticsMetricCard('Games started', summary.totalSessions)}
-            ${analyticsMetricCard('Games completed', summary.completedGames, `${summary.completionRate}% completion`)}
-            ${analyticsMetricCard('Wins', summary.wins, `${summary.winRate}% of completed games`)}
-            ${analyticsMetricCard('Average guesses', summary.averageGuesses)}
-            ${analyticsMetricCard('Average hints', summary.averageHints)}
-            ${analyticsMetricCard('New accounts', summary.newAccounts)}
-            ${analyticsMetricCard('Registered accounts', summary.registeredAccounts, `${summary.activeRegisteredPlayers || 0} with recorded games`)}
-            ${analyticsMetricCard('Highest streak', summary.highestBestStreak, summary.highestStreakPlayer ? `@${summary.highestStreakPlayer}` : 'No streak recorded')}
-            ${analyticsMetricCard('Anonymous sessions', summary.anonymousSessions)}
-            ${analyticsMetricCard('Friend challenges', summary.challengesCreated, `${summary.challengeJoins} joins`)}
-            ${analyticsMetricCard('Museum views', summary.museumViews)}
+            ${analyticsMetricCard(t('analytics.uniqueVisitors'), summary.uniqueVisitors, t('analytics.untrackedSessions', { count: summary.untrackedSessions || 0 }))}
+            ${analyticsMetricCard(t('analytics.gamesStarted'), summary.totalSessions)}
+            ${analyticsMetricCard(t('analytics.gamesCompleted'), summary.completedGames, t('analytics.completion', { rate: summary.completionRate }))}
+            ${analyticsMetricCard(t('analytics.wins'), summary.wins, t('analytics.completedWinRate', { rate: summary.winRate }))}
+            ${analyticsMetricCard(t('analytics.averageGuesses'), summary.averageGuesses)}
+            ${analyticsMetricCard(t('analytics.averageHints'), summary.averageHints)}
+            ${analyticsMetricCard(t('analytics.newAccounts'), summary.newAccounts)}
+            ${analyticsMetricCard(t('analytics.registeredAccounts'), summary.registeredAccounts, t('analytics.activeAccounts', { count: summary.activeRegisteredPlayers || 0 }))}
+            ${analyticsMetricCard(t('analytics.highestStreak'), summary.highestBestStreak, summary.highestStreakPlayer ? `@${summary.highestStreakPlayer}` : t('analytics.noStreak'))}
+            ${analyticsMetricCard(t('analytics.anonymousSessions'), summary.anonymousSessions)}
+            ${analyticsMetricCard(t('analytics.friendChallenges'), summary.challengesCreated, t('analytics.joins', { count: summary.challengeJoins }))}
+            ${analyticsMetricCard(t('analytics.museumViews'), summary.museumViews)}
         </div>
 
         <section class="analytics-section">
-            <h3>Registered players · highest streaks</h3>
-            <div class="analytics-players">${playerRows || '<p class="empty-state">No registered player statistics yet.</p>'}</div>
+            <h3>${t('analytics.registeredPlayers')}</h3>
+            <div class="analytics-players">${playerRows || `<p class="empty-state">${t('analytics.noPlayerStats')}</p>`}</div>
             ${(data.registeredPlayers || []).length >= 100
-                ? '<p class="analytics-section-note">Showing the first 100 accounts, ordered by best streak and activity.</p>'
+                ? `<p class="analytics-section-note">${t('analytics.firstAccounts')}</p>`
                 : ''}
         </section>
 
         <section class="analytics-section">
-            <h3>Games by day</h3>
+            <h3>${t('analytics.gamesByDay')}</h3>
             <div class="analytics-chart">${chart}</div>
         </section>
 
         <div class="analytics-two-column">
             <section class="analytics-section">
-                <h3>By level</h3>
-                <div class="analytics-breakdown">${difficultyRows || '<p class="empty-state">No games in this period.</p>'}</div>
+                <h3>${t('analytics.byLevel')}</h3>
+                <div class="analytics-breakdown">${difficultyRows || `<p class="empty-state">${t('analytics.noGames')}</p>`}</div>
             </section>
             <section class="analytics-section">
-                <h3>By mode</h3>
-                <div class="analytics-breakdown">${modeRows || '<p class="empty-state">No games in this period.</p>'}</div>
+                <h3>${t('analytics.byMode')}</h3>
+                <div class="analytics-breakdown">${modeRows || `<p class="empty-state">${t('analytics.noGames')}</p>`}</div>
             </section>
         </div>
 
         <section class="analytics-section">
-            <h3>Recent activity</h3>
-            <div class="analytics-activity">${activityRows || '<p class="empty-state">New tracked events will appear here.</p>'}</div>
+            <h3>${t('analytics.recentActivity')}</h3>
+            <div class="analytics-activity">${activityRows || `<p class="empty-state">${t('analytics.noActivity')}</p>`}</div>
         </section>
 
-        ${hasTruncatedData ? '<p class="analytics-data-warning">The safety limit was reached for at least one dataset. Some totals may be partial.</p>' : ''}
-        <p class="analytics-generated">Generated ${escapeChallengeHtml(new Date(data.generatedAt).toLocaleString())}</p>
+        ${hasTruncatedData ? `<p class="analytics-data-warning">${t('analytics.partialData')}</p>` : ''}
+        <p class="analytics-generated">${t('analytics.generated', {
+            date: escapeChallengeHtml(new Date(data.generatedAt).toLocaleString(
+                currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale
+            ))
+        })}</p>
     </div>`;
     focusAppScreenHeading('.analytics-header h2');
 }
