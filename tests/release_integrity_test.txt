@@ -2042,6 +2042,158 @@ Deno.test("late Analytics responses preserve navigation, newer requests and acco
   }
 });
 
+Deno.test("challenge standings discard superseded results, errors and race closures", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const stateSource = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const standingsSource = source.slice(source.indexOf("let challengeStandingsGeneration"),
+    source.indexOf("function redrawGameTree("));
+  const guardSource = source.slice(source.indexOf("function getGameSessionGuard("),
+    source.indexOf("function beginGameAction("));
+  for (const response of ["success", "error", "closed"]) {
+    for (const scenario of ["navigate", "session", "account", "code", "newer", "current"]) {
+      const requests: Array<{ resolve: Function; reject: Function }> = [];
+      const counters = { updated: 0, closed: 0, alerts: 0 };
+      const environment = { wrapper: {} as object | null, requests, counters };
+      const runtime = new Function("environment", `
+        ${stateSource}
+        currentUserId = "owner"; currentGameMode = "challenge";
+        gameSessionId = "original"; currentChallengeCode = "RAPTOR";
+        const { requests, counters } = environment;
+        const document = { getElementById: () => environment.wrapper };
+        const callGameApi = () => new Promise((resolve, reject) => requests.push({ resolve, reject }));
+        const updateChallengeRaceStatus = () => { counters.updated++; };
+        const handleChallengeRaceClosure = async () => { counters.closed++; };
+        const customAlert = async () => { counters.alerts++; };
+        const escapeChallengeHtml = escapeHtml;
+        const t = key => key;
+        ${guardSource}
+        ${standingsSource}
+        return { showChallengeStandings, change(kind) {
+          if (kind === "navigate") environment.wrapper = null;
+          if (kind === "session") gameSessionId = "new-session";
+          if (kind === "account") currentUserId = "new-owner";
+          if (kind === "code") currentChallengeCode = "NEWRUN";
+        } };`)(environment);
+      const pending = runtime.showChallengeStandings();
+      let newer: Promise<void> | undefined;
+      if (scenario === "newer") newer = runtime.showChallengeStandings();
+      else if (scenario !== "current") runtime.change(scenario);
+      const payload = { participants: [{ name: "Player", status: "playing", isYou: true }],
+        race: { closedRequester: response === "closed" } };
+      if (response === "error") requests[0].reject(new Error("Delayed failure"));
+      else requests[0].resolve(payload);
+      await pending;
+      assert(counters.updated === (scenario === "current" && response !== "error" ? 1 : 0)
+        && counters.closed === (scenario === "current" && response === "closed" ? 1 : 0)
+        && counters.alerts === (scenario === "current" && response !== "closed" ? 1 : 0),
+        `${response}/${scenario}: obsolete standings changed the race or opened a dialog.`);
+      if (newer) {
+        requests[1].resolve({ ...payload, race: {} }); await newer;
+        assert(counters.updated === 1 && counters.alerts === 1,
+          "Discarding old standings must not prevent the latest request from rendering.");
+      }
+    }
+  }
+});
+
+Deno.test("direct challenge restoration preserves newer screens, sessions, accounts and route history", async () => {
+  const mainSource = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
+  const dbSource = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const routingSource = mainSource.slice(mainSource.indexOf("let isRestoringAppRoute"),
+    mainSource.indexOf("window.addEventListener('popstate'"));
+  const restoreSource = dbSource.slice(dbSource.indexOf("async function restoreStoredChallenge("),
+    dbSource.indexOf("async function loadPracticeDatabase("));
+  const buildRuntime = (saved = true) => {
+    const requests: Array<{ resolve: Function; reject: Function }> = [];
+    const counters = { rendered: 0, fallback: 0, entries: 0, removed: 0, replaced: 0, pushed: 0 };
+    const environment = { saved, requests, counters, screen: {} as object, museumVisible: false };
+    const runtime = new Function("environment", `
+      const { requests, counters } = environment;
+      let currentUserId = "owner"; let currentUser = {}; let isAnalyticsAdmin = false;
+      const appContent = { get firstElementChild() { return environment.screen; } };
+      const document = { title: "Phylosaur", body: { style: {} }, querySelectorAll: () => [],
+        getElementById: () => appContent,
+        querySelector: () => environment.museumVisible ? {} : null };
+      const window = { location: { hash: "#/challenge/RAPTOR", pathname: "/", search: "" },
+        history: { state: { phylosaurDepth: 2 },
+          replaceState(state, title, url) { this.state = state; counters.replaced++;
+            window.location.hash = url.includes("#") ? url.slice(url.indexOf("#")) : ""; },
+          pushState(state, title, url) { this.state = state; counters.pushed++;
+            window.location.hash = url.includes("#") ? url.slice(url.indexOf("#")) : ""; }
+        } };
+      const localStorage = { getItem: () => environment.saved ? "stored-session" : null,
+        removeItem() { counters.removed++; } };
+      const getChallengeSessionStorageKey = code => code;
+      const callGameApi = () => new Promise((resolve, reject) => requests.push({ resolve, reject }));
+      const console = { warn() {} };
+      const closeMuseumEntry = async () => {};
+      const showPracticeMode = () => { setAppRoute("/practice"); environment.screen = {}; };
+      const showFriendChallenges = () => { setAppRoute("/friends"); counters.fallback++; environment.screen = {}; };
+      const showDifficultySelection = async () => { setAppRoute("/"); environment.screen = {}; };
+      const showMuseum = async () => { setAppRoute("/museum"); environment.screen = {};
+        await new Promise((resolve, reject) => requests.push({ resolve, reject })); };
+      const showMuseumEntry = async () => { counters.entries++; };
+      const startFriendChallengeFromPayload = async () => {
+        setAppRoute("/challenge/RAPTOR"); counters.rendered++; environment.screen = {};
+      };
+      ${restoreSource}
+      ${routingSource}
+      return { restoreAppRoute, getCurrentAppRoute,
+        navigate(route) { setAppRoute(route); environment.screen = {}; },
+        browser(route) { window.location.hash = "#" + route; return restoreAppRoute(); },
+        account() { currentUserId = "another-owner"; },
+        snapshot() { return JSON.stringify({ route: getCurrentAppRoute(), counters,
+          restoring: isRestoringAppRoute, depth: window.history.state.phylosaurDepth }); },
+        restoring() { return isRestoringAppRoute; }
+      };`)(environment);
+    return { runtime, requests, counters };
+  };
+  const payload = { mode: "challenge", challenge: { code: "RAPTOR" } };
+  for (const response of ["success", "invalid", "error"]) {
+    for (const scenario of ["navigate", "same-route", "account", "newer", "current"]) {
+      const { runtime, requests, counters } = buildRuntime();
+      const pending = runtime.restoreAppRoute();
+      assert(!runtime.restoring(), "Route writes must remain available while restoration waits for the server.");
+      let newer: Promise<string> | undefined;
+      if (scenario === "navigate") runtime.navigate("/practice");
+      if (scenario === "same-route") runtime.navigate("/challenge/RAPTOR");
+      if (scenario === "account") runtime.account();
+      if (scenario === "newer") newer = runtime.browser("/challenge/RAPTOR");
+      const previous = runtime.snapshot();
+      if (response === "error") requests[0].reject(new Error("Delayed failure"));
+      else requests[0].resolve(response === "invalid" ? { mode: "daily" } : payload);
+      await pending;
+      if (scenario !== "current") {
+        assert(runtime.snapshot() === previous,
+          `${response}/${scenario}: obsolete restoration changed the screen, storage or history.`);
+      } else {
+        assert(counters.rendered === (response === "success" ? 1 : 0)
+          && counters.fallback === (response === "success" ? 0 : 1)
+          && counters.removed === (response === "success" ? 0 : 1)
+          && counters.replaced === 1 && counters.pushed === 0,
+          `${response}: current restoration or fallback did not preserve route history.`);
+      }
+      if (newer) {
+        requests[1].resolve(payload); await newer;
+        assert(counters.rendered === 1 && counters.replaced === 1 && counters.pushed === 0,
+          "The latest direct restoration must render without creating an extra history entry.");
+      }
+    }
+  }
+  const missing = buildRuntime(false);
+  await missing.runtime.restoreAppRoute();
+  assert(missing.counters.fallback === 1 && missing.requests.length === 0
+    && missing.runtime.getCurrentAppRoute() === "/friends",
+    "A direct challenge without a saved session must still open the Friend screen.");
+  const museum = buildRuntime();
+  const opening = museum.runtime.browser("/museum/Triceratops");
+  museum.runtime.navigate("/practice");
+  const previous = museum.runtime.snapshot();
+  museum.requests[0].resolve(); await opening;
+  assert(museum.runtime.snapshot() === previous && museum.counters.entries === 0,
+    "An obsolete Museum route must not open an entry or rewrite the new URL after gallery loading.");
+});
+
 Deno.test("Museum routes reuse the gallery but still support direct links", async () => {
   const mainSource = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
   const routeSource = mainSource.slice(
@@ -2060,7 +2212,8 @@ Deno.test("Museum routes reuse the gallery but still support direct links", asyn
     const restore = new Function(
       "getCurrentAppRoute", "document", "window", "showMuseum", "showMuseumEntry",
       "closeMuseumEntry", "closeTransientRouteOverlays", "buildAppRouteUrl",
-      `let isRestoringAppRoute = false; ${routeSource}; return restoreAppRoute;`,
+      `let isRestoringAppRoute = false; let appRouteRestoreGeneration = 0;
+       const currentUserId = null; ${routeSource}; return restoreAppRoute;`,
     )(
       () => route,
       { querySelector: () => visible ? {} : null, title: "Phylosaur" },

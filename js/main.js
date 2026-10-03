@@ -3,6 +3,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let lastTreeViewportWidth = window.innerWidth;
 let treeResizeTimer = null;
 let isRestoringAppRoute = false;
+let appRouteRestoreGeneration = 0;
 let appRoutingReady = false;
 
 const APP_ROUTE_DIFFICULTIES = new Set([
@@ -29,6 +30,7 @@ function buildAppRouteUrl(route) {
 
 function setAppRoute(route, { replace = false } = {}) {
   if (isRestoringAppRoute) return;
+  appRouteRestoreGeneration++;
 
   const normalized = normalizeAppRoute(route);
   const currentRoute = getCurrentAppRoute();
@@ -87,56 +89,69 @@ function navigateToAppRoute(route = '/') {
 
 async function restoreAppRoute() {
   let route = getCurrentAppRoute();
+  const requestedRoute = route;
+  const generation = ++appRouteRestoreGeneration;
+  const ownerId = currentUserId;
+  const isCurrentRequest = () => generation === appRouteRestoreGeneration
+    && getCurrentAppRoute() === requestedRoute && currentUserId === ownerId;
+  const renderRoute = render => {
+    isRestoringAppRoute = true;
+    try {
+      return render();
+    } finally {
+      isRestoringAppRoute = false;
+    }
+  };
   const parts = route.split('/').filter(Boolean);
 
   const museumVisible = Boolean(document.querySelector('#app-content .museum-grid'));
   if (route === '/museum' && museumVisible) {
     await closeMuseumEntry({ animate: true, restorePosition: true });
-    if (getCurrentAppRoute() !== route) return getCurrentAppRoute();
+    if (!isCurrentRequest()) return getCurrentAppRoute();
   } else {
     closeTransientRouteOverlays();
   }
-  isRestoringAppRoute = true;
-
-  try {
-    if (route === '/') {
-      await showDifficultySelection();
-    } else if (route === '/museum') {
-      if (!museumVisible) await showMuseum();
-    } else if (parts[0] === 'museum' && parts[1]) {
-      if (!museumVisible) await showMuseum();
-      await showMuseumEntry(decodeURIComponent(parts.slice(1).join('/')));
-    } else if (route === '/practice') {
-      showPracticeMode();
-    } else if (route === '/friends') {
-      showFriendChallenges();
-    } else if (route === '/about') {
-      await showAbout();
-    } else if (route === '/stats' && currentUser) {
-      await showStatsDashboard();
-    } else if (route === '/analytics' && isAnalyticsAdmin) {
-      await showAnalyticsDashboard();
-    } else if (parts[0] === 'game' && parts.length === 3
-        && ['daily', 'practice'].includes(parts[1])
-        && APP_ROUTE_DIFFICULTIES.has(parts[2])) {
-      if (parts[1] === 'practice') {
-        await startPracticeChallenge(parts[2], { restoreExisting: true });
-      } else {
-        await startDailyChallenge(parts[2], { restoreExisting: true });
-      }
-    } else if (parts[0] === 'challenge' && parts[1]) {
-      const restored = await restoreStoredChallenge(parts[1]);
-      if (!restored) {
-        route = '/friends';
-        showFriendChallenges(parts[1]);
-      }
+  if (route === '/') {
+    await renderRoute(() => showDifficultySelection());
+  } else if (route === '/museum') {
+    if (!museumVisible) await renderRoute(() => showMuseum());
+  } else if (parts[0] === 'museum' && parts[1]) {
+    if (!museumVisible) await renderRoute(() => showMuseum());
+    if (!isCurrentRequest()) return getCurrentAppRoute();
+    await renderRoute(() => showMuseumEntry(decodeURIComponent(parts.slice(1).join('/'))));
+  } else if (route === '/practice') {
+    renderRoute(() => showPracticeMode());
+  } else if (route === '/friends') {
+    renderRoute(() => showFriendChallenges());
+  } else if (route === '/about') {
+    await renderRoute(() => showAbout());
+  } else if (route === '/stats' && currentUser) {
+    await renderRoute(() => showStatsDashboard());
+  } else if (route === '/analytics' && isAnalyticsAdmin) {
+    await renderRoute(() => showAnalyticsDashboard());
+  } else if (parts[0] === 'game' && parts.length === 3
+      && ['daily', 'practice'].includes(parts[1])
+      && APP_ROUTE_DIFFICULTIES.has(parts[2])) {
+    if (parts[1] === 'practice') {
+      await renderRoute(() => startPracticeChallenge(parts[2], { restoreExisting: true }));
     } else {
-      route = '/';
-      await showDifficultySelection();
+      await renderRoute(() => startDailyChallenge(parts[2], { restoreExisting: true }));
     }
-  } finally {
-    isRestoringAppRoute = false;
+  } else if (parts[0] === 'challenge' && parts[1]) {
+    const restored = await restoreStoredChallenge(parts[1], {
+      isCurrentRequest,
+      renderChallenge: data => renderRoute(() => startFriendChallengeFromPayload(data))
+    });
+    if (!isCurrentRequest()) return getCurrentAppRoute();
+    if (!restored) {
+      route = '/friends';
+      renderRoute(() => showFriendChallenges(parts[1]));
+    }
+  } else {
+    route = '/';
+    await renderRoute(() => showDifficultySelection());
   }
+  if (!isCurrentRequest()) return getCurrentAppRoute();
 
   window.history.replaceState({
     ...(window.history.state || {}),

@@ -273,13 +273,22 @@ async function copyChallengeCode() {
     }
 }
 
+let challengeStandingsGeneration = 0;
+
 async function showChallengeStandings() {
     if (!currentChallengeCode || !gameSessionId) return;
+    const generation = ++challengeStandingsGeneration;
+    const code = currentChallengeCode;
+    const isCurrentSession = getGameSessionGuard();
+    const isCurrentRequest = () => generation === challengeStandingsGeneration
+        && currentChallengeCode === code && isCurrentSession();
+    if (!isCurrentRequest()) return;
     try {
         const data = await callGameApi('challenge_status', {
-            code: currentChallengeCode,
+            code,
             sessionId: gameSessionId
         });
+        if (!isCurrentRequest()) return;
         updateChallengeRaceStatus(data);
         if (data.race?.closedRequester) {
             await handleChallengeRaceClosure(data);
@@ -307,10 +316,11 @@ async function showChallengeStandings() {
             </div>`;
         }).join('');
         await customAlert(
-            t('friends.challengeWithCode', { code: escapeChallengeHtml(currentChallengeCode) }),
+            t('friends.challengeWithCode', { code: escapeChallengeHtml(code) }),
             `<div class="standings-list">${rows || `<p>${t('friends.noPlayers')}</p>`}</div>${data.requesterComplete ? '' : `<p class="standings-lock">${t('friends.scoresHidden')}</p>`}`
         );
     } catch (error) {
+        if (!isCurrentRequest()) return;
         await customAlert(t('friends.standingsError'), escapeHtml(error.message));
     }
 }

@@ -970,7 +970,16 @@ async function loadChallengeDatabase(code, playerName, { isCurrentRequest = () =
     await startFriendChallengeFromPayload(data);
 }
 
-async function restoreStoredChallenge(code) {
+async function restoreStoredChallenge(code, {
+    isCurrentRequest = () => true,
+    renderChallenge = startFriendChallengeFromPayload
+} = {}) {
+    const ownerId = currentUserId;
+    const appContent = document.getElementById('app-content');
+    const originalScreen = appContent?.firstElementChild;
+    const canRestore = () => Boolean(appContent) && isCurrentRequest() && currentUserId === ownerId
+        && document.getElementById('app-content') === appContent
+        && appContent?.firstElementChild === originalScreen;
     const normalizedCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     if (!normalizedCode) return false;
 
@@ -980,13 +989,15 @@ async function restoreStoredChallenge(code) {
 
     try {
         const data = await callGameApi('state', { sessionId: storedSessionId });
+        if (!canRestore()) return false;
         if (data.mode !== 'challenge' || data.challenge?.code !== normalizedCode) {
             localStorage.removeItem(storageKey);
             return false;
         }
-        await startFriendChallengeFromPayload(data);
+        await renderChallenge(data);
         return true;
     } catch (error) {
+        if (!canRestore()) return false;
         console.warn('Stored friend challenge could not be restored:', error);
         localStorage.removeItem(storageKey);
         return false;
