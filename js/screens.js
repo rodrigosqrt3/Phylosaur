@@ -512,45 +512,44 @@ async function showAbout() {
 
 async function showHowToPlay() {
     const action = await showModal({
-    title: 'How to Play',
+    title: t('home.howToPlay'),
     message: `
         <div class="how-to-play-content">
-        <p class="how-to-play-intro">A mystery dinosaur is hidden each day. Your goal is to identify it using the clues revealed by each guess.</p>
+        <p class="how-to-play-intro">${t('howto.intro')}</p>
         
         <div class="how-to-play-step">
-            <strong>1. Guess a genus</strong><br>
-            Type any dinosaur name and submit. The tree will reveal how closely related your guess is to the target.
+            <strong>${t('howto.step1')}</strong><br>
+            ${t('howto.step1Copy')}
         </div>
 
         <div class="how-to-play-step">
-            <strong>2. Read the tree</strong><br>
-            Each guess reveals the deepest clade shared with the mystery dinosaur. The closer on the tree, the warmer you are.
+            <strong>${t('howto.step2')}</strong><br>
+            ${t('howto.step2Copy')}
         </div>
 
         <div class="how-to-play-step">
-            <strong>3. Hints</strong><br>
-            You have 3 hints per challenge. Hints reveal the next clade, then clues about the genus name once the full lineage is known. You must make 2 guesses between hints.
+            <strong>${t('howto.step3')}</strong><br>
+            ${t('howto.step3Copy')}
         </div>
 
         <div class="how-to-play-step">
-            <strong>4. Five difficulty levels</strong><br>
-            Level I features well-known genera. Level V features obscure taxa requiring broad taxonomic knowledge.
+            <strong>${t('howto.step4')}</strong><br>
+            ${t('howto.step4Copy')}
         </div>
 
         <div class="how-to-play-step how-to-play-tip">
-            <strong>Tip</strong><br>
-            Click any node on the tree to read about that clade. New here? Start with Level I.
+            <strong>${t('howto.tip')}</strong><br>
+            ${t('howto.tipCopy')}
             <br><br>
             <span class="how-to-play-note">
-            The game currently has no guess limit while I evaluate what feels most balanced. 
-            This may change in future updates.
+            ${t('howto.noLimit')}
             </span>
         </div>
         </div>
     `,
     buttons: [
-        { text: 'Interactive Tutorial', value: 'tutorial', primary: true },
-        { text: 'Close', value: 'close', primary: false }
+        { text: t('tutorial.interactive'), value: 'tutorial', primary: true },
+        { text: t('common.close'), value: 'close', primary: false }
     ],
     closeOnOverlay: true
     });
@@ -567,9 +566,9 @@ let tutorialPreviousBodyOverflow = '';
 
 const INTERACTIVE_TUTORIAL_STEPS = [
     {
-        kicker: 'How Phylosaur Works',
-        title: 'Find the hidden dinosaur',
-        copy: 'Phylosaur is a deduction game. Every guess teaches you where the mystery genus belongs on the evolutionary tree.',
+        kicker: t('tutorial.works'),
+        title: t('tutorial.hiddenTitle'),
+        copy: t('tutorial.hiddenCopy'),
         visual: `
             <svg class="tutorial-welcome-tree" viewBox="0 0 280 150" aria-hidden="true">
                 <path class="tutorial-welcome-branch" d="M140 132V98M140 98H62V62M140 98H218V62M62 62H30V28M62 62H94V28M218 62H186V28M218 62H250V28"></path>
@@ -581,61 +580,61 @@ const INTERACTIVE_TUTORIAL_STEPS = [
                 <circle class="tutorial-welcome-root" cx="140" cy="132" r="7"></circle>
             </svg>
             <div class="tutorial-welcome-line">
-                <span>Guess</span><i class="ui-icon ui-icon-arrow-right" aria-hidden="true"></i>
-                <span>Compare</span><i class="ui-icon ui-icon-arrow-right" aria-hidden="true"></i>
-                <span>Follow the branches</span>
+                <span>${t('tutorial.guess')}</span><i class="ui-icon ui-icon-arrow-right" aria-hidden="true"></i>
+                <span>${t('tutorial.compare')}</span><i class="ui-icon ui-icon-arrow-right" aria-hidden="true"></i>
+                <span>${t('tutorial.followBranches')}</span>
             </div>
         `
     },
     {
-        kicker: 'Step 1',
-        title: 'Make a guess',
-        copy: 'Choose a dinosaur genus from the suggestions. Try the sample below to see the kind of clue a guess creates.',
+        kicker: t('tutorial.step', { count: 1 }),
+        title: t('tutorial.makeGuess'),
+        copy: t('tutorial.makeGuessCopy'),
         visual: `
             <div class="tutorial-guess-demo">
                 <div class="tutorial-fake-input"><em>Triceratops</em></div>
-                <button class="tutorial-demo-action" type="button">Try Sample Guess</button>
+                <button class="tutorial-demo-action" type="button">${t('tutorial.trySample')}</button>
                 <div class="tutorial-demo-feedback" aria-live="polite">
                     <strong>Ornithischia</strong>
-                    <span>4/9 shared nodes · 44% proximity</span>
+                    <span>${t('tutorial.sampleResult')}</span>
                 </div>
             </div>
         `
     },
     {
-        kicker: 'Step 2',
-        title: 'Follow the best trail',
-        copy: 'The brightest connected branch is your strongest route so far. A warmer guess reaches deeper into the target lineage.',
+        kicker: t('tutorial.step', { count: 2 }),
+        title: t('tutorial.followTrail'),
+        copy: t('tutorial.followTrailCopy'),
         visual: `
-            <div class="tutorial-tree-demo" aria-label="Example evolutionary trail">
+            <div class="tutorial-tree-demo" aria-label="${t('tutorial.exampleTrail')}">
                 <div class="tutorial-tree-node is-root">Dinosauria</div>
                 <div class="tutorial-tree-link is-best"><i class="ui-icon ui-icon-arrow-down" aria-hidden="true"></i></div>
                 <div class="tutorial-tree-node is-best">Ornithischia</div>
                 <div class="tutorial-tree-split">
                     <div><span><i class="ui-icon ui-icon-arrow-down-left" aria-hidden="true"></i></span><div class="tutorial-tree-node is-guess">Triceratops</div></div>
-                    <div><span class="is-best"><i class="ui-icon ui-icon-arrow-down-right" aria-hidden="true"></i></span><div class="tutorial-tree-node is-best">Best trail</div></div>
+                    <div><span class="is-best"><i class="ui-icon ui-icon-arrow-down-right" aria-hidden="true"></i></span><div class="tutorial-tree-node is-best">${t('tutorial.bestTrail')}</div></div>
                 </div>
             </div>
         `
     },
     {
-        kicker: 'Step 3',
-        title: 'Using hints',
-        copy: 'A hint reveals the next clade in the hidden lineage. Once the full lineage is known, remaining hints reveal clues about the genus name. You have three, and must make two guesses before requesting another.',
+        kicker: t('tutorial.step', { count: 3 }),
+        title: t('tutorial.usingHints'),
+        copy: t('tutorial.usingHintsCopy'),
         visual: `
             <div class="tutorial-hint-demo">
-                <div class="tutorial-hint-count"><strong>3</strong><span>hints available</span></div>
-                <div class="tutorial-hint-rule"><span>◇</span><span>Guess</span><span>◇</span><span>Guess</span><span>◆</span><span>Hint</span></div>
+                <div class="tutorial-hint-count"><strong>3</strong><span>${t('tutorial.hintsAvailable')}</span></div>
+                <div class="tutorial-hint-rule"><span>◇</span><span>${t('tutorial.guess')}</span><span>◇</span><span>${t('tutorial.guess')}</span><span>◆</span><span>${t('game.hint')}</span></div>
             </div>
         `
     },
     {
-        kicker: 'Choose a Level',
-        title: 'Begin with Level I',
-        copy: 'Daily levels share the same rules but use different pools of dinosaurs. Start familiar, then work toward the obscure taxa in Level V.',
+        kicker: t('tutorial.chooseLevel'),
+        title: t('tutorial.beginLevel'),
+        copy: t('tutorial.beginLevelCopy'),
         visual: `
             <div class="tutorial-levels" aria-hidden="true">
-                <span class="is-recommended">I<small>START</small></span>
+                <span class="is-recommended">I<small>${t('tutorial.startLabel')}</small></span>
                 <span>II</span><span>III</span><span>IV</span><span>V</span>
             </div>
         `
@@ -677,7 +676,7 @@ function renderInteractiveTutorialStep() {
     const requiresDemo = tutorialStepIndex === 1 && !tutorialDemoTried;
 
     overlay.querySelector('.tutorial-progress').innerHTML = INTERACTIVE_TUTORIAL_STEPS.map((_, index) => `
-        <span class="${index === tutorialStepIndex ? 'active' : ''}" aria-label="Step ${index + 1} of ${INTERACTIVE_TUTORIAL_STEPS.length}"></span>
+        <span class="${index === tutorialStepIndex ? 'active' : ''}" aria-label="${t('tutorial.progress', { current: index + 1, total: INTERACTIVE_TUTORIAL_STEPS.length })}"></span>
     `).join('');
     overlay.querySelector('.tutorial-kicker').textContent = step.kicker;
     overlay.querySelector('.tutorial-title').textContent = step.title;
@@ -687,24 +686,26 @@ function renderInteractiveTutorialStep() {
     const backButton = overlay.querySelector('.tutorial-back');
     const nextButton = overlay.querySelector('.tutorial-next');
     backButton.hidden = isFirst;
-    nextButton.textContent = isLast ? 'Start Playing' : requiresDemo ? 'Try the Guess First' : 'Next';
+    nextButton.textContent = isLast
+        ? t('tutorial.start')
+        : requiresDemo ? t('tutorial.tryFirst') : t('tutorial.next');
     nextButton.disabled = requiresDemo;
 
     const demoButton = overlay.querySelector('.tutorial-demo-action');
     const demoFeedback = overlay.querySelector('.tutorial-demo-feedback');
     if (tutorialStepIndex === 1 && tutorialDemoTried) {
-        demoButton.textContent = 'Guess Revealed';
+        demoButton.textContent = t('tutorial.guessRevealed');
         demoButton.disabled = true;
         demoFeedback.classList.add('visible');
     }
 
     demoButton?.addEventListener('click', event => {
         tutorialDemoTried = true;
-        event.currentTarget.textContent = 'Guess Revealed';
+        event.currentTarget.textContent = t('tutorial.guessRevealed');
         event.currentTarget.disabled = true;
         demoFeedback?.classList.add('visible');
         nextButton.disabled = false;
-        nextButton.textContent = 'Next';
+        nextButton.textContent = t('tutorial.next');
         nextButton.focus();
     });
 }
@@ -737,15 +738,15 @@ function showInteractiveTutorial({ firstRun = false } = {}) {
     overlay.setAttribute('aria-labelledby', 'tutorial-title');
     overlay.innerHTML = `
         <div class="tutorial-dialog" tabindex="-1">
-            <button class="tutorial-skip" type="button">${firstRun ? 'Skip tutorial' : 'Close'}</button>
-            <div class="tutorial-progress" aria-label="Tutorial progress"></div>
+            <button class="tutorial-skip" type="button">${firstRun ? t('tutorial.skip') : t('common.close')}</button>
+            <div class="tutorial-progress" aria-label="${t('tutorial.progressLabel')}"></div>
             <div class="tutorial-kicker"></div>
             <h2 class="tutorial-title" id="tutorial-title"></h2>
             <p class="tutorial-copy"></p>
             <div class="tutorial-visual"></div>
             <div class="tutorial-actions">
-                <button class="tutorial-back" type="button">Back</button>
-                <button class="tutorial-next" type="button">Next</button>
+                <button class="tutorial-back" type="button">${t('nav.back')}</button>
+                <button class="tutorial-next" type="button">${t('tutorial.next')}</button>
             </div>
         </div>
     `;

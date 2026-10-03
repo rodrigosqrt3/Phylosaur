@@ -42,7 +42,10 @@ function renderGameSessionShell(loadingMessage, { contextLabel = '' } = {}) {
                 <button class="btn-guess" onclick="makeGuess()">${t('game.submit')}</button>
             </div>
             <div class="guess-secondary-row">
-                <button class="btn-hint btn-game-hint" onclick="useHint()" disabled title="Make 2 guesses before using a hint">Hint · 2 guesses</button>
+                <button class="btn-hint btn-game-hint" onclick="useHint()" disabled
+                        title="${t('game.hintUnlock', { count: 2, unit: t('game.guessMany') })}">
+                    ${t('game.hintCount', { count: 2, unit: t('game.guessMany') })}
+                </button>
                 <button class="btn-giveup" onclick="giveUp()">${t('game.giveUp')}</button>
             </div>
         </div>
@@ -178,7 +181,7 @@ async function handleChallengeRaceClosure(statusData) {
         updateServerGameDisplay(state);
         await showRestoredServerCompletion(state);
     } catch (error) {
-        await customAlert('Race Complete', 'The remaining positions have been decided. Reload the challenge to see the final result.');
+        await customAlert(t('friends.raceComplete'), t('friends.raceCompleteCopy'));
     }
 }
 
@@ -238,9 +241,9 @@ async function copyChallengeCode() {
     if (!currentChallengeCode) return;
     try {
         await navigator.clipboard.writeText(currentChallengeCode);
-        await customAlert('Code Copied', `<strong class="challenge-code-inline">${escapeChallengeHtml(currentChallengeCode)}</strong><br><br>Send this code to your friends.`);
+        await customAlert(t('friends.codeCopied'), `<strong class="challenge-code-inline">${escapeChallengeHtml(currentChallengeCode)}</strong><br><br>${t('friends.sendCode')}`);
     } catch (error) {
-        await customAlert('Challenge Code', `<strong class="challenge-code-inline">${escapeChallengeHtml(currentChallengeCode)}</strong>`);
+        await customAlert(t('friends.codeTitle'), `<strong class="challenge-code-inline">${escapeChallengeHtml(currentChallengeCode)}</strong>`);
     }
 }
 
@@ -278,7 +281,7 @@ async function showChallengeStandings() {
             `<div class="standings-list">${rows || '<p>No players have joined yet.</p>'}</div>${data.requesterComplete ? '' : '<p class="standings-lock">Detailed scores appear after you finish, preventing outside information from influencing your game.</p>'}`
         );
     } catch (error) {
-        await customAlert('Could Not Load Standings', error.message);
+        await customAlert(t('friends.standingsError'), escapeHtml(error.message));
     }
 }
 
@@ -316,7 +319,7 @@ async function makeServerGuess() {
     const guessName = input?.value.trim() || '';
 
     if (!guessName) {
-        await customAlert('Enter a Name', 'Choose a dinosaur from the suggestions.');
+        await customAlert(t('game.enterNameTitle'), t('game.enterNameCopy'));
         return;
     }
 
@@ -324,12 +327,12 @@ async function makeServerGuess() {
         dinosaur => dinosaur.nome.toLowerCase() === guessName.toLowerCase()
     );
     if (!available) {
-        await customAlert('Dinosaur Not Found', 'Choose a name from the autocomplete suggestions.');
+        await customAlert(t('game.notFoundTitle'), t('game.notFoundCopy'));
         return;
     }
 
     if (guessedNames.has(available.nome.toLowerCase())) {
-        await customAlert('Already Guessed', 'You have already tried this dinosaur.');
+        await customAlert(t('game.alreadyGuessedTitle'), t('game.alreadyGuessedCopy'));
         return;
     }
 
@@ -343,7 +346,7 @@ async function makeServerGuess() {
         });
     } catch (error) {
         setGuessRequestPending(false);
-        await customAlert('Guess Not Accepted', error.message);
+        await customAlert(t('game.guessRejected'), escapeHtml(error.message));
         return;
     }
 
@@ -380,8 +383,8 @@ async function makeServerGuess() {
     } catch (error) {
         console.error('Error displaying accepted guess:', error);
         await customAlert(
-            'Display Error',
-            'Your guess was accepted and saved, but part of the result screen could not be displayed. Reloading the challenge will restore it.'
+            t('game.displayErrorTitle'),
+            t('game.displayErrorCopy')
         );
     } finally {
         setGuessRequestPending(false);
@@ -408,22 +411,25 @@ async function useServerHint() {
 
         if (isCladeHint) {
             await customAlert(
-                'Hint',
-                `The next clade in the lineage is:<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${data.hint.cladeName}</strong>`
+                t('game.hint'),
+                `${t('game.nextClade')}<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${escapeHtml(data.hint.cladeName)}</strong>`
             );
             await updateCladeInfo();
         } else {
             await customAlert(
-                'Name Hint',
-                `<strong style="color:var(--color-primary); font-size:1.2em;">${data.hint?.message || 'A clue about the name has been revealed.'}</strong>`
+                t('game.nameHintTitle'),
+                `<strong style="color:var(--color-primary); font-size:1.2em;">${escapeHtml(data.hint?.message || t('game.nameHintFallback'))}</strong>`
             );
         }
     } catch (error) {
         const missing = Number(error.data?.guessesRequired || 0);
         const message = missing > 0
-            ? `Make <strong>${missing}</strong> more guess(es) before using another hint.`
-            : error.message;
-        await customAlert('Hint Not Available', message);
+            ? t('game.hintWait', {
+                count: `<strong>${missing}</strong>`,
+                unit: t(missing === 1 ? 'game.guessOne' : 'game.guessMany')
+            })
+            : escapeHtml(error.message);
+        await customAlert(t('game.hintUnavailable'), message);
     }
 }
 
@@ -580,10 +586,10 @@ async function giveUp() {
     if (gameWon) return;
 
     const confirm = await customConfirm(
-        'Give Up?',
-        `Are you sure you want to reveal the answer? This will count as a loss.`,
-        'Give Up',
-        'Keep Trying'
+        t('game.giveUpTitle'),
+        t('game.giveUpCopy'),
+        t('game.giveUp'),
+        t('game.keepTrying')
     );
 
     if (confirm !== 'true') return;
@@ -592,7 +598,7 @@ async function giveUp() {
         const data = await callGameApi('give_up', { sessionId: gameSessionId });
         applyServerGamePayload(data);
     } catch (error) {
-        await customAlert('Could Not Give Up', error.message);
+        await customAlert(t('game.giveUpError'), escapeHtml(error.message));
         return;
     }
 
@@ -629,7 +635,7 @@ async function giveUp() {
         <div class="victory-heading">
             <h2>${t('result.answerRevealedTitle')}</h2>
             <div class="victory-dino">${targetDino.nome}</div>
-            <div class="victory-summary" aria-label="Game result summary">
+            <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                 <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
                 <span>${t('result.gaveUp')}</span>
             </div>
@@ -645,17 +651,17 @@ async function giveUp() {
 
         <div class="victory-actions">
             <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">
-                View Tree
+                ${t('game.viewTree')}
             </button>
             <button class="btn-hint victory-action-secondary" onclick="shareResult()" id="share-btn">
                 ${t('result.share')}
             </button>
 
             ${currentGameMode === 'challenge' ? `
-            <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">View Standings</button>
-            <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
+            <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
+            <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
             <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
-                ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
+                ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
             </button>`}
         </div>
     `;
@@ -770,7 +776,7 @@ async function openVictoryMuseumEntry(name, button = null) {
     const originalText = button?.textContent;
     if (button) {
         button.disabled = true;
-        button.textContent = 'Opening…';
+        button.textContent = t('museum.opening');
     }
 
     try {
@@ -782,11 +788,11 @@ async function openVictoryMuseumEntry(name, button = null) {
         await showMuseumEntry(name);
     } catch (error) {
         console.error('Could not open Museum entry from victory:', error);
-        await customAlert('Could Not Open Museum Entry', error.message);
+        await customAlert(t('museum.openError'), escapeHtml(error.message));
     } finally {
         if (button && document.body.contains(button)) {
             button.disabled = false;
-            button.textContent = originalText || 'View Entry';
+            button.textContent = originalText || t('museum.viewEntry');
         }
     }
 }
@@ -881,7 +887,7 @@ async function showVictory() {
     if (isPracticeMode) {
         modeHTML = `
         <div class="victory-mode-note">
-            Practice Mode - Statistics not recorded
+            ${t('game.practiceNoStats')}
         </div>
         `;
     }
@@ -904,7 +910,7 @@ async function showVictory() {
             <div class="victory-heading">
                 <h2>${t('result.completeTitle')}</h2>
                 <div class="victory-dino">${targetDino.nome}</div>
-                <div class="victory-summary" aria-label="Game result summary">
+                <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                     <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
                     <span>${revealedClades.size} ${t(revealedClades.size === 1 ? 'game.cladeOne' : 'game.cladeMany')} ${t('game.revealed')}</span>
                 </div>
@@ -916,20 +922,20 @@ async function showVictory() {
 
             ${streakHTML}
             ${achievementHTML}
-            <div class="victory-save-status">Saving result…</div>
+            <div class="victory-save-status">${t('result.saving')}</div>
 
             <div class="victory-actions">
                 <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">
-                    View Tree
+                    ${t('game.viewTree')}
                 </button>
                 <button class="btn-hint victory-action-secondary" data-victory-action onclick="shareResult()" id="share-btn" disabled>
                     ${t('result.share')}
                 </button>
                 ${currentGameMode === 'challenge' ? `
-                <button class="btn-hint victory-action-secondary" data-victory-action onclick="showChallengeStandings()" disabled>View Standings</button>
-                <button class="btn-new-game" data-victory-action disabled onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
+                <button class="btn-hint victory-action-secondary" data-victory-action onclick="showChallengeStandings()" disabled>${t('game.viewStandings')}</button>
+                <button class="btn-new-game" data-victory-action disabled onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
                 <button class="btn-new-game" data-victory-action disabled onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
-                    ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
+                    ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
                 </button>`}
             </div>
         `;
@@ -1081,7 +1087,7 @@ async function shareResult() {
     } catch (error) {
         if (error?.name === 'AbortError') return;
         console.error('Result sharing error:', error);
-        await customAlert('Could Not Share', 'Your result could not be copied. Please try again.');
+        await customAlert(t('result.shareErrorTitle'), t('result.shareErrorCopy'));
     }
 }
 

@@ -725,13 +725,16 @@ function updateHintButtonState() {
     button.disabled = unavailable;
 
     if (gameWon) {
-        button.title = 'This game is complete';
+        button.title = t('game.complete');
     } else if (hintsRemaining <= 0) {
         button.title = t('game.noHints');
     } else if (guessesRequired > 0) {
-        button.title = `Make ${guessesRequired} more ${guessesRequired === 1 ? 'guess' : 'guesses'} before using a hint`;
+        button.title = t('game.hintUnlock', {
+            count: guessesRequired,
+            unit: t(guessesRequired === 1 ? 'game.guessOne' : 'game.guessMany')
+        });
     } else {
-        button.title = 'Reveal the next clue';
+        button.title = t('game.revealNextClue');
     }
 
     button.textContent = guessesRequired > 0
@@ -797,7 +800,7 @@ async function showRestoredServerCompletion(data) {
         <div class="victory-heading">
             <h2>${wasRaceEliminated ? t('result.raceComplete') : data.gaveUp ? t('result.answerRevealedTitle') : t('result.completeTitle')}</h2>
             <div class="victory-dino">${targetName}</div>
-            <div class="victory-summary" aria-label="Game result summary">
+            <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                 <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
                 ${resultWasRevealed ? `<span>${t('result.answerRevealed')}</span>` : ''}
             </div>
@@ -813,12 +816,12 @@ async function showRestoredServerCompletion(data) {
         ${buildResultMediaMarkup(targetName, resultMedia)}
 
         <div class="victory-actions">
-            <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">View Tree</button>
+            <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">${t('game.viewTree')}</button>
             ${currentGameMode === 'challenge' ? `
-            <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">View Standings</button>
-            <button class="btn-new-game" onclick="showFriendChallenges()">Return to Friend Challenges</button>` : `
+            <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
+            <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
             <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
-                ${isPracticeMode ? 'Play Again' : 'Return to Level Selection'}
+                ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
             </button>`}
         </div>
     `;

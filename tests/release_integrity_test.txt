@@ -78,6 +78,11 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     "Browser-language detection must select PT-BR or Spanish and otherwise fall back to English.");
   assert(runtime.translate("home.daily") === "Desafio Diário",
     "The Portuguese catalog is not active.");
+  assert(source.includes("const nextUrl = `${url.pathname}${url.search}${url.hash}`") &&
+    source.includes("window.history.replaceState(window.history.state, document.title, nextUrl)") &&
+    source.includes("window.location.reload()") &&
+    !source.includes("window.location.assign(url.toString())"),
+    "Language changes must explicitly reload while preserving the current hash route.");
   assert(htmlSource.indexOf('src="js/state.js"') < htmlSource.indexOf('src="js/i18n.js"') &&
     htmlSource.indexOf('src="js/i18n.js"') < htmlSource.indexOf('src="js/api.js"') &&
     htmlSource.includes('id="language-select"') &&
@@ -290,6 +295,9 @@ Deno.test("About navigation and primary screen titles share the application shel
     aboutSource.includes('src="js/i18n.js"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
+    aboutSource.includes('data-i18n="about.foundationsBody1"') &&
+    aboutSource.includes('data-i18n="about.mechanicsBody3"') &&
+    aboutSource.includes('data-i18n="about.difficultyBody2"') &&
     aboutSource.includes('data-i18n-html="about.nameOrigin"'),
     "The standalone About page must detect the locale and localize its structured content.");
   assert(screensSource.includes("await fetch('about.html')") &&
@@ -675,6 +683,8 @@ Deno.test("guess input accessibility contract remains present in every mode", ()
 
 Deno.test("Daily, Practice and Friend games share one restrained session shell", () => {
   const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const dbSource = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
   const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
   assert(gameSource.includes("function renderGameSessionShell(") &&
     gameSource.includes("renderGameSessionShell(t('game.loadingPractice')") &&
@@ -684,10 +694,35 @@ Deno.test("Daily, Practice and Friend games share one restrained session shell",
     gameSource.includes('class="stats game-session-stats"'),
     "All game modes must render the same session structure.");
   assert(gameSource.includes("contextLabel: t('game.practiceContext')") &&
+    gameSource.includes("t('game.practiceNoStats')") &&
+    gameSource.includes("t('game.viewTree')") &&
+    gameSource.includes("t('game.playAgain')") &&
+    gameSource.includes("t('game.enterNameTitle')") &&
+    gameSource.includes("t('game.hintUnavailable')") &&
+    gameSource.includes("t('game.giveUpCopy')") &&
+    gameSource.includes("t('museum.openError')") &&
+    gameSource.includes("t('friends.raceCompleteCopy')") &&
+    gameSource.includes("t('friends.standingsError')") &&
+    gameSource.includes("t('result.shareErrorCopy')") &&
+    gameSource.includes("escapeHtml(error.message)") &&
+    dbSource.includes("t('game.hintUnlock'") &&
+    dbSource.includes("t('game.revealNextClue')") &&
+    !gameSource.includes("Practice Mode - Statistics not recorded") &&
+    !gameSource.includes("Choose a dinosaur from the suggestions.") &&
+    !gameSource.includes("Are you sure you want to reveal the answer?") &&
+    !gameSource.includes("The remaining positions have been decided.") &&
+    !gameSource.includes("Your result could not be copied.") &&
     gameSource.includes('class="game-mode-context"') &&
     !gameSource.includes("PRACTICE MODE") &&
     !gameSource.includes('style="grid-template-columns: repeat(5, 1fr); gap: 12px;"'),
     "Practice identification must remain quiet and the shared stat grid must not use inline styling.");
+  assert(screensSource.includes("t('howto.noLimit')") &&
+    screensSource.includes("t('tutorial.followBranches')") &&
+    screensSource.includes("t('tutorial.trySample')") &&
+    screensSource.includes("t('tutorial.progress'") &&
+    !screensSource.includes("Every guess teaches you") &&
+    !screensSource.includes("The game currently has no guess limit while I evaluate"),
+    "How-to and tutorial copy must use the localized catalogue instead of embedded English.");
   assert(styleSource.includes(".game-mode-context") &&
     styleSource.includes(".game-session-stats") &&
     styleSource.includes("grid-template-columns: repeat(5, minmax(0, 1fr))"),
