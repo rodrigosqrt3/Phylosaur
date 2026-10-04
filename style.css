@@ -2085,6 +2085,21 @@ body:not(.light-mode) .tree-node-group:hover rect {
   to { transform: rotate(360deg); }
 }
 
+.victory-media-image-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.victory-media-image-button:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
 .victory-media-image {
   display: block;
   width: 100%;

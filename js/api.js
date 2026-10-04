@@ -101,26 +101,50 @@ function withGameSessionCredentials(payload) {
 
 async function callGameApi(action, payload = {}) {
   const requestStartedAt = performance.now();
-  const { data: { session } } = await sb.auth.getSession();
-  const accessToken = session?.access_token || SUPABASE_ANON_KEY;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), GAME_API_TIMEOUT_MS);
+  let timedOut = false;
+  let timeout;
+  // One deadline covers auth lookup, headers and the complete response body.
+  // Race explicitly so even a stalled adapter that ignores abort cannot hold UI locks.
+  const deadline = new Promise((_, reject) => {
+    timeout = setTimeout(() => {
+      timedOut = true;
+      reject(new Error(t("api.timeout")));
+      controller.abort();
+    }, GAME_API_TIMEOUT_MS);
+  });
   let response;
+  let data;
 
   try {
-    response = await fetch(GAME_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${accessToken}`
-      },
-      body: JSON.stringify({ action, visitorId: getAnalyticsVisitorId(), ...withGameSessionCredentials(payload) }),
-      signal: controller.signal
-    });
+    const request = (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (controller.signal.aborted) throw new Error(t("api.timeout"));
+      const accessToken = session?.access_token || SUPABASE_ANON_KEY;
+      const response = await fetch(GAME_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ action, visitorId: getAnalyticsVisitorId(), ...withGameSessionCredentials(payload) }),
+        signal: controller.signal
+      });
+      if (controller.signal.aborted) throw new Error(t("api.timeout"));
+      let data;
+      try {
+        data = await response.json();
+      } catch (error) {
+        if (controller.signal.aborted || error?.name === 'AbortError') throw error;
+        data = { ok: false, error: t('api.invalidResponse') };
+      }
+      return { response, data };
+    })();
+    ({ response, data } = await Promise.race([request, deadline]));
   } catch (error) {
     recordGameApiPerformance(action, performance.now() - requestStartedAt, false);
-    if (error?.name === 'AbortError') {
+    if (timedOut || error?.name === 'AbortError') {
       throw new Error(t('api.timeout'));
     }
     if (navigator.onLine === false) {
@@ -129,13 +153,6 @@ async function callGameApi(action, payload = {}) {
     throw new Error(t('api.unreachable'));
   } finally {
     clearTimeout(timeout);
-  }
-
-  let data = null;
-  try {
-    data = await response.json();
-  } catch (error) {
-    data = { ok: false, error: t('api.invalidResponse') };
   }
 
   recordGameApiPerformance(action, performance.now() - requestStartedAt, response.ok && data?.ok);

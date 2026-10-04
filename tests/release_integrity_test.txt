@@ -187,6 +187,154 @@ Deno.test("browser session credentials survive reloads and never attach to unrel
     "All gameplay actions must use the shared credential transport.");
 });
 
+function buildGameApiDeadlineRuntime() {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/api.${javascriptExtension}`);
+  const apiSource = source.slice(0, source.indexOf("let analyticsAccessRequest"));
+  const deferred = () => {
+    let resolve!: (value: any) => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<any>((yes, no) => { resolve = yes; reject = no; });
+    return { promise, resolve, reject };
+  };
+  const auth: ReturnType<typeof deferred>[] = [];
+  const fetches: Array<ReturnType<typeof deferred> & { options: any }> = [];
+  const timers = new Map<number, () => void>();
+  const storage = new Map<string, string>([["visitor", "00000000-0000-4000-8000-000000000001"]]);
+  const window: any = {};
+  const navigator = { onLine: true };
+  let nextTimer = 0;
+  let now = 0;
+  const runtime = new Function("env", `
+    const { window, navigator, auth, fetches, timers, storage, deferred, clock, schedule } = env;
+    const sb = { auth: { getSession() {
+      const request = deferred(); auth.push(request); return request.promise;
+    } } };
+    const fetch = (url, options) => {
+      const request = { ...deferred(), options }; fetches.push(request); return request.promise;
+    };
+    const performance = { now: clock };
+    const setTimeout = schedule;
+    const clearTimeout = id => timers.delete(id);
+    const console = { debug() {} };
+    const localStorage = { getItem: key => storage.get(key) ?? null,
+      setItem: (key, value) => storage.set(key, value) };
+    const PHYLOSAUR_STORAGE_KEYS = { visitorId: "visitor", sessionCredentialPrefix: "credential:" };
+    const SUPABASE_ANON_KEY = "test-only-anon", GAME_API_URL = "https://example.test/game";
+    const currentLocale = "en", t = key => key;
+    ${apiSource}; return { callGameApi, getGameSessionToken };`)(
+    { window, navigator, auth, fetches, timers, storage, deferred, clock: () => now,
+      schedule(callback: () => void, delay: number) {
+        assert(delay === 15000, "The game API must retain its 15-second deadline.");
+        const id = ++nextTimer; timers.set(id, callback); return id;
+      } },
+  );
+  return { ...runtime, auth, fetches, timers, storage, window, navigator, deferred,
+    expire(id = [...timers.keys()][0]) { now = 15000; timers.get(id)!(); },
+    authenticated: { data: { session: { access_token: "test-only-access" } } },
+    response: (body: any, status = 200) => ({ status, ok: status >= 200 && status < 300,
+      json: () => Promise.resolve(body) }),
+  };
+}
+
+Deno.test("game API deadline covers authentication, headers and stalled JSON without accepting late results", async () => {
+  const flush = async () => { for (let index = 0; index < 12; index++) await Promise.resolve(); };
+  for (const stage of ["auth", "headers", "body"]) {
+    for (const late of ["success", "error"]) {
+      const runtime = buildGameApiDeadlineRuntime();
+      const body = runtime.deferred();
+      const token = `v1.${"A".repeat(43)}`;
+      const data = { ok: true, sessionId: "late-session", sessionToken: token };
+      const pending = runtime.callGameApi("guess", { sessionId: "original" });
+      const outcome = pending.then((value: any) => ({ value, error: null }),
+        (error: Error) => ({ value: null, error }));
+      if (stage !== "auth") { runtime.auth[0].resolve(runtime.authenticated); await flush(); }
+      if (stage === "body") {
+        runtime.fetches[0].resolve({ ok: true, status: 200, json: () => body.promise }); await flush();
+      }
+      assert(runtime.timers.size === 1, `${stage}: the deadline was cleared before all response data arrived.`);
+      runtime.navigator.onLine = false;
+      runtime.expire();
+      const result = await outcome;
+      assert(result.error?.message === "api.timeout" && result.value === null && runtime.timers.size === 0,
+        `${stage}: stalled work must release callers with a timeout, even if an adapter ignores abort.`);
+      assert(!runtime.fetches.length || runtime.fetches[0].options.signal.aborted,
+        "Timeout must also abort the actual network request.");
+      const stale = stage === "auth" ? runtime.auth[0] : stage === "headers" ? runtime.fetches[0] : body;
+      if (late === "error") stale.reject(new Error("Late transport failure"));
+      else stale.resolve(stage === "auth" ? runtime.authenticated
+        : stage === "headers" ? runtime.response(data) : data);
+      await flush();
+      const metrics = runtime.window.phylosaurPerformance;
+      assert(metrics.length === 1 && !metrics[0].ok && metrics[0].durationMs === 15000
+        && runtime.getGameSessionToken("late-session") === null,
+        `${stage}/${late}: a late response stored credentials or reported a second result.`);
+      assert(stage !== "auth" || runtime.fetches.length === 0,
+        "Authentication that finishes after timeout must not send the gameplay mutation.");
+    }
+  }
+});
+
+Deno.test("game API retains credentials, HTTP conflict details and localized transport errors while clearing deadlines", async () => {
+  const flush = async () => { for (let index = 0; index < 12; index++) await Promise.resolve(); };
+  for (const scenario of ["success", "http", "invalid-json", "fetch-error", "body-abort", "offline", "auth-error"]) {
+    const runtime = buildGameApiDeadlineRuntime();
+    const token = `v1.${"B".repeat(43)}`;
+    const data = scenario === "http" ? { ok: false, error: "Conflict", code: "SESSION_CONFLICT" }
+      : { ok: true, sessionId: "current-session", sessionToken: token };
+    const pending = runtime.callGameApi("state", { sessionId: "current-session" });
+    const outcome = pending.then((value: any) => ({ value, error: null as any }),
+      (error: any) => ({ value: null, error }));
+    if (scenario === "auth-error") runtime.auth[0].reject(new Error("Auth unavailable"));
+    else {
+      runtime.auth[0].resolve(runtime.authenticated); await flush();
+      assert(runtime.fetches[0].options.headers.Authorization === "Bearer test-only-access",
+        "The deadline must not change authenticated API headers.");
+      if (["fetch-error", "offline"].includes(scenario)) {
+        runtime.navigator.onLine = scenario !== "offline";
+        runtime.fetches[0].reject(new TypeError("Network unavailable"));
+      } else if (["invalid-json", "body-abort"].includes(scenario)) {
+        const error = scenario === "invalid-json" ? new SyntaxError("Invalid JSON")
+          : new DOMException("Aborted response", "AbortError");
+        runtime.fetches[0].resolve({ ok: true, status: 200, json: async () => { throw error; } });
+      } else runtime.fetches[0].resolve(runtime.response(data, scenario === "http" ? 409 : 200));
+    }
+    const result = await outcome;
+    assert(runtime.timers.size === 0 && runtime.window.phylosaurPerformance.length === 1,
+      `${scenario}: completed requests must clear timers and record one result.`);
+    if (scenario === "success") {
+      assert(result.value === data && !result.error && runtime.getGameSessionToken("current-session") === token
+        && runtime.window.phylosaurPerformance[0].ok, "Successful replies must still persist the matching credential.");
+    } else {
+      const expected = ({ http: "Conflict", "invalid-json": "api.invalidResponse",
+        "fetch-error": "api.unreachable", "body-abort": "api.timeout", offline: "api.offline",
+        "auth-error": "api.unreachable" } as Record<string, string>)[scenario];
+      assert(result.error?.message === expected && !runtime.window.phylosaurPerformance[0].ok
+        && runtime.getGameSessionToken("current-session") === null,
+        `${scenario}: failure classification, metrics or credential isolation changed.`);
+      if (scenario === "http") assert(result.error.status === 409 && result.error.data === data
+        && result.error.serverMessage === "Conflict", "Conflict recovery needs the original structured HTTP error.");
+    }
+  }
+});
+
+Deno.test("overlapping game API calls use independent deadlines and do not retry a timed-out mutation", async () => {
+  const runtime = buildGameApiDeadlineRuntime();
+  const flush = async () => { for (let index = 0; index < 12; index++) await Promise.resolve(); };
+  const first = runtime.callGameApi("guess").then(() => null, (error: Error) => error);
+  const second = runtime.callGameApi("state");
+  runtime.auth[0].resolve(runtime.authenticated); runtime.auth[1].resolve(runtime.authenticated); await flush();
+  const ids = [...runtime.timers.keys()];
+  runtime.expire(ids[0]);
+  assert((await first)?.message === "api.timeout" && runtime.timers.has(ids[1])
+    && runtime.fetches[0].options.signal.aborted && !runtime.fetches[1].options.signal.aborted,
+    "Timing out one request must not clear or abort another request.");
+  runtime.fetches[1].resolve(runtime.response({ ok: true })); await second;
+  runtime.fetches[0].reject(new Error("Late aborted fetch")); await flush();
+  assert(runtime.timers.size === 0 && runtime.fetches.length === 2
+    && runtime.window.phylosaurPerformance.length === 2,
+    "A timeout must neither replay a mutation nor leave timers or duplicate telemetry.");
+});
+
 Deno.test("session writes reject stale revisions before guesses, hints or completion can be overwritten", async () => {
   if (!localSourceLayout) return;
   const source = Deno.readTextFileSync("game/index.txt");

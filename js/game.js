@@ -581,7 +581,10 @@ function buildResultMediaMarkup(dinoName, media) {
 
     return `
         <div class="victory-media">
-            <img class="victory-media-image" src="${media.url}" alt="${dinoName}">
+            <button class="victory-media-image-button" type="button"
+                aria-label="${escapeHtml(t('media.imageViewer', { name: dinoName }))}">
+                <img class="victory-media-image" src="${escapeHtml(media.url)}" alt="${escapeHtml(dinoName)}">
+            </button>
             <div class="victory-media-credit">${media.credit}</div>
         </div>
     `;
@@ -613,7 +616,7 @@ async function hydrateResultMedia(panel, dinoName, mediaPromise) {
 function bindResultMedia(panel, dinoName, media) {
     if (!media?.url) return;
 
-    panel.querySelector('.victory-media-image')?.addEventListener('click', () => {
+    panel.querySelector('.victory-media-image-button')?.addEventListener('click', () => {
         openImageLightbox(
             media.url,
             dinoName,

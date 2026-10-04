@@ -31,6 +31,11 @@ function buildAppRouteUrl(route) {
 function setAppRoute(route, { replace = false } = {}) {
   if (isRestoringAppRoute) return;
   appRouteRestoreGeneration++;
+  // pushState does not dispatch popstate: direct screen navigation also needs
+  // to dismiss an open result image and any dialogs covering it, top first.
+  if (document.getElementById?.('image-lightbox')) {
+    closeTransientRouteOverlays({ closeMuseum: false });
+  }
 
   const normalized = normalizeAppRoute(route);
   const currentRoute = getCurrentAppRoute();
@@ -55,7 +60,7 @@ function setAppRoute(route, { replace = false } = {}) {
 
 function closeTransientRouteOverlays({ closeMuseum = true } = {}) {
   let removedUnmanagedOverlay = false;
-  Array.from(document.querySelectorAll('.modal-overlay, .tutorial-overlay')).reverse().forEach(element => {
+  Array.from(document.querySelectorAll('.modal-overlay, .tutorial-overlay, .image-lightbox')).reverse().forEach(element => {
     if (typeof element.dismissAppOverlay === 'function') {
       element.dismissAppOverlay({ restoreFocus: false });
     } else {
