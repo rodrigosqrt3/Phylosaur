@@ -348,6 +348,27 @@ function beginGameAction() {
     return () => generation === gameActionGeneration && isCurrentSession();
 }
 
+async function refreshConflictedGameSession(error, isCurrentRequest) {
+    if (error?.status !== 409 || error.data?.code !== "SESSION_CONFLICT") return false;
+    if (!isCurrentRequest()) return true;
+    try {
+        const state = await callGameApi("state", { sessionId: gameSessionId });
+        if (!isCurrentRequest()) return true;
+        applyServerGamePayload(state);
+        setTreeAnimationMode(state.complete ? "reveal" : "default");
+        updateServerGameDisplay(state);
+        if (state.complete) {
+            await showRestoredServerCompletion(state);
+            if (!isCurrentRequest()) return true;
+        }
+        await customAlert(t("game.sessionUpdatedTitle"), t("game.sessionUpdatedCopy"));
+    } catch (refreshError) {
+        if (!isCurrentRequest()) return true;
+        await customAlert(t("game.sessionUpdatedTitle"), escapeHtml(refreshError.message));
+    }
+    return true;
+}
+
 function setGuessRequestPending(pending) {
     gameRequestPending = pending;
     const unavailable = pending || gameWon || challengeRaceClosing;
@@ -413,9 +434,14 @@ async function makeServerGuess() {
         });
     } catch (error) {
         if (!isCurrentRequest()) return;
-        setGuessRequestPending(false);
-        if (gameWon || challengeRaceClosing) return;
-        await customAlert(t('game.guessRejected'), escapeHtml(error.message));
+        try {
+            if (gameWon || challengeRaceClosing) return;
+            if (await refreshConflictedGameSession(error, isCurrentRequest)) return;
+            if (!isCurrentRequest()) return;
+            await customAlert(t('game.guessRejected'), escapeHtml(error.message));
+        } finally {
+            if (isCurrentRequest()) setGuessRequestPending(false);
+        }
         return;
     }
 
@@ -505,6 +531,8 @@ async function useServerHint() {
         }
     } catch (error) {
         if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
+        if (await refreshConflictedGameSession(error, isCurrentRequest)) return;
+        if (!isCurrentRequest()) return;
         const missing = Number(error.data?.guessesRequired || 0);
         const message = missing > 0
             ? t('game.hintWait', {
@@ -687,6 +715,8 @@ async function giveUp() {
             applyServerGamePayload(data);
         } catch (error) {
             if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
+            if (await refreshConflictedGameSession(error, isCurrentRequest)) return;
+            if (!isCurrentRequest()) return;
             await customAlert(t('game.giveUpError'), escapeHtml(error.message));
             return;
         }

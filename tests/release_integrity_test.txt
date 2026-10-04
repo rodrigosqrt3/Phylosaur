@@ -187,6 +187,176 @@ Deno.test("browser session credentials survive reloads and never attach to unrel
     "All gameplay actions must use the shared credential transport.");
 });
 
+Deno.test("session writes reject stale revisions before guesses, hints or completion can be overwritten", async () => {
+  if (!localSourceLayout) return;
+  const source = Deno.readTextFileSync("game/index.txt");
+  const helper = source.slice(source.indexOf("async function updateActiveGameSession("),
+    source.indexOf("function sessionConflictResponse("))
+    .replace(/: ReturnType<typeof createClient>/g, "")
+    .replace(/: Record<string, unknown>/g, "");
+  const update = new Function(`${helper}; return updateActiveGameSession;`)();
+  const base = { id: "session", session_revision: 0, guesses: [], hint_history: [],
+    hints_remaining: 2, guesses_since_hint: 2, won: false, gave_up: false,
+    expires_at: "2099-01-01T00:00:00Z", updated_at: "2026-10-04T00:00:00Z" };
+  const mutations = [
+    { guesses: [{ nome: "Triceratops" }], guesses_since_hint: 3 },
+    { hint_history: [{ cladeName: "Theropoda" }], hints_remaining: 1, guesses_since_hint: 0 },
+    { gave_up: true },
+    { guesses: [{ nome: "Tyrannosaurus" }], won: true },
+  ];
+  for (const first of mutations) {
+    for (const second of mutations) {
+      let record: any = structuredClone(base);
+      let commits = 0;
+      const admin = { from(table: string) {
+        assert(table === "game_sessions", "Only the current game may be updated.");
+        const filters = new Map();
+        let patch: any;
+        let minimumExpiry = "";
+        const query: any = {
+          update(value: any) { patch = value; return query; },
+          eq(key: string, value: any) { filters.set(key, value); return query; },
+          gt(key: string, value: string) {
+            assert(key === "expires_at", "Writes must still guard session expiry.");
+            minimumExpiry = value; return query;
+          },
+          select() { return query; },
+          async maybeSingle() {
+            if ([...filters].some(([key, value]) => record[key] !== value)
+              || record.expires_at <= minimumExpiry) return { data: null, error: null };
+            // Emulate the database trigger, including two writes in the same millisecond.
+            record = { ...record, ...patch, session_revision: record.session_revision + 1,
+              updated_at: base.updated_at };
+            commits++;
+            return { data: { id: record.id }, error: null };
+          },
+        };
+        return query;
+      } };
+      const stale = structuredClone(record);
+      const results = await Promise.all([update(admin, stale, first), update(admin, stale, second)]);
+      assert(results.filter(Boolean).length === 1 && commits === 1 && record.session_revision === 1,
+        "Two requests reading one revision must not both commit, even with identical timestamps.");
+      for (const [key, value] of Object.entries(first)) {
+        assert(JSON.stringify(record[key]) === JSON.stringify(value),
+          `A competing request overwrote the accepted ${key}.`);
+      }
+      const before = JSON.stringify(record);
+      assert(!await update(admin, stale, second) && JSON.stringify(record) === before,
+        "Repeated stale requests must not alter guesses, hints or terminal flags.");
+      if (record.won || record.gave_up) {
+        assert(!await update(admin, structuredClone(record), second),
+          "Even a fresh revision must not permit mutations after completion.");
+      } else {
+        assert(await update(admin, structuredClone(record), second),
+          "An active game must remain writable after reading its newest revision.");
+      }
+      record = { ...base, expires_at: "2000-01-01T00:00:00Z" };
+      assert(!await update(admin, structuredClone(record), first), "Expired games must not commit.");
+      let rejected = false;
+      try { await update(admin, { id: "session" }, first); } catch { rejected = true; }
+      assert(rejected, "Missing migration must fail closed instead of bypassing revision checks.");
+    }
+  }
+  for (const action of ["guess", "hint", "give_up"]) {
+    const start = source.indexOf(`    if (action === "${action}")`);
+    const end = source.indexOf("    if (action ===", start + 1);
+    const handler = source.slice(start, end < 0 ? undefined : end);
+    assert(handler.includes("expires_at, session_revision")
+      && handler.includes("await updateActiveGameSession(admin, session,")
+      && handler.includes("if (!updatedSession) return sessionConflictResponse();"),
+      `${action}: the handler must use the revision it read and reject an uncommitted action.`);
+    const guard = handler.indexOf("if (!updatedSession) return sessionConflictResponse();");
+    assert(handler.indexOf("deferAnalyticsEvent(") > guard
+      && (!handler.includes("await finalizeDailyProgress(")
+        || handler.indexOf("await finalizeDailyProgress(") > guard),
+      `${action}: failed writes must not report analytics or finalize Daily results.`);
+    assert(handler.slice(handler.indexOf("return jsonResponse({", guard)).includes("guesses:"),
+      `${action}: accepted responses must carry the authoritative guess history for stale tabs.`);
+  }
+  const migration = Deno.readTextFileSync("game/supabase_session_concurrency_migration.txt");
+  assert(migration.includes("session_revision bigint not null default 0")
+    && migration.includes("new.session_revision := old.session_revision + 1")
+    && migration.includes("before update on public.game_sessions")
+    && migration.includes("drop trigger if exists game_sessions_revision_guard"),
+    "Revision migration must preserve saves, version all writers and support reapplication.");
+});
+
+Deno.test("race closure reports committed results instead of turning a concurrent victory into elimination", async () => {
+  if (!localSourceLayout) return;
+  const source = Deno.readTextFileSync("game/index.txt");
+  const start = source.indexOf("      let challengeSessions = (sessions ?? [])");
+  const race = source.slice(start, source.indexOf("      const rankedSessions =", start))
+    .replace(/ as Record<string, unknown>\[\]/g, "");
+  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+  const run = new AsyncFunction("env", `const { sessions, requester, admin, challengeSessionComplete } = env;
+    ${race}; return { challengeSessions, requesterComplete, closedRequester };`);
+  for (const result of ["won", "gave_up", "eliminated", "already-eliminated", "still-playing"]) {
+    const requester = { id: "self", won: false, gave_up: result === "already-eliminated",
+      challenge_eliminated: result === "already-eliminated" };
+    const committed = { ...requester, won: result === "won", gave_up: ["gave_up", "eliminated", "already-eliminated"].includes(result),
+      challenge_eliminated: ["eliminated", "already-eliminated"].includes(result),
+      guesses: [{ nome: "Latest guess" }], hint_history: [] };
+    let mutations = 0;
+    const admin = { from() {
+      let writing = false;
+      const query: any = {
+        update() { writing = true; mutations++; return query; },
+        eq() { return query; }, select() { return query; },
+        async maybeSingle() { return { data: writing && result !== "eliminated" ? null : committed, error: null }; },
+      };
+      return query;
+    } };
+    const state = await run({ requester, admin,
+      sessions: [requester, { id: "other", won: true }],
+      challengeSessionComplete: (item: any) => Boolean(item.won || item.gave_up) });
+    const actual = state.challengeSessions.find((item: any) => item.id === "self");
+    const eliminated = ["eliminated", "already-eliminated"].includes(result);
+    assert(state.closedRequester === eliminated && state.requesterComplete === (result !== "still-playing")
+      && actual.won === committed.won && actual.challenge_eliminated === committed.challenge_eliminated,
+      `${result}: race closure fabricated a loss or missed an existing elimination.`);
+    assert(mutations === (result === "already-eliminated" ? 0 : 1),
+      "Already closed race participants must not be closed again.");
+  }
+});
+
+Deno.test("conflict recovery refreshes only the current game without replaying rejected actions", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const helper = source.slice(source.indexOf("async function refreshConflictedGameSession("),
+    source.indexOf("function setGuessRequestPending("));
+  for (const complete of [false, true]) {
+    for (const obsolete of [false, true]) {
+      let resolve!: Function;
+      const pending = new Promise(yes => { resolve = yes; });
+      const actions: string[] = [];
+      const applied: any[] = [];
+      const alerts: any[] = [];
+      let displayed = 0;
+      let completions = 0;
+      let current = true;
+      const recover = new Function("callGameApi", "applyServerGamePayload", "updateServerGameDisplay",
+        "setTreeAnimationMode", "showRestoredServerCompletion", "customAlert", "t", "escapeHtml",
+        `let gameSessionId = "original"; ${helper}; return refreshConflictedGameSession;`)(
+        (action: string, payload: any) => { actions.push(action);
+          assert(payload.sessionId === "original", "Recovery must use the original session."); return pending; },
+        (data: any) => { applied.push(data); }, () => { displayed++; }, () => {},
+        async () => { completions++; }, async (...args: any[]) => { alerts.push(args); },
+        (key: string) => key, (value: any) => String(value));
+      assert(!await recover({ status: 409, data: {} }, () => current)
+        && !await recover({ status: 500, data: { code: "SESSION_CONFLICT" } }, () => current)
+        && actions.length === 0, "Normal errors must retain their original handling.");
+      const work = recover({ status: 409, data: { code: "SESSION_CONFLICT" } }, () => current);
+      if (obsolete) current = false;
+      resolve({ sessionId: "original", complete, guesses: [{ nome: "Accepted elsewhere" }] });
+      assert(await work && JSON.stringify(actions) === JSON.stringify(["state"]),
+        "Recovery must fetch state once and never replay guesses, hints or give-up.");
+      assert(applied.length === (obsolete ? 0 : 1) && displayed === (obsolete ? 0 : 1)
+        && completions === (!obsolete && complete ? 1 : 0) && alerts.length === (obsolete ? 0 : 1),
+        "Delayed recovery must not change or alert a newer screen or account.");
+    }
+  }
+});
+
 Deno.test("all game JSON files are valid", () => {
   for (const entry of Deno.readDirSync(gameRoot)) {
     if (!entry.isFile || !entry.name.endsWith(".json")) continue;
