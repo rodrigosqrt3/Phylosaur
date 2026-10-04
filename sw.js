@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v103";
+const CACHE_VERSION = "phylosaur-shell-v105";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -22,7 +22,11 @@ const CORE_ASSETS = [
   "./js/screens.js",
   "./js/tree.js",
   "./js/game.js",
-  "./js/main.js",
+  "./js/main.js"
+];
+
+// Decorative/install icons must not invalidate an otherwise complete shell.
+const OPTIONAL_ASSETS = [
   "./pwa-icon-192.png",
   "./pwa-icon-512.png",
   "./apple-touch-icon.png",
@@ -31,54 +35,77 @@ const CORE_ASSETS = [
 
 async function cacheAvailableCoreAssets() {
   const cache = await caches.open(CACHE_VERSION);
-
-  await Promise.allSettled(CORE_ASSETS.map(async (asset) => {
+  const cacheAsset = async (asset) => {
     const request = new Request(asset, { cache: "reload" });
     const response = await fetch(request);
-    if (response.ok) await cache.put(request, response);
-  }));
+    if (!response.ok) throw new Error(`Required asset unavailable: ${asset} (${response.status})`);
+    await cache.put(request, response);
+  };
+
+  // Wait for every writer before deleting a failed cache: no late put may
+  // recreate a partial release after installation has been rejected.
+  const results = await Promise.allSettled(CORE_ASSETS.map(cacheAsset));
+  const failure = results.find((result) => result.status === "rejected");
+  if (failure) {
+    await caches.delete(CACHE_VERSION).catch(() => false);
+    throw failure.reason;
+  }
+  await Promise.allSettled(OPTIONAL_ASSETS.map(cacheAsset));
 }
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(cacheAvailableCoreAssets());
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    await cacheAvailableCoreAssets();
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const cacheNames = await caches.keys();
     await Promise.all(cacheNames
-      .filter((name) => name.startsWith("phylosaur-") && name !== CACHE_VERSION)
-      .map((name) => caches.delete(name)));
+      .filter((name) => /^phylosaur-shell-v\d+$/.test(name) && name !== CACHE_VERSION)
+      .map((name) => caches.delete(name).catch(() => false)));
     await self.clients.claim();
   })());
 });
 
-async function onlineNavigation(request) {
+async function readCachedAsset(request) {
   try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_VERSION);
-      await cache.put(request, response.clone());
-    }
-    return response;
+    const cache = await caches.open(CACHE_VERSION);
+    return await cache.match(request);
   } catch (_error) {
-    return (await caches.match("./offline.html")) || new Response(
+    return null;
+  }
+}
+
+function fetchAndCache(request, event) {
+  const networkResponse = fetch(request);
+  // Register synchronously during fetch dispatch; storage work does not delay
+  // the network response or turn quota/cache failures into network failures.
+  event.waitUntil(networkResponse.then(async (response) => {
+    if (!response.ok) return;
+    const copy = response.clone();
+    const cache = await caches.open(CACHE_VERSION);
+    await cache.put(request, copy);
+  }).catch(() => null));
+  return networkResponse;
+}
+
+async function onlineNavigation(request, event) {
+  try {
+    return await fetchAndCache(request, event);
+  } catch (_error) {
+    return (await readCachedAsset("./offline.html")) || new Response(
       "Phylosaur is offline. Reconnect and try again.",
       { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } }
     );
   }
 }
 
-async function cachedStaticAsset(request) {
-  const cached = await caches.match(request);
-  const networkRequest = fetch(request).then(async (response) => {
-    if (response.ok) {
-      const cache = await caches.open(CACHE_VERSION);
-      await cache.put(request, response.clone());
-    }
-    return response;
-  }).catch(() => null);
+async function cachedStaticAsset(request, event) {
+  const networkRequest = fetchAndCache(request, event).catch(() => null);
+  const cached = await readCachedAsset(request);
 
   if (cached) return cached;
   return (await networkRequest) || new Response("Asset unavailable offline.", {
@@ -87,16 +114,11 @@ async function cachedStaticAsset(request) {
   });
 }
 
-async function freshStaticAsset(request) {
+async function freshStaticAsset(request, event) {
   try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_VERSION);
-      await cache.put(request, response.clone());
-    }
-    return response;
+    return await fetchAndCache(request, event);
   } catch (_error) {
-    return (await caches.match(request)) || new Response("Asset unavailable offline.", {
+    return (await readCachedAsset(request)) || new Response("Asset unavailable offline.", {
       status: 504,
       headers: { "Content-Type": "text/plain; charset=utf-8" }
     });
@@ -110,7 +132,7 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(onlineNavigation(request));
+    event.respondWith(onlineNavigation(request, event));
     return;
   }
 
@@ -118,12 +140,12 @@ self.addEventListener("fetch", (event) => {
     || /\.(?:css|js)$/i.test(url.pathname);
 
   if (isApplicationCode) {
-    event.respondWith(freshStaticAsset(request));
+    event.respondWith(freshStaticAsset(request, event));
     return;
   }
 
   const isStaticAsset = ["image", "font"].includes(request.destination)
     || /\.(?:png|jpe?g|svg|webp|woff2?|json)$/i.test(url.pathname);
 
-  if (isStaticAsset) event.respondWith(cachedStaticAsset(request));
+  if (isStaticAsset) event.respondWith(cachedStaticAsset(request, event));
 });

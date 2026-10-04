@@ -42,22 +42,17 @@ const map = {
       'analytics':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
     };
 
-    const preserveHeaderSize = screen === 'difficulty' || screen === 'about';
-    controls.classList.toggle('stable-header-controls', preserveHeaderSize);
-    if (preserveHeaderSize) {
-      // Size the navigation for the complete account menu before async permissions arrive.
-      // These inert controls only measure the existing localized button styles.
-      const sizingMenu = `
+    // Every screen reserves the same complete menu, even when it only shows
+    // Back or has no actions. Account/permission updates cannot resize the shell.
+    controls.classList.toggle('stable-header-controls', true);
+    const sizingMenu = `
         <div class="header-controls-reserve" aria-hidden="true" inert>
           <button class="btn-hint btn-header" type="button" tabindex="-1" disabled>${t('nav.museum')}</button>
           <button class="btn-hint btn-header" type="button" tabindex="-1" disabled>${t('nav.analytics')}</button>
           <button class="btn-hint btn-header" type="button" tabindex="-1" disabled>${t('nav.stats')}</button>
           <button class="btn-hint btn-header header-account-reserve" type="button" tabindex="-1" disabled>${t('common.player')}</button>
         </div>`;
-      controls.innerHTML = sizingMenu + `<div class="header-controls-visible">${map[screen]}</div>`;
-    } else {
-      controls.innerHTML = map[screen] || '';
-    }
+    controls.innerHTML = sizingMenu + `<div class="header-controls-visible">${map[screen] || ''}</div>`;
 }
 
 function applyTheme(theme, { persist = true } = {}) {

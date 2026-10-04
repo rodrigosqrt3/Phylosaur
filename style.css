@@ -1026,7 +1026,7 @@ transition: color 0.3s ease;
   display: none;
 }
 
-/* Share stable header dimensions between Home and About, including async account loading. */
+/* All screens share the same responsive header dimensions, regardless of account or navigation state. */
 #header-controls.stable-header-controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

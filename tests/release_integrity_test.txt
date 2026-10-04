@@ -1032,7 +1032,7 @@ Deno.test("visual component styles isolate headers, preserve fonts and use defin
   }
 });
 
-Deno.test("home navigation reserves its final size before account and Analytics access arrive", () => {
+Deno.test("all screens reserve the same header size before account and Analytics access arrive", () => {
   const ui = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
   const headerSource = ui.slice(ui.indexOf("function setHeaderControls("), ui.indexOf("function applyTheme("));
   const classes = new Set<string>();
@@ -1083,12 +1083,25 @@ Deno.test("home navigation reserves its final size before account and Analytics 
       && controls.innerHTML.slice(0, controls.innerHTML.indexOf(`<div class="header-controls-visible">`))
         === initialReservation, "Returning from About must preserve the Home header dimensions.");
   }
-  for (const screen of ["game", "museum", "stats", "friends", "login"]) {
-    render("player", true, screen);
-    assert(!classes.has("stable-header-controls") && !controls.innerHTML.includes("header-controls-reserve"),
-      `${screen}: the sizing layer must not add space to other screens.`);
+  for (const screen of ["game", "museum", "stats", "friends", "login", "practice-menu",
+    "practice", "challenge", "analytics", "unknown"]) {
+    for (const [user, allowed] of [[null, false], ["player", false], ["player", true]] as const) {
+      render(user, allowed, screen);
+      const split = controls.innerHTML.indexOf(`<div class="header-controls-visible">`);
+      assert(classes.has("stable-header-controls") && split > 0
+        && controls.innerHTML.slice(0, split) === initialReservation,
+        `${screen}: every account and screen must retain the same invisible sizing layer.`);
+      const visible = controls.innerHTML.slice(split);
+      assert(!visible.includes("showAnalyticsDashboard()") && !visible.includes("logout()"),
+        `${screen}: reserving the full menu must not add Home-only account/admin actions.`);
+      if (["museum", "stats", "friends", "analytics"].includes(screen)) {
+        assert(visible.includes("navigateBackOrHome") && !visible.includes("showLoginModal()")
+          && !visible.includes("showStatsDashboard()"), `${screen}: retain only its Back control.`);
+      }
+      if (["login", "unknown"].includes(screen)) assert(visible === `<div class="header-controls-visible"></div>`,
+        "Login and unsupported screens must reserve space without exposing navigation controls.");
+    }
   }
-  assert(controls.innerHTML === "", "The login screen must still have no navigation controls.");
 
   const css = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
   assert(/#header-controls\.stable-header-controls\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*width:\s*100%;/.test(css)
@@ -1098,6 +1111,44 @@ Deno.test("home navigation reserves its final size before account and Analytics 
     && /\.header-account-reserve\s*\{[^}]*width:\s*150px;/.test(css)
     && /\.stable-header-controls\s+\.btn-account\s*\{[^}]*max-width:\s*150px;[^}]*white-space:\s*nowrap;/.test(css),
     "Hidden sizing must remain in layout and cover the bounded real account control.");
+});
+
+Deno.test("header reservations stay identical across all routes in English, Portuguese and Spanish", () => {
+  const ui = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const i18n = Deno.readTextFileSync(`${javascriptRoot}/i18n.${javascriptExtension}`);
+  const state = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const header = ui.slice(ui.indexOf("function setHeaderControls("), ui.indexOf("function applyTheme("));
+  const escape = state.slice(state.indexOf("function escapeHtml("), state.indexOf("let fullDatabase"));
+  for (const language of ["en", "pt-BR", "es"]) {
+    const translate = new Function("window", "localStorage", "navigator", "PHYLOSAUR_STORAGE_KEYS",
+      `${i18n}; return t;`)(
+      { location: { search: "", href: "https://example.test/" } },
+      { getItem: () => null, setItem() {} }, { language, languages: [language] }, { language: "language" },
+    );
+    const controls = { innerHTML: "", classList: { toggle(_name: string, enabled: boolean) {
+      assert(enabled, "Every screen must retain stable header sizing.");
+    } } };
+    const render = new Function("document", "t", `${escape}
+      let currentUser = null, isAnalyticsAdmin = false;
+      ${header}; return (screen, user, admin) => {
+        currentUser = user; isAnalyticsAdmin = admin; setHeaderControls(screen);
+      };`)( { getElementById: () => controls }, translate );
+    let reservation = "";
+    for (const screen of ["difficulty", "museum", "stats", "about", "game", "practice-menu",
+      "practice", "friends", "challenge", "analytics", "login"]) {
+      for (const [user, admin] of [[null, false], ["player", false],
+        ["A very long account name & <special characters>", true]] as const) {
+        render(screen, user, admin);
+        const split = controls.innerHTML.indexOf(`<div class="header-controls-visible">`);
+        const measured = controls.innerHTML.slice(0, split);
+        if (!reservation) reservation = measured;
+        assert(split > 0 && measured === reservation
+          && measured.includes(translate("nav.museum")) && measured.includes(translate("nav.stats"))
+          && measured.includes(`aria-hidden="true" inert`) && !measured.includes("onclick="),
+          `${language}/${screen}: route or account state changed the localized header sizing layer.`);
+      }
+    }
+  }
 });
 
 Deno.test("Statistics columns fit intermediate viewports before switching to desktop layout", () => {
@@ -2226,6 +2277,171 @@ Deno.test("Museum cache writes, filtering and offscreen rendering avoid repeated
   assert(styleSource.includes("content-visibility: auto") &&
     styleSource.includes("contain-intrinsic-size: auto 235px"),
     "Offscreen Museum cards must defer layout and painting work.");
+});
+
+function buildImageLightboxRuntime() {
+  const ui = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const main = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
+  const state = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const source = ui.slice(ui.indexOf("function isTopAppOverlay("), ui.indexOf("let cladeInfoRequestId"));
+  const cleanup = main.slice(main.indexOf("function closeTransientRouteOverlays("),
+    main.indexOf("async function renderFallbackRoute("));
+  const navigation = main.slice(main.indexOf("function setAppRoute("),
+    main.indexOf("function closeTransientRouteOverlays("));
+  const escape = state.slice(state.indexOf("function escapeHtml("), state.indexOf("let fullDatabase"));
+  return new Function(`${escape}
+    const handlers = new Set(), timers = new Map(); let nextTimer = 0;
+    class Element {
+      constructor() { this.parent = null; this.children = []; this.attributes = {}; this.events = {};
+        this.style = {}; this.dataset = {}; this.className = ""; this.id = ""; this.disabled = false; }
+      get isConnected() { return this === body || Boolean(this.parent?.isConnected); }
+      appendChild(node) { this.children.push(node); node.parent = this; }
+      remove() { if (this.parent) this.parent.children = this.parent.children.filter(node => node !== this);
+        this.parent = null; }
+      setAttribute(key, value) { this.attributes[key] = value; }
+      getAttribute(key) { return this.attributes[key]; }
+      contains(node) { return node === this || this.children.some(child => child.contains(node)); }
+      focus(options) { document.activeElement = this; this.focusOptions = options; }
+      addEventListener(name, callback) { this.events[name] = callback; }
+      set innerHTML(value) { this.html = value; this.children = [];
+        for (const match of value.matchAll(/<(button|a)\\b([^>]*)>/g)) {
+          const child = new Element(); child.tag = match[1];
+          for (const attribute of match[2].matchAll(/([\\w-]+)="([^"]*)"/g)) {
+            child.setAttribute(attribute[1], attribute[2]);
+            if (attribute[1] === "class") child.className = attribute[2];
+          }
+          this.appendChild(child);
+        }
+      }
+      get innerHTML() { return this.html || ""; }
+      querySelectorAll(selector) { const all = this.children.flatMap(child => [child, ...child.querySelectorAll("*")]);
+        if (selector === "*") return all;
+        if (selector === "a") return all.filter(child => child.tag === "a");
+        if (selector.startsWith(".")) return all.filter(child => child.className.split(" ").includes(selector.slice(1)));
+        return all.filter(child => !child.disabled && !child.getAttribute("hidden") && ["button", "a"].includes(child.tag));
+      }
+      querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
+    }
+    const HTMLElement = Element, body = new Element(); body.style.overflow = "auto";
+    const opener = new Element(); body.appendChild(opener);
+    const document = { body, activeElement: opener, createElement: () => new Element(),
+      getElementById: id => body.children.find(node => node.id === id) || null,
+      querySelectorAll(selector) {
+        if (selector.startsWith("[aria-modal")) return body.children.filter(node => node.getAttribute("aria-modal") === "true");
+        const classes = selector.split(",").map(value => value.trim().slice(1));
+        return body.children.filter(node => classes.some(name => node.className.split(" ").includes(name)));
+      },
+      addEventListener(name, callback) { if (name === "keydown") handlers.add(callback); },
+      removeEventListener(name, callback) { if (name === "keydown") handlers.delete(callback); }
+    };
+    const t = (key, values) => values?.name || key;
+    const setTimeout = callback => { const id = ++nextTimer; timers.set(id, callback); return id; };
+    const clearTimeout = id => timers.delete(id);
+    let isRestoringAppRoute = false, appRouteRestoreGeneration = 0;
+    const normalizeAppRoute = value => value, getCurrentAppRoute = () => "/game/practice/normal";
+    const buildAppRouteUrl = value => value;
+    const window = { history: { state: {}, pushState() {}, replaceState() {} } };
+    ${source}
+    ${cleanup}
+    ${navigation}
+    return { openImageLightbox, showModal, closeTransientRouteOverlays, setAppRoute, document, body, opener, handlers,
+      viewer: () => document.getElementById("image-lightbox"),
+      flush() { for (const [id, callback] of [...timers]) { timers.delete(id); callback(); } },
+      key(key, shiftKey = false) {
+        const event = { key, shiftKey, prevented: false, stopped: false,
+          preventDefault() { this.prevented = true; }, stopImmediatePropagation() { this.stopped = true; } };
+        for (const callback of [...handlers]) { if (handlers.has(callback)) callback(event); if (event.stopped) break; }
+        return event;
+      }
+    };`)();
+}
+
+Deno.test("result image viewer traps keyboard focus, replaces cleanly and respects newer dialogs", async () => {
+  for (const credit of [false, true]) {
+    const runtime = buildImageLightboxRuntime();
+    runtime.openImageLightbox("https://example.test/image.png", `Dino <name> "quoted"`,
+      credit ? "https://example.test/source" : "");
+    const viewer = runtime.viewer();
+    const close = viewer.querySelector(".image-lightbox-close");
+    const last = credit ? viewer.querySelector("a") : close;
+    assert(viewer.getAttribute("role") === "dialog" && viewer.getAttribute("aria-modal") === "true"
+      && runtime.document.activeElement === close && runtime.body.style.overflow === "hidden"
+      && viewer.innerHTML.includes("&lt;name&gt;") && viewer.innerHTML.includes("&quot;quoted&quot;"),
+      "The viewer must have a focused close button and escaped specimen text/attributes.");
+    assert(runtime.key("Tab", true).prevented && runtime.document.activeElement === last,
+      "Shift+Tab must wrap from close to the last enabled viewer control.");
+    assert(runtime.key("Tab").prevented && runtime.document.activeElement === close,
+      "Tab must wrap back to close, including viewers without a credit link.");
+    runtime.opener.focus(); runtime.key("Tab");
+    assert(runtime.document.activeElement === close, "Escaped keyboard focus must return to the viewer.");
+    if (credit) {
+      let stopped = false; last.events.click({ stopPropagation() { stopped = true; } });
+      assert(stopped && viewer.isConnected, "Activating the credit must not dismiss the image.");
+    }
+    runtime.openImageLightbox("replacement", "New image");
+    const replacement = runtime.viewer();
+    assert(!viewer.isConnected && replacement !== viewer && runtime.handlers.size === 1,
+      "Replacing the viewer must remove its old keyboard handler.");
+    viewer.dismissAppOverlay();
+    assert(runtime.handlers.size === 1 && runtime.body.style.overflow === "hidden",
+      "Repeated stale dismissal must not unlock or close the replacement.");
+    const notice = runtime.showModal({ title: "Newer notice" }); runtime.flush();
+    runtime.openImageLightbox("covered replacement", "Must not replace");
+    assert(runtime.viewer() === replacement, "Covered viewers must not replace or steal focus from a newer dialog.");
+    const escapeNotice = runtime.key("Escape");
+    assert(await notice === null && escapeNotice.stopped && replacement.isConnected
+      && runtime.document.activeElement === replacement.querySelector(".image-lightbox-close"),
+      "Escape must close only the newer notice and return focus to the viewer.");
+    const escapeViewer = runtime.key("Escape");
+    assert(escapeViewer.stopped && !replacement.isConnected && runtime.handlers.size === 0
+      && runtime.document.activeElement === runtime.opener && runtime.opener.focusOptions.preventScroll
+      && runtime.body.style.overflow === "auto", "Viewer dismissal must restore its original opening control and scrolling.");
+  }
+});
+
+Deno.test("result image viewer route cleanup releases listeners and nested scrolling without stealing focus", async () => {
+  const runtime = buildImageLightboxRuntime();
+  const lower = runtime.showModal({ title: "Lower dialog" }); runtime.flush();
+  runtime.openImageLightbox("image", "Dinosaur", "source");
+  const old = runtime.viewer();
+  const upper = runtime.showModal({ title: "Upper dialog" }); runtime.flush();
+  runtime.opener.focus();
+  runtime.closeTransientRouteOverlays();
+  assert(await lower === null && await upper === null && !old.isConnected && !runtime.viewer()
+    && runtime.handlers.size === 0 && runtime.body.style.overflow === "auto"
+    && runtime.document.activeElement === runtime.opener,
+    "Navigation must dismiss the entire dialog stack in reverse order without focusing old content.");
+  old.dismissAppOverlay();
+  runtime.openImageLightbox("image", "Dinosaur");
+  runtime.viewer().events.click();
+  assert(!runtime.viewer() && runtime.handlers.size === 0 && runtime.body.style.overflow === "auto",
+    "Click dismissal must use the same complete, idempotent cleanup.");
+  runtime.openImageLightbox("image", "Dinosaur");
+  runtime.opener.focus(); runtime.viewer().dismissAppOverlay();
+  assert(runtime.document.activeElement === runtime.opener, "Dismissal must not steal focus that has moved elsewhere.");
+  runtime.openImageLightbox("image", "Dinosaur");
+  const notice = runtime.showModal({ title: "Covering notice" }); runtime.flush();
+  runtime.opener.focus(); runtime.setAppRoute("/");
+  assert(await notice === null && !runtime.viewer() && runtime.handlers.size === 0
+    && runtime.body.style.overflow === "auto" && runtime.document.activeElement === runtime.opener,
+    "Direct pushState navigation must clean up the viewer and covering dialogs, not only browser Back.");
+});
+
+Deno.test("result illustrations expose a semantic keyboard opening control with visible focus", () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const state = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const css = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const render = source.slice(source.indexOf("function buildResultMediaMarkup("),
+    source.indexOf("function buildResultMediaSlotMarkup("));
+  const escape = state.slice(state.indexOf("function escapeHtml("), state.indexOf("let fullDatabase"));
+  const markup = new Function("t", `${escape}; ${render}; return buildResultMediaMarkup;`)(
+    (_key: string, values: any) => values.name)(`Dino <name> "quoted"`, { url: `image"unsafe`, credit: "Credit" });
+  assert(markup.includes(`class="victory-media-image-button" type="button"`)
+    && markup.includes(`aria-label="Dino &lt;name&gt; &quot;quoted&quot;"`)
+    && markup.includes(`src="image&quot;unsafe"`)
+    && /panel.querySelector\([^)]*victory-media-image-button/.test(source)
+    && css.includes(".victory-media-image-button:focus-visible"),
+    "Result images need an escaped, named native button and a visible keyboard focus indicator.");
 });
 
 Deno.test("route dismissal settles dialogs, removes keyboard handlers and restores nested scroll locks", async () => {
@@ -3882,6 +4098,215 @@ Deno.test("Museum dismissal animates once and restores scroll and card focus", a
       assert(replacedRoute === (depth ? "" : "/museum"), "Direct links must close to the Museum.");
     }
   }
+});
+
+function buildServiceWorkerRuntime() {
+  const source = Deno.readTextFileSync(localSourceLayout ? "game/sw_service_worker.txt" : "sw.js");
+  const base = "https://example.test/game/";
+  const stores = new Map<string, Map<string, Response>>();
+  const listeners = new Map<string, Function>();
+  const failures: any = { fetchPath: "", fetchStatus: 0, putPath: "", open: false, match: false,
+    optional: false, deletion: false, network: null, write: null };
+  const counters = { skip: 0, claim: 0, puts: 0, fetches: [] as string[], deleted: [] as string[] };
+  const key = (request: any) => new URL(typeof request === "string" ? request : request.url, base).href;
+  const caches = {
+    async open(name: string) {
+      if (failures.open) throw new Error("Cache storage unavailable");
+      if (!stores.has(name)) stores.set(name, new Map());
+      return {
+        async put(request: any, response: Response) {
+          const path = new URL(key(request)).pathname;
+          if (failures.putPath && path.endsWith(failures.putPath)) throw new Error("Quota exceeded");
+          if (failures.write) await failures.write();
+          counters.puts++; stores.get(name)!.set(key(request), response);
+        },
+        async match(request: any) {
+          if (failures.match) throw new Error("Cache read refused");
+          return stores.get(name)!.get(key(request))?.clone();
+        },
+      };
+    },
+    keys: async () => [...stores.keys()],
+    async delete(name: string) {
+      counters.deleted.push(name);
+      if (failures.deletion) throw new Error("Deletion refused");
+      return stores.delete(name);
+    },
+  };
+  const self = { location: { origin: new URL(base).origin },
+    addEventListener: (name: string, listener: Function) => listeners.set(name, listener),
+    skipWaiting: async () => { counters.skip++; }, clients: { claim: async () => { counters.claim++; } } };
+  class WorkerRequest {
+    url: string; cache: string;
+    constructor(path: string, options: any) { this.url = key(path); this.cache = options.cache; }
+  }
+  const fetch = async (request: any) => {
+    const url = key(request); counters.fetches.push(url);
+    if (failures.network) return await failures.network(request);
+    if (failures.optional && /(?:icon|apple-touch)/.test(url)) throw new Error("Icon unavailable");
+    if (failures.fetchPath && url.endsWith(failures.fetchPath)) {
+      if (!failures.fetchStatus) throw new TypeError("Connection lost");
+      return new Response("Missing file", { status: failures.fetchStatus });
+    }
+    assert(request.cache === "reload", "Installation must bypass the HTTP cache.");
+    return new Response(url);
+  };
+  const runtime = new Function("self", "caches", "fetch", "Request", `${source};
+    return { version: CACHE_VERSION, core: CORE_ASSETS, optional: OPTIONAL_ASSETS };`)(self, caches, fetch, WorkerRequest);
+  const event = (name: string, request?: any) => {
+    const work: Promise<any>[] = [];
+    let response: Promise<Response> | undefined;
+    let dispatching = true;
+    listeners.get(name)!({ request,
+      waitUntil(promise: Promise<any>) {
+        assert(dispatching, "Background work must be registered synchronously during dispatch.");
+        work.push(promise);
+      },
+      respondWith(promise: Promise<Response>) { response = promise; },
+    });
+    dispatching = false;
+    return { work, response };
+  };
+  const seed = (name: string, path: string, text: string) => {
+    if (!stores.has(name)) stores.set(name, new Map());
+    stores.get(name)!.set(key(path), new Response(text));
+  };
+  const request = (path: string, destination = "script", mode = "same-origin", method = "GET") =>
+    ({ url: key(path), destination, mode, method });
+  seed("phylosaur-shell-v103", "./offline.html", "Previous offline page");
+  seed("phylosaur-media", "./other.png", "Unrelated media");
+  seed("another-app", "./other.js", "Unrelated app");
+  return { ...runtime, stores, failures, counters, event, seed, request, key };
+}
+
+Deno.test("service worker rejects incomplete essential installs and retains the previous release", async () => {
+  for (const failure of ["network", "404", "500", "write", "open"]) {
+    const runtime = buildServiceWorkerRuntime();
+    if (["network", "404", "500"].includes(failure)) {
+      runtime.failures.fetchPath = "js/main.js";
+      runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
+    }
+    if (failure === "write") runtime.failures.putPath = "style.css";
+    if (failure === "open") runtime.failures.open = true;
+    const install = runtime.event("install");
+    const result = await Promise.allSettled(install.work);
+    assert(result.some(item => item.status === "rejected") && runtime.counters.skip === 0
+      && runtime.counters.claim === 0 && runtime.stores.has("phylosaur-shell-v103")
+      && !runtime.stores.has(runtime.version),
+      `${failure}: failed preparation must not promote a partial shell or delete the previous cache.`);
+  }
+  const runtime = buildServiceWorkerRuntime();
+  let resolve!: (value: Response) => void;
+  let settled = false;
+  const delayed = new Promise<Response>(yes => { resolve = yes; });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css") ? 404 : 200 });
+  const install = runtime.event("install");
+  const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
+  for (let index = 0; index < 12; index++) await Promise.resolve();
+  assert(!settled && !runtime.counters.deleted.includes(runtime.version),
+    "Failure cleanup must wait for late essential writers instead of deleting underneath them.");
+  resolve(new Response("Last script")); await work;
+  assert(!runtime.stores.has(runtime.version) && runtime.stores.has("phylosaur-shell-v103")
+    && runtime.counters.skip === 0, "No late writer may leave a failed release cache behind.");
+});
+
+Deno.test("service worker accepts missing optional icons and only cleans owned shell caches after successful install", async () => {
+  for (const deletionFails of [false, true]) {
+    const runtime = buildServiceWorkerRuntime();
+    runtime.failures.optional = true;
+    await Promise.all(runtime.event("install").work);
+    const current = runtime.stores.get(runtime.version)!;
+    assert(runtime.counters.skip === 1 && runtime.core.every((path: string) => current.has(runtime.key(path)))
+      && runtime.optional.every((path: string) => !current.has(runtime.key(path)))
+      && runtime.stores.has("phylosaur-shell-v103"),
+      "Optional icons must not block a complete shell or cause pre-activation deletion.");
+    runtime.failures.deletion = deletionFails;
+    await Promise.all(runtime.event("activate").work);
+    assert(runtime.counters.claim === 1 && runtime.stores.has(runtime.version)
+      && runtime.stores.has("phylosaur-media") && runtime.stores.has("another-app")
+      && JSON.stringify(runtime.counters.deleted) === JSON.stringify(["phylosaur-shell-v103"])
+      && runtime.stores.has("phylosaur-shell-v103") === deletionFails,
+      "Activation may clean old shells only; refused deletion must not prevent a ready worker from claiming clients.");
+  }
+});
+
+Deno.test("service worker delivers network responses despite cache failures and tracks background writes", async () => {
+  for (const kind of ["navigation", "script", "image"]) {
+    for (const failure of ["open", "read", "write", "pending-write", "http-error"]) {
+      const runtime = buildServiceWorkerRuntime();
+      const path = kind === "navigation" ? "./" : kind === "script" ? "./js/main.js" : "./image.png";
+      const request = runtime.request(path, kind === "navigation" ? "document" : kind,
+        kind === "navigation" ? "navigate" : "same-origin");
+      runtime.failures.open = failure === "open";
+      runtime.failures.match = failure === "read";
+      runtime.failures.putPath = failure === "write" ? new URL(request.url).pathname : "";
+      let resolveWrite!: () => void;
+      let writeFinished = false;
+      if (failure === "pending-write") {
+        const pending = new Promise<void>(yes => { resolveWrite = yes; });
+        runtime.failures.write = () => pending;
+      }
+      const response = new Response("Online response", { status: failure === "http-error" ? 500 : 200 });
+      runtime.failures.network = async () => response;
+      const fetched = runtime.event("fetch", request);
+      assert(fetched.work.length === 1 && fetched.response, "Every intercepted network/cache task needs waitUntil.");
+      const background = Promise.all(fetched.work).then(() => { writeFinished = true; });
+      const delivered = await fetched.response;
+      assert(delivered === response && await delivered.text() === "Online response",
+        `${kind}/${failure}: cache trouble must not replace a valid online response, including HTTP error statuses.`);
+      if (failure === "pending-write") {
+        assert(!writeFinished, "A pending cache write must not delay responding to the page.");
+        resolveWrite();
+      }
+      await background;
+      assert(failure !== "http-error" || runtime.counters.puts === 0, "HTTP errors must never overwrite cached assets.");
+    }
+  }
+});
+
+Deno.test("service worker handles cache hits, background revalidation, offline misses and unrelated requests", async () => {
+  const runtime = buildServiceWorkerRuntime();
+  const request = runtime.request("./image.png", "image");
+  runtime.seed(runtime.version, "./image.png", "Cached image");
+  let resolve!: (value: Response) => void;
+  let finished = false;
+  runtime.failures.network = () => new Promise<Response>(yes => { resolve = yes; });
+  const hit = runtime.event("fetch", request);
+  const background = Promise.all(hit.work).then(() => { finished = true; });
+  assert(await (await hit.response!).text() === "Cached image" && !finished,
+    "Cached images must respond immediately while waitUntil retains their network refresh.");
+  resolve(new Response("Updated image")); await background;
+  assert(await runtime.stores.get(runtime.version)!.get(runtime.key(request))!.clone().text() === "Updated image",
+    "Background refresh must finish writing its new response.");
+  runtime.failures.network = async () => { throw new TypeError("Offline"); };
+  runtime.seed(runtime.version, "./offline.html", "Current offline page");
+  runtime.seed(runtime.version, "./js/main.js", "Cached script");
+  for (const [path, destination, mode, expected, status] of [
+    ["./", "document", "navigate", "Current offline page", 200],
+    ["./js/main.js", "script", "same-origin", "Cached script", 200],
+    ["./image.png", "image", "same-origin", "Updated image", 200],
+    ["./missing.js", "script", "same-origin", "Asset unavailable offline.", 504],
+  ] as const) {
+    const event = runtime.event("fetch", runtime.request(path, destination, mode));
+    const response = await event.response!; await Promise.all(event.work);
+    assert(response.status === status && await response.text() === expected, "Offline fallback must use the current cache only.");
+  }
+  runtime.failures.open = true;
+  for (const mode of ["navigate", "same-origin"]) {
+    const event = runtime.event("fetch", runtime.request("./missing.js", "script", mode));
+    assert((await event.response!).status === (mode === "navigate" ? 503 : 504),
+      "Unavailable network and storage must return a controlled fallback, not reject respondWith.");
+    await Promise.all(event.work);
+  }
+  const calls = runtime.counters.fetches.length;
+  for (const request of [runtime.request("./api", "", "same-origin", "POST"),
+    { ...runtime.request("./image.png", "image"), url: "https://other.test/image.png" },
+    runtime.request("./unhandled", "")]) {
+    const event = runtime.event("fetch", request);
+    assert(!event.response && event.work.length === 0, "Non-GET, cross-origin and unrelated requests must pass through.");
+  }
+  assert(runtime.counters.fetches.length === calls, "Unrelated requests must not be fetched or cached by this worker.");
 });
 
 Deno.test("service worker cache version and critical release sources exist", () => {
