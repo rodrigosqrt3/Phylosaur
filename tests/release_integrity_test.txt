@@ -42,6 +42,151 @@ Deno.test("browser JavaScript parses individually and in production order", () =
   new Function(combined);
 });
 
+Deno.test("session credentials stay private, scoped and compatible with owned legacy saves", async () => {
+  if (!localSourceLayout) return;
+  const source = Deno.readTextFileSync("game/index.txt");
+  const helperSource = source.slice(source.indexOf("function bytesToBase64Url("),
+    source.indexOf("async function getAuthenticatedUserId("))
+    .replace(/: Record<string, unknown>/g, "")
+    .replace(/: string \| null/g, "")
+    .replace(/: (?:Uint8Array|KeyUsage\[\]|string|unknown)/g, "");
+  const helpers = new Function(`${helperSource}; return {
+    createSessionToken, verifySessionToken, createMuseumProof, verifyMuseumProof, canAccessGameSession
+  };`)();
+  const id = "00000000-0000-4000-8000-000000000001";
+  const otherId = "00000000-0000-4000-8000-000000000002";
+  const secret = "test-only-server-secret";
+  const guest = { id, user_id: null, visitor_id: "visitor-a" };
+  const owned = { ...guest, user_id: "owner-a" };
+  const token = await helpers.createSessionToken(id, secret);
+  assert(/^v1\.[A-Za-z0-9_-]{43}$/.test(token), "Session credentials must use signed tokens.");
+  assert(await helpers.verifySessionToken(id, token, secret)
+    && !await helpers.verifySessionToken(otherId, token, secret)
+    && !await helpers.verifySessionToken(id, token, "another-secret"),
+    "A session credential must not authorize another session or server secret.");
+  for (const invalid of [id, "", null, "v1.invalid", token.slice(0, -1), token + "extra"]) {
+    assert(!await helpers.verifySessionToken(id, invalid, secret), "Malformed credentials must be rejected.");
+  }
+  const museumProof = await helpers.createMuseumProof(id, secret);
+  assert(!await helpers.verifySessionToken(id, museumProof, secret)
+    && !await helpers.verifyMuseumProof(id, token, secret),
+    "Museum and gameplay signatures must not be interchangeable.");
+  const access = (record: any, credential: any, user: any, visitor: any) =>
+    helpers.canAccessGameSession(record, credential, secret, user, visitor);
+  assert(await access(guest, token, null, null) && await access(owned, token, null, null),
+    "Private credentials must support guests and sessions subsequently claimed by an account.");
+  assert(await access(guest, undefined, null, "visitor-a")
+    && await access(owned, undefined, "owner-a", null),
+    "Existing sessions must be recoverable by their original guest browser or verified account.");
+  assert(!await access(guest, undefined, null, null)
+    && !await access(guest, undefined, "owner-a", "visitor-b")
+    && !await access(owned, undefined, "owner-b", "visitor-a")
+    && !await access(owned, undefined, null, "visitor-a")
+    && !await access(owned, "invalid-token", "owner-a", "visitor-a"),
+    "Knowing a UUID or visitor ID must not bypass account ownership or an invalid credential.");
+
+  const gateStart = source.indexOf("    // Protect every session-scoped endpoint");
+  const gate = source.slice(gateStart, source.indexOf("    if (action === \"analytics_access\")", gateStart));
+  let writes = 0;
+  let reads = 0;
+  const query: any = {
+    select() { reads++; return this; }, eq() { return this; },
+    maybeSingle: async () => ({ data: { ...owned, expires_at: "2099-01-01T00:00:00Z" }, error: null }),
+    update() { writes++; return this; },
+  };
+  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+  const authorize = new AsyncFunction("action", "body", "admin", "serviceRoleKey", "getRequestUserId",
+    "visitorId", "canAccessGameSession", "jsonResponse", `${gate}; return { status: 200 };`);
+  for (const action of ["state", "guess", "hint", "give_up", "challenge_status"]) {
+    const run = (body: any, user: string | null = "owner-b") => authorize(action, body,
+      { from: () => query }, secret, async () => user, "visitor-a", helpers.canAccessGameSession,
+      (body: any, status = 200) => ({ ...body, status }));
+    assert((await run({ sessionId: id })).status === 403,
+      `${action}: a leaked opponent UUID must be denied before any action is reached.`);
+    assert((await run({ sessionId: id, sessionToken: token })).status === 200,
+      `${action}: the private token must authorize the original session.`);
+    assert((await run({ sessionId: id }, "owner-a")).status === 200,
+      `${action}: verified ownership must support legacy clients.`);
+    assert((await run({ sessionId: "not-a-uuid" })).status === 400,
+      `${action}: malformed session references must be rejected.`);
+    query.maybeSingle = async () => ({ data: { ...owned, expires_at: "2000-01-01T00:00:00Z" }, error: null });
+    assert((await run({ sessionId: id, sessionToken: token })).status === 410,
+      `${action}: expired credentials must not reach reads or mutations.`);
+    query.maybeSingle = async () => ({ data: { ...owned, expires_at: "invalid-date" }, error: null });
+    assert((await run({ sessionId: id, sessionToken: token })).status === 410,
+      `${action}: invalid expiry must fail closed.`);
+    query.maybeSingle = async () => ({ data: null, error: null });
+    assert((await run({ sessionId: id, sessionToken: token })).status === 403,
+      `${action}: a missing session must not be authorized by a token.`);
+    query.maybeSingle = async () => ({ data: { ...guest, expires_at: "2099-01-01T00:00:00Z" }, error: null });
+    assert((await run({ sessionId: id }, null)).status === 200,
+      `${action}: the original guest browser must recover old saves.`);
+    query.maybeSingle = async () => ({ data: { ...owned, expires_at: "2099-01-01T00:00:00Z" }, error: null });
+  }
+  assert(writes === 0 && reads > 0, "Authorization must only read ownership, never mutate sessions.");
+  const standings = source.slice(source.indexOf("      const participants = challengeSessions.map("),
+    source.indexOf("      if (requesterComplete)", source.indexOf("      const participants = challengeSessions.map(")));
+  assert(!/\bid:\s*item\.id/.test(standings) && !standings.includes("sessionToken"),
+    "Challenge participants must not expose private session references or credentials.");
+  for (const action of ["state", "create_challenge", "join_challenge", "start"]) {
+    const start = source.indexOf(`    if (action === "${action}")`);
+    const end = source.indexOf("    if (action ===", start + 1);
+    assert(source.slice(start, end).includes("sessionToken: await createSessionToken"),
+      `${action}: newly created or recovered sessions must return their private credential.`);
+  }
+  const museum = source.slice(source.indexOf("      if (!isUnlocked && Array.isArray(body.proofSessionIds))"),
+    source.indexOf("      if (!isUnlocked) {", source.indexOf("      if (!isUnlocked && Array.isArray(body.proofSessionIds))")));
+  assert(museum.includes("canAccessGameSession(candidate") && museum.includes("sessionCredentials"),
+    "Museum UUID-based proofs must be checked for ownership or a signed session credential.");
+  const migration = Deno.readTextFileSync("game/supabase_session_security_migration.txt");
+  for (const table of ["game_sessions", "shared_challenges"]) {
+    assert(migration.includes(`alter table public.${table} enable row level security`)
+      && migration.includes(`revoke all on table public.${table} from public, anon, authenticated`)
+      && migration.includes(`grant all on table public.${table} to service_role`),
+      `${table}: deployment must revoke direct browser access while retaining Edge access.`);
+  }
+});
+
+Deno.test("browser session credentials survive reloads and never attach to unrelated references", () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/api.${javascriptExtension}`);
+  const helpersSource = source.slice(source.indexOf("const gameSessionCredentials = new Map();"),
+    source.indexOf("async function callGameApi("));
+  const storage = new Map<string, string>();
+  const localStorage = { getItem: (key: string) => storage.get(key) ?? null,
+    setItem: (key: string, value: string) => { storage.set(key, value); } };
+  const build = (store = localStorage) => new Function("localStorage", "PHYLOSAUR_STORAGE_KEYS",
+    `${helpersSource}; return { rememberGameSessionToken, getGameSessionToken, withGameSessionCredentials };`)(
+    store, { sessionCredentialPrefix: "credential:" });
+  let runtime = build();
+  const token = `v1.${"A".repeat(43)}`;
+  runtime.rememberGameSessionToken({ sessionId: "session-a", sessionToken: token });
+  runtime = build();
+  assert(runtime.getGameSessionToken("session-a") === token,
+    "Reloading the page must retain the private credential separately from existing UUID saves.");
+  const original = { sessionId: "session-a", code: "RAPTOR" };
+  const request = runtime.withGameSessionCredentials(original);
+  assert(request.sessionToken === token && !Object.hasOwn(original, "sessionToken")
+    && !runtime.withGameSessionCredentials({ sessionId: "session-b" }).sessionToken,
+    "Only the matching session credential may be attached, without mutating caller payloads.");
+  const proof = runtime.withGameSessionCredentials({ proofSessionIds: ["session-a", "session-b"] });
+  assert(JSON.stringify(proof.sessionCredentials) === JSON.stringify({ "session-a": token }),
+    "Museum requests must include only the credentials for the listed proof sessions.");
+  assert(runtime.withGameSessionCredentials({}).sessionCredentials === undefined,
+    "Unrelated actions must not receive private credentials.");
+  runtime.rememberGameSessionToken({ sessionId: "session-b", sessionToken: "malformed" });
+  assert(runtime.getGameSessionToken("session-b") === null, "Invalid API credentials must not be persisted.");
+  runtime = build({ getItem() { throw new Error("Storage blocked"); },
+    setItem() { throw new Error("Storage full"); } });
+  runtime.rememberGameSessionToken({ sessionId: "session-a", sessionToken: token });
+  assert(runtime.getGameSessionToken("session-a") === token
+    && runtime.getGameSessionToken("session-b") === null,
+    "Credential storage failures must retain in-memory access without crashing.");
+  const apiCall = source.slice(source.indexOf("async function callGameApi("),
+    source.indexOf("let analyticsAccessRequest"));
+  assert(apiCall.includes("withGameSessionCredentials(payload)") && apiCall.includes("rememberGameSessionToken(data)"),
+    "All gameplay actions must use the shared credential transport.");
+});
+
 Deno.test("all game JSON files are valid", () => {
   for (const entry of Deno.readDirSync(gameRoot)) {
     if (!entry.isFile || !entry.name.endsWith(".json")) continue;
@@ -291,6 +436,185 @@ Deno.test("curated Museum image replacements and centered close controls remain 
     "Museum close marks must stay geometrically centered inside their circular controls.");
 });
 
+Deno.test("mobile Museum close controls stay above a symmetric full-width specimen heading", () => {
+  const source = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const mobileStart = source.indexOf("@media (max-width: 780px)");
+  const narrowStart = source.indexOf("@media (max-width: 420px)");
+  const rules = (selector: string, start: number) => {
+    assert(start >= 0, "Museum responsive breakpoint is missing.");
+    const selectorStart = source.indexOf(`${selector} {`, start);
+    assert(selectorStart >= 0, `Museum layout rule is missing: ${selector}`);
+    const declarations = source.slice(source.indexOf("{", selectorStart) + 1,
+      source.indexOf("}", selectorStart)).replace(/\/\*[\s\S]*?\*\//g, "");
+    return Object.fromEntries(declarations.split(";").filter(value => value.includes(":"))
+      .map(value => value.trim().split(/:\s*/)));
+  };
+  const pixels = (value: string) => value.split(/\s+/).map(part => Number(part.replace("px", "")));
+  // The stylesheet preserves CRLF in the source layout.
+  const closeSize = source.match(/\.museum-entry-close,\s*\.museum-image-viewer-close\s*\{[^}]*width:\s*(\d+)px;[^}]*height:\s*(\d+)px;/);
+  assert(closeSize && Number(closeSize[1]) >= 44 && closeSize[1] === closeSize[2],
+    "The close control must remain a square, touch-sized target.");
+  for (const width of [320, 375, 390, 420, 421, 600, 780]) {
+    const start = width <= 420 ? narrowStart : mobileStart;
+    const padding = pixels(rules(".museum-entry-dialog", start).padding);
+    const margin = pixels(rules(".museum-entry-header", start).margin);
+    const mobileClose = rules(".museum-entry-close", mobileStart);
+    const closeRight = pixels(rules(".museum-entry-close", start).right)[0];
+    assert(padding.length === 3 && padding.every(Number.isFinite),
+      `${width}px: Museum dialog must reserve explicit top, symmetric side and bottom padding.`);
+    assert(padding[0] >= pixels(mobileClose.top)[0] + Number(closeSize[2]) + 10,
+      `${width}px: the close control overlaps the specimen heading.`);
+    assert(margin.length === 3 && margin[0] === 0 && margin[1] === 0,
+      `${width}px: the name block must share the centered content width of the photo and information.`);
+    assert(closeRight === padding[1], `${width}px: the close control is not aligned with the card content.`);
+    assert(width - 20 - 4 - 2 * padding[1] > 0, `${width}px: specimen content has no usable width.`);
+  }
+  assert(rules(".museum-entry-header h2", mobileStart)["overflow-wrap"] === "anywhere",
+    "Long specimen names must wrap instead of pushing beyond the mobile card.");
+  assert(rules(".museum-entry-dialog", 0).padding === "36px",
+    "The mobile adjustment must preserve the desktop dialog spacing.");
+});
+
+Deno.test("visual component styles isolate headers, preserve fonts and use defined theme colors", () => {
+  const css = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css")
+    .replaceAll("\r\n", "\n");
+  const ui = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const block = (selector: string) => {
+    const start = css.indexOf(`\n${selector} {`);
+    assert(start >= 0, `Missing visual component: ${selector}`);
+    return css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
+  };
+  assert(!/^\s*header\s*(?:\{|::)/m.test(css) && block(".site-header").includes("box-shadow:"),
+    "Site-header decoration must not bleed into semantic headers inside other cards.");
+  assert(block(".museum-entry-header").includes("background: var(--bg-panel-subtle)")
+    && block(".museum-entry-header").includes("padding: 20px 18px 22px"),
+    "Museum headings must keep an explicit subtle panel without depending on global header styling.");
+  assert(!/^\s*h2\s*\{[^}]*!important/m.test(css),
+    "A generic mobile h2 rule must not override component title hierarchy.");
+  const titles = [...css.matchAll(/(?:^|\n)\s*\.screen-title\s*\{([^}]+)\}/g)];
+  assert(titles.filter(match => match[1].includes("font-size:")).length === 1
+    && block(".screen-title").includes("clamp(1.65rem, 4vw, 2.15rem)"),
+    "Screen titles must share one continuous responsive size, without competing breakpoint overrides.");
+  assert(css.includes("--font-display:         'Playfair Display', 'Georgia', serif")
+    && css.includes("--font-control:         'Georgia', serif")
+    && block("body").includes("font-family: var(--font-display)"),
+    "The existing display and control typefaces must remain unchanged.");
+  for (const selector of [".login-field input", "#dino-input", ".museum-search input", ".friend-input"]) {
+    const declarations = block(selector);
+    assert(declarations.includes("var(--font-control)") && /(?:16px|1rem)/.test(declarations),
+      `${selector}: text-entry controls must share Georgia and readable input sizing.`);
+  }
+  const defined = new Set([...css.matchAll(/(--[\w-]+)\s*:/g)].map(match => match[1]));
+  const inlineVariables = new Set(["--histogram-width", "--difficulty-stat-width"]);
+  for (const match of css.matchAll(/var\(\s*(--[\w-]+)\s*\)/g)) {
+    assert(defined.has(match[1]) || inlineVariables.has(match[1]),
+      `Undefined theme or layout variable: ${match[1]}`);
+  }
+  assert(!ui.includes("color:#999") && ui.includes("class=\"clade-empty-copy\"")
+    && block(".clade-empty-copy").includes("color: var(--color-secondary)"),
+    "Encyclopedia empty states must use the theme palette in both light and dark modes.");
+  for (const selector of [".museum-time-periods span", ".museum-time-ages",
+    ".museum-entry-paleo-label", ".museum-paleo-chips span", ".museum-paleo-formations",
+    ".analytics-chart-date", ".analytics-chart-value", ".tutorial-levels small"]) {
+    const size = block(selector).match(/font-size:\s*([\d.]+)rem/);
+    assert(size && Number(size[1]) >= 0.7, `${selector}: supporting text must not shrink through nested em sizes.`);
+  }
+});
+
+Deno.test("home navigation reserves its final size before account and Analytics access arrive", () => {
+  const ui = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const headerSource = ui.slice(ui.indexOf("function setHeaderControls("), ui.indexOf("function applyTheme("));
+  const classes = new Set<string>();
+  const controls = { innerHTML: "", classList: { toggle(name: string, enabled: boolean) {
+    if (enabled) classes.add(name); else classes.delete(name);
+  } } };
+  const render = new Function("document", "escapeHtml", "t", `
+    let currentUser = null, isAnalyticsAdmin = false;
+    ${headerSource}
+    return (user, allowed, screen = "difficulty") => {
+      currentUser = user; isAnalyticsAdmin = allowed; setHeaderControls(screen);
+    };`)(
+    { getElementById: () => controls }, (value: unknown) => String(value || ""),
+    (key: string) => key,
+  );
+  let initialReservation = "";
+  for (const [user, allowed] of [[null, false], ["player", false], ["player", true],
+    ["A very long account name", true], ["another-player", false], [null, false]] as const) {
+    render(user, allowed);
+    const split = controls.innerHTML.indexOf(`<div class="header-controls-visible">`);
+    assert(split > 0 && classes.has("stable-header-controls"), "Home navigation has no stable sizing layer.");
+    const reservation = controls.innerHTML.slice(0, split);
+    const visible = controls.innerHTML.slice(split);
+    if (!initialReservation) initialReservation = reservation;
+    assert(reservation === initialReservation,
+      "Guest, account, permission and logout states must reserve identical localized space.");
+    assert(reservation.includes(`aria-hidden="true" inert`) && !reservation.includes("onclick=")
+      && [...reservation.matchAll(/<button[^>]*>/g)].every(match =>
+        match[0].includes(`tabindex="-1"`) && match[0].includes("disabled")),
+      "Sizing controls must be invisible to assistive technology, inert and non-interactive.");
+    assert(visible.includes("showAnalyticsDashboard()") === allowed,
+      "Reserving space must not expose a working Analytics button before access is confirmed.");
+    assert(visible.includes(user ? "showStatsDashboard()" : "showLoginModal()"),
+      "Stable navigation must retain the real account or guest actions.");
+  }
+  for (const [user, allowed] of [[null, false], ["player", false], ["player", true]] as const) {
+    render(user, allowed, "about");
+    const split = controls.innerHTML.indexOf(`<div class="header-controls-visible">`);
+    assert(classes.has("stable-header-controls") && split > 0
+      && controls.innerHTML.slice(0, split) === initialReservation,
+      "About must preserve the same header sizing layer as Home for every account state.");
+    const visible = controls.innerHTML.slice(split);
+    assert(visible.includes("navigateBackOrHome") && !visible.includes("showAnalyticsDashboard()")
+      && !visible.includes("showStatsDashboard()") && !visible.includes("logout()"),
+      "Matching the About header must keep its single Back action, without Home account controls.");
+    render(user, allowed);
+    assert(classes.has("stable-header-controls")
+      && controls.innerHTML.slice(0, controls.innerHTML.indexOf(`<div class="header-controls-visible">`))
+        === initialReservation, "Returning from About must preserve the Home header dimensions.");
+  }
+  for (const screen of ["game", "museum", "stats", "friends", "login"]) {
+    render("player", true, screen);
+    assert(!classes.has("stable-header-controls") && !controls.innerHTML.includes("header-controls-reserve"),
+      `${screen}: the sizing layer must not add space to other screens.`);
+  }
+  assert(controls.innerHTML === "", "The login screen must still have no navigation controls.");
+
+  const css = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  assert(/#header-controls\.stable-header-controls\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*width:\s*100%;/.test(css)
+    && /\.header-controls-reserve,\s*\.header-controls-visible\s*\{[^}]*grid-area:\s*1\s*\/\s*1;[^}]*flex-wrap:\s*wrap;[^}]*justify-content:\s*inherit;[^}]*gap:\s*inherit;/.test(css),
+    "Sizing and visible menus must share one grid cell and identical responsive wrapping and gaps.");
+  assert(/\.header-controls-reserve\s*\{[^}]*visibility:\s*hidden;[^}]*pointer-events:\s*none;/.test(css)
+    && /\.header-account-reserve\s*\{[^}]*width:\s*150px;/.test(css)
+    && /\.stable-header-controls\s+\.btn-account\s*\{[^}]*max-width:\s*150px;[^}]*white-space:\s*nowrap;/.test(css),
+    "Hidden sizing must remain in layout and cover the bounded real account control.");
+});
+
+Deno.test("Statistics columns fit intermediate viewports before switching to desktop layout", () => {
+  const css = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const desktop = css.match(/\.stats-insights-grid\s*\{[^}]*grid-template-columns:\s*minmax\((\d+)px,[^)]*\)\s*minmax\((\d+)px,[^)]*\);[^}]*gap:\s*(\d+)px;/);
+  const responsive = css.match(/@media\s*\(max-width:\s*(\d+)px\)\s*\{\s*\.stats-insights-grid\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\);/);
+  assert(desktop && responsive, "Statistics must define desktop minimum widths and a safe single-column breakpoint.");
+  const minimum = Number(desktop[1]) + Number(desktop[2]) + Number(desktop[3]);
+  const breakpoint = Number(responsive[1]);
+  for (const viewport of [320, 390, 420, 600, 601, 640, 680, 700, 768, 800, 900, 901, 1024, 1280]) {
+    // Page side padding + card side padding + its border at the actual layout breakpoints.
+    const horizontalInsets = viewport <= 600 ? 16 + 28 + 4
+      : viewport <= 768 ? 40 + 40 + 4 : 40 + 80 + 4;
+    const available = viewport - horizontalInsets;
+    assert(available > 0 && (viewport <= breakpoint || available >= minimum),
+      `${viewport}px: two Statistics columns require ${minimum}px but only ${available}px are available.`);
+  }
+  const title = css.match(/\.screen-title\s*\{[^}]*font-size:\s*clamp\(([\d.]+)rem,\s*([\d.]+)vw,\s*([\d.]+)rem\)/);
+  assert(title, "Responsive title scale is missing.");
+  let previousSize = 0;
+  for (const viewport of [320, 390, 599, 600, 601, 700, 767, 768, 769, 900, 1280]) {
+    const size = Math.max(Number(title[1]) * 16,
+      Math.min(Number(title[3]) * 16, Number(title[2]) * viewport / 100));
+    assert(size >= previousSize, `${viewport}px: titles must not get smaller when the viewport grows.`);
+    previousSize = size;
+  }
+});
+
 Deno.test("About navigation and primary screen titles share the application shell", () => {
   const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
   const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
@@ -334,6 +658,162 @@ Deno.test("About navigation and primary screen titles share the application shel
     screensSource.includes("${t('about.return')}") &&
     !screensSource.includes("function showAboutLegacy"),
     "The in-app About screen must reuse the canonical About document.");
+});
+
+Deno.test("About loading ignores obsolete openings and preserves articles when formulas fail", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const aboutSource = source.slice(source.indexOf("async function showAbout()"),
+    source.indexOf("async function showHowToPlay()"));
+  const deferred = () => {
+    let resolve!: (value?: any) => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<any>((yes, no) => { resolve = yes; reject = no; });
+    return { promise, resolve, reject };
+  };
+  const flush = async () => { for (let index = 0; index < 8; index++) await Promise.resolve(); };
+  const buildRuntime = () => {
+    let route = "/";
+    let html = "";
+    let focused = 0;
+    let rendered = 0;
+    const fetches: ReturnType<typeof deferred>[] = [];
+    const texts: ReturnType<typeof deferred>[] = [];
+    const formulas: ReturnType<typeof deferred>[] = [];
+    const content = {
+      firstElementChild: null as any,
+      get innerHTML() { return html; },
+      set innerHTML(value: string) {
+        if (this.firstElementChild) this.firstElementChild.isConnected = false;
+        html = value;
+        this.firstElementChild = { isConnected: true };
+      },
+    };
+    const show = new Function("setAppRoute", "setHeaderControls", "document", "t",
+      "renderAppState", "fetch", "DOMParser", "getCurrentAppRoute", "focusAppScreenHeading",
+      "ensureMathRenderer", "window", "console", `${aboutSource}; return showAbout;`)(
+      (value: string) => { route = value; }, () => {},
+      { getElementById: () => content }, (key: string) => key, (key: string) => key,
+      () => { const request = deferred(); fetches.push(request); return request.promise; },
+      class {
+        parseFromString(articleHtml: string) {
+          return { querySelector: () => ({ innerHTML: articleHtml,
+            querySelector: () => ({ remove() {} }), querySelectorAll: () => [] }) };
+        }
+      },
+      () => route, () => { focused++; },
+      () => { const request = deferred(); formulas.push(request); return request.promise; },
+      { renderMathInElement: (card: any) => {
+        assert(card === content.firstElementChild && card.isConnected,
+          "Formula rendering targeted a detached About article.");
+        rendered++;
+      } }, { warn() {} },
+    );
+    const response = () => ({ ok: true, text: () => {
+      const request = deferred(); texts.push(request); return request.promise;
+    } });
+    return { show, fetches, texts, formulas, response, content,
+      snapshot: () => JSON.stringify({ html, focused, rendered }),
+      navigate: () => { route = "/practice"; content.innerHTML = "practice"; } };
+  };
+  for (const stage of ["fetch", "text", "math"] as const) {
+    for (const scenario of ["current", "navigate", "reopen"] as const) {
+      for (const outcome of ["success", "error"] as const) {
+        const runtime = buildRuntime();
+        const pending = runtime.show();
+        if (stage !== "fetch") { runtime.fetches[0].resolve(runtime.response()); await flush(); }
+        if (stage === "math") { runtime.texts[0].resolve("article-old"); await flush(); }
+        let newer: Promise<void> | undefined;
+        if (scenario === "navigate") runtime.navigate();
+        if (scenario === "reopen") newer = runtime.show();
+        const before = runtime.snapshot();
+        const request = stage === "fetch" ? runtime.fetches[0]
+          : stage === "text" ? runtime.texts[0] : runtime.formulas[0];
+        if (outcome === "error") request.reject(new Error("Delayed About failure"));
+        else request.resolve(stage === "fetch" ? runtime.response()
+          : stage === "text" ? "article-old" : undefined);
+        await flush();
+        if (scenario === "current" && outcome === "success") {
+          if (stage === "fetch") { runtime.texts[0].resolve("article-old"); await flush(); }
+          if (stage !== "math") runtime.formulas[0].resolve();
+        }
+        await pending;
+        if (scenario !== "current" || (stage === "math" && outcome === "error")) {
+          assert(runtime.snapshot() === before,
+            `${stage}/${scenario}/${outcome}: a stale response or formula error replaced the screen.`);
+        } else {
+          assert(runtime.content.innerHTML.includes(outcome === "error" ? "about.error" : "article-old"),
+            `${stage}: current About loading did not produce the expected article or error.`);
+        }
+        if (newer) {
+          runtime.fetches[1].resolve(runtime.response()); await flush();
+          runtime.texts.at(-1)!.resolve("article-new"); await flush();
+          runtime.formulas.at(-1)!.resolve(); await newer;
+          assert(runtime.content.innerHTML.includes("article-new"), "The newest About opening was lost.");
+        }
+      }
+    }
+  }
+});
+
+Deno.test("formula scripts share pending loads, clean up failures and retry after timeout", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const loaderSource = source.slice(source.indexOf("let mathRendererPromise = null;"),
+    source.indexOf("async function showAbout()"));
+  const scripts: any[] = [];
+  const styles: any[] = [];
+  const timers = new Map<number, () => void>();
+  let timerId = 0;
+  const document = {
+    querySelector(selector: string) {
+      if (selector.startsWith("link")) return styles[0] || null;
+      return scripts.find(script => selector === `script[src="${script.src}"]`) || null;
+    },
+    createElement(tag: string) {
+      const listeners = new Map<string, Function>();
+      return { tag, dataset: {}, listeners,
+        addEventListener(name: string, callback: Function) { listeners.set(name, callback); },
+        removeEventListener(name: string) { listeners.delete(name); },
+        remove() { scripts.splice(scripts.indexOf(this), 1); },
+        fire(name: string) { listeners.get(name)?.(); } };
+    },
+    head: { appendChild(node: any) { (node.tag === "script" ? scripts : styles).push(node); } },
+  };
+  const window: any = {};
+  const runtime = new Function("document", "window", "setTimeout", "clearTimeout",
+    `${loaderSource}; return { loadPhylosaurScript, ensureMathRenderer };`)(
+    document, window,
+    (callback: () => void, delay: number) => {
+      assert(delay === 15000, "Formula script loading must have a bounded timeout.");
+      const id = ++timerId; timers.set(id, callback); return id;
+    }, (id: number) => { timers.delete(id); },
+  );
+  const flush = async () => { for (let index = 0; index < 8; index++) await Promise.resolve(); };
+  for (const failure of ["error", "timeout"]) {
+    const pending = runtime.ensureMathRenderer();
+    const rejected = pending.then(() => false, () => true);
+    assert(runtime.ensureMathRenderer() === pending && scripts.length === 1,
+      "Concurrent formula requests must share one renderer load.");
+    const failedScript = scripts[0];
+    if (failure === "error") failedScript.fire("error");
+    else [...timers.values()][0]();
+    assert(await rejected, "Failed formula scripts must reject rather than remain pending.");
+    assert(Number(scripts.length) === 0 && timers.size === 0 && failedScript.listeners.size === 0,
+      "Failed scripts, event handlers and timers must be removed before a retry.");
+  }
+  const retry = runtime.ensureMathRenderer();
+  const firstScript = scripts[0];
+  assert(runtime.loadPhylosaurScript(firstScript.src) === firstScript.phylosaurLoadPromise,
+    "A pending individual script must not accumulate duplicate handlers.");
+  firstScript.fire("load"); await flush();
+  assert(scripts.length === 2 && firstScript.dataset.loaded === "true",
+    "The successful core script must be marked loaded before auto-render is requested.");
+  window.renderMathInElement = () => {};
+  scripts[1].fire("load"); await retry;
+  await runtime.ensureMathRenderer();
+  await runtime.loadPhylosaurScript(firstScript.src);
+  assert(scripts.length === 2 && styles.length === 1 && timers.size === 0
+    && scripts.every(script => script.listeners.size === 0),
+    "Successful formula loading must reuse scripts and stylesheet without leaking timers or listeners.");
 });
 
 Deno.test("shared UI states, account controls and motion remain standardized", () => {
@@ -1237,6 +1717,304 @@ Deno.test("Museum cache writes, filtering and offscreen rendering avoid repeated
     "Offscreen Museum cards must defer layout and painting work.");
 });
 
+Deno.test("route dismissal settles dialogs, removes keyboard handlers and restores nested scroll locks", async () => {
+  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const authSource = Deno.readTextFileSync(`${javascriptRoot}/auth.${javascriptExtension}`);
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const mainSource = Deno.readTextFileSync(`${javascriptRoot}/main.${javascriptExtension}`);
+  const modalSource = uiSource.slice(uiSource.indexOf("function isTopAppOverlay("),
+    uiSource.indexOf("function openImageLightbox("));
+  const loginSource = authSource.slice(authSource.indexOf("let activeLoginModalCleanup"),
+    authSource.indexOf("async function handleSignInModal("));
+  const tutorialSource = screensSource.slice(screensSource.indexOf("function closeInteractiveTutorial("),
+    screensSource.indexOf("function generateGuessHistogram("));
+  const routeSource = mainSource.slice(mainSource.indexOf("function closeTransientRouteOverlays("),
+    mainSource.indexOf("async function renderFallbackRoute("));
+  const buildRuntime = () => new Function(`
+    const counters = { focus: 0, detachedFocus: 0, tutorialCompleted: 0, museumClosed: 0 };
+    const timers = new Map(); const microtasks = []; const handlers = new Set();
+    let timerId = 0;
+    class FakeElement {
+      constructor() { this.children = []; this.parent = null; this.baseConnected = false;
+        this.dataset = {}; this.attributes = {}; this.events = {}; this.parts = new Map();
+        this.className = ""; this.id = ""; this.buttons = []; this.style = {}; }
+      get isConnected() { return this.parent ? this.parent.isConnected : this.baseConnected; }
+      set innerHTML(value) { this.html = value; this.buttons = Array.from(value.matchAll(/data-result="([^"]*)"/g))
+        .map(match => { const button = new FakeElement(); button.parent = this;
+          button.setAttribute("data-result", match[1]); return button; }); }
+      get innerHTML() { return this.html || ""; }
+      setAttribute(key, value) { this.attributes[key] = value; }
+      getAttribute(key) { return this.attributes[key]; }
+      appendChild(node) { this.children.push(node); node.parent = this; }
+      remove() { if (this.parent) this.parent.children = this.parent.children.filter(node => node !== this);
+        this.parent = null; this.baseConnected = false; }
+      addEventListener(type, handler) { this.events[type] = handler; }
+      focus() { counters.focus++; if (!this.isConnected) counters.detachedFocus++;
+        document.activeElement = this; }
+      querySelectorAll() { return this.buttons; }
+      querySelector(selector) {
+        if (selector === ".modal-btn") return this.buttons[0] || null;
+        if (!this.parts.has(selector)) { const node = new FakeElement(); node.parent = this;
+          this.parts.set(selector, node); }
+        return this.parts.get(selector);
+      }
+    }
+    const HTMLElement = FakeElement;
+    const body = new FakeElement(); body.baseConnected = true; body.style.overflow = "auto";
+    const previous = new FakeElement(); previous.baseConnected = true;
+    const document = { body, activeElement: previous,
+      createElement: () => new FakeElement(),
+      getElementById: id => body.children.find(node => node.id === id) || null,
+      querySelectorAll: () => body.children.filter(node => node.getAttribute("aria-modal") === "true"),
+      addEventListener(type, handler) { if (type === "keydown") handlers.add(handler); },
+      removeEventListener(type, handler) { if (type === "keydown") handlers.delete(handler); }
+    };
+    const t = key => key;
+    const setTimeout = callback => { const id = ++timerId; timers.set(id, callback); return id; };
+    const clearTimeout = id => timers.delete(id);
+    const queueMicrotask = callback => microtasks.push(callback);
+    let tutorialKeyHandler = null; let tutorialPreviouslyFocused = null;
+    let tutorialPreviousBodyOverflow = ""; let tutorialStepIndex = 0; let tutorialDemoTried = false;
+    const INTERACTIVE_TUTORIAL_STEPS = [];
+    const markFirstRunTutorialComplete = () => { counters.tutorialCompleted++; };
+    const renderInteractiveTutorialStep = () => {};
+    const closeMuseumEntry = () => { counters.museumClosed++;
+      const museum = body.children.find(node => node.id === "museum-entry-overlay");
+      if (museum) { museum.remove(); body.style.overflow = "auto"; }
+    };
+    ${modalSource}
+    ${loginSource}
+    ${tutorialSource}
+    ${routeSource}
+    return { showModal, customConfirm, showLoginModal, showInteractiveTutorial,
+      closeTransientRouteOverlays, counters, handlers, timers, body, previous,
+      flush() { for (const [id, callback] of [...timers]) { timers.delete(id); callback(); }
+        microtasks.splice(0).forEach(callback => callback()); },
+      key(key) { const event = { key, shiftKey: false, stopped: false, preventDefault() {},
+        stopImmediatePropagation() { this.stopped = true; } };
+        for (const handler of [...handlers]) { if (!handlers.has(handler)) continue;
+          handler(event); if (event.stopped) break; } },
+      button(index = 0) { const overlay = body.children.at(-1);
+        overlay.children[0].buttons[index].events.click(); },
+      museum() { const overlay = new FakeElement(); overlay.id = "museum-entry-overlay";
+        body.appendChild(overlay); body.style.overflow = "hidden"; }
+    };`)();
+  for (const attachHandlers of [false, true]) {
+    const runtime = buildRuntime();
+    let resolved = false; let result: unknown = "waiting";
+    const pending = runtime.customConfirm("Confirm", "Continue?").then((value: unknown) => {
+      resolved = true; result = value;
+    });
+    if (attachHandlers) runtime.flush();
+    const focusBefore = runtime.counters.focus;
+    runtime.closeTransientRouteOverlays();
+    await Promise.resolve();
+    assert(resolved && result === null, "Navigation must resolve a pending confirmation as cancelled.");
+    await pending;
+    runtime.flush(); runtime.key("Enter"); runtime.key("Escape");
+    assert(runtime.handlers.size === 0 && runtime.timers.size === 0 && runtime.body.children.length === 0,
+      "Navigation left a modal keyboard listener or delayed attachment behind.");
+    assert(runtime.body.style.overflow === "auto" && runtime.counters.focus === focusBefore
+      && runtime.counters.detachedFocus === 0, "Route dismissal must restore scrolling without stealing focus.");
+  }
+  const stacked = buildRuntime();
+  const lower = stacked.customConfirm("Lower", "Wait");
+  stacked.showLoginModal();
+  stacked.flush();
+  stacked.key("Escape");
+  assert(stacked.body.children.length === 1 && stacked.body.style.overflow === "hidden",
+    "Escape must close only the top overlay, even if the lower handler attached later.");
+  stacked.button(1);
+  assert(await lower === "false", "Normal button dismissal must retain the confirmation result.");
+  assert(stacked.body.style.overflow === "auto",
+    "Normal nested dismissal must restore the original scroll state.");
+  for (const sequence of [["login", "tutorial", "modal"], ["tutorial", "login", "modal"]]) {
+    const runtime = buildRuntime();
+    runtime.museum();
+    let pending: Promise<unknown> | undefined;
+    for (const kind of sequence) {
+      if (kind === "login") runtime.showLoginModal();
+      if (kind === "tutorial") runtime.showInteractiveTutorial({ firstRun: true });
+      if (kind === "modal") pending = runtime.showModal({ title: "Notice" });
+    }
+    runtime.flush();
+    const focusBefore = runtime.counters.focus;
+    runtime.closeTransientRouteOverlays();
+    if (pending) assert(await pending === null, "Nested pending dialogs must also settle.");
+    runtime.flush();
+    assert(runtime.handlers.size === 0 && runtime.body.children.length === 0
+      && runtime.body.style.overflow === "auto" && runtime.counters.focus === focusBefore,
+      "Navigation must dismiss stacked dialogs before releasing the Museum scroll lock.");
+    assert(runtime.counters.tutorialCompleted === 0,
+      "Navigation must not record an interrupted first-run tutorial as completed.");
+  }
+  const museumReturn = buildRuntime();
+  museumReturn.museum();
+  const museumNotice = museumReturn.showModal({ title: "Notice" });
+  museumReturn.closeTransientRouteOverlays({ closeMuseum: false });
+  assert(await museumNotice === null, "Returning to the Museum must also settle pending dialogs.");
+  assert(museumReturn.body.children.length === 1 && museumReturn.body.style.overflow === "hidden"
+    && museumReturn.counters.museumClosed === 0,
+    "Modal cleanup must preserve the Museum overlay until its animated dismissal finishes.");
+  museumReturn.closeTransientRouteOverlays();
+  assert(museumReturn.body.style.overflow === "auto", "Museum dismissal must eventually release scrolling.");
+});
+
+Deno.test("Daily home refresh preserves newer screens, account ownership and the UTC day", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const refreshSource = source.slice(source.indexOf("let difficultyAccountRefreshGeneration"),
+    source.indexOf("function showFriendChallenges("));
+  for (const fails of [false, true]) {
+    for (const scenario of ["navigate", "reopen", "account", "logout", "day", "newer", "current"]) {
+      const requests: Array<{ resolve: Function; reject: Function }> = [];
+      const counters = { updates: 0, headers: 0, warnings: 0 };
+      const environment = { card: {} as object, route: "/", day: "2026-10-04", requests, counters };
+      const runtime = new Function("environment", `
+        let currentUserId = "owner";
+        const { requests, counters } = environment;
+        const appContent = { get firstElementChild() { return environment.card; } };
+        const document = { getElementById: () => appContent, querySelector: () => ({}) };
+        const getCurrentAppRoute = () => environment.route;
+        const getTodayString = () => environment.day;
+        const getDailyCompletionStatus = () => new Promise((resolve, reject) => requests.push({ resolve, reject }));
+        const initializeAnalyticsAccess = async () => false;
+        const updateDifficultyCompletionStatus = () => { counters.updates++; };
+        const setHeaderControls = () => { counters.headers++; };
+        const console = { warn() { counters.warnings++; } };
+        ${refreshSource}
+        return { refreshDifficultySelectionAccountState, change(kind) {
+          if (kind === "navigate") environment.route = "/practice";
+          if (kind === "reopen") environment.card = {};
+          if (kind === "account") currentUserId = "another-owner";
+          if (kind === "logout") currentUserId = null;
+          if (kind === "day") environment.day = "2026-10-05";
+        } };`)(environment);
+      const pending = runtime.refreshDifficultySelectionAccountState();
+      let newer: Promise<void> | undefined;
+      if (scenario === "newer") newer = runtime.refreshDifficultySelectionAccountState();
+      else if (scenario !== "current") runtime.change(scenario);
+      if (fails) requests[0].reject(new Error("Offline")); else requests[0].resolve({ normal: true });
+      await pending;
+      assert(counters.updates === (scenario === "current" && !fails ? 1 : 0)
+        && counters.headers === counters.updates
+        && counters.warnings === (scenario === "current" && fails ? 1 : 0),
+        `${scenario}: an obsolete or failed home refresh modified the current screen.`);
+      if (newer) {
+        requests[1].resolve({ normal: true }); await newer;
+        assert(counters.updates === 1 && counters.headers === 1,
+          "The latest home refresh must still update the completion markers.");
+      }
+    }
+  }
+});
+
+Deno.test("Daily completion caching discards older requests and retries reported failures", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/db.${javascriptExtension}`);
+  const completionSource = source.slice(source.indexOf("let dailyCompletionRequestGeneration"),
+    source.indexOf("function getTodayString("));
+  const buildRuntime = () => {
+    const requests: Array<{ resolve: Function; reject: Function; filters: unknown[] }> = [];
+    const environment = { day: "2026-10-04", requests };
+    const runtime = new Function("environment", `
+      let currentUserId = "owner"; let dailyCompletionCache = null;
+      const getTodayString = () => environment.day;
+      const sb = { from() { return { filters: [], select() { return this; },
+        eq(...args) { this.filters.push(args); return this; },
+        then(resolve, reject) { return new Promise((done, fail) => environment.requests.push({
+          resolve: done, reject: fail, filters: this.filters })).then(resolve, reject); }
+      }; } };
+      ${completionSource}
+      return { getDailyCompletionStatus, cache: () => JSON.stringify(dailyCompletionCache),
+        change(kind) {
+          if (kind === "account") currentUserId = "another-owner";
+          if (kind === "logout") currentUserId = null;
+          if (kind === "day") environment.day = "2026-10-05";
+        } };`)(environment);
+    return { runtime, requests };
+  };
+  const tick = async () => { await Promise.resolve(); await Promise.resolve(); };
+  for (const scenario of ["account", "logout", "day", "newer", "current"]) {
+    const { runtime, requests } = buildRuntime();
+    const pending = runtime.getDailyCompletionStatus(); await tick();
+    assert(JSON.stringify(requests[0].filters).includes("owner"), "The query must use the captured owner.");
+    let newer: Promise<any> | undefined;
+    if (scenario === "newer") {
+      newer = runtime.getDailyCompletionStatus(); await tick();
+      requests[1].resolve({ data: [{ difficulty: "facil" }] }); await newer;
+    } else if (scenario !== "current") runtime.change(scenario);
+    const previousCache = runtime.cache();
+    requests[0].resolve({ data: [{ difficulty: "normal" }, { difficulty: "unexpected" }] });
+    const result = await pending;
+    assert(result.normal === (scenario === "current") && !Object.hasOwn(result, "unexpected"),
+      `${scenario}: obsolete results or unknown levels were accepted.`);
+    if (scenario !== "current") assert(runtime.cache() === previousCache,
+      `${scenario}: an old completion request overwrote the current cache.`);
+    else {
+      result.normal = false;
+      const cached = await runtime.getDailyCompletionStatus();
+      assert(cached.normal && requests.length === 1, "Returned status must not share mutable cache state.");
+    }
+  }
+  for (const reported of [false, true]) {
+    const { runtime, requests } = buildRuntime();
+    const pending = runtime.getDailyCompletionStatus(); await tick();
+    if (reported) requests[0].resolve({ error: { message: "Unavailable" }, data: null });
+    else requests[0].reject(new Error("Offline"));
+    let rejected = false;
+    try { await pending; } catch { rejected = true; }
+    assert(rejected && runtime.cache() === "null", "A failed completion query must not cache an empty success.");
+    const retry = runtime.getDailyCompletionStatus(); await tick();
+    requests[1].resolve({ data: [{ difficulty: "normal" }] });
+    assert((await retry).normal, "A failed completion query must remain retryable.");
+  }
+});
+
+Deno.test("Analytics access checks share pending work, respect account changes and retry failures", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/api.${javascriptExtension}`);
+  const accessSource = source.slice(source.indexOf("let analyticsAccessRequest"),
+    source.indexOf("function getStoredGameSessionIds("));
+  const buildRuntime = () => {
+    const requests: Array<{ resolve: Function; reject: Function }> = [];
+    const runtime = new Function("requests", `
+      let currentUserId = "owner"; let isAnalyticsAdmin = false; let analyticsAccessChecked = false;
+      const callGameApi = () => new Promise((resolve, reject) => requests.push({ resolve, reject }));
+      ${accessSource}
+      return { initializeAnalyticsAccess, owner(id) { currentUserId = id; analyticsAccessChecked = false; },
+        snapshot: () => JSON.stringify({ isAnalyticsAdmin, analyticsAccessChecked }) };`)(requests);
+    return { runtime, requests };
+  };
+  for (const fails of [false, true]) {
+    for (const scenario of ["account", "logout", "current"]) {
+      const { runtime, requests } = buildRuntime();
+      const old = runtime.initializeAnalyticsAccess();
+      const duplicate = runtime.initializeAnalyticsAccess();
+      assert(requests.length === 1, "Concurrent access checks for one owner must share the pending request.");
+      let newer: Promise<boolean> | undefined;
+      if (scenario !== "current") {
+        runtime.owner(scenario === "logout" ? null : "another-owner");
+        newer = runtime.initializeAnalyticsAccess();
+      }
+      const previous = runtime.snapshot();
+      if (fails) requests[0].reject(new Error("Offline")); else requests[0].resolve({ allowed: true });
+      const result = await old; await duplicate;
+      if (scenario !== "current") assert(!result && runtime.snapshot() === previous,
+        `${scenario}: an old access check changed another account or restored the button after logout.`);
+      else assert(result === !fails, "The current access result must still apply.");
+      if (scenario === "account") {
+        const shared = runtime.initializeAnalyticsAccess();
+        assert(Number(requests.length) === 2, "An old completion must not release the newer access request.");
+        requests[1].resolve({ allowed: false }); await newer; await shared;
+        const cached = await runtime.initializeAnalyticsAccess();
+        assert(!cached && Number(requests.length) === 2, "A confirmed denial must be cached for its own account.");
+      } else if (scenario === "current" && fails) {
+        const retry = runtime.initializeAnalyticsAccess();
+        requests[1].resolve({ allowed: true });
+        assert(await retry, "A temporary access-check failure must remain retryable.");
+      } else if (newer) await newer;
+    }
+  }
+});
+
 Deno.test("guess, hint and give-up actions serialize and discard obsolete results and errors", async () => {
   const source = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
   const stateSource = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
@@ -1622,7 +2400,7 @@ Deno.test("Daily and Practice startup discard obsolete responses, errors and sav
   for (const mode of ["daily", "practice"]) {
     for (const stage of ["start", "state", "modal"]) {
       for (const scenario of ["navigate", "reopen", "account", "current"]) {
-        for (const fails of [false, true]) {
+        for (const fails of stage === "modal" ? [false, true, "cancelled"] : [false, true]) {
           let wrapper = { innerHTML: "" };
           let focusCalls = 0;
           let applied = 0;
@@ -1671,8 +2449,8 @@ Deno.test("Daily and Practice startup discard obsolete responses, errors and sav
           }
           const expectedMarkup = wrapper.innerHTML;
           const expectedStorage = JSON.stringify([...storage]);
-          if (fails) requests[0].reject(new Error("Delayed failure"));
-          else requests[0].resolve(stage === "modal" ? "fresh" : payload);
+          if (fails === true) requests[0].reject(new Error("Delayed failure"));
+          else requests[0].resolve(stage === "modal" ? (fails === "cancelled" ? null : "fresh") : payload);
           await pending;
           if (scenario !== "current") {
             assert(applied === 0 && focusCalls === 0 && runtime.session() === null
@@ -1680,6 +2458,10 @@ Deno.test("Daily and Practice startup discard obsolete responses, errors and sav
               `${mode}/${stage}/${scenario}: obsolete startup changed the active session, screen or storage.`);
             if (stage === "state") assert(modalCalls === 0,
               "Obsolete saved-state responses must not open a resume dialog.");
+          } else if (fails === "cancelled") {
+            assert(applied === 0 && focusCalls === 0 && runtime.session() === null
+              && JSON.stringify([...storage]) === expectedStorage,
+              "Dismissing the saved-game dialog must neither resume nor erase the stored session.");
           } else if (fails && stage === "start") {
             assert(applied === 0 && wrapper.innerHTML.includes("game.loadError"),
               "An active startup failure must still show its localized error.");
@@ -2230,6 +3012,312 @@ Deno.test("Museum routes reuse the gallery but still support direct links", asyn
     if (route === "/museum" && visible) {
       assert(restoredPosition, "Browser Back must preserve the gallery position.");
     }
+  }
+});
+
+Deno.test("Museum entry enrichment discards closed, superseded and account-obsolete results", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const closeSource = source.slice(source.indexOf("async function closeMuseumEntry("),
+    source.indexOf("function openMuseumImageViewer("));
+  const entrySource = source.slice(source.indexOf("async function showMuseumEntry("),
+    source.indexOf("function getMuseumAtlasCollection("));
+  const deferred = () => {
+    let resolve!: (value: any) => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<any>((yes, no) => { resolve = yes; reject = no; });
+    return { promise, resolve, reject };
+  };
+  const flush = async () => { for (let index = 0; index < 8; index++) await Promise.resolve(); };
+  const buildRuntime = (sparse: boolean) => {
+    let route = "/museum";
+    const overlays: any[] = [];
+    const requests = { entry: [] as ReturnType<typeof deferred>[],
+      media: [] as ReturnType<typeof deferred>[], wiki: [] as ReturnType<typeof deferred>[],
+      fossils: [] as ReturnType<typeof deferred>[] };
+    const request = (type: keyof typeof requests) => {
+      const pending = deferred(); requests[type].push(pending); return pending.promise;
+    };
+    const dinosaurs: any[] = ["Triceratops", "Other"].map(nome => ({ nome,
+      dificuldade: "facil", ...(sparse ? {} : { linhagem: ["Dinosauria", "Ceratopsia"] }) }));
+    const node = () => ({ innerHTML: "", textContent: "", src: "", disabled: true, focus() {},
+      removed: false, remove() { this.removed = true; }, insertAdjacentHTML() {} });
+    const handlers = new Set<Function>();
+    const document: any = {
+      activeElement: null,
+      body: { style: { overflow: "auto" }, appendChild(overlay: any) {
+        overlay.isConnected = true; overlays.push(overlay);
+      } },
+      getElementById(id: string) {
+        return overlays.find(overlay => overlay.id === id && overlay.isConnected) || null;
+      },
+      querySelectorAll: () => [],
+      addEventListener(_name: string, handler: Function) { handlers.add(handler); },
+      removeEventListener(_name: string, handler: Function) { handlers.delete(handler); },
+      createElement() {
+        const nodes = { dialog: node(), button: node(), image: node(), caption: node(),
+          description: node(), readMore: node(), fossils: node() };
+        const selectors: Record<string, any> = {
+          ".museum-entry-dialog": nodes.dialog,
+          ".museum-entry-close": node(),
+          ".museum-entry-description": nodes.description,
+          ".museum-entry-read-more-slot": nodes.readMore,
+          ".museum-entry-paleodata-slot": nodes.fossils,
+          ".museum-entry-figure figcaption": nodes.caption,
+          ".museum-entry-figure": { querySelector: (selector: string) =>
+            ({ ".museum-entry-image-button": nodes.button, img: nodes.image,
+              figcaption: nodes.caption } as Record<string, any>)[selector] },
+        };
+        return { id: "", isConnected: false, innerHTML: "", nodes,
+          setAttribute() {}, contains: () => false,
+          addEventListener() {}, querySelector: (selector: string) => selectors[selector],
+          remove() { this.isConnected = false; } };
+      },
+    };
+    const runtime = new Function("env", `const { document, window, setAppRoute,
+      getCurrentAppRoute, fullDatabase, escapeChallengeHtml, t, callGameApi,
+      museumDiscoveryRecords, getStoredGameSessionIds, getCachedDinoMedia,
+      fetchWikipediaInfo, loadMuseumPaleodataCatalog, getMuseumDiscoverySummary,
+      getMuseumMediaCredit, renderMuseumPaleodata, console } = env;
+      const isTopAppOverlay = (overlay) => overlay.isConnected;
+      let currentUserId = "account-a";
+      let activeMuseumEntryMedia = null; let museumEntryEscapeHandler = null;
+      ${closeSource} ${entrySource}
+      return { showMuseumEntry, closeMuseumEntry,
+        account() { currentUserId = "account-b"; }, media: () => activeMuseumEntryMedia };`)(
+      { document, window: { scrollX: 0, scrollY: 120 },
+        setAppRoute: (value: string) => { route = value; }, getCurrentAppRoute: () => route,
+        fullDatabase: dinosaurs, escapeChallengeHtml: (value: any) => String(value),
+        t: (key: string) => key, callGameApi: () => request("entry"),
+        museumDiscoveryRecords: {}, getStoredGameSessionIds: () => [],
+        getCachedDinoMedia: () => request("media"), fetchWikipediaInfo: () => request("wiki"),
+        loadMuseumPaleodataCatalog: () => request("fossils"),
+        getMuseumDiscoverySummary: () => ({ firstLabel: "first", countLabel: "one" }),
+        getMuseumMediaCredit: () => "credit", renderMuseumPaleodata: () => "fossil-data",
+        console: { warn() {} } },
+    );
+    return { runtime, requests, overlays, dinosaurs, document, handlers,
+      navigate: () => { route = "/practice"; },
+      snapshot: () => JSON.stringify({ dinosaurs, media: runtime.media(),
+        nodes: overlays.map(overlay => overlay.nodes), overflow: document.body.style.overflow }) };
+  };
+  for (const stage of ["entry", "media", "wiki", "fossils"] as const) {
+    for (const scenario of ["current", "close", "reopen", "account", "navigate", "closing"]) {
+      for (const outcome of ["success", "error"]) {
+        const fixture = buildRuntime(stage === "entry");
+        const pending = fixture.runtime.showMuseumEntry("Triceratops");
+        const overlay = fixture.overlays[0];
+        assert(overlay.museumReturnState.overflow === "auto",
+          "Opening an entry must preserve the pre-existing page scroll state.");
+        if (scenario === "close") await fixture.runtime.closeMuseumEntry();
+        if (scenario === "reopen") void fixture.runtime.showMuseumEntry("Other");
+        if (scenario === "account") fixture.runtime.account();
+        if (scenario === "navigate") fixture.navigate();
+        if (scenario === "closing") overlay.museumDismissRequested = true;
+        const before = fixture.snapshot();
+        const payload = stage === "entry" ? { dinosaur: { linhagem: ["Dinosauria", "Ceratopsia"] } }
+          : stage === "media" ? { url: "image.png" }
+          : stage === "wiki" ? { description: "summary", url: "https://example.test" }
+          : { taxa: { Triceratops: {} }, timeline: {} };
+        if (outcome === "error") fixture.requests[stage][0].reject(new Error("Delayed enrichment failure"));
+        else fixture.requests[stage][0].resolve(payload);
+        await pending; await flush();
+        if (scenario !== "current") {
+          assert(fixture.snapshot() === before,
+            `${stage}/${scenario}/${outcome}: obsolete enrichment changed entry or shared data.`);
+        } else if (stage === "entry") {
+          assert(outcome === "error" ? overlay.nodes.dialog.innerHTML.includes("museum.openNameError")
+            : Array.isArray(fixture.dinosaurs[0].linhagem), "Current entry response was not handled.");
+        } else if (stage === "media") {
+          assert(outcome === "error" ? overlay.nodes.caption.textContent === "museum.noIllustration"
+            : fixture.runtime.media().url === "image.png", "Illustration completion was not handled.");
+        } else if (stage === "wiki") {
+          assert(overlay.nodes.description.textContent === (outcome === "error" ? "museum.noSummary" : "summary"),
+            "Summary completion must replace its loading placeholder even on failure.");
+        } else {
+          assert(outcome === "error" ? overlay.nodes.fossils.removed
+            : overlay.nodes.fossils.innerHTML === "fossil-data", "Fossil completion was not handled.");
+        }
+      }
+    }
+  }
+  const empty = buildRuntime(false);
+  empty.document.body.style.overflow = "hidden";
+  assert(await empty.runtime.closeMuseumEntry() === false
+    && empty.document.body.style.overflow === "hidden",
+    "Closing an absent Museum entry must not release another dialog scroll lock.");
+  await empty.runtime.showMuseumEntry("Triceratops");
+  await empty.runtime.closeMuseumEntry();
+  assert(empty.handlers.size === 0, "Entry dismissal must remove its keyboard listener.");
+});
+
+Deno.test("Museum keyboard focus follows the top dialog and survives entry replacement", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const museumSource = source.slice(source.indexOf("async function closeMuseumEntry("),
+    source.indexOf("function getMuseumAtlasCollection("));
+  for (const outcome of ["success", "error", "covered-success", "covered-error"]) {
+    let route = "/museum";
+    let resolveEntry!: (value: any) => void;
+    let rejectEntry!: (error: Error) => void;
+    const entryRequest = new Promise((resolve, reject) => {
+      resolveEntry = resolve; rejectEntry = reject;
+    });
+    const overlays: any[] = [];
+    const handlers = new Map<Function, boolean>();
+    const document: any = {
+      activeElement: null,
+      body: { style: { overflow: "auto" }, appendChild(overlay: any) {
+        overlay.live = true; overlays.push(overlay);
+      } },
+      querySelectorAll: () => overlays.filter(overlay => overlay.isConnected
+        && overlay.attributes["aria-modal"] === "true"),
+      getElementById: (id: string) => overlays.find(overlay => overlay.id === id && overlay.isConnected),
+      addEventListener(_type: string, handler: Function, capture: boolean) {
+        assert(capture === true, "Museum keyboard handlers must use capture consistently.");
+        handlers.set(handler, capture);
+      },
+      removeEventListener(_type: string, handler: Function, capture: boolean) {
+        assert(capture === handlers.get(handler), "Museum keyboard cleanup used the wrong capture mode.");
+        handlers.delete(handler);
+      },
+      createElement: () => new Element(),
+    };
+    class Element {
+      id = "";
+      live = false;
+      parent: Element | null = null;
+      attributes: Record<string, string> = {};
+      children: Element[] = [];
+      disabled = false;
+      className = "";
+      events = new Map<string, Function>();
+      classList = { add() {} };
+      get isConnected(): boolean { return this.parent ? this.parent.isConnected : this.live; }
+      setAttribute(name: string, value: string) { this.attributes[name] = value; }
+      addEventListener(name: string, handler: Function) { this.events.set(name, handler); }
+      contains(node: any): boolean { return node === this || this.children.some(child => child.contains(node)); }
+      focus() { document.activeElement = this; }
+      remove() { this.live = false; }
+      set innerHTML(html: string) {
+        for (const child of this.children) { child.parent = null; child.live = false; }
+        this.children = [];
+        if (html.includes("<article")) {
+          const dialog = this.append("museum-entry-dialog"); dialog.innerHTML = html.replace("<article", "<div");
+          return;
+        }
+        for (const match of html.matchAll(/<(button|a)\b([^>]*)>/g)) {
+          const node = this.append(match[2].match(/class="([^"]+)"/)?.[1] || "credit-link");
+          node.disabled = /\bdisabled\b/.test(match[2]);
+        }
+      }
+      append(className: string) {
+        const child = new Element(); child.className = className; child.parent = this;
+        this.children.push(child); return child;
+      }
+      querySelector(selector: string): any {
+        return this.children.find(child => selector === `.${child.className}`)
+          || this.children.map(child => child.querySelector(selector)).find(Boolean) || null;
+      }
+      querySelectorAll(_selector: string): Element[] {
+        return this.children.flatMap(child => child.className === "museum-entry-dialog"
+          ? child.querySelectorAll(_selector) : child.disabled ? [] : [child]);
+      }
+    }
+    const top = (overlay: any) => overlay.isConnected && document.querySelectorAll().at(-1) === overlay;
+    const card = new Element(); card.live = true; card.focus();
+    const runtime = new Function("env", `const { document, window, setAppRoute, getCurrentAppRoute,
+      fullDatabase, escapeChallengeHtml, t, callGameApi, getCachedDinoMedia, isTopAppOverlay } = env;
+      let currentUserId = null, museumEntryEscapeHandler = null, activeMuseumEntryMedia = null;
+      const museumDiscoveryRecords = {};
+      const getStoredGameSessionIds = () => [];
+      const fetchWikipediaInfo = async () => null;
+      const loadMuseumPaleodataCatalog = async () => null;
+      const getMuseumDiscoverySummary = () => ({});
+      ${museumSource}
+      return { showMuseumEntry, closeMuseumEntry, openMuseumImageViewer,
+        enableImage() { activeMuseumEntryMedia = { name: "Triceratops", url: "image.png",
+          credit: "<a href=https://example.test>credit</a>" }; } };`)(
+      { document, window: { scrollX: 0, scrollY: 120, scrollTo() {},
+          matchMedia: () => ({ matches: true }), history: { state: {}, back() {} } },
+        setAppRoute: (value: string) => { route = value; }, getCurrentAppRoute: () => route,
+        fullDatabase: [{ nome: "Triceratops", dificuldade: "facil" }],
+        escapeChallengeHtml: (value: string) => value, t: (key: string) => key,
+        callGameApi: () => entryRequest, getCachedDinoMedia: async () => null,
+        isTopAppOverlay: top },
+    );
+    const key = (name: string, shiftKey = false) => {
+      const event = { key: name, shiftKey, prevented: false, stopped: false,
+        preventDefault() { this.prevented = true; },
+        stopImmediatePropagation() { this.stopped = true; } };
+      for (const handler of [...handlers.keys()]) {
+        handler(event); if (event.stopped) break;
+      }
+      return event;
+    };
+    const pending = runtime.showMuseumEntry("Triceratops");
+    const entry = document.getElementById("museum-entry-overlay");
+    const loadingClose = entry.querySelector(".museum-entry-close");
+    assert(document.activeElement === loadingClose && top(entry), "Opening a specimen must focus its close control.");
+    assert(key("Tab").prevented && document.activeElement === loadingClose,
+      "The loading dialog must keep Tab on its only control.");
+    const coveringDialog = new Element(); coveringDialog.setAttribute("aria-modal", "true");
+    if (outcome.startsWith("covered")) {
+      document.body.appendChild(coveringDialog); coveringDialog.focus();
+    }
+    if (outcome.endsWith("error")) rejectEntry(new Error("Unavailable entry"));
+    else resolveEntry({ dinosaur: { linhagem: ["Dinosauria"] } });
+    await pending;
+    const entryClose = entry.querySelector(".museum-entry-close");
+    assert(entryClose !== loadingClose && document.activeElement ===
+      (coveringDialog.isConnected ? coveringDialog : entryClose),
+      `${outcome}: entry replacement lost focus or stole it from a newer dialog.`);
+    coveringDialog.remove(); entryClose.focus();
+    assert(key("Tab", true).prevented && document.activeElement === entryClose,
+      "Disabled illustration controls must not become keyboard trap endpoints.");
+    const photo = entry.querySelector(".museum-entry-image-button") || entry.children[0].append("photo");
+    photo.disabled = false;
+    assert(key("Tab", true).prevented && document.activeElement === photo,
+      "Shift+Tab must cycle to the last enabled specimen control.");
+    assert(key("Tab").prevented && document.activeElement === entryClose,
+      "Tab must cycle from the last specimen control back to its close button.");
+    photo.focus(); runtime.enableImage();
+    runtime.openMuseumImageViewer();
+    const viewer = document.getElementById("museum-image-viewer");
+    const viewerClose = viewer.querySelector(".museum-image-viewer-close");
+    const credit = viewer.children.at(-1);
+    assert(document.activeElement === viewerClose && top(viewer) && handlers.size === 2,
+      "An enlarged image must become the focused, topmost semantic dialog.");
+    assert(key("Tab", true).prevented && document.activeElement === credit,
+      "Shift+Tab must cycle from the image close control to its credit link.");
+    assert(key("Tab").prevented && document.activeElement === viewerClose,
+      "Tab must cycle from the image credit back to its close control.");
+    photo.focus(); key("Tab");
+    assert(document.activeElement === viewerClose, "An escaped focus must return to the image viewer.");
+    const otherDialog = new Element(); otherDialog.setAttribute("aria-modal", "true");
+    document.body.appendChild(otherDialog); otherDialog.focus();
+    assert(!key("Escape").prevented && viewer.isConnected && entry.isConnected,
+      "Museum handlers must leave a newer dialog in control of Escape.");
+    otherDialog.remove(); viewerClose.focus();
+    const escape = key("Escape");
+    assert(escape.prevented && escape.stopped && !viewer.isConnected && entry.isConnected
+      && document.activeElement === photo && Number(handlers.size) === 1,
+      "Escape must close only the enlarged image and restore its opening control.");
+    viewer.dismissAppOverlay();
+    assert(Number(handlers.size) === 1, "Repeated image dismissal must be harmless.");
+    runtime.openMuseumImageViewer();
+    const oldViewer = document.getElementById("museum-image-viewer");
+    runtime.openMuseumImageViewer();
+    const newViewer = document.getElementById("museum-image-viewer");
+    assert(!oldViewer.isConnected && newViewer !== oldViewer && handlers.size === 2,
+      "Replacing an image viewer must release its old keyboard handler.");
+    newViewer.events.get("click")({ target: newViewer });
+    assert(document.activeElement === photo && Number(handlers.size) === 1,
+      "Click dismissal of a replacement viewer must preserve the original opening control.");
+    runtime.openMuseumImageViewer();
+    const external = new Element(); external.live = true; external.focus();
+    await runtime.closeMuseumEntry();
+    assert(!document.getElementById("museum-image-viewer") && Number(handlers.size) === 0
+      && document.activeElement === external && document.body.style.overflow === "auto",
+      "Route cleanup must remove both listeners and restore scrolling without stealing focus.");
   }
 });
 

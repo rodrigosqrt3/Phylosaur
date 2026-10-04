@@ -2,6 +2,9 @@
 // UI AND MODALS
 // ═══════════════════════════════════════════════
 function setHeaderControls(screen) {
+    if (screen !== 'challenge' && typeof stopChallengeStatusPolling === 'function') {
+      stopChallengeStatusPolling();
+    }
     if (screen !== 'museum' && typeof releaseMuseumViewResources === 'function') {
       releaseMuseumViewResources();
     } else if (screen !== 'museum' && typeof stopMuseumCardMediaLoading === 'function') {
@@ -39,7 +42,22 @@ const map = {
       'analytics':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
     };
 
-    controls.innerHTML = map[screen] || '';
+    const preserveHeaderSize = screen === 'difficulty' || screen === 'about';
+    controls.classList.toggle('stable-header-controls', preserveHeaderSize);
+    if (preserveHeaderSize) {
+      // Size the navigation for the complete account menu before async permissions arrive.
+      // These inert controls only measure the existing localized button styles.
+      const sizingMenu = `
+        <div class="header-controls-reserve" aria-hidden="true" inert>
+          <button class="btn-hint btn-header" type="button" tabindex="-1" disabled>${t('nav.museum')}</button>
+          <button class="btn-hint btn-header" type="button" tabindex="-1" disabled>${t('nav.analytics')}</button>
+          <button class="btn-hint btn-header" type="button" tabindex="-1" disabled>${t('nav.stats')}</button>
+          <button class="btn-hint btn-header header-account-reserve" type="button" tabindex="-1" disabled>${t('common.player')}</button>
+        </div>`;
+      controls.innerHTML = sizingMenu + `<div class="header-controls-visible">${map[screen]}</div>`;
+    } else {
+      controls.innerHTML = map[screen] || '';
+    }
 }
 
 function applyTheme(theme, { persist = true } = {}) {
@@ -99,6 +117,11 @@ function focusAppScreenHeading(selector = '.screen-title') {
         const label = heading.textContent?.replace(/\s+/g, ' ').trim();
         if (label) document.title = `${label} - Phylosaur`;
     });
+}
+
+function isTopAppOverlay(overlay) {
+    const overlays = document.querySelectorAll('[aria-modal="true"]');
+    return overlay.isConnected && overlays[overlays.length - 1] === overlay;
 }
 
 function showModal(options) {
@@ -163,7 +186,7 @@ function showModal(options) {
     let closed = false;
     let keyHandlerAttached = false;
 
-    const closeModal = result => {
+    const closeModal = (result, { restoreFocus = true } = {}) => {
         if (closed) return;
         closed = true;
         clearTimeout(keyHandlerTimer);
@@ -172,13 +195,14 @@ function showModal(options) {
         }
         overlay.remove();
         document.body.style.overflow = previousBodyOverflow;
-        if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+        if (restoreFocus && previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
             previouslyFocused.focus();
         }
         resolve(result);
     };
 
     const modalKeyHandler = event => {
+        if (!isTopAppOverlay(overlay)) return;
         const buttons = box.querySelectorAll('.modal-btn');
 
         if (event.key === 'Tab') {
@@ -203,11 +227,11 @@ function showModal(options) {
             }
         } else if (event.key === 'Enter' && buttons.length === 1) {
             event.preventDefault();
-            event.stopPropagation();
+            event.stopImmediatePropagation();
             closeModal(buttons[0].getAttribute('data-result'));
         } else if (event.key === 'Escape' && options.closeOnOverlay !== false) {
             event.preventDefault();
-            event.stopPropagation();
+            event.stopImmediatePropagation();
             closeModal(null);
         }
     };
@@ -217,10 +241,12 @@ function showModal(options) {
         if (closed) return;
         document.addEventListener('keydown', modalKeyHandler, true);
         keyHandlerAttached = true;
+        if (!isTopAppOverlay(overlay)) return;
         const firstButton = box.querySelector('.modal-btn');
         if (firstButton) firstButton.focus();
         else box.focus();
     }, 0);
+    overlay.dismissAppOverlay = ({ restoreFocus = true } = {}) => closeModal(null, { restoreFocus });
     
     box.querySelectorAll('.modal-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -352,7 +378,7 @@ async function showCladeInfo(cladeName, options = {}) {
     infoDiv.innerHTML = `
         <div class="clade-info">
         <h3>${escapeChallengeHtml(heading)}: ${escapeChallengeHtml(cladeName)}</h3>
-        <p style="color:#999;font-style:italic;">${t('tree.noEncyclopedia')}</p>
+        <p class="clade-empty-copy">${t('tree.noEncyclopedia')}</p>
         ${revealedPathHtml}
         </div>
     `;
@@ -369,7 +395,7 @@ async function showCladeInfo(cladeName, options = {}) {
     <div class="clade-text">
         ${wikiInfo.description 
         ? `<p>${wikiInfo.description}</p>` 
-        : `<p style="color:#999;font-style:italic;">${t('tree.descriptionUnavailable')}</p>`
+        : `<p class="clade-empty-copy">${t('tree.descriptionUnavailable')}</p>`
         }
         <a href="${wikiInfo.url}" target="_blank" class="clade-link">${t('tree.encyclopedia')}</a>
     </div>

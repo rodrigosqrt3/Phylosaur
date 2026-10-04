@@ -584,22 +584,31 @@ function checkStreakMilestone(streak) {
     return null;
 }
 
+let dailyCompletionRequestGeneration = 0;
+
 async function getDailyCompletionStatus() {
+    const generation = ++dailyCompletionRequestGeneration;
+    const ownerId = currentUserId;
     if (!currentUserId) return { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
     
     const today = getTodayString();
-    const cacheKey = `${currentUserId}:${today}`;
+    const cacheKey = `${ownerId}:${today}`;
     if (dailyCompletionCache?.key === cacheKey) {
         return { ...dailyCompletionCache.status };
     }
-    const { data } = await sb.from('daily_results')
+    const { data, error } = await sb.from('daily_results')
     .select('difficulty')
-    .eq('user_id', currentUserId)
+    .eq('user_id', ownerId)
     .eq('played_date', today)
     .eq('won', true);
     
     const status = { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
-    if (data) data.forEach(row => { status[row.difficulty] = true; });
+    if (generation !== dailyCompletionRequestGeneration || currentUserId !== ownerId
+        || getTodayString() !== today) return status;
+    if (error) throw error;
+    if (data) data.forEach(row => {
+        if (Object.hasOwn(status, row.difficulty)) status[row.difficulty] = true;
+    });
     dailyCompletionCache = { key: cacheKey, status: { ...status } };
     return status;
 }  
@@ -905,6 +914,8 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
                     closeOnOverlay: false
                 });
                 if (!isCurrentRequest()) return;
+
+                if (savedGameChoice === null) return;
 
                 if (savedGameChoice === 'fresh') {
                     localStorage.removeItem(storageKey);

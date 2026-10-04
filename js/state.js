@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════
 // GLOBAL STATE
 // ═══════════════════════════════════════════════
-const PHYLOSAUR_RELEASE_VERSION = 89;
+const PHYLOSAUR_RELEASE_VERSION = 99;
 const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   theme: 'phylosaur-theme',
   language: 'phylosaur-language',
@@ -11,7 +11,8 @@ const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   museumImageCache: 'phylosaur-image-cache-v5',
   legacyDiscoveries: 'phylosaur-discoveries',
   discoveryEvents: 'phylosaur-discovery-events-v1',
-  accountDiscoveryPrefix: 'phylosaur-account-discoveries-v1:'
+  accountDiscoveryPrefix: 'phylosaur-account-discoveries-v1:',
+  sessionCredentialPrefix: 'phylosaur-session-credential-v1:'
 });
 
 function escapeHtml(value) {

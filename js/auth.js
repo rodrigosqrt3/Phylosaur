@@ -234,8 +234,10 @@ function showLoginModal() {
   document.body.style.overflow = 'hidden';
 
   const modalKeyHandler = event => {
+    if (!isTopAppOverlay(overlay)) return;
     if (event.key === 'Escape') {
       event.preventDefault();
+      event.stopImmediatePropagation();
       closeLoginModal();
       return;
     }
@@ -260,25 +262,28 @@ function showLoginModal() {
   };
 
   document.addEventListener('keydown', modalKeyHandler, true);
-  activeLoginModalCleanup = () => {
+  activeLoginModalCleanup = ({ restoreFocus = true } = {}) => {
     document.removeEventListener('keydown', modalKeyHandler, true);
     document.body.style.overflow = previousBodyOverflow;
-    if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+    if (restoreFocus && previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
       previouslyFocused.focus();
     }
   };
+  overlay.dismissAppOverlay = options => closeLoginModal(options);
 
   overlay.addEventListener('click', e => {
     if (e.target === overlay) closeLoginModal();
   });
 
-  queueMicrotask(() => document.getElementById('signin-email')?.focus() || box.focus());
+  queueMicrotask(() => {
+    if (isTopAppOverlay(overlay)) document.getElementById('signin-email')?.focus() || box.focus();
+  });
 }
 
-function closeLoginModal() {
+function closeLoginModal({ restoreFocus = true } = {}) {
   const overlay = document.getElementById('login-modal-overlay');
   overlay?.remove();
-  activeLoginModalCleanup?.();
+  activeLoginModalCleanup?.({ restoreFocus });
   activeLoginModalCleanup = null;
 }
 

@@ -3,6 +3,8 @@
    Dark mode = default. Light mode only overrides what changes.
    ═══════════════════════════════════════════════════════════════════════ */
 :root {
+    --font-display:         'Playfair Display', 'Georgia', serif;
+    --font-control:         'Georgia', serif;
     /* ── Accent & text ── */
     --color-primary:        #d4b87e;
     --color-secondary:      #a68a5a;
@@ -10,7 +12,7 @@
     --color-accent:         #c9a96e;
     --color-text-light:     #f8f6f3;
     --color-text-warm:      #f4e4c1;       
-    --color-text-dim:       #6b5340;       
+    --color-text-dim:       #b29a7d;
     --color-text-rank:      #6b4e2a;
     --color-text-dark:      #5a3e1b;      
 
@@ -240,7 +242,7 @@ html {
     }
 
 body {
-  font-family: 'Playfair Display', 'Georgia', serif;
+  font-family: var(--font-display);
   background: var(--bg-base);
   background-image: 
     radial-gradient(circle at 20% 50%, rgba(139, 115, 85, 0.15) 0%, transparent 50%),
@@ -318,8 +320,8 @@ to   { opacity: 1; transform: translateX(0); }
 .login-field input {
   width: 100%;
   padding: 13px 16px;
-  font-size: 15px;
-  font-family: 'Georgia', serif;
+  font-size: 16px;
+  font-family: var(--font-control);
   background: linear-gradient(180deg, var(--bg-darkest) 0%, var(--bg-deeper) 100%);
   border: 2px solid var(--border-inner);
   border-radius: 3px;
@@ -329,7 +331,7 @@ to   { opacity: 1; transform: translateX(0); }
   box-shadow: inset 0 3px 6px rgba(0,0,0,0.7);
 }
 
-.login-field input::placeholder { color: var(--border-subtle); }
+.login-field input::placeholder { color: var(--color-muted); }
 
 .login-field input:focus {
   border-color: var(--color-muted);
@@ -946,7 +948,7 @@ transition: color 0.3s ease;
   margin: 0 auto;
 }
 
-header {
+.site-header {
   position: relative;
   text-align: center;
   margin-bottom: 40px;
@@ -1024,17 +1026,53 @@ header {
   display: none;
 }
 
+/* Share stable header dimensions between Home and About, including async account loading. */
+#header-controls.stable-header-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+}
+
+.header-controls-reserve,
+.header-controls-visible {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: flex-start;
+  justify-content: inherit;
+  gap: inherit;
+  min-width: 0;
+}
+
+.header-controls-reserve {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.header-account-reserve {
+  width: 150px;
+  max-width: 100%;
+}
+
+.stable-header-controls .btn-account {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .header-theme-switch {
   position: static;
   order: 2;
 }
 
-header::before,
-header::after {
+.site-header::before,
+.site-header::after {
 display: none;
 }
 
-header::after {
+.site-header::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -1119,7 +1157,7 @@ display: none;
   width: 100%;
   padding: 14px 18px;
   font-size: 16px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-control);
   border: 2px solid var(--border-inner);
   border-radius: 3px;
   outline: none;
@@ -1418,7 +1456,6 @@ textarea:focus-visible {
         letter-spacing: 3px;
         margin-bottom: 12px;
     }
-    h2 { font-size: 1.4em !important; letter-spacing: 1px !important; line-height: 1.4 !important;}
     .game-card { padding: 20px; }
     .stats { 
         width: 100% !important;
@@ -2461,10 +2498,10 @@ body:not(.light-mode) .tree-node-group:hover rect {
 .screen-title {
   color: var(--color-primary);
   margin: 0 0 12px;
-  font-size: clamp(1.8rem, 4vw, 2.15rem);
+  font-size: clamp(1.65rem, 4vw, 2.15rem);
   font-weight: 600;
   line-height: 1.2;
-  letter-spacing: 2px;
+  letter-spacing: clamp(1.2px, 0.2vw, 2px);
   text-align: center;
 }
 
@@ -2828,6 +2865,11 @@ body:not(.light-mode) .tree-node-group:hover rect {
   font-size: 1em;
   line-height: 1.8;
   color: var(--color-text-light);
+}
+
+.clade-empty-copy {
+  color: var(--color-secondary);
+  font-style: italic;
 }
 
 .clade-link {
@@ -3289,7 +3331,7 @@ body.light-mode .theme-switch-thumb {
     min-width: 0;
     padding: 20px;
     overflow: hidden;
-    color: var(--color-text);
+    color: var(--color-text-light);
     background: var(--bg-panel);
     border: 1px solid var(--border-base);
     border-left: 4px solid var(--atlas-accent);
@@ -3498,12 +3540,13 @@ body.light-mode .theme-switch-thumb {
     width: 100%;
     min-height: 46px;
     padding: 11px 15px;
-    color: var(--color-text);
+    color: var(--color-text-light);
     background: var(--bg-input);
     border: 2px solid var(--border-base);
     border-radius: var(--radius-control);
     font: inherit;
     font-size: 1rem;
+    font-family: var(--font-control);
     font-weight: 500;
     letter-spacing: 0;
     text-transform: none;
@@ -4021,7 +4064,10 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-entry-header {
     position: relative;
     margin: 0 32px 30px;
-    padding-bottom: 22px;
+    padding: 20px 18px 22px;
+    background: var(--bg-panel-subtle);
+    border: 1px solid var(--border-inner);
+    border-radius: var(--radius-control);
     text-align: center;
     border-bottom: 1px solid var(--border-subtle);
 }
@@ -4037,7 +4083,8 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-entry-header h2 {
     margin: 0 0 8px;
     color: var(--color-primary);
-    font-size: clamp(2em, 5vw, 3.25em);
+    font-size: clamp(1.65rem, 5vw, 3.25rem);
+    line-height: 1.2;
     font-style: italic;
     font-weight: 600;
     letter-spacing: 1px;
@@ -4211,7 +4258,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-entry-paleo-label {
     margin-bottom: 8px;
     color: var(--color-muted);
-    font-size: 0.67em;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 1.8px;
     text-transform: uppercase;
@@ -4247,7 +4294,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-time-periods span {
     padding-bottom: 5px;
     color: var(--color-muted);
-    font-size: 0.54em;
+    font-size: 0.72rem;
     letter-spacing: 0.2px;
     text-align: center;
     text-transform: uppercase;
@@ -4297,7 +4344,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     justify-content: space-between;
     margin-top: 6px;
     color: var(--color-muted);
-    font-size: 0.54em;
+    font-size: 0.72rem;
 }
 
 .museum-paleo-chips {
@@ -4313,14 +4360,14 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     background: var(--bg-panel-darker);
     border: 1px solid var(--border-subtle);
     border-radius: 12px;
-    font-size: 0.62em;
+    font-size: 0.75rem;
     letter-spacing: 0.4px;
 }
 
 .museum-paleo-formations {
     margin-top: 12px;
     color: var(--color-muted);
-    font-size: 0.66em;
+    font-size: 0.78rem;
     line-height: 1.5;
 }
 
@@ -4505,11 +4552,21 @@ body.light-mode .museum-time-range {
         width: 100%;
         max-height: calc(100vh - 20px);
         max-height: calc(100dvh - 20px);
-        padding: 28px 18px;
+        /* Reserve a separate close-control row above the specimen heading. */
+        padding: 68px 18px 28px;
+    }
+
+    .museum-entry-close {
+        top: 14px;
+        right: 18px;
     }
 
     .museum-entry-header {
-        margin: 8px 30px 24px;
+        margin: 0 0 24px;
+    }
+
+    .museum-entry-header h2 {
+        overflow-wrap: anywhere;
     }
 
     .museum-entry-layout {
@@ -4722,7 +4779,7 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
         padding-left: calc(8px + env(safe-area-inset-left, 0px));
     }
 
-    header {
+    .site-header {
         margin-bottom: 16px;
         padding: 24px 14px 18px;
     }
@@ -4780,8 +4837,6 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 
     .screen-title {
         margin-bottom: 8px;
-        font-size: clamp(1.65rem, 8vw, 1.9rem) !important;
-        letter-spacing: 1.2px !important;
     }
 
     .difficulty-home-date {
@@ -4965,7 +5020,7 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 }
 
 @media (max-width: 420px) {
-    header {
+    .site-header {
         padding: 22px 10px 16px;
     }
 
@@ -4979,11 +5034,15 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
     }
 
     .museum-entry-dialog {
-        padding: 24px 12px;
+        padding: 68px 12px 24px;
+    }
+
+    .museum-entry-close {
+        right: 12px;
     }
 
     .museum-entry-header {
-        margin: 10px 34px 22px 10px;
+        margin: 0 0 22px;
     }
 }
 
@@ -5111,7 +5170,7 @@ body.light-mode .stat-label {
     background: var(--bg-input);
     border: 2px solid var(--border-inner);
     border-radius: 4px;
-    font: 16px Georgia, serif;
+    font: 16px var(--font-control);
     outline: none;
 }
 
@@ -5461,17 +5520,17 @@ body.light-mode .stat-label {
 
 .analytics-chart-column {
     display: grid;
-    grid-template-rows: 20px minmax(0, 1fr) 32px;
+    grid-template-rows: 20px minmax(0, 1fr) 40px;
     align-items: end;
-    flex: 1 0 22px;
-    min-width: 22px;
+    flex: 1 0 32px;
+    min-width: 32px;
     height: 100%;
     text-align: center;
 }
 
 .analytics-chart-value {
     color: var(--color-muted);
-    font-size: 0.65em;
+    font-size: 0.75rem;
 }
 
 .analytics-chart-bar {
@@ -5484,7 +5543,7 @@ body.light-mode .stat-label {
 .analytics-chart-date {
     padding-top: 7px;
     color: var(--color-muted);
-    font-size: 0.58em;
+    font-size: 0.75rem;
     white-space: nowrap;
     transform: rotate(-45deg);
 }
@@ -5542,7 +5601,7 @@ body.light-mode .stat-label {
 .analytics-activity-row time,
 .analytics-generated {
     color: var(--color-muted);
-    font-size: 0.7em;
+    font-size: 0.75rem;
 }
 
 .analytics-activity-row small {
@@ -5578,7 +5637,7 @@ body.light-mode .stat-label {
 .analytics-section-note,
 .analytics-data-warning {
     color: var(--color-muted);
-    font-size: 0.72em;
+    font-size: 0.75rem;
 }
 
 .analytics-section-note {
@@ -5783,9 +5842,10 @@ body.light-mode .stat-label {
 }
 
 .tutorial-title {
-  margin: 0 0 12px;
-  color: var(--color-primary);
-  font-size: clamp(1.65rem, 6vw, 2.3rem);
+    margin: 0 0 12px;
+    color: var(--color-primary);
+    font-size: clamp(1.65rem, 6vw, 2.3rem);
+    line-height: 1.25;
   font-weight: 600;
 }
 
@@ -6022,8 +6082,10 @@ body.light-mode .stat-label {
 
 .tutorial-levels small {
   color: var(--color-success);
-  font-size: 0.43em;
-  letter-spacing: 1px;
+  font-size: 0.7rem;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  letter-spacing: 0.3px;
 }
 
 .tutorial-actions {
@@ -6504,7 +6566,7 @@ body.light-mode .stat-label {
 
 .stats-player-badge span {
   color: var(--color-muted);
-  font-size: 0.67em;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -6536,7 +6598,26 @@ body.light-mode .stat-label {
 
 .stats-insights-grid .streak-card,
 .stats-insights-grid .stats-section {
+  min-width: 0;
   margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .stats-insights-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stats-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .stats-player-badge {
+    min-width: 0;
+    max-width: 100%;
+    justify-items: start;
+  }
 }
 
 .stats-section {

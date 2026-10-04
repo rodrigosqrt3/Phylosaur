@@ -53,10 +53,18 @@ function setAppRoute(route, { replace = false } = {}) {
   );
 }
 
-function closeTransientRouteOverlays() {
-  if (typeof closeMuseumEntry === 'function') closeMuseumEntry();
-  document.querySelectorAll('.modal-overlay, .tutorial-overlay').forEach(element => element.remove());
-  document.body.style.overflow = '';
+function closeTransientRouteOverlays({ closeMuseum = true } = {}) {
+  let removedUnmanagedOverlay = false;
+  Array.from(document.querySelectorAll('.modal-overlay, .tutorial-overlay')).reverse().forEach(element => {
+    if (typeof element.dismissAppOverlay === 'function') {
+      element.dismissAppOverlay({ restoreFocus: false });
+    } else {
+      element.remove();
+      removedUnmanagedOverlay = true;
+    }
+  });
+  if (removedUnmanagedOverlay) document.body.style.overflow = '';
+  if (closeMuseum && typeof closeMuseumEntry === 'function') closeMuseumEntry();
 }
 
 async function renderFallbackRoute(route) {
@@ -106,6 +114,7 @@ async function restoreAppRoute() {
 
   const museumVisible = Boolean(document.querySelector('#app-content .museum-grid'));
   if (route === '/museum' && museumVisible) {
+    closeTransientRouteOverlays({ closeMuseum: false });
     await closeMuseumEntry({ animate: true, restorePosition: true });
     if (!isCurrentRequest()) return getCurrentAppRoute();
   } else {

@@ -64,6 +64,41 @@ function getAnalyticsVisitorId() {
   return visitorId;
 }
 
+const gameSessionCredentials = new Map();
+
+function getGameSessionToken(sessionId) {
+  if (typeof sessionId !== "string" || !sessionId) return null;
+  if (gameSessionCredentials.has(sessionId)) return gameSessionCredentials.get(sessionId);
+  try {
+    const token = localStorage.getItem(`${PHYLOSAUR_STORAGE_KEYS.sessionCredentialPrefix}${sessionId}`);
+    if (token && /^v1\.[A-Za-z0-9_-]{43}$/.test(token)) {
+      gameSessionCredentials.set(sessionId, token);
+      return token;
+    }
+  } catch { /* In-memory credentials still work when storage is unavailable. */ }
+  return null;
+}
+
+function rememberGameSessionToken(data) {
+  if (typeof data?.sessionId !== "string" || typeof data?.sessionToken !== "string"
+      || !/^v1\.[A-Za-z0-9_-]{43}$/.test(data.sessionToken)) return;
+  gameSessionCredentials.set(data.sessionId, data.sessionToken);
+  try {
+    localStorage.setItem(`${PHYLOSAUR_STORAGE_KEYS.sessionCredentialPrefix}${data.sessionId}`, data.sessionToken);
+  } catch { /* Keep playing with the credential held in memory. */ }
+}
+
+function withGameSessionCredentials(payload) {
+  const authenticated = { ...payload };
+  const token = getGameSessionToken(payload.sessionId);
+  if (token && authenticated.sessionToken === undefined) authenticated.sessionToken = token;
+  if (Array.isArray(payload.proofSessionIds)) {
+    authenticated.sessionCredentials = Object.fromEntries(payload.proofSessionIds
+      .map(id => [id, getGameSessionToken(id)]).filter(([, value]) => value));
+  }
+  return authenticated;
+}
+
 async function callGameApi(action, payload = {}) {
   const requestStartedAt = performance.now();
   const { data: { session } } = await sb.auth.getSession();
@@ -80,7 +115,7 @@ async function callGameApi(action, payload = {}) {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${accessToken}`
       },
-      body: JSON.stringify({ action, visitorId: getAnalyticsVisitorId(), ...payload }),
+      body: JSON.stringify({ action, visitorId: getAnalyticsVisitorId(), ...withGameSessionCredentials(payload) }),
       signal: controller.signal
     });
   } catch (error) {
@@ -114,24 +149,49 @@ async function callGameApi(action, payload = {}) {
     throw apiError;
   }
 
+  rememberGameSessionToken(data);
   return data;
 }
 
+let analyticsAccessRequest = null;
+let analyticsAccessOwnerId = null;
+
 async function initializeAnalyticsAccess() {
-  if (analyticsAccessChecked) return isAnalyticsAdmin;
-  analyticsAccessChecked = true;
-  if (!currentUserId) {
+  const ownerId = currentUserId;
+  if (!ownerId) {
+    analyticsAccessRequest = null;
+    analyticsAccessOwnerId = null;
+    analyticsAccessChecked = true;
     isAnalyticsAdmin = false;
     return false;
   }
+  if (analyticsAccessChecked && analyticsAccessOwnerId === ownerId) return isAnalyticsAdmin;
+  if (analyticsAccessRequest?.ownerId === ownerId) return analyticsAccessRequest.promise;
 
-  try {
-    const data = await callGameApi('analytics_access');
-    isAnalyticsAdmin = data.allowed === true;
-  } catch (error) {
-    isAnalyticsAdmin = false;
-  }
-  return isAnalyticsAdmin;
+  analyticsAccessChecked = false;
+  isAnalyticsAdmin = false;
+  const request = { ownerId, promise: null };
+  analyticsAccessRequest = request;
+  const isCurrentRequest = () => analyticsAccessRequest === request && currentUserId === ownerId;
+  request.promise = (async () => {
+    try {
+      const data = await callGameApi('analytics_access');
+      if (!isCurrentRequest()) return false;
+      isAnalyticsAdmin = data.allowed === true;
+      analyticsAccessOwnerId = ownerId;
+      analyticsAccessChecked = true;
+      return isAnalyticsAdmin;
+    } catch (error) {
+      if (isCurrentRequest()) {
+        isAnalyticsAdmin = false;
+        analyticsAccessChecked = false;
+      }
+      return false;
+    } finally {
+      if (analyticsAccessRequest === request) analyticsAccessRequest = null;
+    }
+  })();
+  return request.promise;
 }
 
 function getStoredGameSessionIds(limit = 10) {

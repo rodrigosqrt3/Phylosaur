@@ -79,15 +79,32 @@ function updateDifficultyCompletionStatus(status) {
     });
 }
 
+let difficultyAccountRefreshGeneration = 0;
+
 async function refreshDifficultySelectionAccountState() {
     if (getCurrentAppRoute() !== '/') return;
-    const [completionStatus] = await Promise.all([
-        getDailyCompletionStatus(),
-        initializeAnalyticsAccess()
-    ]);
-    if (getCurrentAppRoute() !== '/' || !document.querySelector('.difficulty-btn[data-difficulty]')) return;
-    updateDifficultyCompletionStatus(completionStatus);
-    setHeaderControls('difficulty');
+    const generation = ++difficultyAccountRefreshGeneration;
+    const appContent = document.getElementById('app-content');
+    const homeCard = appContent?.firstElementChild;
+    const ownerId = currentUserId;
+    const today = getTodayString();
+    const isCurrentRequest = () => generation === difficultyAccountRefreshGeneration
+        && getCurrentAppRoute() === '/' && currentUserId === ownerId && getTodayString() === today
+        && document.getElementById('app-content') === appContent
+        && appContent?.firstElementChild === homeCard;
+    if (!homeCard || !document.querySelector('.difficulty-btn[data-difficulty]')) return;
+    try {
+        const [completionStatus] = await Promise.all([
+            getDailyCompletionStatus(),
+            initializeAnalyticsAccess()
+        ]);
+        if (!isCurrentRequest()) return;
+        updateDifficultyCompletionStatus(completionStatus);
+        setHeaderControls('difficulty');
+    } catch (error) {
+        if (!isCurrentRequest()) return;
+        console.warn('Daily account state could not be refreshed:', error);
+    }
 }
 
 function showFriendChallenges(prefilledCode = '') {
@@ -475,26 +492,34 @@ function generateStreakDisplay(streakData) {
 let mathRendererPromise = null;
 
 function loadPhylosaurScript(src) {
-    return new Promise((resolve, reject) => {
-        const existing = document.querySelector(`script[src="${src}"]`);
-        if (existing) {
-            if (existing.dataset.loaded === 'true') resolve();
-            else {
-                existing.addEventListener('load', resolve, { once: true });
-                existing.addEventListener('error', reject, { once: true });
-            }
-            return;
-        }
-
-        const script = document.createElement('script');
-        script.src = src;
-        script.addEventListener('load', () => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing?.dataset.loaded === 'true') return Promise.resolve();
+    if (existing?.phylosaurLoadPromise) return existing.phylosaurLoadPromise;
+    const script = existing || document.createElement('script');
+    script.src = src;
+    script.phylosaurLoadPromise = new Promise((resolve, reject) => {
+        const cleanup = () => {
+            clearTimeout(timeout);
+            script.removeEventListener('load', onLoad);
+            script.removeEventListener('error', onError);
+            script.phylosaurLoadPromise = null;
+        };
+        const onLoad = () => {
             script.dataset.loaded = 'true';
+            cleanup();
             resolve();
-        }, { once: true });
-        script.addEventListener('error', reject, { once: true });
-        document.head.appendChild(script);
+        };
+        const onError = () => {
+            cleanup();
+            script.remove();
+            reject(new Error(`Could not load script: ${src}`));
+        };
+        const timeout = setTimeout(onError, 15000);
+        script.addEventListener('load', onLoad, { once: true });
+        script.addEventListener('error', onError, { once: true });
+        if (!existing) document.head.appendChild(script);
     });
+    return script.phylosaurLoadPromise;
 }
 
 function ensureMathRenderer() {
@@ -523,16 +548,22 @@ async function showAbout() {
     setHeaderControls('about');
     const appContent = document.getElementById('app-content');
     appContent.innerHTML = `<div class="game-card about-screen">${renderAppState(t('about.loading'))}</div>`;
+    let aboutCard = appContent.firstElementChild;
+    const isCurrentRequest = () => getCurrentAppRoute() === '/about'
+        && appContent.firstElementChild === aboutCard;
 
     try {
         const response = await fetch('about.html');
+        if (!isCurrentRequest()) return;
         if (!response.ok) throw new Error(`About page returned ${response.status}.`);
-        const aboutDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+        const articleHtml = await response.text();
+        if (!isCurrentRequest()) return;
+        const aboutDocument = new DOMParser().parseFromString(articleHtml, 'text/html');
         const article = aboutDocument.querySelector('#about-content article');
         if (!article) throw new Error('About content is unavailable.');
         article.querySelector('h2')?.remove();
         article.querySelectorAll('script').forEach(script => script.remove());
-        if (getCurrentAppRoute() !== '/about') return;
+        if (!isCurrentRequest()) return;
 
         appContent.innerHTML = `
             <div class="game-card about-screen">
@@ -540,11 +571,21 @@ async function showAbout() {
                 <div class="about-screen-body">${article.innerHTML}</div>
                 <button class="btn-new-game" onclick="navigateToAppRoute('/')">${t('about.return')}</button>
             </div>`;
+        aboutCard = appContent.firstElementChild;
         focusAppScreenHeading();
-        const aboutCard = appContent.querySelector('.about-screen');
+    } catch (error) {
+        if (!isCurrentRequest()) return;
+        appContent.innerHTML = `<div class="game-card about-screen">${renderAppState(
+            t('about.error'), { type: 'error', detail: error.message }
+        )}<button class="btn-new-game" onclick="navigateToAppRoute('/')">${t('about.return')}</button></div>`;
+        return;
+    }
+
+    // Formula rendering is optional: a CDN failure must not hide the article.
+    try {
         await ensureMathRenderer();
-        if (!aboutCard?.isConnected || !window.renderMathInElement) return;
-        renderMathInElement(aboutCard, {
+        if (!isCurrentRequest() || !aboutCard?.isConnected || !window.renderMathInElement) return;
+        window.renderMathInElement(aboutCard, {
             delimiters: [
                 { left: '$$', right: '$$', display: true },
                 { left: '$', right: '$', display: false }
@@ -552,10 +593,8 @@ async function showAbout() {
             throwOnError: false
         });
     } catch (error) {
-        if (getCurrentAppRoute() !== '/about') return;
-        appContent.innerHTML = `<div class="game-card about-screen">${renderAppState(
-            t('about.error'), { type: 'error', detail: error.message }
-        )}<button class="btn-new-game" onclick="navigateToAppRoute('/')">${t('about.return')}</button></div>`;
+        if (!isCurrentRequest()) return;
+        console.warn('About formula rendering is unavailable:', error);
     }
 }
 
@@ -759,15 +798,15 @@ function renderInteractiveTutorialStep() {
     });
 }
 
-function closeInteractiveTutorial() {
+function closeInteractiveTutorial({ restoreFocus = true, markComplete = true } = {}) {
     const overlay = document.getElementById('tutorial-overlay');
     if (!overlay) return;
-    markFirstRunTutorialComplete();
+    if (markComplete) markFirstRunTutorialComplete();
     if (tutorialKeyHandler) document.removeEventListener('keydown', tutorialKeyHandler, true);
     tutorialKeyHandler = null;
     overlay.remove();
     document.body.style.overflow = tutorialPreviousBodyOverflow;
-    if (tutorialPreviouslyFocused instanceof HTMLElement && tutorialPreviouslyFocused.isConnected) {
+    if (restoreFocus && tutorialPreviouslyFocused instanceof HTMLElement && tutorialPreviouslyFocused.isConnected) {
         tutorialPreviouslyFocused.focus();
     }
 }
@@ -802,6 +841,8 @@ function showInteractiveTutorial({ firstRun = false } = {}) {
 
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
+    overlay.dismissAppOverlay = ({ restoreFocus = true } = {}) =>
+        closeInteractiveTutorial({ restoreFocus, markComplete: false });
 
     overlay.querySelector('.tutorial-skip').addEventListener('click', closeInteractiveTutorial);
     overlay.querySelector('.tutorial-back').addEventListener('click', () => {
@@ -818,8 +859,10 @@ function showInteractiveTutorial({ firstRun = false } = {}) {
     });
 
     tutorialKeyHandler = event => {
+        if (!isTopAppOverlay(overlay)) return;
         if (event.key === 'Escape') {
             event.preventDefault();
+            event.stopImmediatePropagation();
             closeInteractiveTutorial();
             return;
         }
@@ -1668,6 +1711,7 @@ function getMuseumMediaCredit(name, media) {
 
 async function closeMuseumEntry({ animate = false, restorePosition = false } = {}) {
     const overlay = document.getElementById('museum-entry-overlay');
+    if (!overlay) return false;
     if (animate && overlay) {
         if (!overlay.museumClosing) {
             overlay.classList.add('is-closing');
@@ -1678,13 +1722,15 @@ async function closeMuseumEntry({ animate = false, restorePosition = false } = {
         if (document.getElementById('museum-entry-overlay') !== overlay) return false;
     }
 
-    document.getElementById('museum-image-viewer')?.remove();
+    const viewer = document.getElementById('museum-image-viewer');
+    if (viewer?.dismissAppOverlay) viewer.dismissAppOverlay({ restoreFocus: false });
+    else viewer?.remove();
     overlay?.remove();
     document.body.style.overflow = overlay?.museumReturnState?.overflow || '';
     activeMuseumEntryMedia = null;
 
     if (museumEntryEscapeHandler) {
-        document.removeEventListener('keydown', museumEntryEscapeHandler);
+        document.removeEventListener('keydown', museumEntryEscapeHandler, true);
         museumEntryEscapeHandler = null;
     }
 
@@ -1711,13 +1757,48 @@ async function dismissMuseumEntry() {
     }
 }
 
+function trapMuseumOverlayTab(overlay, event) {
+    if (event.key !== 'Tab') return;
+    const controls = Array.from(overlay.querySelectorAll(
+        'button:not([disabled]):not([hidden]), a[href]:not([hidden]), [tabindex="0"]:not([hidden])'
+    ));
+    const first = controls[0];
+    const last = controls.at(-1);
+    if (!first) {
+        event.preventDefault();
+        overlay.focus({ preventScroll: true });
+    } else if (!controls.includes(document.activeElement)
+        || (event.shiftKey && document.activeElement === first)
+        || (!event.shiftKey && document.activeElement === last)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus({ preventScroll: true });
+    }
+}
+
+function replaceMuseumEntryContent(overlay, html) {
+    const hadFocus = overlay.contains(document.activeElement);
+    overlay.querySelector('.museum-entry-dialog').innerHTML = html;
+    if (hadFocus && isTopAppOverlay(overlay)) {
+        overlay.querySelector('.museum-entry-close').focus({ preventScroll: true });
+    }
+}
+
 function openMuseumImageViewer() {
     if (!activeMuseumEntryMedia?.url) return;
 
-    document.getElementById('museum-image-viewer')?.remove();
+    const entry = document.getElementById('museum-entry-overlay');
+    if (!entry || entry.museumDismissRequested || entry.museumClosing) return;
+    const previousViewer = document.getElementById('museum-image-viewer');
+    previousViewer?.dismissAppOverlay({ restoreFocus: false });
+    const previouslyFocused = previousViewer?.museumPreviouslyFocused || document.activeElement;
     const viewer = document.createElement('div');
     viewer.id = 'museum-image-viewer';
     viewer.className = 'museum-image-viewer';
+    viewer.setAttribute('role', 'dialog');
+    viewer.setAttribute('aria-modal', 'true');
+    viewer.setAttribute('aria-label', t('media.imageViewer', { name: activeMuseumEntryMedia.name }));
+    viewer.tabIndex = -1;
+    viewer.museumPreviouslyFocused = previouslyFocused;
     viewer.innerHTML = `
         <button class="museum-image-viewer-close" type="button" aria-label="${t('museum.closeImage')}">×</button>
         <img src="${activeMuseumEntryMedia.url}" alt="${activeMuseumEntryMedia.name}">
@@ -1727,13 +1808,35 @@ function openMuseumImageViewer() {
         </div>
     `;
 
+    const closeViewer = ({ restoreFocus = true } = {}) => {
+        if (!viewer.isConnected) return;
+        const wasTop = isTopAppOverlay(viewer);
+        document.removeEventListener('keydown', keyHandler, true);
+        viewer.remove();
+        if (restoreFocus && wasTop && entry.isConnected && !entry.museumDismissRequested
+            && !entry.museumClosing && previouslyFocused?.isConnected
+            && entry.contains(previouslyFocused)) {
+            previouslyFocused.focus({ preventScroll: true });
+        }
+    };
+    const keyHandler = event => {
+        if (!isTopAppOverlay(viewer)) return;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            closeViewer();
+        } else trapMuseumOverlayTab(viewer, event);
+    };
+    viewer.dismissAppOverlay = closeViewer;
     viewer.addEventListener('click', event => {
         if (event.target === viewer || event.target.closest('.museum-image-viewer-close')) {
-            viewer.remove();
+            closeViewer();
         }
     });
 
     document.body.appendChild(viewer);
+    document.addEventListener('keydown', keyHandler, true);
+    viewer.querySelector('.museum-image-viewer-close').focus({ preventScroll: true });
 }
 
 async function showMuseumEntry(name) {
@@ -1747,6 +1850,10 @@ async function showMuseumEntry(name) {
     const overlay = document.createElement('div');
     overlay.id = 'museum-entry-overlay';
     overlay.className = 'museum-entry-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', name);
+    overlay.tabIndex = -1;
     overlay.museumReturnState = {
         scrollX: window.scrollX,
         scrollY: window.scrollY,
@@ -1755,7 +1862,7 @@ async function showMuseumEntry(name) {
             .find(card => card.dataset.museumName === name.toLowerCase()) || document.activeElement
     };
     overlay.innerHTML = `
-        <article class="museum-entry-dialog" role="dialog" aria-modal="true" aria-label="${safeName}">
+        <article class="museum-entry-dialog">
             <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="${t('common.close')}">×</button>
             <div class="museum-entry-loading">${t('museum.openingName', { name: safeName })}</div>
         </article>
@@ -1767,14 +1874,23 @@ async function showMuseumEntry(name) {
 
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
+    const ownerId = currentUserId;
+    const entryRoute = `/museum/${encodeURIComponent(name)}`;
+    const isCurrentEntry = () => overlay.isConnected && !overlay.museumDismissRequested
+        && !overlay.museumClosing && currentUserId === ownerId
+        && getCurrentAppRoute() === entryRoute
+        && document.getElementById('museum-entry-overlay') === overlay;
 
     museumEntryEscapeHandler = event => {
-        if (event.key !== 'Escape') return;
-        const viewer = document.getElementById('museum-image-viewer');
-        if (viewer) viewer.remove();
-        else dismissMuseumEntry();
+        if (!isCurrentEntry() || !isTopAppOverlay(overlay)) return;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            void dismissMuseumEntry();
+        } else trapMuseumOverlayTab(overlay, event);
     };
-    document.addEventListener('keydown', museumEntryEscapeHandler);
+    document.addEventListener('keydown', museumEntryEscapeHandler, true);
+    overlay.querySelector('.museum-entry-close').focus({ preventScroll: true });
 
     if (!Array.isArray(dino.linhagem)) {
         try {
@@ -1784,19 +1900,21 @@ async function showMuseumEntry(name) {
                 museumProof: discoveryRecord?.museumProof || null,
                 proofSessionIds: getStoredGameSessionIds()
             });
+            if (!isCurrentEntry()) return;
             Object.assign(dino, entry.dinosaur);
         } catch (error) {
-            overlay.querySelector('.museum-entry-dialog').innerHTML = `
+            if (!isCurrentEntry()) return;
+            replaceMuseumEntryContent(overlay, `
                 <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="${t('common.close')}">×</button>
                 <div class="museum-entry-loading" style="color:var(--color-danger);">
                     ${t('museum.openNameError', { name: safeName })}<br>${escapeChallengeHtml(error.message)}
                 </div>
-            `;
+            `);
             return;
         }
     }
 
-    if (!document.body.contains(overlay)) return;
+    if (!isCurrentEntry()) return;
 
     const mediaPromise = getCachedDinoMedia(name);
     const wikiPromise = fetchWikipediaInfo(name);
@@ -1821,7 +1939,7 @@ async function showMuseumEntry(name) {
         credit: ''
     };
 
-    overlay.querySelector('.museum-entry-dialog').innerHTML = `
+    replaceMuseumEntryContent(overlay, `
             <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="${t('common.close')}">×</button>
 
         <header class="museum-entry-header">
@@ -1865,10 +1983,10 @@ async function showMuseumEntry(name) {
                 <div class="museum-entry-read-more-slot"></div>
             </section>
         </div>
-    `;
+    `);
 
     void mediaPromise.then(media => {
-        if (!overlay.isConnected) return;
+        if (!isCurrentEntry()) return;
         const figure = overlay.querySelector('.museum-entry-figure');
         const button = figure?.querySelector('.museum-entry-image-button');
         const image = figure?.querySelector('img');
@@ -1885,13 +2003,14 @@ async function showMuseumEntry(name) {
         caption.innerHTML = credit;
         activeMuseumEntryMedia = { name, url: media?.url || null, credit };
     }).catch(error => {
+        if (!isCurrentEntry()) return;
         console.warn(`Museum illustration unavailable for ${name}:`, error);
         const caption = overlay.querySelector('.museum-entry-figure figcaption');
         if (caption) caption.textContent = t('museum.noIllustration');
     });
 
     void wikiPromise.then(wikiInfo => {
-        if (!overlay.isConnected) return;
+        if (!isCurrentEntry()) return;
         const description = overlay.querySelector('.museum-entry-description');
         if (description) {
             description.textContent = wikiInfo?.description
@@ -1908,16 +2027,25 @@ async function showMuseumEntry(name) {
                 </a>
             `;
         }
+    }).catch(error => {
+        if (!isCurrentEntry()) return;
+        console.warn(`Museum summary unavailable for ${name}:`, error);
+        const description = overlay.querySelector('.museum-entry-description');
+        if (description) description.textContent = t('museum.noSummary');
     });
 
     void paleodataPromise.then(paleodataCatalog => {
-        if (!overlay.isConnected) return;
+        if (!isCurrentEntry()) return;
         const slot = overlay.querySelector('.museum-entry-paleodata-slot');
         if (!slot) return;
         const paleodata = paleodataCatalog.taxa[name] || null;
         const html = renderMuseumPaleodata(paleodata, paleodataCatalog.timeline);
         if (html) slot.innerHTML = html;
         else slot.remove();
+    }).catch(error => {
+        if (!isCurrentEntry()) return;
+        console.warn(`Museum fossil data unavailable for ${name}:`, error);
+        overlay.querySelector('.museum-entry-paleodata-slot')?.remove();
     });
 }
 
