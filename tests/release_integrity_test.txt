@@ -357,6 +357,199 @@ Deno.test("conflict recovery refreshes only the current game without replaying r
   }
 });
 
+function buildAccountRequestRuntime() {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/auth.${javascriptExtension}`);
+  const state = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
+  const elements = new Map<string, any>();
+  const timers: Function[] = [];
+  const requests: Array<{ action: string; resolve: Function; reject: Function }> = [];
+  const counters = { home: 0, header: 0, notices: 0, claims: 0, inserts: 0 };
+  const makeElement = (value = "") => ({ value, disabled: false, textContent: "", isConnected: true,
+    classList: { add() {}, remove() {}, toggle() {} }, setAttribute() {}, removeAttribute() {} });
+  for (const id of ["signin-btn", "register-btn", "reset-btn", "update-btn",
+    "signin-global-error", "register-global-error", "reset-global-error", "update-global-error",
+    "signin-global-success", "register-global-success", "reset-global-success", "update-global-success"]) {
+    elements.set(id, makeElement());
+  }
+  for (const id of ["signin-email", "reg-email", "reset-email"]) elements.set(id, makeElement("player@example.test"));
+  for (const id of ["signin-password", "reg-password", "reg-confirm", "update-password", "update-confirm"]) {
+    elements.set(id, makeElement("test-only-password"));
+  }
+  elements.set("login-modal-overlay", { remove() { elements.clear(); } });
+  let sdkSession: any = null;
+  const defer = (action: string) => new Promise<any>((resolve, reject) => requests.push({ action, resolve, reject }));
+  const authenticate = (action: string) => defer(action).then(result => {
+    if (result.data?.session) sdkSession = result.data.session;
+    return result;
+  });
+  const sb = {
+    auth: {
+      getSession: async () => ({ data: { session: sdkSession } }),
+      signInWithPassword: () => authenticate("signin"), signUp: () => authenticate("signup"),
+      resetPasswordForEmail: () => defer("reset"), updateUser: () => defer("update"),
+      signOut: (options: any) => {
+        assert(options.scope === "local", "Cancellation must not revoke other devices.");
+        return defer("signout").then(result => { if (!result.error) sdkSession = null; return result; });
+      },
+    },
+    from(table: string) {
+      const query: any = { select() { return query; }, eq() { return query; },
+        single: () => table === "profiles" ? defer("profile")
+          : Promise.resolve({ data: { user_id: "new-owner", games_played: 42, games_won: 20 }, error: null }),
+        insert: async () => { counters.inserts++; return { error: null }; } };
+      return query;
+    },
+  };
+  const runtime = new Function("env", `${state}
+    const { sb, elements, timers, counters, defer } = env;
+    const document = { getElementById: id => elements.get(id) || null,
+      querySelectorAll: () => [], removeEventListener() {}, title: "Game" };
+    const window = { location: { origin: "https://example.test", pathname: "/" },
+      history: { replaceState() {} } };
+    const console = { warn() {} };
+    const t = key => key;
+    let museumDiscoveryRecords = {};
+    const setTimeout = callback => { timers.push(callback); };
+    const showDifficultySelection = () => { counters.home++; };
+    const setHeaderControls = () => { counters.header++; };
+    const customConfirm = async () => "true";
+    const customAlert = async () => { counters.notices++; };
+    const claimGuestProgressOnLogin = () => { counters.claims++; return defer("claim"); };
+    const getCurrentAppRoute = () => "/practice";
+    ${source}
+    return { handleSignInModal, handleSignIn, handleRegisterModal, handleRegister, handleReset,
+      handlePasswordUpdate, initializeUserSystem, initUserStatsRow, logout, continueAsGuest,
+      discardCancelledAuthSession,
+      cancel() { accountRequestGeneration++; elements.clear(); },
+      setOwner(id) { accountRequestGeneration++; currentUserId = id; currentUser = id; },
+      seedProgress() { userStats.gamesPlayed = 999; userStats.achievements = ["old-account"];
+        museumDiscoveryRecords = { old: true }; },
+      snapshot: () => ({ owner: currentUserId, name: currentUser, stats: userStats,
+        discoveries: museumDiscoveryRecords, sdk: env.getSession() }),
+    };`)( { sb, elements, timers, counters, defer, getSession: () => sdkSession } );
+  return { ...runtime, elements, timers, counters, requests,
+    makeElement, setSdkSession: (value: any) => { sdkSession = value; } };
+}
+
+Deno.test("account forms reject duplicate submissions and release their original buttons after failures", async () => {
+  const flush = async () => { for (let index = 0; index < 24; index++) await Promise.resolve(); };
+  for (const [method, action, buttonId, panel] of [
+    ["handleSignInModal", "signin", "signin-btn", "signin"],
+    ["handleSignIn", "signin", "signin-btn", "signin"],
+    ["handleRegisterModal", "signup", "register-btn", "register"],
+    ["handleRegister", "signup", "register-btn", "register"],
+    ["handleReset", "reset", "reset-btn", "reset"],
+    ["handlePasswordUpdate", "update", "update-btn", "update"],
+  ]) {
+    for (const failure of ["throw", "returned-error", "replacement", "account-switch"]) {
+      const runtime: any = buildAccountRequestRuntime();
+      const button = runtime.elements.get(buttonId);
+      const work = runtime[method]();
+      const duplicate = runtime[method]();
+      await flush();
+      assert(button.disabled && runtime.requests.length === 1 && runtime.requests[0].action === action,
+        `${method}: duplicate click/Enter must not send another request.`);
+      let replacement: any;
+      if (failure === "replacement") {
+        runtime.cancel(); replacement = runtime.makeElement(); replacement.disabled = true;
+        runtime.elements.set(buttonId, replacement);
+      }
+      if (failure === "account-switch") runtime.setOwner("another-owner");
+      if (failure === "returned-error") runtime.requests[0].resolve({ error: { message: "Rejected request" } });
+      else runtime.requests[0].reject(new Error("Network failure"));
+      await work; await duplicate;
+      assert(!button.disabled && (!replacement || replacement.disabled),
+        `${method}: cleanup must unlock only its original control, not a newer request.`);
+      const error = runtime.elements.get(`${panel}-global-error`);
+      const shouldReport = ["throw", "returned-error"].includes(failure);
+      assert(Boolean(error?.textContent) === shouldReport && runtime.counters.home === 0
+        && runtime.counters.header === 0 && runtime.counters.claims === 0,
+        `${method}: a stale failure must not report into a newer form or change account/navigation.`);
+    }
+  }
+});
+
+Deno.test("late login profiles and initialization never overwrite another account or a replaced form", async () => {
+  const flush = async () => { for (let index = 0; index < 24; index++) await Promise.resolve(); };
+  for (const scenario of ["current", "closed", "account-switch", "profile-failure", "sync-failure"]) {
+    const runtime = buildAccountRequestRuntime();
+    runtime.seedProgress();
+    const button = runtime.elements.get("signin-btn");
+    const work = runtime.handleSignInModal(); await flush();
+    runtime.requests[0].resolve({ data: { user: { id: "new-owner" } }, error: null }); await flush();
+    assert(runtime.requests[1].action === "profile", "Login must read the authenticated profile.");
+    if (scenario === "closed") runtime.cancel();
+    if (scenario === "account-switch") runtime.setOwner("different-owner");
+    if (scenario === "profile-failure") runtime.requests[1].reject(new Error("Profile unavailable"));
+    else runtime.requests[1].resolve({ data: { username: "new-player" } });
+    await flush();
+    if (!["closed", "account-switch"].includes(scenario)) {
+      const snapshot = runtime.snapshot();
+      assert(snapshot.owner === "new-owner" && snapshot.stats.gamesPlayed === 0
+        && snapshot.stats.achievements.length === 0 && Object.keys(snapshot.discoveries).length === 0,
+        "Adopting a new account must clear the previous account progress before synchronization.");
+      const claim = runtime.requests.find((request: any) => request.action === "claim")!;
+      if (scenario === "sync-failure") claim.reject(new Error("Progress temporarily unavailable"));
+      else claim.resolve({});
+    }
+    await work;
+    assert(!button.disabled && runtime.counters.header === (["closed", "account-switch"].includes(scenario) ? 0 : 1),
+      "Login must finish safely even when optional profile/progress loading fails.");
+    assert(runtime.snapshot().owner === (scenario === "closed" ? null
+      : scenario === "account-switch" ? "different-owner" : "new-owner"),
+      "An obsolete profile response overwrote another account.");
+  }
+  const runtime = buildAccountRequestRuntime();
+  runtime.setSdkSession({ user: { id: "startup-owner" } });
+  const initial = runtime.initializeUserSystem(); await flush();
+  runtime.setOwner("newer-owner");
+  runtime.requests[0].resolve({ data: { username: "old-name" } });
+  assert(await initial === null && runtime.snapshot().owner === "newer-owner"
+    && runtime.snapshot().stats.gamesPlayed === 0 && runtime.counters.claims === 0,
+    "Delayed startup profile/statistics must not republish a superseded identity.");
+});
+
+Deno.test("cancelled login sessions and logout execute in order without revoking a newer SDK session", async () => {
+  const flush = async () => { for (let index = 0; index < 24; index++) await Promise.resolve(); };
+  const runtime = buildAccountRequestRuntime();
+  const work = runtime.handleSignInModal(); await flush();
+  runtime.cancel();
+  const guest = runtime.continueAsGuest(); await flush();
+  runtime.requests[0].resolve({ data: { user: { id: "cancelled-owner" },
+    session: { access_token: "cancelled-token", user: { id: "cancelled-owner" } } }, error: null });
+  await flush();
+  assert(runtime.requests[1].action === "signout" && runtime.requests.length === 2,
+    "Queued guest/logout must wait for cancelled login cleanup, not race the auth SDK.");
+  runtime.requests[1].resolve({ error: null }); await flush();
+  assert(runtime.requests[2].action === "signout", "Guest transition must follow cancellation cleanup.");
+  runtime.requests[2].resolve({ error: null }); await work; await guest;
+  assert(runtime.snapshot().owner === null && runtime.snapshot().sdk === null
+    && runtime.counters.home === 1 && runtime.counters.header === 0,
+    "A late sign-in must not resurrect an account after continuing as guest.");
+  runtime.setSdkSession({ access_token: "newer-token", user: { id: "newer-owner" } });
+  await runtime.discardCancelledAuthSession({ session: { access_token: "old-token" } });
+  assert(runtime.requests.length === 3 && runtime.snapshot().sdk.access_token === "newer-token",
+    "Cancellation must not sign out an unrelated newer SDK session.");
+
+  const failed = buildAccountRequestRuntime();
+  failed.setOwner("original-owner");
+  const logout = failed.logout(); await flush();
+  failed.requests[0].resolve({ error: { message: "Signout failed" } }); await logout;
+  assert(failed.snapshot().owner === "original-owner" && failed.counters.home === 0
+    && failed.counters.notices === 1, "Failed logout must not pretend the account was signed out.");
+});
+
+Deno.test("password update return timer cannot navigate away from a newer screen", async () => {
+  const runtime = buildAccountRequestRuntime();
+  const work = runtime.handlePasswordUpdate();
+  for (let index = 0; index < 24; index++) await Promise.resolve();
+  runtime.requests[0].resolve({ error: null }); await work;
+  assert(runtime.timers.length === 1 && !runtime.elements.get("update-btn").disabled,
+    "Successful password updates must release loading before scheduling the return.");
+  runtime.cancel(); runtime.timers[0]();
+  assert(runtime.counters.home === 0, "An old password-update timer must not replace a newer screen.");
+});
+
 Deno.test("all game JSON files are valid", () => {
   for (const entry of Deno.readDirSync(gameRoot)) {
     if (!entry.isFile || !entry.name.endsWith(".json")) continue;
@@ -1009,8 +1202,8 @@ Deno.test("shared UI states, account controls and motion remain standardized", (
     authSource.includes('autocomplete="new-password"') &&
     authSource.includes("setAttribute('aria-invalid', 'true')") &&
     authSource.includes("t('auth.accountAccess')") &&
-    authSource.includes("t('auth.invalidCredentials')") &&
-    authSource.includes("t('auth.passwordUpdated')") &&
+    (authSource.includes("t('auth.invalidCredentials')") || authSource.includes("t(\"auth.invalidCredentials\")")) &&
+    (authSource.includes("t('auth.passwordUpdated')") || authSource.includes("t(\"auth.passwordUpdated\")")) &&
     !authSource.includes("Invalid email or password. Please try again.") &&
     !authSource.includes("Continue Without Account") &&
     !authSource.includes('<div class="game-card" style="max-width:480px;') &&
@@ -1901,6 +2094,7 @@ Deno.test("route dismissal settles dialogs, removes keyboard handlers and restor
   const routeSource = mainSource.slice(mainSource.indexOf("function closeTransientRouteOverlays("),
     mainSource.indexOf("async function renderFallbackRoute("));
   const buildRuntime = () => new Function(`
+    let accountRequestGeneration = 0;
     const counters = { focus: 0, detachedFocus: 0, tutorialCompleted: 0, museumClosed: 0 };
     const timers = new Map(); const microtasks = []; const handlers = new Set();
     let timerId = 0;

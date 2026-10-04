@@ -1,20 +1,80 @@
 // ═══════════════════════════════════════════════
 // USER ACCOUNT SYSTEM
 // ═══════════════════════════════════════════════
+let accountRequestGeneration = 0;
+let authOperationQueue = Promise.resolve();
+
+function queueAuthOperation(operation) {
+  const pending = authOperationQueue.then(operation);
+  authOperationQueue = pending.catch(() => {});
+  return pending;
+}
+
+async function runAccountFormRequest(buttonId, panel, operation) {
+  const button = document.getElementById(buttonId);
+  if (!button || button.disabled) return;
+  const generation = ++accountRequestGeneration;
+  let ownerId = currentUserId;
+  const request = {
+    isCurrent: () => generation === accountRequestGeneration && currentUserId === ownerId
+      && document.getElementById(buttonId) === button,
+    adoptOwner(id) { ownerId = id; },
+  };
+  loginSetLoading(buttonId, true);
+  try {
+    await queueAuthOperation(async () => {
+      if (request.isCurrent()) await operation(request);
+    });
+  } catch (error) {
+    if (request.isCurrent()) loginShowGlobalError(panel, t("auth.requestFailed"));
+    console.warn("Account operation could not be completed:", error?.name || "Error");
+  } finally {
+    // Release the original control only, never a replacement dialog with the same ID.
+    button.disabled = false;
+    button.classList.remove("btn-loading");
+  }
+}
+
+async function discardCancelledAuthSession(data) {
+  if (!data?.session?.access_token) return;
+  const { data: current } = await sb.auth.getSession();
+  if (current?.session?.access_token !== data.session.access_token) return;
+  const { error } = await sb.auth.signOut({ scope: "local" });
+  if (error) throw error;
+}
+
+function clearAccountProgressState() {
+  userStats = {
+    gamesPlayed: 0, gamesWon: 0, totalGuesses: 0, bestScore: null,
+    difficultyStats: Object.fromEntries(["muito_facil", "facil", "normal", "dificil", "muito_dificil"]
+      .map(difficulty => [difficulty, { played: 0, won: 0, avgGuesses: 0 }])),
+    recentGames: [], achievements: [],
+  };
+  currentAccountProgress = null;
+  if (typeof museumDiscoveryRecords !== "undefined") museumDiscoveryRecords = {};
+}
+
 async function initializeUserSystem() {
+  const generation = ++accountRequestGeneration;
+  const previousOwnerId = currentUserId;
+  const isCurrent = () => generation === accountRequestGeneration && currentUserId === previousOwnerId;
   try {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) return null;
+    if (!session || !isCurrent()) return null;
 
-    currentUserId = session.user.id;
-    analyticsAccessChecked = false;
+    const ownerId = session.user.id;
     const [profileResult, statsResult] = await Promise.all([
-      sb.from('profiles').select('username').eq('id', currentUserId).single(),
-      sb.from('statistics').select('*').eq('user_id', currentUserId).single()
+      sb.from('profiles').select('username').eq('id', ownerId).single(),
+      sb.from('statistics').select('*').eq('user_id', ownerId).single()
     ]);
+    if (!isCurrent()) return null;
     const profile = profileResult.data;
     const stats = statsResult.data;
 
+    if (currentUserId !== ownerId) clearAccountProgressState();
+    currentUserId = ownerId;
+    isAnalyticsAdmin = false;
+    analyticsAccessChecked = false;
     currentUser = profile?.username || session.user.email?.split('@')[0] || null;
 
     if (stats) {
@@ -26,7 +86,8 @@ async function initializeUserSystem() {
 
     void claimGuestProgressOnLogin({ showNotice: false })
       .then(() => {
-        if (typeof getCurrentAppRoute === 'function' && getCurrentAppRoute() === '/') {
+        if (generation === accountRequestGeneration && currentUserId === ownerId
+            && typeof getCurrentAppRoute === 'function' && getCurrentAppRoute() === '/') {
           return refreshDifficultySelectionAccountState();
         }
       })
@@ -39,24 +100,25 @@ async function initializeUserSystem() {
   }
 }
 
-async function initUserStatsRow() {
-  if (!currentUserId) return;
+async function initUserStatsRow(ownerId = currentUserId, isCurrent = () => currentUserId === ownerId) {
+  if (!ownerId || !isCurrent()) return;
 
   const { data: current } = await sb.from('statistics')
     .select('user_id')
-    .eq('user_id', currentUserId)
+    .eq('user_id', ownerId)
     .single();
 
-  if (current) return;
+  if (current || !isCurrent()) return;
 
-  await sb.from('statistics').insert({
-    user_id:       currentUserId,
+  const { error } = await sb.from('statistics').insert({
+    user_id:       ownerId,
     games_played:  0,
     games_won:     0,
     total_guesses: 0,
     best_score:    null,
     updated_at:    new Date().toISOString()
   });
+  if (error) throw error;
 }
 
 function showLoginScreen() {
@@ -281,6 +343,7 @@ function showLoginModal() {
 }
 
 function closeLoginModal({ restoreFocus = true } = {}) {
+  if (document.getElementById("login-modal-overlay")) accountRequestGeneration++;
   const overlay = document.getElementById('login-modal-overlay');
   overlay?.remove();
   activeLoginModalCleanup?.({ restoreFocus });
@@ -288,6 +351,10 @@ function closeLoginModal({ restoreFocus = true } = {}) {
 }
 
 async function handleSignInModal() {
+  return handleAccountSignIn(true);
+}
+
+async function handleAccountSignIn(modal = false) {
   loginClearErrors();
   const email    = document.getElementById('signin-email')?.value.trim();
   const password = document.getElementById('signin-password')?.value;
@@ -297,36 +364,73 @@ async function handleSignInModal() {
   if (!password)                  { loginShowFieldError('signin-password-err'); valid = false; }
   if (!valid) return;
 
-  loginSetLoading('signin-btn', true);
-
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    loginShowGlobalError('signin', t('auth.invalidCredentials'));
-    loginSetLoading('signin-btn', false);
-    return;
-  }
-
-  const { data: profile } = await sb.from('profiles')
-    .select('username')
-    .eq('id', data.user.id)
-    .single();
-
-  currentUser   = profile?.username || email.split('@')[0];
-  currentUserId = data.user.id;
-  analyticsAccessChecked = false;
-  await initUserStatsRow();
-  await claimGuestProgressOnLogin({ showNotice: true });
-
-  closeLoginModal();
-  setHeaderControls(selectedDifficulty ? 'game' : 'difficulty');
+  return runAccountFormRequest("signin-btn", "signin", async request => {
+    let authenticated = null;
+    let adopted = false;
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      authenticated = data;
+      if (!request.isCurrent()) return;
+      if (error) {
+        const message = error.code === "invalid_credentials" || error.message?.includes("Invalid login credentials")
+          ? t("auth.invalidCredentials")
+          : error.status >= 500 || error.name === "AuthRetryableFetchError"
+            ? t("auth.requestFailed") : error.message || t("auth.requestFailed");
+        loginShowGlobalError("signin", message);
+        return;
+      }
+      if (!data?.user?.id) throw new Error("Missing authenticated user");
+      const ownerId = data.user.id;
+      let profile = null;
+      try {
+        const result = await sb.from("profiles").select("username").eq("id", ownerId).single();
+        profile = result.data;
+      } catch {
+        console.warn("Account profile unavailable; using the account name fallback.");
+      }
+      if (!request.isCurrent()) return;
+      if (currentUserId !== ownerId) clearAccountProgressState();
+      currentUser = profile?.username || email.split("@")[0];
+      currentUserId = ownerId;
+      request.adoptOwner(ownerId);
+      adopted = true;
+      isAnalyticsAdmin = false;
+      analyticsAccessChecked = false;
+      try {
+        await initUserStatsRow(ownerId, request.isCurrent);
+        if (!request.isCurrent()) return;
+        await claimGuestProgressOnLogin({ showNotice: true });
+      } catch (syncError) {
+        // Authentication already succeeded; optional progress sync can retry.
+        console.warn("Account progress synchronization will need a retry:", syncError?.name || "Error");
+      }
+      if (!request.isCurrent()) return;
+      if (modal) {
+        closeLoginModal();
+        setHeaderControls(selectedDifficulty ? "game" : "difficulty");
+      } else {
+        document.removeEventListener("keydown", loginEnterHandler);
+        showDifficultySelection();
+      }
+    } finally {
+      // The auth SDK cannot cancel a request already sent. Dispose only its
+      // own session, while queued newer auth operations are still waiting.
+      if (!adopted && authenticated && !request.isCurrent()) {
+        await discardCancelledAuthSession(authenticated);
+      }
+    }
+  });
 }
 
 async function handleRegisterModal() {
+  return handleAccountRegister();
+}
+
+async function handleAccountRegister() {
   loginClearErrors();
   const email    = document.getElementById('reg-email')?.value.trim();
-  const password = document.getElementById('reg-password')?.value;
-  const confirm  = document.getElementById('reg-confirm')?.value;
+  const password = document.getElementById('reg-password')?.value || "";
+  const confirm  = document.getElementById('reg-confirm')?.value || "";
   let valid = true;
 
   if (!loginIsValidEmail(email))   { loginShowFieldError('reg-email-err');    valid = false; }
@@ -334,28 +438,33 @@ async function handleRegisterModal() {
   if (password !== confirm)        { loginShowFieldError('reg-confirm-err');  valid = false; }
   if (!valid) return;
 
-  loginSetLoading('register-btn', true);
-
-  const { data, error } = await sb.auth.signUp({ email, password });
-
-  if (error) {
-    loginShowGlobalError('register', error.message);
-    loginSetLoading('register-btn', false);
-    return;
-  }
-
-  if (data.user) {
-    await sb.from('profiles').insert({ 
-      id: data.user.id, 
-      username: email.split('@')[0] 
-    });
-  }
-
-  loginSetLoading('register-btn', false);
-  loginShowGlobalSuccess('register', t('auth.accountCreated'));
+  return runAccountFormRequest("register-btn", "register", async request => {
+    let authenticated = null;
+    try {
+      const { data, error } = await sb.auth.signUp({ email, password });
+      authenticated = data;
+      if (!request.isCurrent()) return;
+      if (error) {
+        loginShowGlobalError("register", error.message);
+        return;
+      }
+      if (data?.user) {
+        await sb.from("profiles").insert({ id: data.user.id, username: email.split("@")[0] });
+        if (!request.isCurrent()) return;
+      }
+      loginShowGlobalSuccess("register", t("auth.accountCreated"));
+    } finally {
+      if (authenticated?.session) {
+        // Registration keeps its existing confirmation/sign-in workflow, even
+        // on servers configured to auto-create a session on signup.
+        await discardCancelledAuthSession(authenticated);
+      }
+    }
+  });
 }
 
 function loginSwitchTab(tab) {
+  accountRequestGeneration++;
   document.querySelectorAll('.login-tab-row .tab-btn').forEach(button => {
     const active = button.id === 'tab-' + tab;
     button.classList.toggle('active', active);
@@ -367,6 +476,7 @@ function loginSwitchTab(tab) {
 }
 
 function loginShowReset(show = true) {
+  accountRequestGeneration++;
   document.querySelectorAll('.login-form-panel').forEach(p => p.classList.remove('active'));
   document.querySelector('.login-tab-row').style.display = show ? 'none' : 'grid';
   if (show) {
@@ -435,73 +545,11 @@ function loginEnterHandler(e) {
 }
 
 async function handleSignIn() {
-  loginClearErrors();
-  const email    = document.getElementById('signin-email')?.value.trim();
-  const password = document.getElementById('signin-password')?.value;
-  let valid = true;
-
-  if (!loginIsValidEmail(email))  { loginShowFieldError('signin-email-err');    valid = false; }
-  if (!password)                  { loginShowFieldError('signin-password-err'); valid = false; }
-  if (!valid) return;
-
-  loginSetLoading('signin-btn', true);
-
-  let { data, error } = await sb.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    if (error.message.includes('Invalid login credentials')) {
-      loginShowGlobalError('signin', t('auth.invalidCredentials'));
-    } else {
-      loginShowGlobalError('signin', error.message);
-    }
-    loginSetLoading('signin-btn', false);
-    return;
-  }
-
-  const { data: profile } = await sb.from('profiles')
-    .select('username')
-    .eq('id', data.user.id)
-    .single();
-
-  currentUser   = profile?.username || email.split('@')[0];
-  currentUserId = data.user.id;
-  analyticsAccessChecked = false;
-  await initUserStatsRow();
-  await claimGuestProgressOnLogin({ showNotice: true });
-
-  document.removeEventListener('keydown', loginEnterHandler);
-  showDifficultySelection();
+  return handleAccountSignIn(false);
 }
 
 async function handleRegister() {
-  loginClearErrors();
-  const email    = document.getElementById('reg-email')?.value.trim();
-  const password = document.getElementById('reg-password')?.value;
-  const confirm  = document.getElementById('reg-confirm')?.value;
-  let valid = true;
-
-  if (!loginIsValidEmail(email))   { loginShowFieldError('reg-email-err');    valid = false; }
-  if (password.length < 6)         { loginShowFieldError('reg-password-err'); valid = false; }
-  if (password !== confirm)        { loginShowFieldError('reg-confirm-err');  valid = false; }
-  if (!valid) return;
-
-  loginSetLoading('register-btn', true);
-
-  const { data, error } = await sb.auth.signUp({ email, password });
-
-  if (error) {
-    loginShowGlobalError('register', error.message);
-    loginSetLoading('register-btn', false);
-    return;
-  }
-
-  if (data.user) {
-    const usernameFromEmail = email.split('@')[0];
-    await sb.from('profiles').insert({ id: data.user.id, username: usernameFromEmail });
-  }
-
-  loginSetLoading('register-btn', false);
-  loginShowGlobalSuccess('register', t('auth.accountCreated'));
+  return handleAccountRegister();
 }
 
 async function handleReset() {
@@ -510,24 +558,27 @@ async function handleReset() {
 
   if (!loginIsValidEmail(email)) { loginShowFieldError('reset-email-err'); return; }
 
-  loginSetLoading('reset-btn', true);
-
-  const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin
+  return runAccountFormRequest("reset-btn", "reset", async request => {
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+    if (!request.isCurrent()) return;
+    if (error) loginShowGlobalError("reset", error.message);
+    else loginShowGlobalSuccess("reset", t("auth.resetSent"));
   });
-
-  loginSetLoading('reset-btn', false);
-
-  if (error) {
-    loginShowGlobalError('reset', error.message);
-  } else {
-    loginShowGlobalSuccess('reset', t('auth.resetSent'));
-  }
 }
 
-function continueAsGuest() {
+async function continueAsGuest() {
+  const generation = ++accountRequestGeneration;
+  try {
+    const { error } = await queueAuthOperation(() => sb.auth.signOut({ scope: "local" }));
+    if (generation !== accountRequestGeneration) return;
+    if (error) throw error;
+  } catch (error) {
+    if (generation === accountRequestGeneration) await customAlert(t("auth.accountAccess"), t("auth.requestFailed"));
+    return;
+  }
   currentUser = null;
   currentUserId = null;
+  clearAccountProgressState();
   isAnalyticsAdmin = false;
   analyticsAccessChecked = true;
   if (typeof museumDiscoveryRecords !== 'undefined') museumDiscoveryRecords = {};
@@ -535,6 +586,8 @@ function continueAsGuest() {
 }
 
 async function logout() {
+  const ownerId = currentUserId;
+  const generation = accountRequestGeneration;
   const confirm = await customConfirm(
     t('auth.confirmLogout'),
     t('auth.confirmLogoutCopy'),
@@ -542,28 +595,24 @@ async function logout() {
     t('common.cancel')
   );
 
-  if (confirm === 'true') {
-    await sb.auth.signOut();
+  if (confirm === 'true' && currentUserId === ownerId && generation === accountRequestGeneration) {
+    const logoutGeneration = ++accountRequestGeneration;
+    try {
+      const { error } = await queueAuthOperation(() => sb.auth.signOut({ scope: "local" }));
+      if (logoutGeneration !== accountRequestGeneration || currentUserId !== ownerId) return;
+      if (error) throw error;
+    } catch (error) {
+      if (logoutGeneration === accountRequestGeneration && currentUserId === ownerId) {
+        await customAlert(t("auth.accountAccess"), t("auth.requestFailed"));
+      }
+      return;
+    }
     currentUser = null;
     currentUserId = null;
     isAnalyticsAdmin = false;
     analyticsAccessChecked = true;
     if (typeof museumDiscoveryRecords !== 'undefined') museumDiscoveryRecords = {};
-    userStats = {
-      gamesPlayed: 0,
-      gamesWon: 0,
-      totalGuesses: 0,
-      bestScore: null,
-      difficultyStats: {
-        'muito_facil':   { played: 0, won: 0, avgGuesses: 0 },
-        'facil':         { played: 0, won: 0, avgGuesses: 0 },
-        'normal':        { played: 0, won: 0, avgGuesses: 0 },
-        'dificil':       { played: 0, won: 0, avgGuesses: 0 },
-        'muito_dificil': { played: 0, won: 0, avgGuesses: 0 }
-      },
-      recentGames: [],
-      achievements: []
-    };
+    clearAccountProgressState();
     showDifficultySelection();
   }
 }
@@ -611,23 +660,15 @@ async function handlePasswordUpdate() {
   if (password !== confirm) { loginShowFieldError('update-confirm-err');  valid = false; }
   if (!valid) return;
 
-  loginSetLoading('update-btn', true);
-
-  const { error } = await sb.auth.updateUser({ password });
-
-  loginSetLoading('update-btn', false);
-
-  if (error) {
-    const el = document.getElementById('update-global-error');
-    el.textContent = error.message;
-    el.classList.add('visible');
-    return;
-  }
-
-  const el = document.getElementById('update-global-success');
-  el.textContent = t('auth.passwordUpdated');
-  el.classList.add('visible');
-  window.history.replaceState({}, document.title, window.location.pathname);
-
-  setTimeout(() => showDifficultySelection(), 1500);
+  return runAccountFormRequest("update-btn", "update", async request => {
+    const { error } = await sb.auth.updateUser({ password });
+    if (!request.isCurrent()) return;
+    if (error) {
+      loginShowGlobalError("update", error.message);
+      return;
+    }
+    loginShowGlobalSuccess("update", t("auth.passwordUpdated"));
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setTimeout(() => { if (request.isCurrent()) showDifficultySelection(); }, 1500);
+  });
 }
