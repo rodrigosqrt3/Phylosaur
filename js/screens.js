@@ -147,25 +147,50 @@ function showFriendChallenges(prefilledCode = '') {
     else focusAppScreenHeading();
 }
 
+function beginFriendChallengeRequest() {
+    const appContent = document.getElementById('app-content');
+    const createButton = document.getElementById('create-challenge-btn');
+    const joinButton = document.getElementById('join-challenge-btn');
+    if (!appContent || !createButton || !joinButton || createButton.disabled || joinButton.disabled) return null;
+    const hub = appContent.firstElementChild;
+    const ownerId = currentUserId;
+    const isCurrent = () => appContent.firstElementChild === hub && currentUserId === ownerId;
+    createButton.disabled = true;
+    joinButton.disabled = true;
+    return {
+        isCurrent,
+        finish() {
+            if (!isCurrent()) return;
+            createButton.disabled = false;
+            joinButton.disabled = false;
+            createButton.textContent = t('friends.createCode');
+            joinButton.textContent = t('friends.enter');
+        }
+    };
+}
+
 async function createFriendChallenge() {
     const nameInput = document.getElementById('challenge-create-name');
     const difficultyInput = document.getElementById('challenge-difficulty');
     const button = document.getElementById('create-challenge-btn');
     const playerName = nameInput?.value.trim().slice(0, 24) || t('common.player');
+    const request = beginFriendChallengeRequest();
+    if (!request) return;
 
-    button.disabled = true;
     button.textContent = t('friends.creating');
     try {
         const data = await callGameApi('create_challenge', {
             difficulty: difficultyInput.value,
             playerName
         });
+        if (!request.isCurrent()) return;
         localStorage.setItem(getChallengeSessionStorageKey(data.challenge.code), data.sessionId);
         await startFriendChallengeFromPayload(data);
     } catch (error) {
+        if (!request.isCurrent()) return;
         await customAlert(t('friends.createError'), escapeHtml(error.message));
-        button.disabled = false;
-        button.textContent = t('friends.createCode');
+    } finally {
+        request.finish();
     }
 }
 
@@ -173,23 +198,26 @@ async function joinFriendChallenge() {
     const nameInput = document.getElementById('challenge-join-name');
     const codeInput = document.getElementById('challenge-code');
     const button = document.getElementById('join-challenge-btn');
+    if (!button || button.disabled) return;
     const playerName = nameInput?.value.trim().slice(0, 24) || t('common.player');
     const code = codeInput?.value.toUpperCase().replace(/[^A-Z0-9]/g, '') || '';
 
     if (code.length !== 6) {
         await customAlert(t('friends.invalidCode'), t('friends.invalidCodeCopy'));
-        codeInput?.focus();
+        if (document.getElementById('challenge-code') === codeInput) codeInput?.focus();
         return;
     }
 
-    button.disabled = true;
+    const request = beginFriendChallengeRequest();
+    if (!request) return;
     button.textContent = t('friends.entering');
     try {
-        await loadChallengeDatabase(code, playerName);
+        await loadChallengeDatabase(code, playerName, { isCurrentRequest: request.isCurrent });
     } catch (error) {
+        if (!request.isCurrent()) return;
         await customAlert(t('friends.enterError'), escapeHtml(error.message));
-        button.disabled = false;
-        button.textContent = t('friends.enter');
+    } finally {
+        request.finish();
     }
 }
 
@@ -277,20 +305,39 @@ async function showStatsDashboard() {
     appContent.innerHTML = `<div class="game-card stats-dashboard">${renderAppState(
         t('stats.loading')
     )}</div>`;
+    const loadingCard = appContent.firstElementChild;
+    const statsOwnerId = currentUserId;
+    const isCurrentRequest = () => appContent.firstElementChild === loadingCard
+        && currentUserId === statsOwnerId && Boolean(currentUser);
 
-    const [statsResult, difficultyHistoryResult, recentGamesResult, achievementsResult, achievementHistoryResult] = await Promise.all([
-        sb.from('statistics').select('*').eq('user_id', currentUserId).single(),
+    let results;
+    try {
+        results = await Promise.all([
+        sb.from('statistics').select('*').eq('user_id', statsOwnerId).single(),
         sb.from('daily_results')
             .select('difficulty, guess_count, won')
-            .eq('user_id', currentUserId),
-        sb.from('daily_results').select('*').eq('user_id', currentUserId)
+            .eq('user_id', statsOwnerId),
+        sb.from('daily_results').select('*').eq('user_id', statsOwnerId)
             .order('created_at', { ascending: false }).limit(10),
-        sb.from('achievements').select('achievement_id').eq('user_id', currentUserId),
+        sb.from('achievements').select('achievement_id').eq('user_id', statsOwnerId),
         sb.from('daily_results')
             .select('difficulty, guess_count, hint_history, won')
-            .eq('user_id', currentUserId)
+            .eq('user_id', statsOwnerId)
             .eq('won', true)
-    ]);
+        ]);
+        if (!isCurrentRequest()) return;
+        const failedResult = results.find((result, index) => result.error
+            && !(index === 0 && result.error.code === 'PGRST116'));
+        if (failedResult) throw failedResult.error;
+    } catch (error) {
+        console.error('Statistics loading failed:', error);
+        if (!isCurrentRequest()) return;
+        appContent.innerHTML = `<div class="game-card stats-dashboard">${renderAppState(
+            t('stats.loadError'), { type: 'error' }
+        )}</div>`;
+        return;
+    }
+    const [statsResult, difficultyHistoryResult, recentGamesResult, achievementsResult, achievementHistoryResult] = results;
     const stats = statsResult.data;
     const difficultyHistory = difficultyHistoryResult.data || [];
     const recentGames = recentGamesResult.data;
@@ -314,6 +361,7 @@ async function showStatsDashboard() {
     } catch (error) {
         console.error('Historical achievement synchronization failed:', error);
     }
+    if (!isCurrentRequest()) return;
 
     try {
         const accountSynchronization = await syncAccountAchievements();
@@ -322,6 +370,7 @@ async function showStatsDashboard() {
     } catch (error) {
         console.error('Extended achievement synchronization failed:', error);
     }
+    if (!isCurrentRequest()) return;
 
     const achievementProgress = buildAchievementProgress(
         stats,
