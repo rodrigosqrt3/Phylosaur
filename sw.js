@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v106";
+const CACHE_VERSION = "phylosaur-shell-v108";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -8,21 +8,21 @@ const CORE_ASSETS = [
   "./offline.html",
   "./manifest.webmanifest",
   "./phylosaur_db.json",
-  "./phylosaur_media_overrides.json",
+  "./phylosaur_media_overrides.json?v=20",
   "./phylosaur_paleodata.json",
-  "./style.css",
-  "./js/config.js",
-  "./js/state.js",
-  "./js/i18n.js",
-  "./js/api.js",
-  "./js/autocomplete.js",
-  "./js/db.js",
-  "./js/auth.js",
-  "./js/ui.js",
-  "./js/screens.js",
-  "./js/tree.js",
-  "./js/game.js",
-  "./js/main.js"
+  "./style.css?v=108",
+  "./js/config.js?v=108",
+  "./js/state.js?v=108",
+  "./js/i18n.js?v=108",
+  "./js/api.js?v=108",
+  "./js/autocomplete.js?v=108",
+  "./js/db.js?v=108",
+  "./js/auth.js?v=108",
+  "./js/ui.js?v=108",
+  "./js/screens.js?v=108",
+  "./js/tree.js?v=108",
+  "./js/game.js?v=108",
+  "./js/main.js?v=108"
 ];
 
 // Decorative/install icons must not invalidate an otherwise complete shell.

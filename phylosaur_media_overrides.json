@@ -1,7 +1,19 @@
 {
-  "version": 19,
+  "version": 20,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Concornis": {
+      "file_title": "File:Eoaluavis life restoration.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Eoaluavis_life_restoration.png/960px-Eoaluavis_life_restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Eoaluavis_life_restoration.png",
+      "artist": "Conty",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "depicted_taxon": "Eoalulavis",
+      "related_taxon": true,
+      "source": "wikimedia"
+    },
     "Eustreptospondylus": {
       "file_title": "File:Eustrept1DB1 (Flipped).jpg",
       "file_page": "https://commons.wikimedia.org/wiki/File:Eustrept1DB1_(Flipped).jpg",

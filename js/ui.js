@@ -418,16 +418,18 @@ async function showCladeInfo(cladeName, options = {}) {
     let html = `<div class="clade-info"><h3>${escapeChallengeHtml(heading)}: ${escapeChallengeHtml(cladeName)}</h3><div class="clade-content">`;
     
     if (wikiInfo.image) {
-    html += `<img src="${wikiInfo.image}" alt="${wikiInfo.title}" class="clade-image" />`;
+    html += `<img src="${escapeChallengeHtml(wikiInfo.image)}" alt="${escapeChallengeHtml(wikiInfo.title)}" class="clade-image" />`;
     }
     
     html += `
     <div class="clade-text">
         ${wikiInfo.description 
-        ? `<p>${wikiInfo.description}</p>` 
+        ? `<p>${escapeChallengeHtml(wikiInfo.description)}</p>`
         : `<p class="clade-empty-copy">${t('tree.descriptionUnavailable')}</p>`
         }
-        <a href="${wikiInfo.url}" target="_blank" class="clade-link">${t('tree.encyclopedia')}</a>
+        ${wikiInfo.isLanguageFallback
+          ? `<p class="encyclopedia-language-note">${t('encyclopedia.englishFallback')}</p>` : ''}
+        <a href="${escapeChallengeHtml(wikiInfo.url)}" target="_blank" rel="noopener" class="clade-link">${t('tree.encyclopedia')}</a>
     </div>
     `;
     

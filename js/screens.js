@@ -1439,7 +1439,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=19')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=20')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
@@ -1655,9 +1655,14 @@ async function loadMuseumCardMedia({ card, generation }) {
     const filePage = escapeChallengeHtml(media.file_page || '');
     const attribution = escapeChallengeHtml(media.artist || sourceName);
     const license = escapeChallengeHtml(media.license || '');
+    const depictedTaxon = media.related_taxon && media.depicted_taxon
+        ? `<span class="museum-card-related-taxon">${escapeChallengeHtml(
+            t('media.relatedTaxonShort', { taxon: media.depicted_taxon })
+        )}</span>`
+        : '';
     sourceElement.innerHTML = filePage
         ? `<a href="${filePage}" target="_blank" rel="noopener"
-              onclick="event.stopPropagation()">${attribution}${license ? ` · ${license}` : ''}</a>`
+              onclick="event.stopPropagation()">${depictedTaxon}${attribution}${license ? ` · ${license}` : ''}</a>`
         : `${attribution}${license ? ` · ${license}` : ''}`;
 }
 
@@ -1743,12 +1748,18 @@ function getMuseumMediaCredit(name, media) {
         const contributor = escapeChallengeHtml(
             media.artist || t('media.contributor', { source: sourceName })
         );
+        const relatedTaxonNote = media.related_taxon && media.depicted_taxon
+            ? `<span class="museum-entry-media-note">${escapeChallengeHtml(t(
+                'media.relatedTaxonNotice', { depicted: media.depicted_taxon, subject: name }
+            ))}</span>`
+            : '';
         const editorialNote = currentLocale === 'en' && media.editorial_note
             ? `<span class="museum-entry-media-note">${escapeChallengeHtml(media.editorial_note)}</span>`
             : '';
         return `
             ${t('media.imageBy', { contributor })} · ${license}
             · <a href="${media.file_page}" target="_blank" rel="noopener">${sourceName}</a>
+            ${relatedTaxonNote}
             ${editorialNote}
         `;
     }
@@ -2070,6 +2081,8 @@ async function showMuseumEntry(name) {
         const readMoreSlot = overlay.querySelector('.museum-entry-read-more-slot');
         if (readMoreSlot && wikiInfo?.url) {
             readMoreSlot.innerHTML = `
+                ${wikiInfo.isLanguageFallback
+                    ? `<p class="encyclopedia-language-note">${t('encyclopedia.englishFallback')}</p>` : ''}
                 <a class="museum-entry-read-more" href="${escapeChallengeHtml(wikiInfo.url)}"
                    target="_blank" rel="noopener">
                     <span>${t('museum.readWikipedia')}</span>

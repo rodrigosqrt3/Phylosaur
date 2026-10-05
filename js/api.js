@@ -245,46 +245,98 @@ async function fetchWikipediaInfo(cladeName) {
   if (wikipediaInfoCache.has(cacheKey)) return wikipediaInfoCache.get(cacheKey);
 
   const request = (async () => {
-    const fetchFromWikipedia = async language => {
-      const endpoint = `https://${language}.wikipedia.org/w/api.php`;
-      const searchRes = await fetch(
-        `${endpoint}?action=query&list=search&srsearch=${encodeURIComponent(normalizedName)}&format=json&origin=*`
-      );
-      if (!searchRes.ok) return null;
-      const searchData = await searchRes.json();
-      if (!searchData.query?.search?.length) return null;
-
-      const pageTitle = searchData.query.search[0].title;
-      const pageUrl = `https://${language}.wikipedia.org/wiki/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`;
-      const extractRes = await fetch(
-        `${endpoint}?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages|extracts&format=json&pithumbsize=300&exintro=1&explaintext=1&origin=*`
-      );
-      if (!extractRes.ok) return null;
-      const extractData = await extractRes.json();
-      const pages = extractData.query?.pages || {};
-      const page = pages[Object.keys(pages)[0]];
-      if (!page || page.missing !== undefined) return null;
-
-      return {
-        title: pageTitle,
-        url: pageUrl,
-        image: page.thumbnail?.source || null,
-        description: page.extract || null,
-        language
-      };
+    // Titles select candidates; only a matching scientific name confirms identity.
+    // Never use the first full-text search result as an encyclopedia summary.
+    const taxonName = normalizedName.normalize('NFC').toLowerCase();
+    const readJson = async url => {
+      const controller = new AbortController();
+      let timeout;
+      try {
+        return await Promise.race([
+          (async () => {
+            const response = await fetch(url, { signal: controller.signal });
+            if (!response.ok) return null;
+            return await response.json();
+          })(),
+          new Promise(resolve => {
+            timeout = setTimeout(() => { controller.abort(); resolve(null); }, 6000);
+          })
+        ]);
+      } catch (error) {
+        console.warn('Encyclopedia request unavailable:', error);
+        return null;
+      } finally {
+        clearTimeout(timeout);
+      }
     };
+    const loadPages = async (language, titles) => {
+      const parameters = new URLSearchParams({
+        action: 'query', titles: titles.join('|'), redirects: '1',
+        prop: 'pageimages|extracts|pageprops|langlinks',
+        pithumbsize: '300', exintro: '1', explaintext: '1',
+        lllang: wikiLanguage, lllimit: '1', format: 'json', origin: '*'
+      });
+      const data = await readJson(`https://${language}.wikipedia.org/w/api.php?${parameters}`);
+      return Object.values(data?.query?.pages || {}).filter(page =>
+        page.missing === undefined && page.invalid === undefined && page.ns === 0
+        && !Object.hasOwn(page.pageprops || {}, 'disambiguation')
+        && /^Q\d+$/.test(page.pageprops?.wikibase_item || ''));
+    };
+    const confirmTaxon = async pages => {
+      const ids = [...new Set(pages.map(page => page.pageprops.wikibase_item))];
+      if (!ids.length) return null;
+      const parameters = new URLSearchParams({
+        action: 'wbgetentities', ids: ids.join('|'), props: 'claims',
+        format: 'json', origin: '*'
+      });
+      const data = await readJson(`https://www.wikidata.org/w/api.php?${parameters}`);
+      return pages.find(page =>
+        (data?.entities?.[page.pageprops.wikibase_item]?.claims?.P225 || []).some(claim =>
+          claim.rank !== 'deprecated' && claim.mainsnak?.snaktype === 'value'
+          && String(claim.mainsnak.datavalue?.value || '')
+            .trim().normalize('NFC').toLowerCase() === taxonName)) || null;
+    };
+    const toSummary = (page, language) => page?.extract?.trim() ? {
+      title: page.title,
+      url: `https://${language}.wikipedia.org/wiki/${encodeURIComponent(page.title.replace(/ /g, '_'))}`,
+      image: page.thumbnail?.source || null,
+      description: page.extract,
+      language,
+      wikidataId: page.pageprops.wikibase_item,
+      isLanguageFallback: language !== wikiLanguage
+    } : null;
 
-    try {
-      return await fetchFromWikipedia(wikiLanguage)
-        || (wikiLanguage === 'en' ? null : await fetchFromWikipedia('en'));
-    } catch (e) {
-      console.error('Wiki info error:', e);
-      wikipediaInfoCache.delete(cacheKey);
-      return null;
+    // A controlled disambiguation title covers genera such as Balaur, without
+    // admitting unrelated search results. Unconfirmed synonyms fail closed.
+    const englishPages = await loadPages('en', [normalizedName, `${normalizedName} (dinosaur)`]);
+    const canonical = await confirmTaxon(englishPages);
+    if (wikiLanguage === 'en') return toSummary(canonical, 'en');
+
+    if (canonical) {
+      const linkedTitle = canonical.langlinks?.find(link => link.lang === wikiLanguage)?.['*'];
+      if (linkedTitle) {
+        const localPages = await loadPages(wikiLanguage, [linkedTitle]);
+        const localPage = localPages.find(page =>
+          page.pageprops.wikibase_item === canonical.pageprops.wikibase_item);
+        const localized = toSummary(localPage, wikiLanguage);
+        if (localized) return localized;
+      }
+      return toSummary(canonical, 'en');
     }
+
+    // English may be unavailable. An exact local article is still acceptable
+    // only after the same scientific-name check; no general search fallback.
+    const localPages = await loadPages(wikiLanguage, [normalizedName]);
+    return toSummary(await confirmTaxon(localPages), wikiLanguage);
   })();
 
   wikipediaInfoCache.set(cacheKey, request);
+  // Do not retain unavailable summaries after a transient API failure.
+  void request.then(result => {
+    if (!result && wikipediaInfoCache.get(cacheKey) === request) wikipediaInfoCache.delete(cacheKey);
+  }, () => {
+    if (wikipediaInfoCache.get(cacheKey) === request) wikipediaInfoCache.delete(cacheKey);
+  });
   return request;
 }
 
