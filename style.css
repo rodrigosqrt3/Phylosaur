@@ -3595,7 +3595,7 @@ body.light-mode .theme-switch-thumb {
 /* Responsive Grid */
 .museum-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 16px;
     margin-top: 24px;
 }
@@ -3603,7 +3603,7 @@ body.light-mode .theme-switch-thumb {
 /* Individual Specimen Cards */
 .museum-card {
     content-visibility: auto;
-    contain-intrinsic-size: auto 235px;
+    contain-intrinsic-size: auto 290px;
     background: var(--bg-card);
     border: 2px solid var(--border-base);
     border-radius: var(--radius-card);
@@ -3648,7 +3648,7 @@ body.light-mode .theme-switch-thumb {
 
 .museum-card-art-container {
     width: 100%;
-    height: 140px;
+    height: 180px;
     background: var(--bg-darkest);
     border-radius: var(--radius-control);
     margin-bottom: 10px;
@@ -3664,7 +3664,7 @@ body.light-mode .theme-switch-thumb {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    padding: 6px;
+    padding: 4px;
     opacity: 0;
     transition: opacity 0.3s ease-in;
 }
@@ -3713,13 +3713,13 @@ body.light-mode .theme-switch-thumb {
 .museum-card-discovery {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    min-height: 32px;
-    margin-top: 9px;
-    padding-top: 8px;
+    gap: 2px;
+    min-height: 0;
+    margin-top: 6px;
+    padding-top: 5px;
     border-top: 1px solid var(--border-inner);
     color: var(--color-muted);
-    font-size: 0.7em;
+    font-size: 0.65em;
     line-height: 1.3;
 }
 
@@ -4607,6 +4607,10 @@ body.light-mode .museum-time-range {
     .museum-grid {
         grid-template-columns: repeat(2, 1fr) !important; /* Forces 2 columns on phones */
         gap: 10px !important;
+    }
+
+    .museum-card-art-container {
+        height: 160px;
     }
 }
 

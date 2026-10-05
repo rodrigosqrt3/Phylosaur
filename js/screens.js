@@ -1123,6 +1123,7 @@ const MUSEUM_ATLAS_COLLECTIONS = [
 ];
 
 let museumOverrideCatalogPromise = null;
+const museumCommonsOverrideRequests = new Map();
 let museumFallbackCatalogPromise = null;
 let museumPaleodataCatalogPromise = null;
 let museumLineageCatalogPromise = null;
@@ -1438,7 +1439,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=18')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=19')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
@@ -1470,10 +1471,59 @@ async function loadMuseumFallbackCatalog() {
     return museumFallbackCatalogPromise;
 }
 
+async function resolveMuseumCommonsOverride(override) {
+    const title = override.file_title;
+    if (museumCommonsOverrideRequests.has(title)) return museumCommonsOverrideRequests.get(title);
+    const request = (async () => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        try {
+            const parameters = new URLSearchParams({
+                action: 'query', titles: title, prop: 'imageinfo',
+                iiprop: 'url|extmetadata', iiurlwidth: '960',
+                format: 'json', origin: '*'
+            });
+            const response = await fetch(`https://commons.wikimedia.org/w/api.php?${parameters}`, {
+                signal: controller.signal
+            });
+            if (!response.ok) throw new Error(`Commons image metadata HTTP ${response.status}`);
+            const data = await response.json();
+            const info = Object.values(data.query?.pages || {})
+                .find(page => page.imageinfo?.length)?.imageinfo[0];
+            const metadata = info?.extmetadata || {};
+            const plainText = value => new DOMParser()
+                .parseFromString(String(value || ''), 'text/html').body.textContent.trim();
+            const artist = plainText(metadata.Artist?.value);
+            const license = plainText(metadata.LicenseShortName?.value);
+            const url = info?.thumburl || info?.url;
+            if (!/^https:\/\//.test(url || '') || !artist || !license) {
+                throw new Error('Commons image URL, artist or licence unavailable');
+            }
+            return {
+                ...override, url, artist, license,
+                license_url: /^https:\/\//.test(metadata.LicenseUrl?.value || '')
+                    ? metadata.LicenseUrl.value : '',
+                usage_terms: plainText(metadata.UsageTerms?.value) || license
+            };
+        } catch (error) {
+            console.warn('Museum Commons override unavailable:', title, error);
+            museumCommonsOverrideRequests.delete(title);
+            return null;
+        } finally {
+            clearTimeout(timeout);
+        }
+    })();
+    museumCommonsOverrideRequests.set(title, request);
+    return request;
+}
+
 async function getCachedDinoMedia(name) {
     const cache = getMuseumImageCache();
     const overrideCatalog = await loadMuseumOverrideCatalog();
-    const override = overrideCatalog[name];
+    const configuredOverride = overrideCatalog[name];
+    const override = configuredOverride?.resolve_commons_metadata
+        ? await resolveMuseumCommonsOverride(configuredOverride)
+        : configuredOverride;
 
     // Reviewed choices always win, including over images saved by older versions.
     if (override?.url) {
@@ -1687,8 +1737,8 @@ function getMuseumMediaCredit(name, media) {
 
     if (media.source === 'wikimedia' || media.source === 'dinopedia') {
         const license = media.license_url
-            ? `<a href="${media.license_url}" target="_blank" rel="noopener">${media.license}</a>`
-            : media.license;
+            ? `<a href="${escapeChallengeHtml(media.license_url)}" target="_blank" rel="noopener">${escapeChallengeHtml(media.license)}</a>`
+            : escapeChallengeHtml(media.license);
         const sourceName = media.source === 'dinopedia' ? 'Dinopedia' : 'Wikimedia Commons';
         const contributor = escapeChallengeHtml(
             media.artist || t('media.contributor', { source: sourceName })

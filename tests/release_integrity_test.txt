@@ -879,11 +879,99 @@ Deno.test("media overrides are complete and belong to playable genera", () => {
     if (playableNames) {
       assert(playableNames.has(name), `Media override contains unknown genus: ${name}`);
     }
-    assert(/^https:\/\//.test(media.url), `${name} has an invalid image URL.`);
     assert(/^https:\/\//.test(media.file_page), `${name} has an invalid file page.`);
+    if (media.resolve_commons_metadata === true) {
+      assert(media.source === "wikimedia" && /^File:.+\.(jpg|jpeg|png|webp)$/i.test(media.file_title),
+        `${name} must resolve a specific Commons image before use.`);
+      assert(!media.url && !media.artist && !media.license,
+        `${name} must not publish guessed Commons metadata.`);
+      continue;
+    }
+    assert(/^https:\/\//.test(media.url), `${name} has an invalid image URL.`);
     assert(media.artist, `${name} has no artist attribution.`);
     assert(media.license, `${name} has no license.`);
   }
+});
+
+Deno.test("Museum requested Commons overrides resolve complete credits once and retry failures", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const resolverSource = source.slice(source.indexOf("async function resolveMuseumCommonsOverride("),
+    source.indexOf("async function getCachedDinoMedia("));
+  const configured = readJson(assetPath("phylosaur_media_overrides.json")).taxa.Eustreptospondylus;
+  assert(configured.file_title === "File:Eustrept1DB1 (Flipped).jpg"
+    && configured.resolve_commons_metadata === true, "The exact requested file is not configured.");
+  let requests = 0;
+  let mode = "complete";
+  const fetchMock = async (url: string, options: any) => {
+    requests++;
+    const parameters = new URL(url).searchParams;
+    assert(parameters.get("titles") === configured.file_title
+      && parameters.get("iiprop") === "url|extmetadata" && options.signal,
+      "The override must request the exact file and its credits, with cancellation.");
+    if (mode === "network") throw new Error("offline");
+    return { ok: true, json: async () => ({ query: { pages: { 1: { imageinfo: [{
+      url: "https://upload.wikimedia.org/original.jpg",
+      thumburl: "https://upload.wikimedia.org/thumbnail.jpg",
+      extmetadata: {
+        Artist: { value: "<b>Test artist</b>" },
+        LicenseShortName: { value: mode === "incomplete" ? "" : "CC BY-SA 4.0" },
+        LicenseUrl: { value: "https://creativecommons.org/licenses/by-sa/4.0" }
+      }
+    }] } } } }) };
+  };
+  class ParserMock {
+    parseFromString(value: string) {
+      return { body: { textContent: value.replace(/<[^>]*>/g, "") } };
+    }
+  }
+  const runtime = () => new Function("fetch", "DOMParser", "console", `
+    const museumCommonsOverrideRequests = new Map();
+    ${resolverSource}; return resolveMuseumCommonsOverride;
+  `)(fetchMock, ParserMock, { warn() {} });
+  const resolve = runtime();
+  const [first, second] = await Promise.all([resolve(configured), resolve(configured)]);
+  assert(requests === 1 && first === second && first.artist === "Test artist"
+    && first.license === "CC BY-SA 4.0" && first.url.endsWith("thumbnail.jpg"),
+    "Concurrent resolutions must share one request and retain verified credits.");
+  mode = "incomplete";
+  const retry = runtime();
+  assert(await retry(configured) === null, "Incomplete credit metadata must not activate an image.");
+  mode = "network";
+  assert(await retry(configured) === null, "Unavailable Commons must allow the existing image fallback.");
+  mode = "complete";
+  assert((await retry(configured))?.artist === "Test artist", "A failed request must be retryable.");
+  const cache: Record<string, any> = { Eustreptospondylus: { url: "old-image" } };
+  let writes = 0;
+  let available = true;
+  const cachedSource = source.slice(source.indexOf("async function getCachedDinoMedia("),
+    source.indexOf("let activeMuseumEntryMedia"));
+  const getMedia = new Function("getMuseumImageCache", "loadMuseumOverrideCatalog",
+    "resolveMuseumCommonsOverride", "scheduleMuseumImageCacheWrite", `${cachedSource}; return getCachedDinoMedia;`)(
+    () => cache, async () => ({ Eustreptospondylus: configured }),
+    async () => available ? first : null, () => writes++,
+  );
+  assert((await getMedia("Eustreptospondylus")).url === first.url && writes === 1
+    && cache.Eustreptospondylus.artist === first.artist,
+    "The requested override must replace the older persisted Museum image with its credits.");
+  await getMedia("Eustreptospondylus");
+  assert(writes === 1, "An unchanged override must not repeat storage writes.");
+  available = false;
+  assert((await getMedia("Eustreptospondylus")).url === first.url,
+    "A later offline request must retain the already cached replacement.");
+});
+
+Deno.test("Museum cards prioritize whole illustrations while retaining names, credits and history", () => {
+  const style = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const rule = (selector: string) => style.slice(style.indexOf(`${selector} {`)).split("}")[0];
+  assert(rule(".museum-grid").includes("minmax(220px, 1fr)")
+    && rule(".museum-card-art-container").includes("height: 180px")
+    && rule(".museum-card-art").includes("object-fit: contain")
+    && rule(".museum-card-discovery").includes("font-size: 0.65em"),
+    "Museum cards must enlarge intact drawings and compact secondary history.");
+  const screens = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  assert(screens.includes("museum-card-name") && screens.includes("museum-card-clade")
+    && screens.includes("museum-card-source") && screens.includes("discovery.firstLabel"),
+    "Names, clades, attribution and discovery history must remain available.");
 });
 
 Deno.test("curated Museum image replacements and centered close controls remain published", () => {
@@ -2275,7 +2363,7 @@ Deno.test("Museum cache writes, filtering and offscreen rendering avoid repeated
     !museumScreenSource.includes("museumDinos.forEach("),
     "The Atlas must defer specimen-card construction until the Specimens view is opened.");
   assert(styleSource.includes("content-visibility: auto") &&
-    styleSource.includes("contain-intrinsic-size: auto 235px"),
+    styleSource.includes("contain-intrinsic-size: auto 290px"),
     "Offscreen Museum cards must defer layout and painting work.");
 });
 

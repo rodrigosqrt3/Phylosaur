@@ -1,7 +1,13 @@
 {
-  "version": 18,
+  "version": 19,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Eustreptospondylus": {
+      "file_title": "File:Eustrept1DB1 (Flipped).jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Eustrept1DB1_(Flipped).jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
     "Centrosaurus": {
       "file_title": "File:Centrosaurus (flipped).png",
       "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Centrosaurus_%28flipped%29.png/960px-Centrosaurus_%28flipped%29.png",
