@@ -41,6 +41,9 @@ async function showDifficultySelection() {
             <button class="btn-hint btn-friends btn-large btn-menu-action" onclick="showFriendChallenges()">
                 ${t('home.friends')}
             </button>
+            <button class="btn-hint btn-large btn-menu-action" onclick="showAbout()">
+                ${t('about.title')}
+            </button>
             </div>
         </div>
     `;
@@ -646,93 +649,11 @@ async function showHowToPlay() {
 }
 
 const FIRST_RUN_TUTORIAL_KEY = PHYLOSAUR_STORAGE_KEYS.tutorialComplete;
-let tutorialStepIndex = 0;
-let tutorialDemoTried = false;
-let tutorialKeyHandler = null;
-let tutorialPreviouslyFocused = null;
-let tutorialPreviousBodyOverflow = '';
-
-const INTERACTIVE_TUTORIAL_STEPS = [
-    {
-        kicker: t('tutorial.works'),
-        title: t('tutorial.hiddenTitle'),
-        copy: t('tutorial.hiddenCopy'),
-        visual: `
-            <svg class="tutorial-welcome-tree" viewBox="0 0 280 150" aria-hidden="true">
-                <path class="tutorial-welcome-branch" d="M140 18V52M140 52H62V88M140 52H218V88M62 88H30V122M62 88H94V122M218 88H186V122M218 88H250V122"></path>
-                <circle class="tutorial-welcome-node" cx="30" cy="122" r="8"></circle>
-                <circle class="tutorial-welcome-node" cx="94" cy="122" r="8"></circle>
-                <circle class="tutorial-welcome-node" cx="186" cy="122" r="8"></circle>
-                <circle class="tutorial-welcome-node is-target" cx="250" cy="122" r="15"></circle>
-                <text class="tutorial-welcome-question" x="250" y="123">?</text>
-                <circle class="tutorial-welcome-root" cx="140" cy="18" r="7"></circle>
-            </svg>
-            <div class="tutorial-welcome-line">
-                <span>${t('tutorial.guess')}</span><i class="ui-icon ui-icon-arrow-right" aria-hidden="true"></i>
-                <span>${t('tutorial.compare')}</span><i class="ui-icon ui-icon-arrow-right" aria-hidden="true"></i>
-                <span>${t('tutorial.followBranches')}</span>
-            </div>
-        `
-    },
-    {
-        kicker: t('tutorial.step', { count: 1 }),
-        title: t('tutorial.makeGuess'),
-        copy: t('tutorial.makeGuessCopy'),
-        visual: `
-            <div class="tutorial-guess-demo">
-                <div class="tutorial-fake-input"><em>Triceratops</em></div>
-                <button class="tutorial-demo-action" type="button">${t('tutorial.trySample')}</button>
-                <div class="tutorial-demo-feedback" aria-live="polite">
-                    <strong>Ornithischia</strong>
-                    <span>${t('tutorial.sampleResult')}</span>
-                </div>
-            </div>
-        `
-    },
-    {
-        kicker: t('tutorial.step', { count: 2 }),
-        title: t('tutorial.followTrail'),
-        copy: t('tutorial.followTrailCopy'),
-        visual: `
-            <div class="tutorial-tree-demo" aria-label="${t('tutorial.exampleTrail')}">
-                <div class="tutorial-tree-node is-root">Dinosauria</div>
-                <div class="tutorial-tree-link is-best"><i class="ui-icon ui-icon-arrow-down" aria-hidden="true"></i></div>
-                <div class="tutorial-tree-node is-best">Ornithischia</div>
-                <div class="tutorial-tree-split">
-                    <div><span><i class="ui-icon ui-icon-arrow-down-left" aria-hidden="true"></i></span><div class="tutorial-tree-node is-guess">Triceratops</div></div>
-                    <div><span class="is-best"><i class="ui-icon ui-icon-arrow-down-right" aria-hidden="true"></i></span><div class="tutorial-tree-node is-best">${t('tutorial.bestTrail')}</div></div>
-                </div>
-            </div>
-        `
-    },
-    {
-        kicker: t('tutorial.step', { count: 3 }),
-        title: t('tutorial.usingHints'),
-        copy: t('tutorial.usingHintsCopy'),
-        visual: `
-            <div class="tutorial-hint-demo">
-                <div class="tutorial-hint-count"><strong>3</strong><span>${t('tutorial.hintsAvailable')}</span></div>
-                <div class="tutorial-hint-rule"><span>◇</span><span>${t('tutorial.guess')}</span><span>◇</span><span>${t('tutorial.guess')}</span><span>◆</span><span>${t('game.hint')}</span></div>
-            </div>
-        `
-    },
-    {
-        kicker: t('tutorial.chooseLevel'),
-        title: t('tutorial.beginLevel'),
-        copy: t('tutorial.beginLevelCopy'),
-        visual: `
-            <div class="tutorial-levels" aria-hidden="true">
-                <span class="is-recommended">I<small>${t('tutorial.startLabel')}</small></span>
-                <span>II</span><span>III</span><span>IV</span><span>V</span>
-            </div>
-        `
-    }
-];
 
 function hasCompletedFirstRunTutorial() {
     try {
         return localStorage.getItem(FIRST_RUN_TUTORIAL_KEY) === 'true';
-    } catch (error) {
+    } catch (_error) {
         return true;
     }
 }
@@ -747,141 +668,15 @@ function markFirstRunTutorialComplete() {
 
 function maybeShowFirstRunTutorial() {
     if (hasCompletedFirstRunTutorial()) return;
-    if (document.querySelector('[data-app-modal="true"], #tutorial-overlay')) return;
     setTimeout(() => {
-        if (!hasCompletedFirstRunTutorial() && !document.querySelector('[data-app-modal="true"], #tutorial-overlay')) {
+        if (!hasCompletedFirstRunTutorial() && getCurrentAppRoute() === '/') {
             showInteractiveTutorial({ firstRun: true });
         }
     }, 350);
 }
 
-function renderInteractiveTutorialStep() {
-    const overlay = document.getElementById('tutorial-overlay');
-    if (!overlay) return;
-    const step = INTERACTIVE_TUTORIAL_STEPS[tutorialStepIndex];
-    const isFirst = tutorialStepIndex === 0;
-    const isLast = tutorialStepIndex === INTERACTIVE_TUTORIAL_STEPS.length - 1;
-    const requiresDemo = tutorialStepIndex === 1 && !tutorialDemoTried;
-
-    overlay.querySelector('.tutorial-progress').innerHTML = INTERACTIVE_TUTORIAL_STEPS.map((_, index) => `
-        <span class="${index === tutorialStepIndex ? 'active' : ''}" aria-label="${t('tutorial.progress', { current: index + 1, total: INTERACTIVE_TUTORIAL_STEPS.length })}"></span>
-    `).join('');
-    overlay.querySelector('.tutorial-kicker').textContent = step.kicker;
-    overlay.querySelector('.tutorial-title').textContent = step.title;
-    overlay.querySelector('.tutorial-copy').textContent = step.copy;
-    overlay.querySelector('.tutorial-visual').innerHTML = step.visual;
-
-    const backButton = overlay.querySelector('.tutorial-back');
-    const nextButton = overlay.querySelector('.tutorial-next');
-    backButton.hidden = isFirst;
-    nextButton.textContent = isLast
-        ? t('tutorial.start')
-        : requiresDemo ? t('tutorial.tryFirst') : t('tutorial.next');
-    nextButton.disabled = requiresDemo;
-
-    const demoButton = overlay.querySelector('.tutorial-demo-action');
-    const demoFeedback = overlay.querySelector('.tutorial-demo-feedback');
-    if (tutorialStepIndex === 1 && tutorialDemoTried) {
-        demoButton.textContent = t('tutorial.guessRevealed');
-        demoButton.disabled = true;
-        demoFeedback.classList.add('visible');
-    }
-
-    demoButton?.addEventListener('click', event => {
-        tutorialDemoTried = true;
-        event.currentTarget.textContent = t('tutorial.guessRevealed');
-        event.currentTarget.disabled = true;
-        demoFeedback?.classList.add('visible');
-        nextButton.disabled = false;
-        nextButton.textContent = t('tutorial.next');
-        nextButton.focus();
-    });
-}
-
-function closeInteractiveTutorial({ restoreFocus = true, markComplete = true } = {}) {
-    const overlay = document.getElementById('tutorial-overlay');
-    if (!overlay) return;
-    if (markComplete) markFirstRunTutorialComplete();
-    if (tutorialKeyHandler) document.removeEventListener('keydown', tutorialKeyHandler, true);
-    tutorialKeyHandler = null;
-    overlay.remove();
-    document.body.style.overflow = tutorialPreviousBodyOverflow;
-    if (restoreFocus && tutorialPreviouslyFocused instanceof HTMLElement && tutorialPreviouslyFocused.isConnected) {
-        tutorialPreviouslyFocused.focus();
-    }
-}
-
-function showInteractiveTutorial({ firstRun = false } = {}) {
-    if (document.getElementById('tutorial-overlay')) return;
-    tutorialStepIndex = 0;
-    tutorialDemoTried = false;
-    tutorialPreviouslyFocused = document.activeElement;
-    tutorialPreviousBodyOverflow = document.body.style.overflow;
-
-    const overlay = document.createElement('div');
-    overlay.id = 'tutorial-overlay';
-    overlay.className = 'tutorial-overlay';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-labelledby', 'tutorial-title');
-    overlay.innerHTML = `
-        <div class="tutorial-dialog" tabindex="-1">
-            <button class="tutorial-skip" type="button">${firstRun ? t('tutorial.skip') : t('common.close')}</button>
-            <div class="tutorial-progress" aria-label="${t('tutorial.progressLabel')}"></div>
-            <div class="tutorial-kicker"></div>
-            <h2 class="tutorial-title" id="tutorial-title"></h2>
-            <p class="tutorial-copy"></p>
-            <div class="tutorial-visual"></div>
-            <div class="tutorial-actions">
-                <button class="tutorial-back" type="button">${t('nav.back')}</button>
-                <button class="tutorial-next" type="button">${t('tutorial.next')}</button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-    document.body.style.overflow = 'hidden';
-    overlay.dismissAppOverlay = ({ restoreFocus = true } = {}) =>
-        closeInteractiveTutorial({ restoreFocus, markComplete: false });
-
-    overlay.querySelector('.tutorial-skip').addEventListener('click', closeInteractiveTutorial);
-    overlay.querySelector('.tutorial-back').addEventListener('click', () => {
-        tutorialStepIndex = Math.max(0, tutorialStepIndex - 1);
-        renderInteractiveTutorialStep();
-    });
-    overlay.querySelector('.tutorial-next').addEventListener('click', () => {
-        if (tutorialStepIndex === INTERACTIVE_TUTORIAL_STEPS.length - 1) {
-            closeInteractiveTutorial();
-            return;
-        }
-        tutorialStepIndex += 1;
-        renderInteractiveTutorialStep();
-    });
-
-    tutorialKeyHandler = event => {
-        if (!isTopAppOverlay(overlay)) return;
-        if (event.key === 'Escape') {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            closeInteractiveTutorial();
-            return;
-        }
-        if (event.key !== 'Tab') return;
-        const focusable = Array.from(overlay.querySelectorAll('button:not([disabled]):not([hidden])'));
-        if (!focusable.length) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-            event.preventDefault();
-            last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-            event.preventDefault();
-            first.focus();
-        }
-    };
-    document.addEventListener('keydown', tutorialKeyHandler, true);
-    renderInteractiveTutorialStep();
-    overlay.querySelector('.tutorial-dialog').focus();
+function showInteractiveTutorial() {
+    return startTutorialGame();
 }
 
 function generateGuessHistogram(wonResults) {

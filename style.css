@@ -6203,40 +6203,12 @@ body.light-mode .stat-label {
     padding-inline: 8px;
   }
 }
-.site-description {
-    width: min(900px, calc(100% - 40px));
-    margin: 26px auto 38px;
-    padding: 18px 24px;
-    border-top: 1px solid var(--border-subtle);
-    color: var(--color-muted);
-    font-size: 0.88rem;
-    line-height: 1.65;
-    text-align: center;
-}
-
-.site-description p {
-    margin: 0;
-}
-
-.site-description strong {
-    color: var(--color-secondary);
-    font-weight: 600;
-}
-
-.site-description a,
 .info-page a {
     color: var(--color-accent);
     text-decoration-color: var(--border-subtle);
     text-underline-offset: 4px;
 }
 
-.site-description a {
-    display: inline-block;
-    margin-top: 8px;
-    font-size: 0.82rem;
-}
-
-.site-description a:hover,
 .info-page a:hover {
     color: var(--color-primary);
     text-decoration-color: currentColor;
@@ -6463,19 +6435,6 @@ body.light-mode .stat-label {
     .btn-menu-action {
         width: 100%;
         min-width: 0;
-    }
-
-    .site-description {
-        width: calc(100% - 16px);
-        margin: 20px auto 28px;
-        padding: 15px 12px;
-        font-size: 0.82rem;
-        line-height: 1.55;
-    }
-
-    .site-description a {
-        margin-top: 7px;
-        font-size: 0.79rem;
     }
 
     .info-page {
@@ -7006,4 +6965,205 @@ body.light-mode .stat-label {
 .museum-card-related-taxon {
     display: block;
     color: var(--color-secondary);
+}
+
+.tutorial-coach {
+    margin: 0 0 28px;
+    border: 2px solid var(--border-subtle);
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--bg-raised) 0%, var(--bg-inset) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 4px 12px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+}
+
+.tutorial-coach-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-inner);
+    background: var(--bg-panel-dark);
+}
+
+.tutorial-coach-progress {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.tutorial-coach-label {
+    color: var(--color-primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.tutorial-coach-count {
+    color: var(--color-muted);
+    font-size: 0.78rem;
+    line-height: 1.2;
+}
+
+.tutorial-coach-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+}
+
+.tutorial-coach-action {
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    box-shadow: none;
+}
+
+.tutorial-coach-skip {
+    color: var(--color-muted);
+    background: transparent;
+    border-color: var(--border-inner);
+}
+
+.tutorial-coach-body {
+    padding: 20px 22px 22px;
+}
+
+.tutorial-coach-body h2 {
+    margin: 0;
+    color: var(--color-text-light);
+    font-size: clamp(1.2rem, 2.3vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.25;
+    text-shadow: none;
+}
+
+.tutorial-coach-body p {
+    max-width: 760px;
+    margin: 9px 0 0;
+    color: var(--color-secondary);
+    font-size: 0.96rem;
+    line-height: 1.65;
+}
+
+.tutorial-coach-body em {
+    color: var(--color-primary);
+    font-style: italic;
+}
+
+.tutorial-coach-track {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 7px;
+    margin-top: 20px;
+}
+
+.tutorial-coach-track span {
+    height: 4px;
+    border-radius: 1px;
+    background: var(--border-inner);
+}
+
+.tutorial-coach-track span.is-complete {
+    background: var(--color-secondary);
+}
+
+.tutorial-coach-track span.is-current {
+    background: var(--color-primary);
+    box-shadow: 0 0 7px color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+
+.tutorial-focus {
+    border-radius: 3px;
+    outline: 2px solid color-mix(in srgb, var(--color-primary) 64%, transparent);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-primary) 9%, transparent);
+}
+
+.tutorial-completion {
+    margin: 0 0 20px;
+}
+
+.tutorial-completion .tutorial-coach-progress {
+    color: var(--color-primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.tutorial-completion p {
+    max-width: 650px;
+    margin: 14px auto 22px;
+    color: var(--color-secondary);
+    line-height: 1.65;
+}
+
+.tutorial-completion .victory-dino em {
+    font-style: inherit;
+}
+
+.tutorial-completion-actions {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tutorial-completion-actions .btn-new-game,
+.tutorial-completion-actions .btn-hint {
+    width: auto;
+    min-width: 160px;
+    margin-top: 0;
+}
+
+@media (max-width: 680px) {
+    .tutorial-coach {
+        margin-bottom: 22px;
+    }
+
+    .tutorial-coach-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .tutorial-coach-actions {
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tutorial-coach-action {
+        width: 100%;
+        padding-inline: 8px;
+    }
+
+    .tutorial-coach-body {
+        padding: 18px 16px 20px;
+    }
+
+    .tutorial-coach-body p {
+        font-size: 0.92rem;
+    }
+
+    .tutorial-completion {
+        padding: 24px 16px;
+    }
+
+    .tutorial-completion-actions {
+        flex-direction: column;
+    }
+
+    .tutorial-completion-actions .btn-new-game,
+    .tutorial-completion-actions .btn-hint {
+        width: 100%;
+    }
 }

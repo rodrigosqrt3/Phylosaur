@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════
 // GAME INITIALIZATION AND MAIN LOGIC
 // ═══════════════════════════════════════════════
-function renderGameSessionShell(loadingMessage, { contextLabel = '' } = {}) {
+function renderGameSessionShell(loadingMessage, { contextLabel = '', tutorial = false } = {}) {
     const context = contextLabel
         ? `<p class="game-mode-context">${escapeChallengeHtml(contextLabel)}</p>`
         : '';
@@ -32,6 +32,10 @@ function renderGameSessionShell(loadingMessage, { contextLabel = '' } = {}) {
             </div>
         </div>
 
+        ${tutorial ? `
+        <aside id="tutorial-coach" class="tutorial-coach" aria-live="polite" aria-atomic="true"></aside>
+        ` : ''}
+
         <div class="input-section">
             <div class="guess-primary-row">
                 <div class="guess-field">
@@ -46,7 +50,7 @@ function renderGameSessionShell(loadingMessage, { contextLabel = '' } = {}) {
                         title="${t('game.hintUnlock', { count: 2, unit: t('game.guessMany') })}">
                     ${t('game.hintCount', { count: 2, unit: t('game.guessMany') })}
                 </button>
-                <button class="btn-giveup" onclick="giveUp()">${t('game.giveUp')}</button>
+                ${tutorial ? '' : `<button class="btn-giveup" onclick="giveUp()">${t('game.giveUp')}</button>`}
             </div>
         </div>
 
@@ -59,6 +63,342 @@ function renderGameSessionShell(loadingMessage, { contextLabel = '' } = {}) {
         <div id="clade-info"></div>
         <div id="guess-history"></div>
     </div>`;
+}
+
+const TUTORIAL_TARGET_NAME = 'Velociraptor';
+const TUTORIAL_GUESS_SEQUENCE = Object.freeze([
+    'Triceratops', 'Brachiosaurus', 'Tyrannosaurus', 'Velociraptor'
+]);
+const TUTORIAL_DINOSAURS = Object.freeze([
+    {
+        nome: 'Triceratops',
+        linhagem: ['Dinosauria', 'Ornithischia', 'Genasauria', 'Cerapoda', 'Marginocephalia',
+            'Ceratopsia', 'Neoceratopsia', 'Coronosauria', 'Ceratopsidae', 'Chasmosaurinae']
+    },
+    {
+        nome: 'Brachiosaurus',
+        linhagem: ['Dinosauria', 'Saurischia', 'Eusaurischia', 'Sauropodomorpha', 'Bagualosauria',
+            'Plateosauria', 'Massopoda', 'Anchisauria', 'Sauropodiformes', 'Sauropoda',
+            'Eusauropoda', 'Neosauropoda', 'Macronaria', 'Camarasauromorpha',
+            'Titanosauriformes', 'Brachiosauridae']
+    },
+    {
+        nome: 'Tyrannosaurus',
+        linhagem: ['Dinosauria', 'Saurischia', 'Eusaurischia', 'Theropoda', 'Neotheropoda',
+            'Averostra', 'Tetanurae', 'Orionides', 'Avetheropoda', 'Coelurosauria',
+            'Tyrannoraptora', 'Tyrannosauroidea', 'Tyrannosauridae', 'Tyrannosaurinae',
+            'Tyrannosaurini']
+    },
+    {
+        nome: 'Velociraptor',
+        linhagem: ['Dinosauria', 'Saurischia', 'Eusaurischia', 'Theropoda', 'Neotheropoda',
+            'Averostra', 'Tetanurae', 'Orionides', 'Avetheropoda', 'Coelurosauria',
+            'Tyrannoraptora', 'Maniraptoriformes', 'Maniraptora', 'Pennaraptora', 'Paraves',
+            'Dromaeosauridae', 'Eudromaeosauria', 'Velociraptorinae']
+    }
+]);
+let tutorialStage = 0;
+let tutorialReady = false;
+
+function commonTutorialLineagePrefix(first, second) {
+    let matches = 0;
+    while (matches < first.length && matches < second.length && first[matches] === second[matches]) {
+        matches++;
+    }
+    return matches;
+}
+
+function buildTutorialTreeSnapshot() {
+    const targetLineage = targetDino.linhagem;
+    const visibleClades = new Set(['Dinosauria', ...revealedClades]);
+    guesses.forEach(guess => {
+        if (guess.proximity.lastCommonClade) visibleClades.add(guess.proximity.lastCommonClade);
+    });
+
+    const nodes = new Map();
+    nodes.set('Dinosauria', {
+        depth: 0, children: [], type: 'root', lineageIndex: 0,
+        isHinted: revealedClades.has('Dinosauria')
+    });
+    [...visibleClades]
+        .filter(clade => clade !== 'Dinosauria')
+        .sort((first, second) => targetLineage.indexOf(first) - targetLineage.indexOf(second))
+        .forEach(clade => {
+            const lineageIndex = targetLineage.indexOf(clade);
+            if (lineageIndex < 0) return;
+            let parent = 'Dinosauria';
+            for (let index = lineageIndex - 1; index >= 0; index--) {
+                if (nodes.has(targetLineage[index])) {
+                    parent = targetLineage[index];
+                    break;
+                }
+            }
+            nodes.set(clade, {
+                depth: nodes.get(parent).depth + 1,
+                children: [],
+                type: 'internal',
+                lineageIndex,
+                isHinted: revealedClades.has(clade)
+            });
+            nodes.get(parent).children.push(clade);
+        });
+
+    const leaves = guesses.map((guess, index) => ({
+        name: guess.dino.nome + '__tutorial_' + index,
+        displayName: guess.dino.nome,
+        parentNode: guess.proximity.lastCommonClade || 'Dinosauria',
+        isTarget: gameWon && guess.dino.nome === TUTORIAL_TARGET_NAME,
+        isGiveUp: false,
+        isHint: false
+    }));
+    if (!gameWon) {
+        let mysteryParent = 'Dinosauria';
+        visibleClades.forEach(clade => {
+            if (targetLineage.indexOf(clade) > targetLineage.indexOf(mysteryParent)) mysteryParent = clade;
+        });
+        leaves.push({
+            name: '?__leaf_tutorial',
+            displayName: '?',
+            parentNode: mysteryParent,
+            isTarget: true,
+            isGiveUp: false,
+            isHint: false
+        });
+    }
+    return {
+        root: 'Dinosauria',
+        nodes: [...nodes].map(([name, node]) => ({ name, ...node })),
+        leaves
+    };
+}
+
+function getTutorialCoachStep() {
+    return [
+        { anchor: '.input-section', title: t('tutorial.coachFirstTitle'), copy: t('tutorial.coachFirstCopy') },
+        { anchor: '#tree-container', title: t('tutorial.coachTreeTitle'), copy: t('tutorial.coachTreeCopy') },
+        { anchor: '.guess-secondary-row', title: t('tutorial.coachHintTitle'), copy: t('tutorial.coachHintCopy') },
+        { anchor: '.input-section', title: t('tutorial.coachCloserTitle'), copy: t('tutorial.coachCloserCopy') },
+        { anchor: '.input-section', title: t('tutorial.coachSolveTitle'), copy: t('tutorial.coachSolveCopy') }
+    ][Math.min(tutorialStage, 4)];
+}
+
+function renderTutorialCoach() {
+    const coach = document.getElementById('tutorial-coach');
+    if (!coach || currentGameMode !== 'tutorial' || gameWon) return;
+    document.querySelectorAll('.tutorial-focus').forEach(element => element.classList.remove('tutorial-focus'));
+    const step = getTutorialCoachStep();
+    const anchor = document.querySelector(step.anchor);
+    anchor?.classList.add('tutorial-focus');
+    const progress = Array.from({ length: 5 }, (_, index) =>
+        '<span class="' + (index < tutorialStage ? 'is-complete' :
+            index === tutorialStage ? 'is-current' : '') + '"></span>'
+    ).join('');
+    coach.innerHTML =
+        '<div class="tutorial-coach-header">' +
+            '<div class="tutorial-coach-progress">' +
+                '<span class="tutorial-coach-label">' + t('tutorial.context') + '</span>' +
+                '<span class="tutorial-coach-count">' +
+                t('tutorial.progress', { current: tutorialStage + 1, total: 5 }) +
+                '</span>' +
+            '</div>' +
+            '<div class="tutorial-coach-actions">' +
+                '<button type="button" class="btn-hint tutorial-coach-action" onclick="startTutorialGame()">' +
+                    t('tutorial.restart') +
+                '</button>' +
+                '<button type="button" class="btn-hint tutorial-coach-action tutorial-coach-skip" onclick="skipTutorialGame()">' +
+                    t('tutorial.skip') +
+                '</button>' +
+            '</div>' +
+        '</div>' +
+        '<div class="tutorial-coach-body">' +
+            '<h2>' + step.title + '</h2>' +
+            '<p>' + step.copy + '</p>' +
+            '<div class="tutorial-coach-track" aria-hidden="true">' + progress + '</div>' +
+        '</div>';
+}
+
+function updateTutorialDisplay(animationMode = 'default', focusKey = null) {
+    const snapshot = buildTutorialTreeSnapshot();
+    window.currentTreeSnapshot = snapshot;
+    setTreeAnimationMode(animationMode, focusKey);
+    const bestMatch = guesses.length
+        ? Math.max(...guesses.map(guess => guess.proximity.matches))
+        : 0;
+    document.getElementById('attempts').textContent = String(guesses.length);
+    document.getElementById('hints').textContent = String(hintsRemaining);
+    document.getElementById('best-match').textContent = String(bestMatch);
+    document.getElementById('clades-revealed').textContent = String(revealedClades.size);
+    document.getElementById('possible-specimens').textContent = String(database.length);
+    updateHintButtonState();
+    renderTreeSnapshot(snapshot);
+    updateGuessHistory();
+    const info = document.getElementById('clade-info');
+    if (info) info.innerHTML = '';
+    renderTutorialCoach();
+}
+
+async function startTutorialGame() {
+    setAppRoute('/tutorial');
+    setHeaderControls('game');
+    currentGameMode = 'tutorial';
+    tutorialReady = false;
+    const appContent = document.getElementById('app-content');
+    appContent.innerHTML = renderGameSessionShell(t('tutorial.loading'), {
+        contextLabel: t('tutorial.context'),
+        tutorial: true
+    });
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    try {
+        const catalog = TUTORIAL_DINOSAURS;
+        if (document.getElementById('tree-scroll-wrapper') !== wrapper ||
+            getCurrentAppRoute() !== '/tutorial') return;
+        const required = new Set([TUTORIAL_TARGET_NAME, ...TUTORIAL_GUESS_SEQUENCE]);
+        database = catalog.filter(dino => required.has(dino.nome));
+        targetDino = database.find(dino => dino.nome === TUTORIAL_TARGET_NAME);
+        if (!targetDino || database.length !== required.size) throw new Error(t('tutorial.loadError'));
+
+        currentGameMode = 'tutorial';
+        isPracticeMode = false;
+        selectedDifficulty = 'muito_facil';
+        gameSessionId = 'tutorial-local';
+        tutorialStage = 0;
+        guesses = [];
+        guessedNames = new Set();
+        hintsRemaining = 1;
+        hintHistory = [];
+        revealedClades = new Set();
+        guessesSinceLastHint = 0;
+        gameWon = false;
+        gameRequestPending = false;
+        challengeRaceClosing = false;
+        currentTargetDepth = targetDino.linhagem.length;
+        serverPossibleSpecimens = database.length;
+        window.collapsedClades.clear();
+        window.currentTreeSnapshot = null;
+        if (typeof resetTreeAnimationState === 'function') resetTreeAnimationState();
+        tutorialReady = true;
+        updateTutorialDisplay();
+        initializeAutocomplete();
+        document.getElementById('dino-input')?.focus();
+    } catch (error) {
+        if (wrapper && document.getElementById('tree-scroll-wrapper') === wrapper) {
+            wrapper.innerHTML = renderAppState(t('tutorial.loadError'), {
+                type: 'error',
+                detail: error.message,
+                compact: true
+            });
+        }
+    }
+}
+
+async function makeTutorialGuess() {
+    if (!tutorialReady || gameWon) return;
+    const input = document.getElementById('dino-input');
+    if (tutorialStage === 2) {
+        await customAlert(t('tutorial.tryTitle'), t('tutorial.followCoach'));
+        document.querySelector('.btn-game-hint')?.focus();
+        return;
+    }
+    const guessName = input?.value.trim() || '';
+    const sequenceIndex = tutorialStage > 2 ? tutorialStage - 1 : tutorialStage;
+    const expectedName = TUTORIAL_GUESS_SEQUENCE[sequenceIndex];
+    const available = database.find(dino => dino.nome.toLowerCase() === guessName.toLowerCase());
+    if (!available || available.nome !== expectedName) {
+        await customAlert(t('tutorial.tryTitle'), t('tutorial.tryExpected', { name: expectedName }));
+        input?.focus();
+        return;
+    }
+
+    const matches = commonTutorialLineagePrefix(available.linhagem, targetDino.linhagem);
+    const won = available.nome === TUTORIAL_TARGET_NAME;
+    guesses.push({
+        dino: { nome: available.nome },
+        proximity: {
+            matches,
+            percentage: Math.round((matches / currentTargetDepth) * 100),
+            lastCommonClade: targetDino.linhagem[matches - 1] || null,
+            divergenceDepth: matches
+        },
+        isHint: false
+    });
+    guessedNames.add(available.nome.toLowerCase());
+    guessesSinceLastHint++;
+    gameWon = won;
+    tutorialStage++;
+    if (input) input.value = '';
+    const suggestions = document.getElementById('suggestions');
+    if (suggestions) suggestions.style.display = 'none';
+    updateTutorialDisplay(won ? 'victory' : 'guess', 'display:' + available.nome);
+    if (won) showTutorialCompletion();
+    else input?.focus();
+}
+
+async function useTutorialHint() {
+    if (!tutorialReady || gameWon) return;
+    if (tutorialStage !== 2) {
+        await customAlert(t('game.hintUnavailable'), t('tutorial.followCoach'));
+        return;
+    }
+    const cladeName = 'Theropoda';
+    revealedClades.add(cladeName);
+    hintHistory.push({
+        cladeName,
+        depth: targetDino.linhagem.indexOf(cladeName) + 1
+    });
+    hintsRemaining = 0;
+    guessesSinceLastHint = 0;
+    tutorialStage = 3;
+    updateTutorialDisplay('hint', 'node:' + cladeName);
+    await customAlert(
+        t('game.hint'),
+        t('game.nextClade') + '<br><br><strong>' + cladeName + '</strong>'
+    );
+    document.getElementById('dino-input')?.focus();
+}
+
+function showTutorialCompletion() {
+    tutorialReady = false;
+    markFirstRunTutorialComplete();
+    document.querySelectorAll('.tutorial-focus').forEach(element => element.classList.remove('tutorial-focus'));
+    document.getElementById('tutorial-coach')?.remove();
+    const input = document.getElementById('dino-input');
+    if (input) input.disabled = true;
+    document.querySelector('.btn-guess')?.setAttribute('disabled', true);
+    document.querySelector('.btn-game-hint')?.setAttribute('disabled', true);
+    document.querySelector('.btn-giveup')?.setAttribute('disabled', true);
+    const resultMediaPromise = loadResultMedia(TUTORIAL_TARGET_NAME);
+    const panel = document.createElement('section');
+    panel.className = 'victory tutorial-completion';
+    panel.setAttribute('aria-live', 'polite');
+    panel.innerHTML =
+        '<div class="victory-heading">' +
+            '<span class="tutorial-coach-progress">' + t('tutorial.completeKicker') + '</span>' +
+            '<h2>' + t('tutorial.completeTitle') + '</h2>' +
+            '<div class="victory-dino"><em>' + TUTORIAL_TARGET_NAME + '</em></div>' +
+            '<p>' + t('tutorial.completeCopy') + '</p>' +
+        '</div>' +
+        buildResultMediaSlotMarkup() +
+        '<div class="victory-actions tutorial-completion-actions">' +
+            '<button class="btn-hint" onclick="toggleResultTreeView(true)">' +
+                t('game.viewTree') +
+            '</button>' +
+            '<button class="btn-new-game" onclick="startDailyChallenge(\'muito_facil\')">' +
+                t('tutorial.playLevelOne') +
+            '</button>' +
+            '<button class="btn-hint" onclick="startTutorialGame()">' + t('tutorial.repeat') + '</button>' +
+            '<button class="btn-hint" onclick="navigateToAppRoute(\'/\')">' + t('tutorial.return') + '</button>' +
+        '</div>';
+    const container = document.getElementById('tree-container');
+    if (!container) return;
+    container.insertBefore(panel, container.firstChild);
+    hydrateResultMedia(panel, TUTORIAL_TARGET_NAME, resultMediaPromise);
+    revealResultPanel(container, panel);
+}
+
+function skipTutorialGame() {
+    tutorialReady = false;
+    markFirstRunTutorialComplete();
+    navigateToAppRoute('/');
 }
 
 async function startPracticeChallenge(difficulty, { restoreExisting = false } = {}) {
@@ -395,6 +735,7 @@ function setGuessRequestPending(pending) {
 
 async function makeGuess() {
     if (gameWon || document.querySelector('[data-app-modal="true"]')) return;
+    if (currentGameMode === 'tutorial') return makeTutorialGuess();
     await makeServerGuess();
 }
 
@@ -489,6 +830,7 @@ async function makeServerGuess() {
 }
 
 async function useHint() {
+    if (currentGameMode === 'tutorial') return useTutorialHint();
     await useServerHint();
 }
 

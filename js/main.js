@@ -73,8 +73,9 @@ function closeTransientRouteOverlays({ closeMuseum = true } = {}) {
 }
 
 async function renderFallbackRoute(route) {
-  const normalized = normalizeAppRoute(route);
-  if (normalized === '/practice') return showPracticeMode();
+    const normalized = normalizeAppRoute(route);
+    if (normalized === '/tutorial') return startTutorialGame();
+    if (normalized === '/practice') return showPracticeMode();
   if (normalized === '/friends') return showFriendChallenges();
   return showDifficultySelection();
 }
@@ -127,6 +128,8 @@ async function restoreAppRoute() {
   }
   if (route === '/') {
     await renderRoute(() => showDifficultySelection());
+  } else if (route === '/tutorial') {
+    await renderRoute(() => startTutorialGame());
   } else if (route === '/museum') {
     if (!museumVisible) await renderRoute(() => showMuseum());
   } else if (parts[0] === 'museum' && parts[1]) {
