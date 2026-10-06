@@ -2601,6 +2601,27 @@ body:not(.light-mode) .tree-node-group:hover rect {
   gap: 15px;
 }
 
+.difficulty-home-about {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.7px;
+  text-decoration: underline;
+  text-decoration-color: var(--border-subtle);
+  text-underline-offset: 4px;
+  transition: color 0.18s ease, text-decoration-color 0.18s ease;
+}
+
+.difficulty-home-about:hover {
+  color: var(--color-primary);
+  text-decoration-color: currentColor;
+}
+
 @keyframes shimmer {
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }
@@ -4936,6 +4957,10 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 
     .difficulty-home-actions .btn-friends {
         grid-column: 1 / -1;
+    }
+
+    .difficulty-home-about {
+        margin-top: 8px;
     }
 
     #header-controls {

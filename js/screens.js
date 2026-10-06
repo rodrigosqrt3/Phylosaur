@@ -41,10 +41,10 @@ async function showDifficultySelection() {
             <button class="btn-hint btn-friends btn-large btn-menu-action" onclick="showFriendChallenges()">
                 ${t('home.friends')}
             </button>
-            <button class="btn-hint btn-large btn-menu-action" onclick="showAbout()">
-                ${t('about.title')}
-            </button>
             </div>
+            <a class="difficulty-home-about" href="#/about" onclick="showAbout(); return false;">
+                ${t('about.title')}
+            </a>
         </div>
     `;
     startCountdown();
