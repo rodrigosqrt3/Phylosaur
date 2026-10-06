@@ -501,9 +501,13 @@ function updateGuessHistory() {
     });
     }
     
-    guesses.slice().reverse().forEach(guess => {
-    const divInfo = guess.proximity.lastCommonClade 
+    guesses.slice().reverse().forEach((guess, reverseIndex) => {
+    const guessIndex = guesses.length - reverseIndex - 1;
+    const divInfo = guess.proximity.lastCommonClade
         ? ` → ${t('history.lastCommon', { clade: escapeHtml(guess.proximity.lastCommonClade) })}`
+        : '';
+    const explanationButton = currentGameMode === 'practice' && guess.dino.nome !== targetDino?.nome
+        ? `<button type="button" class="guess-explain-button" onclick="explainPracticeGuess(${guessIndex})">${t('history.explain')}</button>`
         : '';
     
     html += `
@@ -514,6 +518,7 @@ function updateGuessHistory() {
             depth: currentTargetDepth,
             percent: guess.proximity.percentage
         })}</span>
+        ${explanationButton}
         </div>
     `;
     });

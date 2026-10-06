@@ -733,6 +733,30 @@ function setGuessRequestPending(pending) {
     }
 }
 
+async function explainPracticeGuess(guessIndex) {
+    if (currentGameMode !== 'practice') return;
+    const guess = guesses[Number(guessIndex)];
+    if (!guess || guess.dino?.nome === targetDino?.nome) return;
+
+    const guessedDino = database.find(dinosaur => dinosaur.nome === guess.dino.nome);
+    const lineage = guessedDino?.linhagem;
+    if (!Array.isArray(lineage) || lineage.length === 0) return;
+
+    const matches = Math.max(0, Math.min(Number(guess.proximity?.matches) || 0, lineage.length));
+    const genus = escapeHtml(guess.dino.nome);
+    let message;
+    if (matches === 0) {
+        message = t('history.explainNoSharedClade', { genus });
+    } else if (matches >= lineage.length) {
+        message = t('history.explainFullPath', { genus, matches: lineage.length });
+    } else {
+        const sharedClade = escapeHtml(guess.proximity?.lastCommonClade || lineage[matches - 1]);
+        const nextGuessClade = escapeHtml(lineage[matches]);
+        message = t('history.explainDivergence', { genus, sharedClade, nextGuessClade });
+    }
+    await customAlert(t('history.explainTitle'), message);
+}
+
 async function makeGuess() {
     if (gameWon || document.querySelector('[data-app-modal="true"]')) return;
     if (currentGameMode === 'tutorial') return makeTutorialGuess();
