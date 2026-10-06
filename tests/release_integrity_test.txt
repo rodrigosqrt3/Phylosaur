@@ -2154,9 +2154,12 @@ Deno.test("guided tutorial is a real local game isolated from progress and gamep
     && !i18nSource.includes("tutorial.beginLevelCopy"),
     "Obsolete promotional tutorial copy must not remain in the localization catalog.");
 
-  const database = readJson(databasePath);
-  const byName = (name: string) => database.find((dino: any) => dino.nome === name);
-  const target = byName("Velociraptor");
+  const catalogSource = tutorialSource.slice(0, tutorialSource.indexOf("let tutorialStage"));
+  const tutorialCatalog = new Function(
+    `${catalogSource}; return { targetName: TUTORIAL_TARGET_NAME, dinosaurs: TUTORIAL_DINOSAURS };`,
+  )();
+  const byName = (name: string) => tutorialCatalog.dinosaurs.find((dino: any) => dino.nome === name);
+  const target = byName(tutorialCatalog.targetName);
   const shared = (name: string) => {
     const lineage = byName(name).linhagem;
     let count = 0;
@@ -2165,7 +2168,15 @@ Deno.test("guided tutorial is a real local game isolated from progress and gamep
   };
   assert(target.linhagem.length === 18 && shared("Triceratops") === 1
     && shared("Brachiosaurus") === 3 && shared("Tyrannosaurus") === 11,
-    "The guided 1/18, 3/18 and 11/18 progression no longer matches the published database.");
+    "The guided catalog no longer produces its intended 1/18, 3/18 and 11/18 progression.");
+  if (fileExists(databasePath)) {
+    const published = readJson(databasePath);
+    for (const tutorialDino of tutorialCatalog.dinosaurs) {
+      const publishedDino = published.find((dino: any) => dino.nome === tutorialDino.nome);
+      assert(publishedDino && JSON.stringify(publishedDino.linhagem) === JSON.stringify(tutorialDino.linhagem),
+        `${tutorialDino.nome}: tutorial lineage differs from the published database.`);
+    }
+  }
 });
 
 Deno.test("Statistics records and SPA navigation use shared responsive accessibility patterns", () => {
