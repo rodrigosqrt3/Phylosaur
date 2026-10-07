@@ -2103,7 +2103,7 @@ function ensureMuseumSpecimensRendered() {
 
     grid.dataset.renderState = 'scheduled';
     grid.classList.add('museum-grid-pending');
-    grid.innerHTML = renderAppState(t('museum.preparingSpecimens'), { compact: true });
+    grid.innerHTML = renderAppState(t('museum.preparingGenera'), { compact: true });
     museumSpecimenRenderFrame = requestAnimationFrame(() => {
         museumSpecimenRenderFrame = null;
         if (!grid.isConnected) return;
@@ -2237,7 +2237,7 @@ async function showMuseum() {
                             class="${museumView === 'specimens' ? 'active' : ''}"
                             aria-selected="${museumView === 'specimens'}"
                             aria-controls="museum-specimens-panel"
-                            onclick="switchMuseumView('specimens')">${t('museum.specimens')}</button>
+                            onclick="switchMuseumView('specimens')">${t('museum.genera')}</button>
                 </div>
 
                 <div id="museum-atlas-panel" role="tabpanel" ${museumView === 'atlas' ? '' : 'hidden'}>
@@ -2285,7 +2285,7 @@ async function showMuseum() {
                 <div class="museum-filter-summary" id="museum-filter-summary" aria-live="polite">
                     ${t('museum.showing', {
                         count: totalCount,
-                        specimens: t('museum.specimenMany'),
+                        genera: t('museum.genusMany'),
                         clade: '',
                         unlocked: totalUnlocked
                     })}
@@ -2357,15 +2357,15 @@ function applyMuseumFilters() {
 
     const summary = document.getElementById('museum-filter-summary');
     if (summary) {
-        const specimenLabel = visibleCount === 1
-            ? t('museum.specimenOne')
-            : t('museum.specimenMany');
+        const generaLabel = visibleCount === 1
+            ? t('museum.genusOne')
+            : t('museum.genusMany');
         const cladeLabel = selectedMuseumClade === 'all'
             ? ''
             : t('museum.inClade', { clade: selectedMuseumClade });
         summary.textContent = t('museum.showing', {
             count: visibleCount,
-            specimens: specimenLabel,
+            genera: generaLabel,
             clade: cladeLabel,
             unlocked: visibleUnlocked
         });

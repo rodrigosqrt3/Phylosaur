@@ -2929,41 +2929,6 @@ body:not(.light-mode) .tree-node-group:hover rect {
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-.phylo-path {
-  margin-top: 20px;
-  padding: 20px;
-  background: var(--bg-panel-medium);
-  border-left: 4px solid var(--color-accent);
-  border-radius: 4px;
-  transition: all 0.3s ease;
-}
-
-.phylo-path h4 {
-  color: var(--color-text-warm);
-  margin-bottom: 15px;
-  font-size: 1.1em;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.phylo-step {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.phylo-step:last-child {
-  border-bottom: none;
-}
-
-.phylo-step-name {
-  font-style: italic;
-  color: var(--color-text-light);
-  font-size: 0.95em;
-}
-
 .game-session-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -3832,7 +3797,7 @@ body.light-mode .theme-switch-thumb {
     margin-top: 24px;
 }
 
-/* Individual Specimen Cards */
+/* Individual genus-entry cards */
 .museum-card {
     content-visibility: auto;
     contain-intrinsic-size: auto 290px;
@@ -4799,7 +4764,7 @@ body.light-mode .museum-time-range {
         width: 100%;
         max-height: calc(100vh - 20px);
         max-height: calc(100dvh - 20px);
-        /* Reserve a separate close-control row above the specimen heading. */
+        /* Reserve a separate close-control row above the genus heading. */
         padding: 68px 18px 28px;
     }
 

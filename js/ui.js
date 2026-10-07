@@ -382,7 +382,6 @@ async function showCladeInfo(cladeName, options = {}) {
 
     const requestId = ++cladeInfoRequestId;
     const heading = options.heading || t('tree.clade');
-    const includeRevealedPath = options.includeRevealedPath === true;
     infoDiv.innerHTML = `
     <div class="clade-info">
         <div class="loading">${t('tree.loadingInfo', { clade: escapeChallengeHtml(cladeName) })}</div>
@@ -392,24 +391,11 @@ async function showCladeInfo(cladeName, options = {}) {
     const wikiInfo = await fetchWikipediaInfo(cladeName);
     if (requestId !== cladeInfoRequestId || !infoDiv.isConnected) return;
 
-    const revealedPathHtml = includeRevealedPath
-        ? `
-            <div class="phylo-path"><h4>${t('tree.revealedPath')}</h4>
-                ${Array.from(revealedClades).map(clade => `
-                    <div class="phylo-step">
-                        <span class="phylo-step-name">${escapeChallengeHtml(clade)}</span>
-                    </div>
-                `).join('')}
-            </div>
-        `
-        : '';
-    
     if (!wikiInfo) {
     infoDiv.innerHTML = `
         <div class="clade-info">
         <h3>${escapeChallengeHtml(heading)}: ${escapeChallengeHtml(cladeName)}</h3>
         <p class="clade-empty-copy">${t('tree.noEncyclopedia')}</p>
-        ${revealedPathHtml}
         </div>
     `;
     return;
@@ -433,7 +419,7 @@ async function showCladeInfo(cladeName, options = {}) {
     </div>
     `;
     
-    html += `</div>${revealedPathHtml}</div>`;
+    html += '</div></div>';
     infoDiv.innerHTML = html;
 }
 
@@ -466,8 +452,7 @@ async function updateCladeInfo() {
     }
 
     await showCladeInfo(selectedClade, {
-        heading: useHintClade ? t('tree.deepestRevealed') : t('tree.recentAncestor'),
-        includeRevealedPath: true
+        heading: useHintClade ? t('tree.deepestRevealed') : t('tree.recentAncestor')
     });
 }
 

@@ -741,6 +741,30 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
       `${locale} does not contain exactly the English catalog keys.`,
     );
   }
+  const museumTerminology = [
+    ["en", evaluate("en").messages.en, "Genera", "genus", "genera"],
+    ["pt-BR", runtime.messages["pt-BR"], "Gêneros", "gênero", "gêneros"],
+    ["es", evaluate("es").messages.es, "Géneros", "género", "géneros"],
+  ] as const;
+  const museumCopyKeys = ["museum.genera", "museum.unlockCopy", "museum.noMatch",
+    "museum.showing", "museum.genusOne", "museum.genusMany", "museum.noCladeMatch",
+    "museum.atlasIntro", "museum.filterByClade", "museum.preparingGenera",
+    "about.mechanicsBody3"];
+  for (const [locale, messages, collectionLabel, genusOne, genusMany] of museumTerminology) {
+    assert(messages["museum.genera"] === collectionLabel
+      && messages["museum.genusOne"] === genusOne
+      && messages["museum.genusMany"] === genusMany
+      && messages["museum.showing"].includes("{genera}")
+      && !messages["museum.showing"].includes("{specimens}"),
+      `${locale}: Museum entries must be named as genera, with correct singular and plural forms.`);
+    assert(!museumCopyKeys.map(key => messages[key]).join(" ")
+      .match(/specimen|espécim|especímen/i),
+      `${locale}: user-facing Museum copy must not describe genus entries as physical specimens.`);
+    assert(messages["museum.specimens"] === undefined
+      && messages["museum.specimenOne"] === undefined
+      && messages["museum.specimenMany"] === undefined,
+      `${locale}: obsolete specimen terminology remains in the Museum catalog.`);
+  }
   const englishKeySet = new Set(englishKeys);
   for (const path of javascriptSources) {
     const javascript = Deno.readTextFileSync(path);
@@ -768,6 +792,9 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     runtime.translate("museum.taxonomicOverview") === "Visão geral taxonômica" &&
     runtime.translate("museum.atlasOutsideNote").includes("permanecem fora"),
     "Statistics, achievements, About or Museum copy are missing from Portuguese.");
+  assert(!Deno.readTextFileSync(localSourceLayout ? "game/about_html.txt" : "about.html")
+    .includes("complete specimen gallery"),
+    "The About-page fallback must describe the genus catalogue, not a fossil-specimen gallery.");
   assert(source.includes("const nextUrl = `${url.pathname}${url.search}${url.hash}`") &&
     source.includes("window.history.replaceState(window.history.state, document.title, nextUrl)") &&
     source.includes("window.location.reload()") &&
@@ -2584,6 +2611,8 @@ Deno.test("tree nodes remain accessible by keyboard", () => {
       uiSource.includes("t('history.lastCommon'") &&
       uiSource.includes("t('history.nodes'") &&
       uiSource.includes("t('tree.noEncyclopedia')") &&
+      !uiSource.includes("includeRevealedPath") &&
+      !uiSource.includes("tree.revealedPath") &&
       uiSource.includes("t('media.closeAnywhere')") &&
       uiSource.includes("escapeHtml(guess.dino.nome)"),
     "Tree controls and exploration history must remain localized and safely rendered.",
