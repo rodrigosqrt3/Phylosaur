@@ -887,7 +887,6 @@ function generateRecentGames(recentGames) {
 // ═══════════════════════════════════════════════════════════════════════
 let selectedMuseumLevel = 'all';
 let museumSearchQuery = '';
-let museumView = 'atlas';
 let selectedMuseumClade = 'all';
 
 const MUSEUM_ATLAS_COLLECTIONS = [
@@ -1442,23 +1441,7 @@ async function loadMuseumCardMedia({ card, generation }) {
     image.classList.add('loaded');
     card.dataset.museumMediaState = 'loaded';
 
-    if (media?.source !== 'wikimedia' && media?.source !== 'dinopedia') return;
-    const sourceElement = card.querySelector('.museum-card-source');
-    if (!sourceElement) return;
 
-    const sourceName = media.source === 'dinopedia' ? 'Dinopedia' : 'Commons';
-    const filePage = escapeChallengeHtml(media.file_page || '');
-    const attribution = escapeChallengeHtml(media.artist || sourceName);
-    const license = escapeChallengeHtml(media.license || '');
-    const depictedTaxon = media.related_taxon && media.depicted_taxon
-        ? `<span class="museum-card-related-taxon">${escapeChallengeHtml(
-            t('media.relatedTaxonShort', { taxon: media.depicted_taxon })
-        )}</span>`
-        : '';
-    sourceElement.innerHTML = filePage
-        ? `<a href="${filePage}" target="_blank" rel="noopener"
-              onclick="event.stopPropagation()">${depictedTaxon}${attribution}${license ? ` · ${license}` : ''}</a>`
-        : `${attribution}${license ? ` · ${license}` : ''}`;
 }
 
 function initializeMuseumCardMediaLoading() {
@@ -1657,10 +1640,15 @@ function openMuseumImageViewer() {
     viewer.museumPreviouslyFocused = previouslyFocused;
     viewer.innerHTML = `
         <button class="museum-image-viewer-close" type="button" aria-label="${t('museum.closeImage')}">×</button>
-        <img src="${activeMuseumEntryMedia.url}" alt="${activeMuseumEntryMedia.name}">
+        <img src="${escapeChallengeHtml(activeMuseumEntryMedia.url)}" alt="${escapeChallengeHtml(activeMuseumEntryMedia.name)}">
         <div class="museum-image-viewer-caption">
-            <em>${activeMuseumEntryMedia.name}</em>
-            <div>${activeMuseumEntryMedia.credit}</div>
+            <em>${escapeChallengeHtml(activeMuseumEntryMedia.name)}</em>
+            <div class="museum-image-viewer-taxonomy">${escapeChallengeHtml(activeMuseumEntryMedia.family || '')}</div>
+            <div class="museum-image-viewer-discovery">
+                <span>${escapeChallengeHtml(activeMuseumEntryMedia.firstDiscovery || '')}</span>
+                ${activeMuseumEntryMedia.discoveryDetails ? `<span>${escapeChallengeHtml(activeMuseumEntryMedia.discoveryDetails)}</span>` : ''}
+            </div>
+            <div class="museum-image-viewer-credit">${activeMuseumEntryMedia.credit}</div>
         </div>
     `;
 
@@ -1775,22 +1763,19 @@ async function showMuseumEntry(name) {
     const mediaPromise = getCachedDinoMedia(name);
     const wikiPromise = fetchWikipediaInfo(name);
     const paleodataPromise = loadMuseumPaleodataCatalog();
-    const levelNames = {
-        muito_facil: t('level.name1'),
-        facil: t('level.name2'),
-        normal: t('level.name3'),
-        dificil: t('level.name4'),
-        muito_dificil: t('level.name5')
-    };
     const lineage = (dino.linhagem || [])
         .map(clade => `<span>${escapeChallengeHtml(clade)}</span>`)
         .join('<b>›</b>');
+    const family = (dino.linhagem || []).at(-1) || 'Dinosauria';
     const discovery = getMuseumDiscoverySummary(
         museumDiscoveryRecords[name.toLowerCase()]
     );
 
     activeMuseumEntryMedia = {
         name,
+        family,
+        firstDiscovery: discovery.firstLabel,
+        discoveryDetails: [discovery.countLabel, discovery.lastLabel].filter(Boolean).join(' · '),
         url: null,
         credit: ''
     };
@@ -1799,17 +1784,9 @@ async function showMuseumEntry(name) {
             <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="${t('common.close')}">×</button>
 
         <header class="museum-entry-header">
-            <div class="museum-entry-kicker">${t('museum.entry')}</div>
             <h2>${safeName}</h2>
-            <div class="museum-entry-meta">
-                ${levelNames[dino.dificuldade] || dino.dificuldade}
-                · ${(dino.linhagem || []).at(-1) || 'Dinosauria'}
-            </div>
-            <div class="museum-entry-discovery">
-                <span>${discovery.firstLabel}</span>
-                <strong>${discovery.countLabel}</strong>
-                ${discovery.lastLabel ? `<span>${discovery.lastLabel}</span>` : ''}
-            </div>
+            <div class="museum-entry-meta">${escapeChallengeHtml(family)}</div>
+            <div class="museum-entry-first-discovery">${escapeChallengeHtml(discovery.firstLabel)}</div>
         </header>
 
         <div class="museum-entry-layout">
@@ -1855,9 +1832,16 @@ async function showMuseumEntry(name) {
             : t('museum.noIllustration');
         image.src = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
         button.disabled = !hasImage;
-        if (hasImage) button.insertAdjacentHTML('beforeend', `<span>${t('museum.clickEnlarge')}</span>`);
-        caption.innerHTML = credit;
-        activeMuseumEntryMedia = { name, url: media?.url || null, credit };
+        caption.textContent = hasImage ? t('museum.clickEnlarge') : t('museum.noIllustration');
+        activeMuseumEntryMedia = {
+            ...activeMuseumEntryMedia,
+            name,
+            family,
+            firstDiscovery: discovery.firstLabel,
+            discoveryDetails: [discovery.countLabel, discovery.lastLabel].filter(Boolean).join(' · '),
+            url: media?.url || null,
+            credit
+        };
     }).catch(error => {
         if (!isCurrentEntry()) return;
         console.warn(`Museum illustration unavailable for ${name}:`, error);
@@ -1945,78 +1929,47 @@ function getMuseumAtlasCollection(definition, unlockedSet) {
     };
 }
 
-function renderMuseumAtlas(unlockedSet) {
+function renderMuseumCladeFilters(unlockedSet) {
     const collections = MUSEUM_ATLAS_COLLECTIONS.map(definition =>
         getMuseumAtlasCollection(definition, unlockedSet)
     );
 
     return `
-        <section class="museum-atlas" aria-labelledby="museum-atlas-title">
-            <div class="museum-atlas-intro">
-                <div>
-                    <h3 id="museum-atlas-title">${t('museum.taxonomicOverview')}</h3>
-                    <p>${t('museum.atlasIntro')}</p>
-                </div>
-            </div>
+        <label class="museum-toolbar-filter" for="museum-clade-select">
+            <span>${t("museum.cladeFilter")}</span>
+            <select id="museum-clade-select" aria-label="${t("museum.filterByClade")}"
+                    onchange="openMuseumClade(this.value)">
+                <option value="all" ${selectedMuseumClade === "all" ? "selected" : ""}>${t("museum.allClades")}</option>
+                ${collections.map(collection => `
+                    <option value="${escapeChallengeHtml(collection.clade)}" ${selectedMuseumClade === collection.clade ? "selected" : ""}>
+                        ${escapeChallengeHtml(collection.title)}
+                    </option>
+                `).join("")}
+            </select>
+        </label>
+    `;
+}
 
-            <div class="museum-atlas-grid">
-                ${collections.map(collection => {
-                    const achievementCurrent = Math.min(
-                        collection.achievementCount,
-                        collection.achievementTarget
-                    );
-                    const achievementPercent = Math.round(
-                        (achievementCurrent / collection.achievementTarget) * 100
-                    );
-                    const subclades = collection.subclades.map(subclade => `
-                        <span title="${t('museum.discoveredTitle', {
-                            unlocked: subclade.unlocked,
-                            total: subclade.total
-                        })}">
-                            ${escapeChallengeHtml(subclade.clade)}
-                            <small>${subclade.unlocked}/${subclade.total}</small>
-                        </span>
-                    `).join('');
-                    return `
-                        <button class="museum-atlas-card museum-atlas-${collection.clade.toLowerCase()}"
-                                type="button"
-                                onclick="openMuseumClade('${collection.clade}')"
-                                aria-label="${t('museum.exploreClade', {
-                                    clade: collection.title,
-                                    unlocked: collection.unlocked,
-                                    total: collection.total
-                                })}">
-                            <strong class="museum-atlas-card-title">${collection.title}</strong>
-                            <span class="museum-atlas-card-description">${t(collection.descriptionKey)}</span>
+function renderMuseumLevelFilter() {
+    const levels = [
+        ["all", t("museum.all")],
+        ["muito_facil", t("level.name1")],
+        ["facil", t("level.name2")],
+        ["normal", t("level.name3")],
+        ["dificil", t("level.name4")],
+        ["muito_dificil", t("level.name5")]
+    ];
 
-                            <span class="museum-atlas-count">
-                                <strong>${collection.unlocked}</strong>
-                                <span>${t('museum.discoveredCount', { total: collection.total })}</span>
-                                <small>${t('museum.branchPercent', { percent: collection.percent })}</small>
-                            </span>
-                            <span class="museum-atlas-progress" aria-hidden="true">
-                                <span style="width:${collection.percent}%"></span>
-                            </span>
-
-                            <span class="museum-atlas-subclades-label">${t('museum.selectedSubclades')}</span>
-                            <span class="museum-atlas-subclades">${subclades}</span>
-
-                            <span class="museum-atlas-achievement ${collection.achievementComplete ? 'is-complete' : ''}">
-                                <span>${escapeChallengeHtml(collection.achievementName)}</span>
-                                <strong>${achievementCurrent}/${collection.achievementTarget}</strong>
-                                <i><span style="width:${achievementPercent}%"></span></i>
-                            </span>
-
-                            <span class="museum-atlas-open">${t('museum.filterByClade')}</span>
-                        </button>
-                    `;
-                }).join('')}
-            </div>
-
-            <p class="museum-atlas-note">
-                ${t('museum.atlasOutsideNote')}
-            </p>
-        </section>
+    return `
+        <label class="museum-toolbar-filter" for="museum-level-select">
+            <span>${t("museum.difficultyFilter")}</span>
+            <select id="museum-level-select" aria-label="${t("museum.filterLevel")}"
+                    onchange="switchMuseumLevel(this.value)">
+                ${levels.map(([value, label]) => `
+                    <option value="${value}" ${selectedMuseumLevel === value ? "selected" : ""}>${label}</option>
+                `).join("")}
+            </select>
+        </label>
     `;
 }
 
@@ -2055,11 +2008,7 @@ function renderMuseumSpecimenCard(dino, unlockedSet) {
             <div class="museum-card-clade">${escapeChallengeHtml(lastClade)}</div>
             <div class="museum-card-discovery">
                 <span>${escapeChallengeHtml(discovery.firstLabel)}</span>
-                ${museumDiscoveryRecords[normalizedName]?.count > 1
-                    ? `<strong>${escapeChallengeHtml(discovery.countLabel)}</strong>`
-                    : ''}
             </div>
-            <div class="museum-card-source"></div>
         </div>
     `;
 }
@@ -2107,68 +2056,35 @@ function ensureMuseumSpecimensRendered() {
     museumSpecimenRenderFrame = requestAnimationFrame(() => {
         museumSpecimenRenderFrame = null;
         if (!grid.isConnected) return;
-        if (museumView !== 'specimens') {
-            grid.dataset.renderState = 'pending';
-            grid.classList.remove('museum-grid-pending');
-            grid.innerHTML = '';
-            return;
-        }
         renderMuseumSpecimensNow();
     });
     return false;
 }
 
-function switchMuseumView(view) {
-    museumView = view === 'specimens' ? 'specimens' : 'atlas';
-    document.querySelectorAll('[data-museum-view]').forEach(button => {
-        const active = button.dataset.museumView === museumView;
-        button.classList.toggle('active', active);
-        button.setAttribute('aria-selected', String(active));
-    });
+function initializeMuseumGallery() {
+    const specimensPanel = document.getElementById("museum-specimens-panel");
+    if (specimensPanel) specimensPanel.hidden = false;
 
-    const atlasPanel = document.getElementById('museum-atlas-panel');
-    const specimensPanel = document.getElementById('museum-specimens-panel');
-    if (atlasPanel) atlasPanel.hidden = museumView !== 'atlas';
-    if (specimensPanel) specimensPanel.hidden = museumView !== 'specimens';
-
-    if (museumView === 'specimens') {
-        if (ensureMuseumSpecimensRendered()) {
-            applyMuseumFilters();
-            initializeMuseumCardMediaLoading();
-        }
-    } else {
-        stopMuseumCardMediaLoading();
+    if (ensureMuseumSpecimensRendered()) {
+        applyMuseumFilters();
+        initializeMuseumCardMediaLoading();
     }
 }
 
 function updateMuseumCladeFilterDisplay() {
-    const banner = document.getElementById('museum-clade-filter');
-    const name = document.getElementById('museum-clade-filter-name');
-    if (!banner || !name) return;
-    banner.hidden = selectedMuseumClade === 'all';
-    name.textContent = selectedMuseumClade === 'all' ? '' : selectedMuseumClade;
+    const selector = document.getElementById("museum-clade-select");
+    if (selector) selector.value = selectedMuseumClade;
 }
 
 function openMuseumClade(clade) {
-    selectedMuseumClade = clade;
-    selectedMuseumLevel = 'all';
-    museumSearchQuery = '';
-
-    const input = document.getElementById('museum-search-input');
-    if (input) input.value = '';
-    document.querySelectorAll('[data-museum-filter]').forEach(button => {
-        const active = button.dataset.museumFilter === 'all';
-        button.classList.toggle('active', active);
-        button.setAttribute('aria-pressed', String(active));
-    });
+    const isKnownClade = MUSEUM_ATLAS_COLLECTIONS.some(definition => definition.clade === clade);
+    selectedMuseumClade = clade === "all" || isKnownClade ? clade : "all";
     updateMuseumCladeFilterDisplay();
-    switchMuseumView('specimens');
+    applyMuseumFilters();
 }
 
 function clearMuseumCladeFilter() {
-    selectedMuseumClade = 'all';
-    updateMuseumCladeFilterDisplay();
-    applyMuseumFilters();
+    openMuseumClade("all");
 }
 
 async function showMuseum() {
@@ -2227,29 +2143,7 @@ async function showMuseum() {
                     </div>
                 </div>
 
-                <div class="museum-view-switch" role="tablist" aria-label="${t('museum.view')}">
-                    <button type="button" role="tab" data-museum-view="atlas"
-                            class="${museumView === 'atlas' ? 'active' : ''}"
-                            aria-selected="${museumView === 'atlas'}"
-                            aria-controls="museum-atlas-panel"
-                            onclick="switchMuseumView('atlas')">${t('museum.atlas')}</button>
-                    <button type="button" role="tab" data-museum-view="specimens"
-                            class="${museumView === 'specimens' ? 'active' : ''}"
-                            aria-selected="${museumView === 'specimens'}"
-                            aria-controls="museum-specimens-panel"
-                            onclick="switchMuseumView('specimens')">${t('museum.genera')}</button>
-                </div>
-
-                <div id="museum-atlas-panel" role="tabpanel" ${museumView === 'atlas' ? '' : 'hidden'}>
-                    ${renderMuseumAtlas(unlockedSet)}
-                </div>
-
-                <div id="museum-specimens-panel" role="tabpanel" ${museumView === 'specimens' ? '' : 'hidden'}>
-                <div class="museum-clade-filter" id="museum-clade-filter" ${selectedMuseumClade === 'all' ? 'hidden' : ''}>
-                    <span>${t('museum.exploring')} <strong id="museum-clade-filter-name">${escapeChallengeHtml(selectedMuseumClade === 'all' ? '' : selectedMuseumClade)}</strong></span>
-                    <button type="button" onclick="clearMuseumCladeFilter()">${t('museum.showAllClades')}</button>
-                </div>
-
+                <div id="museum-specimens-panel">
                 <div class="museum-toolbar">
                     <label class="museum-search" for="museum-search-input">
                         <span>${t('museum.search')}</span>
@@ -2260,26 +2154,9 @@ async function showMuseum() {
                                oninput="updateMuseumSearch(this.value)">
                     </label>
 
-                    <div class="tab-row museum-tabs" role="group" aria-label="${t('museum.filterLevel')}">
-                        <button class="tab-btn museum-filter-all ${selectedMuseumLevel === 'all' ? 'active' : ''}"
-                                data-museum-filter="all" aria-pressed="${selectedMuseumLevel === 'all'}"
-                                onclick="switchMuseumLevel('all')">${t('museum.all')}</button>
-                        <button class="tab-btn museum-filter-very-easy ${selectedMuseumLevel === 'muito_facil' ? 'active' : ''}"
-                                data-museum-filter="muito_facil" aria-pressed="${selectedMuseumLevel === 'muito_facil'}"
-                                onclick="switchMuseumLevel('muito_facil')">${t('level.name1')}</button>
-                        <button class="tab-btn museum-filter-easy ${selectedMuseumLevel === 'facil' ? 'active' : ''}"
-                                data-museum-filter="facil" aria-pressed="${selectedMuseumLevel === 'facil'}"
-                                onclick="switchMuseumLevel('facil')">${t('level.name2')}</button>
-                        <button class="tab-btn museum-filter-normal ${selectedMuseumLevel === 'normal' ? 'active' : ''}"
-                                data-museum-filter="normal" aria-pressed="${selectedMuseumLevel === 'normal'}"
-                                onclick="switchMuseumLevel('normal')">${t('level.name3')}</button>
-                        <button class="tab-btn museum-filter-hard ${selectedMuseumLevel === 'dificil' ? 'active' : ''}"
-                                data-museum-filter="dificil" aria-pressed="${selectedMuseumLevel === 'dificil'}"
-                                onclick="switchMuseumLevel('dificil')">${t('level.name4')}</button>
-                        <button class="tab-btn museum-filter-very-hard ${selectedMuseumLevel === 'muito_dificil' ? 'active' : ''}"
-                                data-museum-filter="muito_dificil" aria-pressed="${selectedMuseumLevel === 'muito_dificil'}"
-                                onclick="switchMuseumLevel('muito_dificil')">${t('level.name5')}</button>
-                    </div>
+                    ${renderMuseumCladeFilters(unlockedSet)}
+
+                    ${renderMuseumLevelFilter()}
                 </div>
 
                 <div class="museum-filter-summary" id="museum-filter-summary" aria-live="polite">
@@ -2299,7 +2176,7 @@ async function showMuseum() {
         appContent.innerHTML = html;
 
         updateMuseumCladeFilterDisplay();
-        switchMuseumView(museumView);
+        initializeMuseumGallery();
         focusAppScreenHeading();
 
     } catch (err) {
@@ -2312,12 +2189,10 @@ async function showMuseum() {
 }
 
 function switchMuseumLevel(level) {
-    selectedMuseumLevel = level;
-    document.querySelectorAll('[data-museum-filter]').forEach(button => {
-        const isActive = button.dataset.museumFilter === level;
-        button.classList.toggle('active', isActive);
-        button.setAttribute('aria-pressed', String(isActive));
-    });
+    const validLevels = ['all', 'muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'];
+    selectedMuseumLevel = validLevels.includes(level) ? level : 'all';
+    const selector = document.getElementById('museum-level-select');
+    if (selector) selector.value = selectedMuseumLevel;
     applyMuseumFilters();
 }
 

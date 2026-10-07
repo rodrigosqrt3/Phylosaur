@@ -3788,16 +3788,52 @@ body.light-mode .theme-switch-thumb {
 
 .museum-toolbar {
     display: grid;
-    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) repeat(2, minmax(170px, 220px));
+    align-items: end;
+    gap: 14px;
     margin-bottom: 18px;
+}
+
+.museum-toolbar-filter {
+    display: grid;
+    gap: 7px;
+    min-width: 0;
+    color: var(--color-secondary);
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.museum-toolbar-filter select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 13px;
+    color: var(--color-text-light);
+    background: var(--bg-input);
+    border: 2px solid var(--border-base);
+    border-radius: var(--radius-control);
+    font: inherit;
+    font-family: var(--font-control);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    cursor: pointer;
+}
+
+.museum-toolbar-filter select:focus-visible {
+    border-color: var(--color-primary);
+    outline: 3px solid rgba(201, 169, 110, 0.25);
+    outline-offset: 2px;
 }
 
 .museum-search {
     display: grid;
     gap: 7px;
-    max-width: 520px;
+    max-width: none;
     width: 100%;
-    margin: 0 auto;
+    margin: 0;
     color: var(--color-secondary);
     font-size: 0.82em;
     font-weight: 700;
@@ -3902,7 +3938,7 @@ body.light-mode .theme-switch-thumb {
 
 .museum-card-art-container {
     width: 100%;
-    height: 180px;
+    height: 200px;
     background: var(--bg-darkest);
     border-radius: var(--radius-control);
     margin-bottom: 10px;
@@ -3925,25 +3961,6 @@ body.light-mode .theme-switch-thumb {
 
 .museum-card-art.loaded {
     opacity: 1;
-}
-
-.museum-card-source {
-    min-height: 0.9em;
-    margin-top: 6px;
-    color: var(--color-muted);
-    font-size: 0.68em;
-    line-height: 1.3;
-}
-
-.museum-card-source a {
-    color: inherit;
-    text-decoration: none;
-}
-
-.museum-card-source a:hover {
-    color: var(--color-accent);
-    text-decoration: underline;
-    text-underline-offset: 3px;
 }
 
 .museum-card-name {
@@ -3975,12 +3992,6 @@ body.light-mode .theme-switch-thumb {
     color: var(--color-muted);
     font-size: 0.65em;
     line-height: 1.3;
-}
-
-.museum-card-discovery strong {
-    color: var(--color-secondary);
-    font-weight: 600;
-    letter-spacing: 0.4px;
 }
 
 /* Locked Card Styling */
@@ -4125,10 +4136,6 @@ body.light-mode .museum-card.unlocked .museum-card-clade {
 body.light-mode .museum-card.unlocked .museum-card-discovery {
     border-top-color: rgba(74, 56, 41, 0.3);
     color: #5c4033;
-}
-
-body.light-mode .museum-card.unlocked .museum-card-discovery strong {
-    color: #3d2f1f;
 }
 
 /* Unified level-selection cards */
@@ -4323,8 +4330,8 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 
 .museum-entry-header {
     position: relative;
-    margin: 0 32px 30px;
-    padding: 20px 18px 22px;
+    margin: 0 0 22px;
+    padding: 15px 18px 17px;
     background: var(--bg-panel-subtle);
     border: 1px solid var(--border-inner);
     border-radius: var(--radius-control);
@@ -4341,13 +4348,20 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 }
 
 .museum-entry-header h2 {
-    margin: 0 0 8px;
+    margin: 0 0 5px;
     color: var(--color-primary);
     font-size: clamp(1.65rem, 5vw, 3.25rem);
     line-height: 1.2;
     font-style: italic;
     font-weight: 600;
     letter-spacing: 1px;
+}
+
+.museum-entry-first-discovery {
+    margin-top: 8px;
+    color: var(--color-muted);
+    font-size: 0.76em;
+    letter-spacing: 0.5px;
 }
 
 .museum-entry-meta {
@@ -4389,8 +4403,8 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-entry-layout {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(300px, 0.95fr) minmax(320px, 1.05fr);
-    gap: 34px;
+    grid-template-columns: minmax(300px, 1.05fr) minmax(320px, 0.95fr);
+    gap: 28px;
     align-items: start;
 }
 
@@ -4422,7 +4436,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-entry-image-button img {
     display: block;
     width: 100%;
-    height: min(54vh, 520px);
+    height: min(58vh, 600px);
     object-fit: contain;
 }
 
@@ -4436,9 +4450,9 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 }
 
 .museum-entry-figure figcaption {
-    margin-top: 10px;
+    margin-top: 7px;
     color: var(--color-muted);
-    font-size: 0.75em;
+    font-size: 0.72em;
     line-height: 1.5;
     text-align: center;
 }
@@ -4778,7 +4792,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 }
 
 .museum-image-viewer-caption {
-    max-width: 900px;
+    max-width: min(1000px, 92vw);
     margin-top: 14px;
     color: var(--color-secondary);
     font-size: 0.82em;
@@ -4791,6 +4805,27 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     margin-bottom: 5px;
     color: var(--color-primary);
     font-size: 1.35em;
+}
+
+.museum-image-viewer-taxonomy {
+    color: var(--color-secondary);
+    font-size: 0.86em;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.museum-image-viewer-discovery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 12px;
+    margin-top: 6px;
+    color: var(--color-muted);
+    font-size: 0.78em;
+}
+
+.museum-image-viewer-credit {
+    margin-top: 10px;
 }
 
 body.light-mode .museum-entry-overlay {
@@ -4822,7 +4857,8 @@ body.light-mode .museum-time-range {
     }
 
     .museum-entry-header {
-        margin: 0 0 24px;
+        margin: 0 0 20px;
+        padding: 14px 12px 16px;
     }
 
     .museum-entry-header h2 {
@@ -4835,7 +4871,7 @@ body.light-mode .museum-time-range {
     }
 
     .museum-entry-image-button img {
-        height: min(42vh, 390px);
+        height: min(48vh, 460px);
     }
 
     .museum-entry-description {
@@ -4855,7 +4891,7 @@ body.light-mode .museum-time-range {
     }
 
     .museum-card-art-container {
-        height: 160px;
+        height: 180px;
     }
 }
 
@@ -5004,6 +5040,14 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 }
 
 @media (max-width: 600px) {
+    .museum-toolbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .museum-search {
+        grid-column: 1 / -1;
+    }
+
     .museum-atlas-intro {
         grid-template-columns: 1fr;
         padding: 17px;
@@ -5031,7 +5075,16 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
         grid-template-columns: repeat(2, 1fr) !important; /* Stacks cleanly on phones */
         font-size: 0.8em !important;
     }
+}
 
+@media (max-width: 380px) {
+    .museum-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .museum-search {
+        grid-column: auto;
+    }
 }
 
 /* Small-screen usability refinements */
