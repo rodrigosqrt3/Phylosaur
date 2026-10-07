@@ -683,6 +683,8 @@ leafPositions.forEach((leaf, name) => {
       leaf.isTarget ? 'tree-leaf-target' : (leaf.isHint ? 'tree-leaf-hint' : 'tree-leaf-guess'),
       bestPathNodeKeys.has(nodeKey) ? 'tree-best-destination' : '',
       isNewNode ? 'new-node' : '',
+      (animationMode === 'guess' || animationMode === 'victory') && isNewNode && !leaf.isHint && (!leaf.isTarget || animationMode === 'victory')
+        ? 'tree-guess-arrival' : '',
       isNewNode || isFocusedNode ? 'tree-new-focus' : '',
       isFocusedNode ? 'tree-primary-focus' : '',
       animationMode === 'hint' && leaf.isHint && isFocusedNode ? 'tree-hint-arrival' : '',

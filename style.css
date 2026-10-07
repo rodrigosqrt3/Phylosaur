@@ -133,6 +133,11 @@
 
     /* ── Misc ── */
     --color-accent-faint:   rgba(201, 169, 110, 0.05);
+    --glass-surface:        rgba(24, 18, 13, 0.66);
+    --glass-surface-soft:   rgba(36, 27, 20, 0.50);
+    --glass-border:         rgba(244, 228, 193, 0.17);
+    --glass-highlight:      rgba(255, 255, 255, 0.09);
+    --glass-shadow:         rgba(0, 0, 0, 0.30);
     --color-accent-subtle:  rgba(201, 169, 110, 0.15);
     --color-bg-panel-login: rgba(61, 47, 31, 0.35);
     --radius-control:       4px;
@@ -166,6 +171,11 @@ html[data-theme="light"] body {
     --bg-panel-dark:        rgba(232, 220, 200, 0.40);
     --bg-panel-darker:      rgba(255, 255, 255, 0.50);
     --bg-panel-darkest:     rgba(201, 169, 110, 0.15);
+    --glass-surface:        rgba(255, 255, 255, 0.70);
+    --glass-surface-soft:   rgba(255, 255, 255, 0.52);
+    --glass-border:         rgba(93, 74, 54, 0.18);
+    --glass-highlight:      rgba(255, 255, 255, 0.78);
+    --glass-shadow:         rgba(62, 48, 31, 0.14);
     --bg-input:             linear-gradient(180deg, #e8dcc8 0%, #d4c4a0 100%);
     --bg-input-hover:       linear-gradient(180deg, #d4c4a0 0%, #c4b080 100%);
 
@@ -1564,22 +1574,20 @@ textarea:focus-visible {
 }
 
 #tree-container {
-  background: 
-    repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,.08) 10px, rgba(0,0,0,.08) 11px),
-    repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(0,0,0,.08) 10px, rgba(0,0,0,.08) 11px),
-    linear-gradient(180deg, var(--bg-deeper) 0%, var(--bg-darkest) 100%);
-  border: 3px solid var(--border-inner);
-  border-radius: 4px;
-  padding: 20px;
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: 22px;
   min-height: 300px;
   max-height: 70vh;
   overflow: auto;
   position: relative;
-  box-shadow: 
-    inset 0 0 0 1px rgba(0,0,0,0.4),
-    inset 0 4px 12px rgba(0,0,0,0.8),
-    0 4px 12px rgba(0,0,0,0.6);
-  transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  backdrop-filter: blur(18px) saturate(135%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 14px 34px var(--glass-shadow);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-x pan-y;
@@ -1601,6 +1609,8 @@ textarea:focus-visible {
   background: transparent;
   border: 0;
   box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   cursor: default;
   touch-action: auto;
   overscroll-behavior: auto;
@@ -1631,16 +1641,15 @@ textarea:focus-visible {
   max-height: 70vh;
   padding: 20px;
   overflow: auto;
-  background:
-    repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,.08) 10px, rgba(0,0,0,.08) 11px),
-    repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(0,0,0,.08) 10px, rgba(0,0,0,.08) 11px),
-    linear-gradient(180deg, var(--bg-deeper) 0%, var(--bg-darkest) 100%);
-  border: 3px solid var(--border-inner);
-  border-radius: 4px;
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  backdrop-filter: blur(18px) saturate(135%);
   box-shadow:
-    inset 0 0 0 1px rgba(0,0,0,0.4),
-    inset 0 4px 12px rgba(0,0,0,0.8),
-    0 4px 12px rgba(0,0,0,0.6);
+    inset 0 1px 0 var(--glass-highlight),
+    0 14px 34px var(--glass-shadow);
+
   cursor: grab;
   touch-action: pan-x pan-y;
   overscroll-behavior: contain;
@@ -1668,7 +1677,12 @@ textarea:focus-visible {
   z-index: 20;
   display: inline-flex;
   margin: 0 0 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 10px 24px var(--glass-shadow);
+  color: var(--color-text-light);
+  background: var(--glass-surface);
+  border-color: var(--glass-border);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
 }
 
 .tree-toolbar {
@@ -1678,9 +1692,12 @@ textarea:focus-visible {
   gap: 16px;
   margin-bottom: 10px;
   padding: 12px 14px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 5px;
+  background: var(--glass-surface-soft);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 10px 24px var(--glass-shadow);
+  border-radius: var(--radius-card);
 }
 
 .tree-toolbar-copy {
@@ -2865,10 +2882,12 @@ body:not(.light-mode) .tree-node-group:hover rect {
 .clade-info {
   margin-top: 30px;
   padding: 30px;
-  background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-panel-darkest) 100%);
-  border: 2px solid var(--border-subtle);
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  background: var(--glass-surface-soft);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
+  border-radius: var(--radius-card);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 14px 34px var(--glass-shadow);
   transition: all 0.3s ease;
 }
 
@@ -2954,8 +2973,11 @@ body:not(.light-mode) .tree-node-group:hover rect {
 .latest-guess {
   margin-bottom: 10px;
   padding: 13px 15px;
-  background: var(--bg-panel-strong);
-  border: 1px solid var(--border-subtle);
+  background: var(--glass-surface-soft);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 10px 24px var(--glass-shadow);
   border-left: 4px solid var(--tree-leaf-border);
   border-radius: 6px;
 }
@@ -3016,9 +3038,12 @@ body:not(.light-mode) .tree-node-group:hover rect {
 
 .guess-history-details {
   overflow: hidden;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  background: var(--glass-surface-soft);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 10px 24px var(--glass-shadow);
+  border-radius: var(--radius-card);
 }
 
 .guess-history-details > summary {
@@ -3120,7 +3145,7 @@ body:not(.light-mode) .tree-node-group:hover rect {
 
 @media (min-width: 1100px) {
   .game-session-layout {
-    grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
+    grid-template-columns: minmax(0, 2.25fr) minmax(250px, 0.8fr);
     grid-template-areas: "main sidebar";
     align-items: start;
     gap: 18px;
@@ -3164,6 +3189,11 @@ body:not(.light-mode) .tree-node-group:hover rect {
   }
 
   .guess-history-list { max-height: min(58vh, 520px); }
+
+  #tree-container:not(.tree-result-active) {
+    min-height: clamp(380px, 54vh, 680px);
+    max-height: 78vh;
+  }
 }
 
 @media (max-width: 768px) {
@@ -3273,6 +3303,11 @@ body:not(.light-mode) .tree-node-group:hover rect {
   animation: branchGrow 0.48s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+/* Let the connecting branch finish before the newly guessed genus arrives. */
+.new-node.tree-guess-arrival {
+  animation-delay: 0.5s;
+}
+
 @keyframes hintArrivalGlow {
   0%, 100% { filter: drop-shadow(0 0 0 transparent); }
   45% { filter: drop-shadow(0 0 8px var(--tree-hint-border)); }
@@ -3316,6 +3351,11 @@ body:not(.light-mode) .tree-node-group:hover rect {
 .new-node.tree-victory-node {
   animation: nodeAppear 0.32s cubic-bezier(0.22, 0.8, 0.35, 1) 0.12s both,
              victoryPathGlow 0.9s ease-in-out 0.44s 2;
+}
+
+.new-node.tree-victory-node.tree-guess-arrival {
+  animation: nodeAppear 0.32s cubic-bezier(0.22, 0.8, 0.35, 1) 0.5s both,
+             victoryPathGlow 0.9s ease-in-out 0.84s 2;
 }
 
 .tree-reveal-target {
@@ -4203,15 +4243,6 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     .museum-entry-overlay.is-closing .museum-entry-dialog {
         animation: none;
     }
-}
-
-.museum-entry-dialog::before {
-    content: '';
-    position: absolute;
-    inset: 9px;
-    pointer-events: none;
-    border: 1px solid var(--border-inner);
-    border-radius: 4px;
 }
 
 .museum-entry-close,
