@@ -3145,7 +3145,7 @@ body:not(.light-mode) .tree-node-group:hover rect {
 
 @media (min-width: 1100px) {
   .game-session-layout {
-    grid-template-columns: minmax(0, 2.25fr) minmax(250px, 0.8fr);
+    grid-template-columns: minmax(0, 2.65fr) minmax(230px, 0.62fr);
     grid-template-areas: "main sidebar";
     align-items: start;
     gap: 18px;
@@ -3165,7 +3165,7 @@ body:not(.light-mode) .tree-node-group:hover rect {
     display: flex;
     min-width: 0;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     align-self: start;
   }
 
@@ -3174,6 +3174,7 @@ body:not(.light-mode) .tree-node-group:hover rect {
     flex-direction: column;
     gap: 9px;
     margin-bottom: 0;
+    padding: 10px 11px;
   }
 
   .tree-toolbar-copy { text-align: left; }
@@ -3184,11 +3185,26 @@ body:not(.light-mode) .tree-node-group:hover rect {
 
   .tree-toolbar-btn {
     width: 100%;
-    min-height: 42px;
+    min-height: 40px;
     padding-inline: 6px;
   }
 
-  .guess-history-list { max-height: min(58vh, 520px); }
+  .latest-guess { padding: 10px 12px; }
+
+  .guess-history-details > summary {
+    min-height: 42px;
+    padding: 8px 10px;
+  }
+
+  .guess-history-list {
+    max-height: min(58vh, 520px);
+    padding: 0 8px 8px;
+  }
+
+  .guess-item {
+    margin: 6px 0;
+    padding: 7px 8px;
+  }
 
   #tree-container:not(.tree-result-active) {
     min-height: clamp(380px, 54vh, 680px);
@@ -3282,8 +3298,8 @@ body:not(.light-mode) .tree-node-group:hover rect {
 .difficulty-very-hard:hover  { border-color: var(--diff-very-hard-border-hover); background: var(--diff-very-hard-bg-hover); }
 
 @keyframes branchGrow {
-  from { stroke-dashoffset: 1000; opacity: 0; }
-  to   { stroke-dashoffset: 0;    opacity: 1; }
+  from { stroke-dashoffset: 1; opacity: 0; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
 }
 
 @keyframes nodeAppear {
@@ -3299,13 +3315,14 @@ body:not(.light-mode) .tree-node-group:hover rect {
 }
 
 .new-line {
-  stroke-dasharray: 1000;
-  animation: branchGrow 0.48s cubic-bezier(0.4, 0, 0.2, 1) both;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: branchGrow 0.72s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 /* Let the connecting branch finish before the newly guessed genus arrives. */
 .new-node.tree-guess-arrival {
-  animation-delay: 0.5s;
+  animation-delay: 0.72s;
 }
 
 @keyframes hintArrivalGlow {
@@ -3344,8 +3361,8 @@ body:not(.light-mode) .tree-node-group:hover rect {
 }
 
 .new-line.tree-victory-path {
-  animation: branchGrow 0.48s cubic-bezier(0.4, 0, 0.2, 1) both,
-             victoryPathGlow 0.9s ease-in-out 0.48s 2;
+  animation: branchGrow 0.72s cubic-bezier(0.4, 0, 0.2, 1) both,
+             victoryPathGlow 0.9s ease-in-out 0.72s 2;
 }
 
 .new-node.tree-victory-node {
@@ -3354,8 +3371,8 @@ body:not(.light-mode) .tree-node-group:hover rect {
 }
 
 .new-node.tree-victory-node.tree-guess-arrival {
-  animation: nodeAppear 0.32s cubic-bezier(0.22, 0.8, 0.35, 1) 0.5s both,
-             victoryPathGlow 0.9s ease-in-out 0.84s 2;
+  animation: nodeAppear 0.32s cubic-bezier(0.22, 0.8, 0.35, 1) 0.72s both,
+             victoryPathGlow 0.9s ease-in-out 1.08s 2;
 }
 
 .tree-reveal-target {

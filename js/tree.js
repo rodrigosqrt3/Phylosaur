@@ -533,6 +533,7 @@ function renderTreeModel(nodes, leaves, animation = {}) {
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       const edgeKey = `edge:${clade}->${child}`;
       path.setAttribute('d', `M ${pos.x} ${pos.y + nodeHeight / 2} C ${pos.x} ${midY}, ${cp.x} ${midY}, ${cp.x} ${cp.y - nodeHeight / 2}`);
+      path.setAttribute('pathLength', '1');
       path.setAttribute('class', [
         'tree-line',
         'tree-line-revealed',
@@ -659,6 +660,7 @@ nodes.forEach((data, clade) => {
       ? 'tree-line-revealed'
       : (leaf.isHint ? 'tree-line-hint' : 'tree-line-guess');
     path.setAttribute('d', `M ${pp.x} ${pp.y + nodeHeight / 2} C ${pp.x} ${midY}, ${leaf.x} ${midY}, ${leaf.x} ${leaf.y - nodeHeight / 2}`);
+    path.setAttribute('pathLength', '1');
     path.setAttribute('class', [
       'tree-line',
       lineType,
