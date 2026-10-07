@@ -2203,9 +2203,10 @@ Deno.test("Practice guess explanations describe only the excluded guess branch",
     const translate = (key: string, values: Record<string, unknown> = {}) => {
       const messages: Record<string, string> = {
         "history.explainTitle": "Reading this guess",
-        "history.explainDivergence": "<em>{genus}</em> and target share {sharedClade}; guess enters {nextGuessClade}.",
+        "history.explainDivergence": "<em>{genus}</em> and target share {sharedClade}, but {genus} follows the {nextGuessClade} branch, which target does not share.",
         "history.explainFullPath": "<em>{genus}</em> shares all {matches} stored clades; exact name is still needed.",
         "history.explainNoSharedClade": "No shared clade with <em>{genus}</em>.",
+        "history.explainUnavailable": "Could not load lineage details.",
       };
       return (messages[key] || key).replace(/\{([^}]+)\}/g,
         (_match, name) => String(values[name] ?? ""));
@@ -2218,6 +2219,27 @@ Deno.test("Practice guess explanations describe only the excluded guess branch",
       async (_title: string, message: string) => { alerts.push(message); }, translate, escapeHtml);
     return { explain, alerts };
   };
+
+  const edgeSource = Deno.readTextFileSync("game/index.txt");
+  const serverStart = edgeSource.indexOf("function buildPracticeGuessExplanation(");
+  const serverEnd = edgeSource.indexOf("\nfunction stringArray(", serverStart);
+  const serverHelper = edgeSource.slice(serverStart, serverEnd).replace(/: unknown/g, "");
+  const buildServerExplanation = new Function("stringArray", "commonPrefixLength",
+    `${serverHelper}; return buildPracticeGuessExplanation;`)(
+      (value: unknown) => Array.isArray(value) ? value.filter(item => typeof item === "string") : [],
+      (first: string[], second: string[]) => {
+        let matches = 0;
+        while (matches < Math.min(first.length, second.length) && first[matches] === second[matches]) matches++;
+        return matches;
+      },
+    );
+  const serverExplanation = buildServerExplanation(
+    ["Dinosauria", "Saurischia", "Eusaurischia", "Sauropodomorpha"],
+    ["Dinosauria", "Saurischia", "Eusaurischia", "Theropoda"],
+  );
+  assert(serverExplanation.nextGuessClade === "Sauropodomorpha"
+    && serverExplanation.guessLineageDepth === 4,
+    "Practice explanations must expose the guessed branch, never the target branch.");
 
   const guess = { dino: { nome: "Brachiosaurus" }, proximity: {
     matches: 3, lastCommonClade: "Eusaurischia",
@@ -2236,6 +2258,20 @@ Deno.test("Practice guess explanations describe only the excluded guess branch",
     && !practice.alerts[0].includes("Theropoda"),
     "A divergence explanation must name the shared clade and rejected guess branch without exposing the target branch.");
 
+  const serverBackedPractice = build("practice", [{ ...guess, explanation: serverExplanation }],
+    [{ nome: "Brachiosaurus" }], hiddenTarget);
+  await serverBackedPractice.explain(0);
+  assert(serverBackedPractice.alerts.length === 1
+    && serverBackedPractice.alerts[0].includes("Sauropodomorpha")
+    && !serverBackedPractice.alerts[0].includes("Theropoda"),
+    "Server-backed Practice guesses must explain without requiring a client-side lineage catalog.");
+
+  const unavailable = build("practice", [guess], [{ nome: "Brachiosaurus" }], hiddenTarget);
+  await unavailable.explain(0);
+  assert(unavailable.alerts.length === 1
+    && unavailable.alerts[0].includes("Could not load lineage details"),
+    "Missing optional lineage metadata must show a helpful message instead of silently doing nothing.");
+
   const fullPathGuess = { dino: { nome: "Apatosaurus" }, proximity: { matches: 2 } };
   const fullPath = build("practice", [fullPathGuess], [
     { nome: "Apatosaurus", linhagem: ["Dinosauria", "Sauropodomorpha"] },
@@ -2253,6 +2289,83 @@ Deno.test("Practice guess explanations describe only the excluded guess branch",
     && uiSource.includes("class=\"guess-explain-button\"")
     && uiSource.includes("explainPracticeGuess(${guessIndex})"),
     "Only non-winning Practice guesses should show the explanation control in history.");
+});
+
+Deno.test("guess history surfaces the latest result and keeps the full timeline expandable", () => {
+  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
+  const helper = uiSource.slice(uiSource.indexOf("function updateGuessHistory()"));
+  const historyElement: any = { innerHTML: "", querySelector: () => ({ open: false }) };
+  const document = { getElementById: (id: string) => id === "guess-history" ? historyElement : null };
+  const escapeHtml = (value: unknown) => String(value).replace(/[&<>"']/g,
+    character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
+  const messages: Record<string, string> = {
+    "history.title": "Exploration history", "history.latestGuess": "Latest guess",
+    "history.entryCount": "{count} updates", "history.lastCommon": "Last common ancestor: {clade}",
+    "history.nodes": "{matches}/{depth} nodes ({percent}%)", "history.explain": "Explain",
+    "history.cladeHint": "[HINT: {clade}]", "history.nameHint": "[NAME HINT]",
+    "history.revealedDepth": "Clade revealed at depth {depth}", "game.nameHintFallback": "Name clue",
+  };
+  const translate = (key: string, values: Record<string, unknown> = {}) =>
+    (messages[key] || key).replace(/\{(\w+)\}/g, (_match, name) => String(values[name] ?? ""));
+  const guesses = [
+    { dino: { nome: "Firstosaurus" }, proximity: { matches: 1, percentage: 10, lastCommonClade: "Dinosauria" } },
+    { dino: { nome: "Latest <dino>" }, proximity: { matches: 3, percentage: 30, lastCommonClade: "Theropoda" } },
+  ];
+  const hints = [{ cladeName: "Saurischia", depth: 2 }];
+  const render = new Function("document", "guesses", "hintHistory", "currentTargetDepth",
+    "currentGameMode", "targetDino", "t", "escapeHtml", `${helper}; return updateGuessHistory;`)(
+      document, guesses, hints, 10, "practice", { nome: "Hiddenosaurus" }, translate, escapeHtml);
+
+  render();
+  assert(historyElement.innerHTML.includes("Latest &lt;dino&gt;")
+    && historyElement.innerHTML.includes("onclick=\"explainPracticeGuess(1)\"")
+    && historyElement.innerHTML.includes("3/10 nodes (30%)")
+    && historyElement.innerHTML.includes("Last common ancestor: Theropoda"),
+    "The newest guess, its progress, common clade and Explain action must be immediately visible.");
+  assert(historyElement.innerHTML.includes("<details class=\"guess-history-details\">")
+    && historyElement.innerHTML.includes("3 updates")
+    && historyElement.innerHTML.includes("Firstosaurus")
+    && historyElement.innerHTML.includes("Saurischia"),
+    "The complete guess and hint timeline must remain available in a counted disclosure.");
+
+  historyElement.querySelector = () => ({ open: true });
+  render();
+  assert(historyElement.innerHTML.includes("<details class=\"guess-history-details\" open>"),
+    "Refreshing the latest result must preserve an expanded history panel.");
+
+  const daily = new Function("document", "guesses", "hintHistory", "currentTargetDepth",
+    "currentGameMode", "targetDino", "t", "escapeHtml", `${helper}; return updateGuessHistory;`)(
+      document, guesses, hints, 10, "daily", { nome: "Hiddenosaurus" }, translate, escapeHtml);
+  daily();
+  assert(!historyElement.innerHTML.includes("latest-guess-explain")
+    && !historyElement.innerHTML.includes("class=\"guess-explain-button\""),
+    "Explain remains a Practice-only control in both the latest card and full history.");
+});
+
+Deno.test("desktop game columns keep the name selector aligned with the tree and move tree navigation beside history", () => {
+  const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const treeSource = Deno.readTextFileSync(`${javascriptRoot}/tree.${javascriptExtension}`);
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
+  const normalizedStyleSource = styleSource.replaceAll("\r\n", "\n");
+  const shell = gameSource.slice(gameSource.indexOf("function renderGameSessionShell("),
+    gameSource.indexOf("const TUTORIAL_TARGET_NAME"));
+  assert(shell.indexOf("class=\"game-session-main\"") < shell.indexOf("class=\"input-section\"")
+    && shell.indexOf("class=\"input-section\"") < shell.indexOf("id=\"tree-container\"")
+    && shell.indexOf("id=\"tree-container\"") < shell.indexOf("class=\"game-session-sidebar\"")
+    && shell.includes("id=\"tree-toolbar-host\"")
+    && shell.includes("id=\"guess-history\""),
+    "The selector and tree must share the main column while history and tree tools share the sidebar.");
+  assert(treeSource.includes("document.getElementById('tree-toolbar-host')")
+    && treeSource.includes("toolbarHost.appendChild(toolbar)")
+    && treeSource.includes("if (!toolbarHost) container.parentNode.insertBefore(toolbar, container)"),
+    "Tree navigation must move to the sidebar in game screens and retain its adjacent fallback elsewhere.");
+  assert(normalizedStyleSource.includes("grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr)")
+    && normalizedStyleSource.includes('grid-template-areas: "main sidebar"')
+    && normalizedStyleSource.includes('"input"') && normalizedStyleSource.includes('"history"')
+    && normalizedStyleSource.includes('"toolbar"') && normalizedStyleSource.includes('"tree"')
+    && normalizedStyleSource.includes('grid-template-areas:\n      "input"\n      "tree"\n      "toolbar"\n      "history"\n      "clade";')
+    && normalizedStyleSource.includes(".game-session-main,\n.game-session-sidebar { display: contents; }"),
+    "Desktop columns and the compact mobile reading order must both be defined.");
 });
 
 Deno.test("Statistics records and SPA navigation use shared responsive accessibility patterns", () => {

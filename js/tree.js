@@ -150,8 +150,13 @@ function expandAllTreeClades() {
 }
 
 function ensureTreeToolbar(container) {
-    let toolbar = container.previousElementSibling;
-    if (!toolbar || !toolbar.classList.contains('tree-toolbar')) {
+    const toolbarHost = document.getElementById('tree-toolbar-host');
+    let toolbar = toolbarHost?.querySelector('.tree-toolbar') || null;
+    if (!toolbar && !toolbarHost) {
+        const previousToolbar = container.previousElementSibling;
+        if (previousToolbar?.classList.contains('tree-toolbar')) toolbar = previousToolbar;
+    }
+    if (!toolbar) {
         toolbar = document.createElement('div');
         toolbar.className = 'tree-toolbar';
         toolbar.innerHTML = `
@@ -173,8 +178,9 @@ function ensureTreeToolbar(container) {
             if (action === 'root') focusTreeRoot();
             if (action === 'expand') expandAllTreeClades();
         });
-        container.parentNode.insertBefore(toolbar, container);
+        if (!toolbarHost) container.parentNode.insertBefore(toolbar, container);
     }
+    if (toolbarHost && toolbar.parentNode !== toolbarHost) toolbarHost.appendChild(toolbar);
 
     const clade = toolbar.querySelector('.tree-toolbar-clade');
     const latestButton = toolbar.querySelector('[data-tree-action="latest"]');

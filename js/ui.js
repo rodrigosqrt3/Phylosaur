@@ -475,54 +475,93 @@ function updateGuessHistory() {
     const historyDiv = document.getElementById('guess-history');
 
     if (!historyDiv) return;
-    
+
     if (guesses.length === 0 && hintHistory.length === 0) {
-    historyDiv.innerHTML = '';
-    return;
+        historyDiv.innerHTML = '';
+        return;
     }
-    
-    let html = `<div class="guess-history"><h3>${t('history.title')}</h3>`;
-    
+
+    const wasExpanded = Boolean(historyDiv.querySelector('details.guess-history-details')?.open);
+    const latestGuessIndex = guesses.length - 1;
+    const latestGuess = latestGuessIndex >= 0 ? guesses[latestGuessIndex] : null;
+    const entryCount = guesses.length + hintHistory.length;
+    let latestMarkup = '';
+
+    if (latestGuess) {
+        const latestClade = latestGuess.proximity.lastCommonClade
+            ? `<div class="latest-guess-clade">${t('history.lastCommon', {
+                clade: escapeHtml(latestGuess.proximity.lastCommonClade)
+            })}</div>`
+            : '';
+        const explanationButton = currentGameMode === 'practice'
+            && latestGuess.dino.nome !== targetDino?.nome
+            ? `<button type="button" class="guess-explain-button latest-guess-explain" onclick="explainPracticeGuess(${latestGuessIndex})">${t('history.explain')}</button>`
+            : '';
+
+        latestMarkup = `
+        <article class="latest-guess" aria-live="polite" aria-atomic="true">
+            <div class="latest-guess-kicker">${t('history.latestGuess')}</div>
+            <div class="latest-guess-main">
+                <span class="latest-guess-name">${escapeHtml(latestGuess.dino.nome)}</span>
+                <span class="latest-guess-match">${t('history.nodes', {
+                    matches: latestGuess.proximity.matches,
+                    depth: currentTargetDepth,
+                    percent: latestGuess.proximity.percentage
+                })}</span>
+            </div>
+            ${latestClade}
+            ${explanationButton}
+        </article>`;
+    }
+
+    let historyItems = '';
+
     if (hintHistory.length > 0) {
-    hintHistory.slice().reverse().forEach(hint => {
-        const isCladeHint = Boolean(hint.cladeName);
-        const hintName = isCladeHint
-            ? t('history.cladeHint', { clade: escapeHtml(hint.cladeName) })
-            : t('history.nameHint');
-        const hintDetail = isCladeHint
-            ? t('history.revealedDepth', { depth: hint.depth })
-            : escapeHtml(hint.message || t('game.nameHintFallback'));
-        html += `
-        <div class="guess-item guess-item-hint">
-            <span class="guess-name">${hintName}</span>
-            <span class="guess-match">${hintDetail}</span>
-        </div>
+        hintHistory.slice().reverse().forEach(hint => {
+            const isCladeHint = Boolean(hint.cladeName);
+            const hintName = isCladeHint
+                ? t('history.cladeHint', { clade: escapeHtml(hint.cladeName) })
+                : t('history.nameHint');
+            const hintDetail = isCladeHint
+                ? t('history.revealedDepth', { depth: hint.depth })
+                : escapeHtml(hint.message || t('game.nameHintFallback'));
+            historyItems += `
+            <div class="guess-item guess-item-hint">
+                <span class="guess-name">${hintName}</span>
+                <span class="guess-match">${hintDetail}</span>
+            </div>
+            `;
+        });
+    }
+
+    guesses.slice().reverse().forEach((guess, reverseIndex) => {
+        const guessIndex = guesses.length - reverseIndex - 1;
+        const divInfo = guess.proximity.lastCommonClade
+            ? ` → ${t('history.lastCommon', { clade: escapeHtml(guess.proximity.lastCommonClade) })}`
+            : '';
+        const explanationButton = currentGameMode === 'practice' && guess.dino.nome !== targetDino?.nome
+            ? `<button type="button" class="guess-explain-button" onclick="explainPracticeGuess(${guessIndex})">${t('history.explain')}</button>`
+            : '';
+
+        historyItems += `
+            <div class="guess-item">
+                <span class="guess-name">${escapeHtml(guess.dino.nome)}${divInfo}</span>
+                <span class="guess-match">${t('history.nodes', {
+                    matches: guess.proximity.matches,
+                    depth: currentTargetDepth,
+                    percent: guess.proximity.percentage
+                })}</span>
+                ${explanationButton}
+            </div>
         `;
     });
-    }
-    
-    guesses.slice().reverse().forEach((guess, reverseIndex) => {
-    const guessIndex = guesses.length - reverseIndex - 1;
-    const divInfo = guess.proximity.lastCommonClade
-        ? ` → ${t('history.lastCommon', { clade: escapeHtml(guess.proximity.lastCommonClade) })}`
-        : '';
-    const explanationButton = currentGameMode === 'practice' && guess.dino.nome !== targetDino?.nome
-        ? `<button type="button" class="guess-explain-button" onclick="explainPracticeGuess(${guessIndex})">${t('history.explain')}</button>`
-        : '';
-    
-    html += `
-        <div class="guess-item">
-        <span class="guess-name">${escapeHtml(guess.dino.nome)}${divInfo}</span>
-        <span class="guess-match">${t('history.nodes', {
-            matches: guess.proximity.matches,
-            depth: currentTargetDepth,
-            percent: guess.proximity.percentage
-        })}</span>
-        ${explanationButton}
-        </div>
-    `;
-    });
-    
-    html += '</div>';
-    historyDiv.innerHTML = html;
+
+    historyDiv.innerHTML = `${latestMarkup}
+        <details class="guess-history-details"${wasExpanded ? ' open' : ''}>
+            <summary>
+                <span class="guess-history-title">${t('history.title')}</span>
+                <span class="guess-history-count">${t('history.entryCount', { count: entryCount })}</span>
+            </summary>
+            <div class="guess-history-list">${historyItems}</div>
+        </details>`;
 }

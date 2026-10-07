@@ -36,32 +36,38 @@ function renderGameSessionShell(loadingMessage, { contextLabel = '', tutorial = 
         <aside id="tutorial-coach" class="tutorial-coach" aria-live="polite" aria-atomic="true"></aside>
         ` : ''}
 
-        <div class="input-section">
-            <div class="guess-primary-row">
-                <div class="guess-field">
-                    <label class="visually-hidden" for="dino-input">${t('game.guessLabel')}</label>
-                    <input type="text" id="dino-input" placeholder="${t('game.guessPlaceholder')}" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
-                    <div id="suggestions"></div>
+        <div class="game-session-layout">
+            <div class="game-session-main">
+                <div class="input-section">
+                    <div class="guess-primary-row">
+                        <div class="guess-field">
+                            <label class="visually-hidden" for="dino-input">${t('game.guessLabel')}</label>
+                            <input type="text" id="dino-input" placeholder="${t('game.guessPlaceholder')}" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
+                            <div id="suggestions"></div>
+                        </div>
+                        <button class="btn-guess" onclick="makeGuess()">${t('game.submit')}</button>
+                    </div>
+                    <div class="guess-secondary-row">
+                        <button class="btn-hint btn-game-hint" onclick="useHint()" disabled
+                                title="${t('game.hintUnlock', { count: 2, unit: t('game.guessMany') })}">
+                            ${t('game.hintCount', { count: 2, unit: t('game.guessMany') })}
+                        </button>
+                        ${tutorial ? '' : `<button class="btn-giveup" onclick="giveUp()">${t('game.giveUp')}</button>`}
+                    </div>
                 </div>
-                <button class="btn-guess" onclick="makeGuess()">${t('game.submit')}</button>
+
+                <div id="tree-container">
+                    <div id="tree-scroll-wrapper">
+                        ${renderAppState(loadingMessage, { compact: true })}
+                    </div>
+                </div>
+                <div id="clade-info"></div>
             </div>
-            <div class="guess-secondary-row">
-                <button class="btn-hint btn-game-hint" onclick="useHint()" disabled
-                        title="${t('game.hintUnlock', { count: 2, unit: t('game.guessMany') })}">
-                    ${t('game.hintCount', { count: 2, unit: t('game.guessMany') })}
-                </button>
-                ${tutorial ? '' : `<button class="btn-giveup" onclick="giveUp()">${t('game.giveUp')}</button>`}
+            <div class="game-session-sidebar">
+                <div id="tree-toolbar-host"></div>
+                <aside id="guess-history" aria-label="${t('history.title')}"></aside>
             </div>
         </div>
-
-        <div id="tree-container">
-            <div id="tree-scroll-wrapper">
-                ${renderAppState(loadingMessage, { compact: true })}
-            </div>
-        </div>
-
-        <div id="clade-info"></div>
-        <div id="guess-history"></div>
     </div>`;
 }
 
@@ -738,22 +744,32 @@ async function explainPracticeGuess(guessIndex) {
     const guess = guesses[Number(guessIndex)];
     if (!guess || guess.dino?.nome === targetDino?.nome) return;
 
+    const explanation = guess.explanation || {};
     const guessedDino = database.find(dinosaur => dinosaur.nome === guess.dino.nome);
-    const lineage = guessedDino?.linhagem;
-    if (!Array.isArray(lineage) || lineage.length === 0) return;
-
-    const matches = Math.max(0, Math.min(Number(guess.proximity?.matches) || 0, lineage.length));
+    const lineage = Array.isArray(guessedDino?.linhagem) ? guessedDino.linhagem : [];
+    const matches = Math.max(0, Number(guess.proximity?.matches) || 0);
+    const lineageDepth = Number(explanation.guessLineageDepth) || lineage.length;
     const genus = escapeHtml(guess.dino.nome);
     let message;
+
     if (matches === 0) {
         message = t('history.explainNoSharedClade', { genus });
-    } else if (matches >= lineage.length) {
-        message = t('history.explainFullPath', { genus, matches: lineage.length });
+    } else if (lineageDepth > 0 && matches >= lineageDepth) {
+        message = t('history.explainFullPath', { genus, matches: lineageDepth });
     } else {
-        const sharedClade = escapeHtml(guess.proximity?.lastCommonClade || lineage[matches - 1]);
-        const nextGuessClade = escapeHtml(lineage[matches]);
-        message = t('history.explainDivergence', { genus, sharedClade, nextGuessClade });
+        const sharedClade = guess.proximity?.lastCommonClade || lineage[matches - 1];
+        const nextGuessClade = explanation.nextGuessClade || lineage[matches];
+        if (sharedClade && nextGuessClade) {
+            message = t('history.explainDivergence', {
+                genus,
+                sharedClade: escapeHtml(sharedClade),
+                nextGuessClade: escapeHtml(nextGuessClade)
+            });
+        } else {
+            message = t('history.explainUnavailable', { genus });
+        }
     }
+
     await customAlert(t('history.explainTitle'), message);
 }
 

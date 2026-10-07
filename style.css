@@ -2964,47 +2964,176 @@ body:not(.light-mode) .tree-node-group:hover rect {
   font-size: 0.95em;
 }
 
-.guess-history {
-  margin-top: 30px;
-  padding: 20px;
-  background: var(--bg-panel);
-  border: 2px solid var(--border-subtle);
-  border-radius: 8px;
-  transition: all 0.3s ease;
+.game-session-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "input"
+    "history"
+    "toolbar"
+    "tree"
+    "clade";
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
-.guess-history h3 {
+.game-session-main,
+.game-session-sidebar { display: contents; }
+
+.input-section { grid-area: input; }
+#guess-history { grid-area: history; min-width: 0; }
+#tree-toolbar-host { grid-area: toolbar; min-width: 0; }
+#tree-container { grid-area: tree; min-width: 0; }
+#clade-info { grid-area: clade; }
+
+.latest-guess {
+  margin-bottom: 10px;
+  padding: 13px 15px;
+  background: var(--bg-panel-strong);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--tree-leaf-border);
+  border-radius: 6px;
+}
+
+.latest-guess-kicker {
+  margin-bottom: 5px;
+  color: var(--color-muted);
+  font-size: 0.68em;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+}
+
+.latest-guess-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 5px 12px;
+}
+
+.latest-guess-name {
+  min-width: 0;
+  color: var(--color-text-light);
+  font-size: 1.08em;
+  font-style: italic;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.latest-guess-match {
+  color: var(--color-accent);
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
+.latest-guess-clade {
+  margin-top: 6px;
+  color: var(--color-text-dim);
+  font-size: 0.82em;
+  line-height: 1.4;
+}
+
+.guess-explain-button.latest-guess-explain {
+  min-height: 40px;
+  margin-top: 9px;
+  padding: 7px 12px;
+  color: var(--color-primary);
+  background: var(--bg-panel-darker);
+  border-color: var(--border-subtle);
+  font-size: 0.78rem;
+}
+
+.guess-explain-button.latest-guess-explain:hover {
+  color: var(--color-text-dark);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.guess-history-details {
+  overflow: hidden;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+}
+
+.guess-history-details > summary {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 13px;
   color: var(--color-text-warm);
-  margin-bottom: 15px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.guess-history-details > summary::-webkit-details-marker { display: none; }
+.guess-history-details > summary::after {
+  color: var(--color-muted);
+  content: "+";
   font-size: 1.2em;
-  font-weight: 400;
-  transition: all 0.3s ease;
+}
+.guess-history-details[open] > summary::after { content: "−"; }
+.guess-history-details > summary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -3px;
+}
+
+.guess-history-title {
+  font-size: 0.88em;
+  font-weight: 600;
+}
+
+.guess-history-count {
+  margin-left: auto;
+  padding: 3px 8px;
+  color: var(--color-text-dim);
+  background: var(--bg-panel-darker);
+  border: 1px solid var(--border-inner);
+  border-radius: 999px;
+  font-size: 0.72em;
+  white-space: nowrap;
+}
+
+.guess-history-list {
+  max-height: 38dvh;
+  overflow: auto;
+  padding: 0 11px 10px;
+  overscroll-behavior: contain;
 }
 
 .guess-item {
-  padding: 10px 15px;
-  margin: 8px 0;
-  background: var(--bg-panel-darker);
-  border-left: 4px solid var(--tree-leaf-border);
-  border-radius: 4px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 7px 0;
+  padding: 9px 10px;
+  background: var(--bg-panel-darker);
+  border-left: 3px solid var(--tree-leaf-border);
+  border-radius: 4px;
 }
 
 .guess-item-hint {
   border-left-color: var(--color-secondary);
-  opacity: 0.8;
+  opacity: 0.82;
 }
 
 .guess-name {
-  font-style: italic;
+  min-width: 0;
   color: var(--color-text-light);
+  font-size: 0.88em;
+  font-style: italic;
+  overflow-wrap: anywhere;
 }
 
 .guess-match {
-  font-weight: 500;
+  flex: 0 0 auto;
   color: var(--color-accent);
+  font-size: 0.78em;
+  font-weight: 500;
+  text-align: right;
 }
 
 .guess-explain-button {
@@ -3022,6 +3151,71 @@ body:not(.light-mode) .tree-node-group:hover rect {
 .guess-explain-button:hover {
   color: var(--color-primary);
   border-color: var(--color-primary);
+}
+
+@media (min-width: 1100px) {
+  .game-session-layout {
+    grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
+    grid-template-areas: "main sidebar";
+    align-items: start;
+    gap: 18px;
+  }
+
+  .game-session-main {
+    grid-area: main;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .game-session-sidebar {
+    position: sticky;
+    top: 16px;
+    grid-area: sidebar;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 12px;
+    align-self: start;
+  }
+
+  .tree-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 0;
+  }
+
+  .tree-toolbar-copy { text-align: left; }
+  .tree-toolbar-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tree-toolbar-btn {
+    width: 100%;
+    min-height: 42px;
+    padding-inline: 6px;
+  }
+
+  .guess-history-list { max-height: min(58vh, 520px); }
+}
+
+@media (max-width: 768px) {
+  .game-session-layout {
+    grid-template-areas:
+      "input"
+      "tree"
+      "toolbar"
+      "history"
+      "clade";
+    gap: 11px;
+  }
+  .latest-guess { padding: 11px 12px; }
+  .guess-history-list { max-height: 34dvh; }
+  .guess-item { flex-wrap: wrap; }
+  .guess-item .guess-match { margin-left: auto; }
+  .guess-item .guess-explain-button { min-height: 40px; }
 }
 
 .tree-legend {
@@ -5069,6 +5263,25 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
     .stat-label {
         font-size: clamp(0.7rem, 3vw, 0.78rem) !important;
         letter-spacing: 0.6px !important;
+    }
+
+    .game-session-stats {
+        gap: 7px !important;
+    }
+
+    .game-session-stats .stat {
+        padding: 7px 5px !important;
+    }
+
+    .game-session-stats .stat-value {
+        font-size: 1.3em !important;
+        line-height: 1.1;
+    }
+
+    .game-session-stats .stat-label {
+        margin-top: 4px;
+        font-size: clamp(0.62rem, 2.6vw, 0.7rem) !important;
+        letter-spacing: 0.45px !important;
     }
 
     #tree-container {

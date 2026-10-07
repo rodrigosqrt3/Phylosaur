@@ -655,6 +655,12 @@ function applyServerGamePayload(data) {
                 lastCommonClade: record.lastCommonClade || null,
                 divergenceDepth: Number(record.matches || 0)
             },
+            explanation: record.explanation && typeof record.explanation === "object"
+                ? {
+                    nextGuessClade: record.explanation.nextGuessClade || null,
+                    guessLineageDepth: Number(record.explanation.guessLineageDepth || 0)
+                }
+                : null,
             isHint: record.isHint === true
         }));
     }
