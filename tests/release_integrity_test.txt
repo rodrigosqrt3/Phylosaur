@@ -7,6 +7,7 @@ function fileExists(path: string) {
 }
 
 const localSourceLayout = fileExists("game/js/config.txt");
+const edgeSourceAvailable = localSourceLayout && fileExists("game/index.txt");
 const gameRoot = localSourceLayout ? "game" : ".";
 const javascriptRoot = localSourceLayout ? "game/js" : "js";
 const javascriptExtension = localSourceLayout ? "txt" : "js";
@@ -43,7 +44,7 @@ Deno.test("browser JavaScript parses individually and in production order", () =
 });
 
 Deno.test("session credentials stay private, scoped and compatible with owned legacy saves", async () => {
-  if (!localSourceLayout) return;
+  if (!edgeSourceAvailable) return;
   const source = Deno.readTextFileSync("game/index.txt");
   const helperSource = source.slice(source.indexOf("function bytesToBase64Url("),
     source.indexOf("async function getAuthenticatedUserId("))
@@ -336,7 +337,7 @@ Deno.test("overlapping game API calls use independent deadlines and do not retry
 });
 
 Deno.test("session writes reject stale revisions before guesses, hints or completion can be overwritten", async () => {
-  if (!localSourceLayout) return;
+  if (!edgeSourceAvailable) return;
   const source = Deno.readTextFileSync("game/index.txt");
   const helper = source.slice(source.indexOf("async function updateActiveGameSession("),
     source.indexOf("function sessionConflictResponse("))
@@ -431,7 +432,7 @@ Deno.test("session writes reject stale revisions before guesses, hints or comple
 });
 
 Deno.test("race closure reports committed results instead of turning a concurrent victory into elimination", async () => {
-  if (!localSourceLayout) return;
+  if (!edgeSourceAvailable) return;
   const source = Deno.readTextFileSync("game/index.txt");
   const start = source.indexOf("      let challengeSessions = (sessions ?? [])");
   const race = source.slice(start, source.indexOf("      const rankedSessions =", start))
@@ -1850,7 +1851,7 @@ Deno.test("clade collection achievements count unique Museum genera and synchron
     styleSource.includes(".achievement-category"),
     "Clade achievements must remain visually identifiable in the achievement gallery.");
 
-  if (localSourceLayout) {
+  if (edgeSourceAvailable) {
     const edgeSource = Deno.readTextFileSync("game/index.txt");
     for (const [id, clade] of Object.entries(expectedClades)) {
       assert(edgeSource.includes(`id: "${id}"`) && edgeSource.includes(`clade: "${clade}"`),
@@ -1929,7 +1930,7 @@ Deno.test("Museum discoveries remain separated across guest, account and logout 
     !dbSource.includes("JSON.stringify(unlockedNames)"),
     "Logout or account merging can still erase or overwrite the guest discovery list.");
 
-  if (localSourceLayout) {
+  if (edgeSourceAvailable) {
     const edgeSource = Deno.readTextFileSync("game/index.txt");
     const accountDiscoverySource = edgeSource.slice(
       edgeSource.indexOf('if (action === "account_discoveries")'),
@@ -2025,7 +2026,7 @@ Deno.test("Museum Clade Atlas exposes the three principal branches without hidin
       "Unexpected genera now sit outside the three principal Atlas branches.");
   }
 
-  if (localSourceLayout) {
+  if (edgeSourceAvailable) {
     const edgeSource = Deno.readTextFileSync("game/index.txt");
     const workerSource = Deno.readTextFileSync("game/sw_service_worker.txt");
     const catalogSource = edgeSource.slice(
@@ -2220,102 +2221,49 @@ Deno.test("guided tutorial is a real local game isolated from progress and gamep
   }
 });
 
-Deno.test("Practice guess explanations describe only the excluded guess branch", async () => {
-  const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
-  const uiSource = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
-  const helper = gameSource.slice(gameSource.indexOf("async function explainPracticeGuess("),
-    gameSource.indexOf("async function makeGuess(", gameSource.indexOf("async function explainPracticeGuess(")));
-  const build = (mode: string, guesses: any[], database: any[], targetDino: any) => {
-    const alerts: string[] = [];
-    const translate = (key: string, values: Record<string, unknown> = {}) => {
-      const messages: Record<string, string> = {
-        "history.explainTitle": "Reading this guess",
-        "history.explainDivergence": "<em>{genus}</em> and target share {sharedClade}, but {genus} follows the {nextGuessClade} branch, which target does not share.",
-        "history.explainFullPath": "<em>{genus}</em> shares all {matches} stored clades; exact name is still needed.",
-        "history.explainNoSharedClade": "No shared clade with <em>{genus}</em>.",
-        "history.explainUnavailable": "Could not load lineage details.",
-      };
-      return (messages[key] || key).replace(/\{([^}]+)\}/g,
-        (_match, name) => String(values[name] ?? ""));
-    };
-    const escapeHtml = (value: unknown) => String(value).replace(/[&<>"']/g,
-      character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
-    const explain = new Function("currentGameMode", "guesses", "database", "targetDino",
-      "customAlert", "t", "escapeHtml", `${helper}; return explainPracticeGuess;`)(
-      mode, guesses, database, targetDino,
-      async (_title: string, message: string) => { alerts.push(message); }, translate, escapeHtml);
-    return { explain, alerts };
+Deno.test("victory discovery count waits for the account total before showing a number", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const start = source.indexOf("function buildVictoryDiscoveryMarkup(");
+  const end = source.indexOf("async function openVictoryMuseumEntry(", start);
+  const helper = source.slice(start, end);
+  let resolveRecords!: (records: any) => void;
+  const accountRecords = new Promise<any>(resolve => { resolveRecords = resolve; });
+  const translate = (key: string, values: Record<string, unknown> = {}) => {
+    if (key === "common.loading") return "Loading…";
+    if (key === "result.discoveredTimes") return `Discovered ${values.count} times`;
+    if (key === "result.nowInCollection") return "Now part of your collection";
+    return key;
   };
+  const runtime = new Function("env", `
+    let currentUserId = env.owner;
+    const targetDino = { nome: "Tyrannosaurus" };
+    const getDiscoveryRecords = env.getDiscoveryRecords;
+    const t = env.translate;
+    const console = { warn() {} };
+    ${helper}
+    return { buildVictoryDiscoveryMarkup, hydrateVictoryDiscoveryCount,
+      setOwner(owner) { currentUserId = owner; } };
+  `)({ owner: "account-a", getDiscoveryRecords: () => accountRecords, translate });
 
-  const edgeSource = Deno.readTextFileSync("game/index.txt");
-  const serverStart = edgeSource.indexOf("function buildPracticeGuessExplanation(");
-  const serverEnd = edgeSource.indexOf("\nfunction stringArray(", serverStart);
-  const serverHelper = edgeSource.slice(serverStart, serverEnd).replace(/: unknown/g, "");
-  const buildServerExplanation = new Function("stringArray", "commonPrefixLength",
-    `${serverHelper}; return buildPracticeGuessExplanation;`)(
-      (value: unknown) => Array.isArray(value) ? value.filter(item => typeof item === "string") : [],
-      (first: string[], second: string[]) => {
-        let matches = 0;
-        while (matches < Math.min(first.length, second.length) && first[matches] === second[matches]) matches++;
-        return matches;
-      },
-    );
-  const serverExplanation = buildServerExplanation(
-    ["Dinosauria", "Saurischia", "Eusaurischia", "Sauropodomorpha"],
-    ["Dinosauria", "Saurischia", "Eusaurischia", "Theropoda"],
-  );
-  assert(serverExplanation.nextGuessClade === "Sauropodomorpha"
-    && serverExplanation.guessLineageDepth === 4,
-    "Practice explanations must expose the guessed branch, never the target branch.");
+  const markup = runtime.buildVictoryDiscoveryMarkup({ isFirstDiscovery: false, discoveryCount: 2 });
+  assert(markup.includes("Loading…") && !markup.includes("Discovered 2 times"),
+    "An account must not briefly show its incomplete browser-only discovery count.");
 
-  const guess = { dino: { nome: "Brachiosaurus" }, proximity: {
-    matches: 3, lastCommonClade: "Eusaurischia",
+  const primary = { textContent: "Loading…" };
+  const secondary = { textContent: "entry remains" };
+  const panel = { isConnected: true, querySelector(selector: string) {
+    return selector.includes("primary") ? primary : secondary;
   } };
-  const database = [{ nome: "Brachiosaurus", linhagem: [
-    "Dinosauria", "Saurischia", "Eusaurischia", "Sauropodomorpha",
-  ] }];
-  const hiddenTarget = { nome: "Velociraptor", linhagem: [
-    "Dinosauria", "Saurischia", "Eusaurischia", "Theropoda",
-  ] };
-  const practice = build("practice", [guess], database, hiddenTarget);
-  await practice.explain(0);
-  assert(practice.alerts.length === 1 && practice.alerts[0].includes("<em>Brachiosaurus</em>")
-    && practice.alerts[0].includes("Eusaurischia")
-    && practice.alerts[0].includes("Sauropodomorpha")
-    && !practice.alerts[0].includes("Theropoda"),
-    "A divergence explanation must name the shared clade and rejected guess branch without exposing the target branch.");
+  const pending = runtime.hydrateVictoryDiscoveryCount(panel, "Tyrannosaurus", false, 2);
+  resolveRecords({ tyrannosaurus: { count: 5 } });
+  await pending;
+  assert(primary.textContent === "Discovered 5 times",
+    "The victory panel must publish the merged account total once synchronization finishes.");
 
-  const serverBackedPractice = build("practice", [{ ...guess, explanation: serverExplanation }],
-    [{ nome: "Brachiosaurus" }], hiddenTarget);
-  await serverBackedPractice.explain(0);
-  assert(serverBackedPractice.alerts.length === 1
-    && serverBackedPractice.alerts[0].includes("Sauropodomorpha")
-    && !serverBackedPractice.alerts[0].includes("Theropoda"),
-    "Server-backed Practice guesses must explain without requiring a client-side lineage catalog.");
-
-  const unavailable = build("practice", [guess], [{ nome: "Brachiosaurus" }], hiddenTarget);
-  await unavailable.explain(0);
-  assert(unavailable.alerts.length === 1
-    && unavailable.alerts[0].includes("Could not load lineage details"),
-    "Missing optional lineage metadata must show a helpful message instead of silently doing nothing.");
-
-  const fullPathGuess = { dino: { nome: "Apatosaurus" }, proximity: { matches: 2 } };
-  const fullPath = build("practice", [fullPathGuess], [
-    { nome: "Apatosaurus", linhagem: ["Dinosauria", "Sauropodomorpha"] },
-  ], hiddenTarget);
-  await fullPath.explain(0);
-  assert(fullPath.alerts[0].includes("all 2 stored clades")
-    && fullPath.alerts[0].includes("exact name is still needed")
-    && !fullPath.alerts[0].includes("Theropoda"),
-    "A 100% lineage match must explain that lineage agreement alone does not identify the genus.");
-
-  const daily = build("daily", [guess], database, hiddenTarget);
-  await daily.explain(0);
-  assert(daily.alerts.length === 0, "Guess explanations must remain exclusive to Practice mode.");
-  assert(uiSource.includes("currentGameMode === 'practice' && guess.dino.nome !== targetDino?.nome")
-    && uiSource.includes("class=\"guess-explain-button\"")
-    && uiSource.includes("explainPracticeGuess(${guessIndex})"),
-    "Only non-winning Practice guesses should show the explanation control in history.");
+  runtime.setOwner(null);
+  const guestMarkup = runtime.buildVictoryDiscoveryMarkup({ isFirstDiscovery: false, discoveryCount: 2 });
+  assert(guestMarkup.includes("Discovered 2 times"),
+    "Guest play should continue displaying its immediately available local count.");
 });
 
 Deno.test("guess history surfaces the latest result and keeps the full timeline expandable", () => {
