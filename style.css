@@ -1211,7 +1211,7 @@ button::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .btn-guess,
@@ -1477,7 +1477,7 @@ textarea:focus-visible {
     .stat:nth-child(5) {
         grid-column: span 2 !important;
     }
-    .clade-content { flex-direction: column; }
+    .clade-content { flex-direction: row; }
     .clade-image { max-width: 100%; }
     .input-section { 
         flex-direction: column !important; 
@@ -3005,6 +3005,23 @@ body:not(.light-mode) .tree-node-group:hover rect {
 .guess-match {
   font-weight: 500;
   color: var(--color-accent);
+}
+
+.guess-explain-button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 6px 10px;
+  color: var(--color-muted);
+  background: transparent;
+  border: 1px solid var(--border-inner);
+  border-radius: 4px;
+  font-size: 0.76rem;
+  letter-spacing: 0.2px;
+}
+
+.guess-explain-button:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .tree-legend {
@@ -4821,7 +4838,7 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 
     .site-header {
         margin-bottom: 16px;
-        padding: 24px 14px 18px;
+        padding: 64px 14px 18px;
     }
 
     .site-header-layout {
@@ -4844,10 +4861,10 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
         position: absolute;
         top: 12px;
         right: 12px;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        justify-content: flex-start;
-        gap: 8px;
+        justify-content: flex-end;
+        gap: 10px;
         width: auto;
         min-height: 0;
     }
@@ -4963,6 +4980,75 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
         margin-top: 8px;
     }
 
+    #main-container:has(.difficulty-home) > .site-header {
+        margin-bottom: 14px;
+        padding: 64px 12px 15px;
+    }
+
+    .game-card.difficulty-home {
+        padding: 18px 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.34);
+    }
+
+    .difficulty-home .screen-title {
+        margin-bottom: 6px;
+        font-size: clamp(1.5rem, 7.2vw, 1.85rem);
+        letter-spacing: 1px;
+    }
+
+    .difficulty-home .difficulty-home-date {
+        margin-bottom: 8px;
+        font-size: 0.84em;
+        letter-spacing: 0.5px;
+    }
+
+    .difficulty-home .difficulty-home-countdown {
+        gap: 4px;
+        padding: 6px 9px;
+        font-size: 0.72em;
+    }
+
+    .difficulty-home .difficulty-home-levels {
+        gap: 10px;
+        margin: 16px 0;
+    }
+
+    .difficulty-home .difficulty-btn {
+        min-height: 72px;
+        padding: 12px 14px;
+        box-shadow: 0 2px 7px rgba(0, 0, 0, 0.32);
+    }
+
+    .difficulty-home .difficulty-level-name {
+        margin-bottom: 3px;
+        font-size: 1.08em;
+        letter-spacing: 1.4px;
+    }
+
+    .difficulty-home .difficulty-level-tiers {
+        margin: 2px 0 0;
+    }
+
+    .difficulty-home .difficulty-home-actions-wrap {
+        margin-top: 16px;
+    }
+
+    .difficulty-home .difficulty-home-actions {
+        gap: 8px;
+    }
+
+    .difficulty-home .difficulty-home-actions .btn-menu-action {
+        min-height: 44px;
+        padding: 10px 7px;
+        font-size: clamp(0.7rem, 3vw, 0.8rem);
+        letter-spacing: 0.5px;
+    }
+
+    .difficulty-home .difficulty-home-about {
+        min-height: 40px;
+        margin-top: 4px;
+    }
+
     #header-controls {
         justify-content: center;
         margin-top: 2px;
@@ -5011,6 +5097,11 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
     .guess-match {
         align-self: flex-end;
         text-align: right;
+    }
+
+    .guess-explain-button {
+        min-height: 40px;
+        align-self: flex-start;
     }
 
     .modal-box {
@@ -5065,7 +5156,7 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
 
 @media (max-width: 420px) {
     .site-header {
-        padding: 22px 10px 16px;
+        padding: 64px 10px 16px;
     }
 
     .game-card {
