@@ -240,7 +240,7 @@ function getChallengeSessionStorageKey(code) {
 async function fetchWikipediaInfo(cladeName) {
   const normalizedName = String(cladeName || '').trim();
   if (!normalizedName) return null;
-  const wikiLanguage = currentLocale === 'pt-BR' ? 'pt' : currentLocale === 'es' ? 'es' : 'en';
+  const wikiLanguage = ({ 'pt-BR': 'pt', es: 'es', ja: 'ja' })[currentLocale] || 'en';
   const cacheKey = `${wikiLanguage}:${normalizedName.toLowerCase()}`;
   if (wikipediaInfoCache.has(cacheKey)) return wikipediaInfoCache.get(cacheKey);
 
