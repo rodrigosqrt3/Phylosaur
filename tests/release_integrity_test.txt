@@ -801,8 +801,8 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     source.includes("window.location.reload()") &&
     !source.includes("window.location.assign(url.toString())"),
     "Language changes must explicitly reload while preserving the current hash route.");
-  assert(htmlSource.indexOf('src="js/state.js?v=128"') < htmlSource.indexOf('src="js/i18n.js?v=128"') &&
-    htmlSource.indexOf('src="js/i18n.js?v=128"') < htmlSource.indexOf('src="js/api.js?v=128"') &&
+  assert(htmlSource.indexOf('src="js/state.js?v=131"') < htmlSource.indexOf('src="js/i18n.js?v=131"') &&
+    htmlSource.indexOf('src="js/i18n.js?v=131"') < htmlSource.indexOf('src="js/api.js?v=131"') &&
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"'),
     "The language module or selector is missing from the production shell.");
@@ -810,9 +810,9 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
     htmlSource.includes("document.body.classList.add('light-mode')") &&
     htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
-      htmlSource.indexOf('rel="stylesheet" href="style.css?v=128"'),
+      htmlSource.indexOf('rel="stylesheet" href="style.css?v=131"'),
     "The saved light theme must be applied before the stylesheet can paint the page.");
-  assert(workerSource.includes('"./js/i18n.js?v=128"'),
+  assert(workerSource.includes('"./js/i18n.js?v=131"'),
     "The localization module must be available offline.");
   assert(styleSource.includes(".header-theme-switch") &&
     styleSource.includes("order: 2") &&
@@ -1073,7 +1073,7 @@ Deno.test("media overrides are complete and belong to playable genera", () => {
     }
     assert(/^https:\/\//.test(media.file_page), `${name} has an invalid file page.`);
     if (media.resolve_commons_metadata === true) {
-      assert(media.source === "wikimedia" && /^File:.+\.(jpg|jpeg|png|webp)$/i.test(media.file_title),
+      assert(media.source === "wikimedia" && /^File:.+\.(jpg|jpeg|png|webp|svg)$/i.test(media.file_title),
         `${name} must resolve a specific Commons image before use.`);
       assert(!media.url && !media.artist && !media.license,
         `${name} must not publish guessed Commons metadata.`);
@@ -1082,6 +1082,22 @@ Deno.test("media overrides are complete and belong to playable genera", () => {
     assert(/^https:\/\//.test(media.url), `${name} has an invalid image URL.`);
     assert(media.artist, `${name} has no artist attribution.`);
     assert(media.license, `${name} has no license.`);
+  }
+
+  const requestedCommonsFiles: Record<string, string> = {
+    Gastonia: "File:Gastonia TD.png",
+    Burianosaurus: "File:Burianosaurus Skeletal.svg",
+    Europasaurus: "File:Europasaurus TD.png",
+    Giraffatitan: "File:Giraffatitan TD.png",
+    Patagotitan: "File:Patagotitan TD.png",
+    Vagaceratops: "File:Vagaceratops NT.jpg",
+  };
+  const mediaCatalog = readJson(assetPath("phylosaur_media_overrides.json"));
+  assert(mediaCatalog.version >= 22, "The reviewed Commons image catalog version was not advanced.");
+  for (const [name, fileTitle] of Object.entries(requestedCommonsFiles)) {
+    assert(overrides[name]?.file_title === fileTitle
+      && overrides[name]?.resolve_commons_metadata === true,
+      `${name} must resolve the exact reviewed Commons image with live attribution.`);
   }
 });
 
@@ -1156,9 +1172,10 @@ Deno.test("Museum requested Commons overrides resolve complete credits once and 
   const cachedSource = source.slice(source.indexOf("async function getCachedDinoMedia("),
     source.indexOf("let activeMuseumEntryMedia"));
   const getMedia = new Function("getMuseumImageCache", "loadMuseumOverrideCatalog",
-    "resolveMuseumCommonsOverride", "scheduleMuseumImageCacheWrite", `${cachedSource}; return getCachedDinoMedia;`)(
+    "resolveMuseumCommonsOverride", "scheduleMuseumImageCacheWrite", "fetchWikimediaImage",
+    "loadMuseumFallbackCatalog", `${cachedSource}; return getCachedDinoMedia;`)(
     () => cache, async () => ({ Eustreptospondylus: configured }),
-    async () => available ? first : null, () => writes++,
+    async () => available ? first : null, () => writes++, async () => null, async () => ({}),
   );
   assert((await getMedia("Eustreptospondylus")).url === first.url && writes === 1
     && cache.Eustreptospondylus.artist === first.artist,
@@ -1168,6 +1185,34 @@ Deno.test("Museum requested Commons overrides resolve complete credits once and 
   available = false;
   assert((await getMedia("Eustreptospondylus")).url === first.url,
     "A later offline request must retain the already cached replacement.");
+});
+
+Deno.test("TotalDino lookup refreshes cached Wikimedia fallbacks and retains them offline", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const cachedSource = source.slice(source.indexOf("async function getCachedDinoMedia("),
+    source.indexOf("let activeMuseumEntryMedia"));
+  const cache: Record<string, any> = {
+    Giraffatitan: { url: "old-fallback", source: "wikimedia" },
+    Vagaceratops: { url: "offline-fallback", source: "wikimedia" },
+  };
+  const writes: string[] = [];
+  const lookup = (available: Record<string, string>) => new Function(
+    "getMuseumImageCache", "loadMuseumOverrideCatalog", "resolveMuseumCommonsOverride",
+    "scheduleMuseumImageCacheWrite", "fetchWikimediaImage", "loadMuseumFallbackCatalog",
+    `${cachedSource}; return getCachedDinoMedia;`,
+  )(
+    () => cache, async () => ({}), async () => null, () => writes.push("write"),
+    async (name: string) => available[name] ?? null, async () => ({}),
+  );
+  const refreshed = await lookup({ Giraffatitan: "current-totaldino" })("Giraffatitan");
+  assert(refreshed.url === "current-totaldino" && refreshed.source === "totaldino"
+    && cache.Giraffatitan.url === "current-totaldino",
+    "An exact TotalDino result must replace an older cached Wikimedia fallback.");
+  const offline = await lookup({})("Vagaceratops");
+  assert(offline.url === "offline-fallback" && offline.source === "wikimedia",
+    "A cached usable fallback must remain available when the exact Wikimedia lookup has no result.");
+  assert(writes.length === 1,
+    "Only a refreshed image should schedule a cache write; unchanged offline fallback remains untouched.");
 });
 
 Deno.test("Museum cards prioritize larger illustrations, names and first-discovery history", () => {
@@ -1541,8 +1586,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
-  assert(aboutSource.includes('src="js/state.js?v=128"') &&
-    aboutSource.includes('src="js/i18n.js?v=128"') &&
+  assert(aboutSource.includes('src="js/state.js?v=131"') &&
+    aboutSource.includes('src="js/i18n.js?v=131"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
@@ -2291,6 +2336,8 @@ Deno.test("live game metrics use independent glass tiles aligned to the tree and
     && cell.includes("border: 1px solid var(--glass-border);")
     && cell.includes("border-radius: 6px;")
     && cell.includes("padding: 15px 10px;")
+    && cell.includes("-webkit-tap-highlight-color: transparent;")
+    && cell.includes("cursor: default;")
     && cell.includes("box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 12px var(--glass-shadow);")
     && styleSource.includes(".game-session-stats .stat::before {\n  top: 1px;")
     && hover.includes("0 7px 18px var(--glass-shadow)")
@@ -2301,6 +2348,12 @@ Deno.test("live game metrics use independent glass tiles aligned to the tree and
     && styleSource.includes("body.light-mode .game-session-stats .stat {\n    background: linear-gradient(145deg,")
     && styleSource.includes("body.light-mode .game-session-stats .stat::before"),
     "Compact screens must stack the groups, and independent cards must retain glass styling in light mode.");
+  const touchStyles = styleSource.slice(styleSource.indexOf("@media (hover: none), (pointer: coarse)"));
+  assert(touchStyles.includes(".game-session-stats .stat:hover")
+    && touchStyles.includes(".game-session-stats .stat:active")
+    && touchStyles.includes("transition: none;")
+    && touchStyles.includes("animation: none;"),
+    "Touch screens must not leave informational metric cards looking selected after a tap.");
 });
 
 Deno.test("guided tutorial is a real local game isolated from progress and gameplay APIs", () => {
@@ -4963,7 +5016,7 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   for (const failure of ["network", "404", "500", "write", "open"]) {
     const runtime = buildServiceWorkerRuntime();
     if (["network", "404", "500"].includes(failure)) {
-      runtime.failures.fetchPath = "js/main.js?v=128";
+      runtime.failures.fetchPath = "js/main.js?v=131";
       runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
     }
     if (failure === "write") runtime.failures.putPath = "style.css";
@@ -4979,8 +5032,8 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   let resolve!: (value: Response) => void;
   let settled = false;
   const delayed = new Promise<Response>(yes => { resolve = yes; });
-  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=128") ? delayed
-    : new Response(request.url, { status: request.url.endsWith("style.css?v=128") ? 404 : 200 });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=131") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css?v=131") ? 404 : 200 });
   const install = runtime.event("install");
   const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
   for (let index = 0; index < 12; index++) await Promise.resolve();

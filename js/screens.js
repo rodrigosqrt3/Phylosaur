@@ -1233,7 +1233,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=20')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=22')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
@@ -1334,13 +1334,13 @@ async function getCachedDinoMedia(name) {
 
     const cached = cache[name];
 
-    // Older versions stored TotalDino URLs as plain strings.
+    // Older versions stored exact TotalDino URLs as plain strings.
     if (typeof cached === 'string') {
         return { url: cached, source: 'totaldino' };
     }
-    if (cached?.url) return cached;
+    if (cached?.source === 'totaldino' && cached.url) return cached;
 
-    // Preserve the current behavior: the exact TotalDino file always wins.
+    // Refresh cached fallback art against the exact TotalDino title before reusing it.
     const totalDinoUrl = await fetchWikimediaImage(name);
     if (totalDinoUrl) {
         const media = {
@@ -1351,6 +1351,9 @@ async function getCachedDinoMedia(name) {
         scheduleMuseumImageCacheWrite();
         return media;
     }
+
+    // Keep a usable cached fallback if Wikimedia is unavailable or has no exact title.
+    if (cached?.url) return cached;
 
     // Only taxa without the current image reach the licensed media fallback.
     const fallbackCatalog = await loadMuseumFallbackCatalog();

@@ -1,5 +1,5 @@
 {
-  "version": 20,
+  "version": 22,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Concornis": {
@@ -733,13 +733,9 @@
       "source": "wikimedia"
     },
     "Patagotitan": {
-      "file_title": "File:Patagotitan mayorum.jpg",
-      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Patagotitan_mayorum.jpg?width=960",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Patagotitan_mayorum.jpg",
-      "artist": "Levi Martinez-Reza",
-      "license": "CC BY-SA 3.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "file_title": "File:Patagotitan TD.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Patagotitan_TD.png",
+      "resolve_commons_metadata": true,
       "source": "wikimedia"
     },
     "Shunosaurus": {
@@ -793,14 +789,16 @@
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
       "source": "wikimedia"
     },
+    "Burianosaurus": {
+      "file_title": "File:Burianosaurus Skeletal.svg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Burianosaurus_Skeletal.svg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
     "Europasaurus": {
-      "file_title": "File:Europasaurus holgeri scene modified.jpg",
-      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Europasaurus_holgeri_scene_modified.jpg/960px-Europasaurus_holgeri_scene_modified.jpg",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Europasaurus_holgeri_scene_modified.jpg",
-      "artist": "Gerhard Boeggemann; anatomy corrected by FunkMonk",
-      "license": "CC BY-SA 2.5",
-      "license_url": "https://creativecommons.org/licenses/by-sa/2.5",
-      "usage_terms": "Creative Commons Attribution-Share Alike 2.5 Generic",
+      "file_title": "File:Europasaurus TD.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Europasaurus_TD.png",
+      "resolve_commons_metadata": true,
       "source": "wikimedia"
     },
     "Maip": {
@@ -826,13 +824,15 @@
       "editorial_note": "White regions represent preserved material; grey regions are comparative reconstruction."
     },
     "Gastonia": {
-      "file_title": "File:Gastonia burgei dinosaur.png",
-      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Gastonia_burgei_dinosaur.png/960px-Gastonia_burgei_dinosaur.png",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Gastonia_burgei_dinosaur.png",
-      "artist": "Mariana Ruiz Villarreal (LadyofHats)",
-      "license": "Public domain",
-      "license_url": "",
-      "usage_terms": "Public domain",
+      "file_title": "File:Gastonia TD.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Gastonia_TD.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Giraffatitan": {
+      "file_title": "File:Giraffatitan TD.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Giraffatitan_TD.png",
+      "resolve_commons_metadata": true,
       "source": "wikimedia"
     },
     "Edmontonia": {
@@ -853,6 +853,12 @@
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
+      "source": "wikimedia"
+    },
+    "Vagaceratops": {
+      "file_title": "File:Vagaceratops NT.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Vagaceratops_NT.jpg",
+      "resolve_commons_metadata": true,
       "source": "wikimedia"
     },
     "Bashanosaurus": {
