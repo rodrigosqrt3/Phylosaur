@@ -10,25 +10,29 @@ function renderGameSessionShell(loadingMessage, { contextLabel = '', tutorial = 
     <div class="game-card game-session-card">
         ${context}
         <div class="stats game-session-stats">
-            <div class="stat">
-                <div class="stat-value" id="attempts">0</div>
-                <div class="stat-label">${t('game.attempts')}</div>
+            <div class="game-session-stat-main">
+                <div class="stat">
+                    <div class="stat-value" id="attempts">0</div>
+                    <div class="stat-label">${t('game.attempts')}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="hints">3</div>
+                    <div class="stat-label">${t('game.hints')}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="best-match">0</div>
+                    <div class="stat-label">${t('game.deepestNode')}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="clades-revealed">0</div>
+                    <div class="stat-label">${t('game.cladesShown')}</div>
+                </div>
             </div>
-            <div class="stat">
-                <div class="stat-value" id="hints">3</div>
-                <div class="stat-label">${t('game.hints')}</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="best-match">0</div>
-                <div class="stat-label">${t('game.deepestNode')}</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="clades-revealed">0</div>
-                <div class="stat-label">${t('game.cladesShown')}</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="possible-specimens">-</div>
-                <div class="stat-label">${t('game.possibleAnswers')}</div>
+            <div class="game-session-stat-sidebar">
+                <div class="stat">
+                    <div class="stat-value" id="possible-specimens">-</div>
+                    <div class="stat-label">${t('game.possibleAnswers')}</div>
+                </div>
             </div>
         </div>
 

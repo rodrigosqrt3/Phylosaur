@@ -1395,8 +1395,70 @@ textarea:focus-visible {
 }
 
 .game-session-stats {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.game-session-stat-main {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.game-session-stat-sidebar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.game-session-stats .stat {
+  min-width: 0;
+  padding: 15px 10px;
+  background: linear-gradient(145deg, var(--glass-surface), var(--glass-surface-soft));
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 12px var(--glass-shadow);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-session-stats .stat::before {
+  top: 1px;
+  left: 1px;
+  right: 1px;
+  height: 45%;
+  background: linear-gradient(180deg, var(--glass-highlight), transparent);
+  border-radius: 5px 5px 0 0;
+  pointer-events: none;
+}
+
+.game-session-stats .stat:hover {
+  background: linear-gradient(145deg, var(--glass-surface), var(--glass-surface));
+  border-color: var(--color-accent);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 7px 18px var(--glass-shadow);
+  text-transform: none;
+  letter-spacing: normal;
+  transform: none;
+}
+
+.game-session-stats .stat-value {
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 8px rgba(212, 184, 126, 0.18);
+}
+
+.game-session-stats .stat-label {
+  margin-top: 5px;
+  font-size: 0.64rem;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
 }
 
 .stat {
@@ -1674,6 +1736,7 @@ textarea:focus-visible {
 #tree-container.tree-result-active.tree-review-active .tree-review-return {
   position: sticky;
   top: 0;
+  left: 0;
   z-index: 20;
   display: inline-flex;
   margin: 0 0 14px;
@@ -3144,12 +3207,20 @@ body:not(.light-mode) .tree-node-group:hover rect {
 }
 
 @media (min-width: 1100px) {
+  .stats.game-session-stats {
+    grid-template-columns: minmax(0, 2.65fr) minmax(230px, 0.62fr);
+    gap: 18px;
+    align-items: stretch;
+  }
+
   .game-session-layout {
     grid-template-columns: minmax(0, 2.65fr) minmax(230px, 0.62fr);
     grid-template-areas: "main sidebar";
     align-items: start;
     gap: 18px;
   }
+
+  .game-session-stat-main { gap: 12px; }
 
   .game-session-main {
     grid-area: main;
@@ -4321,6 +4392,16 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     border-color: var(--color-accent);
 }
 
+.image-lightbox .image-lightbox-close,
+.museum-image-viewer .museum-image-viewer-close {
+    color: #fff;
+    background: rgba(22, 18, 14, 0.42);
+    border-color: var(--border-subtle);
+    -webkit-backdrop-filter: blur(5px) saturate(120%);
+    backdrop-filter: blur(5px) saturate(120%);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
 .museum-entry-loading {
     padding: 80px 20px;
     text-align: center;
@@ -5332,11 +5413,18 @@ body.light-mode .museum-tabs .tab-btn:focus-visible {
     }
 
     .game-session-stats {
-        gap: 7px !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 8px !important;
+        padding: 0;
+    }
+
+    .game-session-stat-main {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
     }
 
     .game-session-stats .stat {
-        padding: 7px 5px !important;
+        padding: 9px 6px !important;
     }
 
     .game-session-stats .stat-value {
@@ -5501,6 +5589,24 @@ body.light-mode .stat:hover {
         inset 0 -2px 5px rgba(90, 62, 38, 0.07),
         0 5px 13px rgba(74, 56, 41, 0.13);
     transform: translateY(-1px);
+}
+
+body.light-mode .game-session-stats .stat {
+    background: linear-gradient(145deg, var(--glass-surface), var(--glass-surface-soft));
+    border-color: var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 12px var(--glass-shadow);
+}
+
+body.light-mode .game-session-stats .stat::before {
+    display: block;
+    background: linear-gradient(180deg, var(--glass-highlight), transparent);
+}
+
+body.light-mode .game-session-stats .stat:hover {
+    background: linear-gradient(145deg, var(--glass-surface), var(--glass-surface));
+    border-color: var(--color-accent);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 7px 18px var(--glass-shadow);
+    transform: none;
 }
 
 body.light-mode .stat-value {

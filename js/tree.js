@@ -309,6 +309,16 @@ function renderTreeSnapshot(treeSnapshot) {
   animationState.focusKey = null;
 }
 
+function fitTreeSvgLabel(label, maxWidth) {
+  const naturalWidth = typeof label.getComputedTextLength === 'function'
+    ? label.getComputedTextLength()
+    : NaN;
+  if (!Number.isFinite(naturalWidth) || naturalWidth <= maxWidth) return;
+
+  label.setAttribute('textLength', String(maxWidth));
+  label.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+}
+
 function renderTreeModel(nodes, leaves, animation = {}) {
   const container = document.getElementById('tree-container');
   const wrapper = document.getElementById('tree-scroll-wrapper');
@@ -646,6 +656,7 @@ nodes.forEach((data, clade) => {
     }
 
     svg.appendChild(g);
+    fitTreeSvgLabel(label, maxTextWidth);
     if (collapseToggle) svg.appendChild(collapseToggle);
   });
   
@@ -755,6 +766,7 @@ leafPositions.forEach((leaf, name) => {
 
     g.appendChild(label);
     svg.appendChild(g);
+    fitTreeSvgLabel(label, maxLeafWidth);
   });
   
   requestAnimationFrame(() => {

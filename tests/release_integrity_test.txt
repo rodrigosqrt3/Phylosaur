@@ -801,8 +801,8 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     source.includes("window.location.reload()") &&
     !source.includes("window.location.assign(url.toString())"),
     "Language changes must explicitly reload while preserving the current hash route.");
-  assert(htmlSource.indexOf('src="js/state.js?v=123"') < htmlSource.indexOf('src="js/i18n.js?v=123"') &&
-    htmlSource.indexOf('src="js/i18n.js?v=123"') < htmlSource.indexOf('src="js/api.js?v=123"') &&
+  assert(htmlSource.indexOf('src="js/state.js?v=127"') < htmlSource.indexOf('src="js/i18n.js?v=127"') &&
+    htmlSource.indexOf('src="js/i18n.js?v=127"') < htmlSource.indexOf('src="js/api.js?v=127"') &&
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"'),
     "The language module or selector is missing from the production shell.");
@@ -810,9 +810,9 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
     htmlSource.includes("document.body.classList.add('light-mode')") &&
     htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
-      htmlSource.indexOf('rel="stylesheet" href="style.css?v=123"'),
+      htmlSource.indexOf('rel="stylesheet" href="style.css?v=127"'),
     "The saved light theme must be applied before the stylesheet can paint the page.");
-  assert(workerSource.includes('"./js/i18n.js?v=123"'),
+  assert(workerSource.includes('"./js/i18n.js?v=127"'),
     "The localization module must be available offline.");
   assert(styleSource.includes(".header-theme-switch") &&
     styleSource.includes("order: 2") &&
@@ -1541,8 +1541,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
-  assert(aboutSource.includes('src="js/state.js?v=123"') &&
-    aboutSource.includes('src="js/i18n.js?v=123"') &&
+  assert(aboutSource.includes('src="js/state.js?v=127"') &&
+    aboutSource.includes('src="js/i18n.js?v=127"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
@@ -2251,8 +2251,56 @@ Deno.test("Daily, Practice and Friend games share one restrained session shell",
     "Analytics, Friend and result screens must use the localization catalogue.");
   assert(styleSource.includes(".game-mode-context") &&
     styleSource.includes(".game-session-stats") &&
-    styleSource.includes("grid-template-columns: repeat(5, minmax(0, 1fr))"),
+    styleSource.includes(".game-session-stat-main") &&
+    styleSource.includes(".game-session-stat-sidebar"),
     "The shared game shell styling is missing.");
+});
+
+Deno.test("live game metrics use independent glass tiles aligned to the tree and hint columns", () => {
+  const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css")
+    .replaceAll("\r\n", "\n");
+  const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
+  const rule = (selector: string, from = 0) => {
+    const start = styleSource.indexOf(`${selector} {`, from);
+    assert(start >= 0, `Missing live metric style: ${selector}`);
+    const end = styleSource.indexOf("\n}", start);
+    return styleSource.slice(start, end);
+  };
+  const panel = rule(".stats.game-session-stats");
+  const basePanel = rule(".game-session-stats");
+  const mainGroup = rule(".game-session-stat-main");
+  const sidebarGroup = rule(".game-session-stat-sidebar");
+  const cell = rule(".game-session-stats .stat");
+  const hover = rule(".game-session-stats .stat:hover");
+  const desktop = styleSource.slice(styleSource.indexOf("@media (min-width: 1100px)"),
+    styleSource.indexOf("@media (min-width: 1100px)") + 700);
+  assert(gameSource.includes('class="game-session-stat-main"')
+    && gameSource.includes('class="game-session-stat-sidebar"')
+    && (gameSource.match(/id="(?:attempts|hints|best-match|clades-revealed)"/g)?.length ?? 0) === 4
+    && gameSource.includes('id="possible-specimens"'),
+    "The four tree metrics and one sidebar metric must stay in their independent groups.");
+  assert(panel.includes("grid-template-columns: minmax(0, 2.65fr) minmax(230px, 0.62fr)")
+    && panel.includes("gap: 18px;")
+    && mainGroup.includes("grid-template-columns: repeat(4, minmax(0, 1fr))")
+    && sidebarGroup.includes("grid-template-columns: minmax(0, 1fr)")
+    && desktop.includes(".game-session-layout")
+    && basePanel.includes("background: none;")
+    && basePanel.includes("border: 0;"),
+    "Desktop metric groups must share the tree/sidebar proportions without an outer panel.");
+  assert(cell.includes("background: linear-gradient(145deg, var(--glass-surface), var(--glass-surface-soft));")
+    && cell.includes("border: 1px solid var(--glass-border);")
+    && cell.includes("border-radius: 6px;")
+    && cell.includes("padding: 15px 10px;")
+    && cell.includes("box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 12px var(--glass-shadow);")
+    && styleSource.includes(".game-session-stats .stat::before {\n  top: 1px;")
+    && hover.includes("0 7px 18px var(--glass-shadow)")
+    && hover.includes("text-transform: none;") && !hover.includes("translateY("),
+    "Metric tiles should have layered glass depth without returning to heavy gradients or button-like movement.");
+  assert(styleSource.includes("grid-template-columns: minmax(0, 1fr) !important;")
+    && styleSource.includes("grid-template-columns: repeat(2, minmax(0, 1fr));")
+    && styleSource.includes("body.light-mode .game-session-stats .stat {\n    background: linear-gradient(145deg,")
+    && styleSource.includes("body.light-mode .game-session-stats .stat::before"),
+    "Compact screens must stack the groups, and independent cards must retain glass styling in light mode.");
 });
 
 Deno.test("guided tutorial is a real local game isolated from progress and gameplay APIs", () => {
@@ -2699,6 +2747,31 @@ Deno.test("tree nodes remain accessible by keyboard", () => {
   );
 });
 
+Deno.test("long SVG tree labels stay inside their node boxes", () => {
+  const treeSource = Deno.readTextFileSync(`${javascriptRoot}/tree.${javascriptExtension}`);
+  const helper = treeSource.slice(treeSource.indexOf("function fitTreeSvgLabel("),
+    treeSource.indexOf("function renderTreeModel("));
+  const fitLabel = new Function(`${helper}; return fitTreeSvgLabel;`)();
+  const makeLabel = (width: number) => ({
+    attributes: new Map<string, string>(),
+    getComputedTextLength: () => width,
+    setAttribute(name: string, value: string) { this.attributes.set(name, value); },
+  });
+  const longClade = makeLabel(190);
+  fitLabel(longClade, 165);
+  assert(longClade.attributes.get("textLength") === "165"
+    && longClade.attributes.get("lengthAdjust") === "spacingAndGlyphs",
+    "Long clade names such as Carcharodontosauridae must be compressed to the node's usable width.");
+  const shortLabel = makeLabel(90);
+  fitLabel(shortLabel, 165);
+  assert(shortLabel.attributes.size === 0, "Labels that already fit must retain their natural typography.");
+  const unsupportedLabel = { setAttribute() {}, getComputedTextLength: undefined };
+  fitLabel(unsupportedLabel, 165);
+  assert(treeSource.includes("fitTreeSvgLabel(label, maxTextWidth)")
+    && treeSource.includes("fitTreeSvgLabel(label, maxLeafWidth)"),
+    "The same measured fit must protect both clade nodes and genus leaves.");
+});
+
 Deno.test("first mobile tree render centers Dinosauria before following later guesses", () => {
   const treeSource = Deno.readTextFileSync(`${javascriptRoot}/tree.${javascriptExtension}`);
   assert(
@@ -2733,11 +2806,20 @@ Deno.test("game glass surfaces adapt to both themes and keep the tree background
   const returnEnd = normalizedStyleSource.indexOf("\n}", returnStart);
   const returnStyle = normalizedStyleSource.slice(returnStart, returnEnd);
   assert(returnStyle.includes("backdrop-filter: blur(18px)")
+    && returnStyle.includes("position: sticky;")
+    && returnStyle.includes("top: 0;")
+    && returnStyle.includes("left: 0;")
     && normalizedStyleSource.includes(".tree-toolbar {")
     && normalizedStyleSource.includes(".latest-guess {")
     && normalizedStyleSource.includes(".guess-history-details {")
     && normalizedStyleSource.includes(".clade-info {"),
     "Frosted surfaces must stay consistent across the game tools and exploration panels.");
+  assert(normalizedStyleSource.includes(".image-lightbox .image-lightbox-close,")
+    && normalizedStyleSource.includes(".museum-image-viewer .museum-image-viewer-close {")
+    && normalizedStyleSource.includes("background: rgba(22, 18, 14, 0.42);")
+    && normalizedStyleSource.includes("backdrop-filter: blur(5px) saturate(120%);")
+    && !normalizedStyleSource.includes(".museum-entry-dialog .museum-entry-close {"),
+    "A subtle glass blur should distinguish image-viewer close controls without spreading to ordinary dialogs.");
 });
 
 Deno.test("new guess branches finish before their genus labels arrive", () => {
@@ -4881,7 +4963,7 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   for (const failure of ["network", "404", "500", "write", "open"]) {
     const runtime = buildServiceWorkerRuntime();
     if (["network", "404", "500"].includes(failure)) {
-      runtime.failures.fetchPath = "js/main.js?v=123";
+      runtime.failures.fetchPath = "js/main.js?v=127";
       runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
     }
     if (failure === "write") runtime.failures.putPath = "style.css";
@@ -4897,8 +4979,8 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   let resolve!: (value: Response) => void;
   let settled = false;
   const delayed = new Promise<Response>(yes => { resolve = yes; });
-  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=123") ? delayed
-    : new Response(request.url, { status: request.url.endsWith("style.css?v=123") ? 404 : 200 });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=127") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css?v=127") ? 404 : 200 });
   const install = runtime.event("install");
   const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
   for (let index = 0; index < 12; index++) await Promise.resolve();
