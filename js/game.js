@@ -46,7 +46,7 @@ function renderGameSessionShell(loadingMessage, { contextLabel = '', tutorial = 
                     <div class="guess-primary-row">
                         <div class="guess-field">
                             <label class="visually-hidden" for="dino-input">${t('game.guessLabel')}</label>
-                            <input type="text" id="dino-input" placeholder="${t('game.guessPlaceholder')}" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
+                            <input type="text" id="dino-input" placeholder="${t('game.guessPlaceholder')}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" writingsuggestions="false" enterkeyhint="go" />
                             <div id="suggestions"></div>
                         </div>
                         <button class="btn-guess" onclick="makeGuess()">${t('game.submit')}</button>
