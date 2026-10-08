@@ -801,8 +801,8 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     source.includes("window.location.reload()") &&
     !source.includes("window.location.assign(url.toString())"),
     "Language changes must explicitly reload while preserving the current hash route.");
-  assert(htmlSource.indexOf('src="js/state.js?v=122"') < htmlSource.indexOf('src="js/i18n.js?v=122"') &&
-    htmlSource.indexOf('src="js/i18n.js?v=122"') < htmlSource.indexOf('src="js/api.js?v=122"') &&
+  assert(htmlSource.indexOf('src="js/state.js?v=123"') < htmlSource.indexOf('src="js/i18n.js?v=123"') &&
+    htmlSource.indexOf('src="js/i18n.js?v=123"') < htmlSource.indexOf('src="js/api.js?v=123"') &&
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"'),
     "The language module or selector is missing from the production shell.");
@@ -810,9 +810,9 @@ Deno.test("English, Portuguese and Spanish localization catalogs stay complete",
     htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
     htmlSource.includes("document.body.classList.add('light-mode')") &&
     htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
-      htmlSource.indexOf('rel="stylesheet" href="style.css?v=122"'),
+      htmlSource.indexOf('rel="stylesheet" href="style.css?v=123"'),
     "The saved light theme must be applied before the stylesheet can paint the page.");
-  assert(workerSource.includes('"./js/i18n.js?v=122"'),
+  assert(workerSource.includes('"./js/i18n.js?v=123"'),
     "The localization module must be available offline.");
   assert(styleSource.includes(".header-theme-switch") &&
     styleSource.includes("order: 2") &&
@@ -1541,8 +1541,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
-  assert(aboutSource.includes('src="js/state.js?v=122"') &&
-    aboutSource.includes('src="js/i18n.js?v=122"') &&
+  assert(aboutSource.includes('src="js/state.js?v=123"') &&
+    aboutSource.includes('src="js/i18n.js?v=123"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
@@ -1992,6 +1992,11 @@ Deno.test("Museum gallery opens directly and filters by its three principal clad
   const database = fileExists(databasePath) ? readJson(databasePath) : [];
   const atlasClades = ["Theropoda", "Sauropodomorpha", "Ornithischia"];
 
+  const overlappingClades = database.filter((dino: any) =>
+    atlasClades.filter(clade => Array.isArray(dino.linhagem) && dino.linhagem.includes(clade)).length > 1);
+  assert(overlappingClades.length === 0,
+    `A genus cannot belong to multiple principal clades: ${overlappingClades.map((item: any) => item.nome).join(", ")}`);
+
   assert(screensSource.includes("const MUSEUM_ATLAS_COLLECTIONS") &&
     screensSource.includes("async function ensureMuseumCatalogLineages(") &&
     screensSource.includes("fetch('phylosaur_db.json?v=atlas-2')") &&
@@ -2005,6 +2010,7 @@ Deno.test("Museum gallery opens directly and filters by its three principal clad
   }
   assert(screensSource.includes("museum-toolbar-filter") &&
     screensSource.includes('id="museum-clade-select"') &&
+    screensSource.includes('value="other"') && screensSource.includes("function museumLineageMatchesClade(") &&
     screensSource.includes('onchange="openMuseumClade(this.value)"') &&
     !screensSource.includes("data-museum-clade-filter=") &&
     screensSource.includes("museum-specimens-panel") &&
@@ -2038,7 +2044,7 @@ Deno.test("Museum gallery opens directly and filters by its three principal clad
     let selectedMuseumLevel = "dificil";
     let museumSearchQuery = "therizino";
     ${cladeActions};
-    return { openMuseumClade, clearMuseumCladeFilter,
+    return { openMuseumClade, clearMuseumCladeFilter, museumLineageMatchesClade,
       state: () => ({ selectedMuseumClade, selectedMuseumLevel, museumSearchQuery }) };
   `)(atlasClades.map(clade => ({ clade })), {
     getElementById: (id: string) => {
@@ -2053,6 +2059,23 @@ Deno.test("Museum gallery opens directly and filters by its three principal clad
     && filterApplications.value === 1
     && cladeSelect.value === "Theropoda",
     "Choosing a clade must filter the same gallery without wiping search or level choices.");
+  cladeRuntime.openMuseumClade("other");
+  assert(cladeRuntime.state().selectedMuseumClade === "other"
+    && String(cladeSelect.value) === "other" && Number(filterApplications.value) === 2,
+    "The Other option must be selectable without resetting the current gallery filters.");
+
+  const lineageExamples = [
+    ["Theropoda", "Dinosauria|Saurischia|Theropoda"],
+    ["Sauropodomorpha", "Dinosauria|Saurischia|Sauropodomorpha"],
+    ["Ornithischia", "Dinosauria|Ornithischia"],
+    ["other", "Dinosauria|Unclassified"],
+  ] as const;
+  for (const [expected, lineage] of lineageExamples) {
+    const matches = atlasClades.concat("other").filter(clade =>
+      cladeRuntime.museumLineageMatchesClade(lineage, clade));
+    assert(JSON.stringify(matches) === JSON.stringify([expected]),
+      `${lineage}: Museum clade choices must be mutually exclusive and Other must be their complement.`);
+  }
   cladeRuntime.clearMuseumCladeFilter();
   assert(cladeRuntime.state().selectedMuseumClade === "all"
     && String(cladeSelect.value) === "all",
@@ -4858,7 +4881,7 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   for (const failure of ["network", "404", "500", "write", "open"]) {
     const runtime = buildServiceWorkerRuntime();
     if (["network", "404", "500"].includes(failure)) {
-      runtime.failures.fetchPath = "js/main.js?v=122";
+      runtime.failures.fetchPath = "js/main.js?v=123";
       runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
     }
     if (failure === "write") runtime.failures.putPath = "style.css";
@@ -4874,8 +4897,8 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   let resolve!: (value: Response) => void;
   let settled = false;
   const delayed = new Promise<Response>(yes => { resolve = yes; });
-  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=122") ? delayed
-    : new Response(request.url, { status: request.url.endsWith("style.css?v=122") ? 404 : 200 });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=123") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css?v=123") ? 404 : 200 });
   const install = runtime.event("install");
   const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
   for (let index = 0; index < 12; index++) await Promise.resolve();

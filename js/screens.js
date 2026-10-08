@@ -1940,6 +1940,7 @@ function renderMuseumCladeFilters(unlockedSet) {
             <select id="museum-clade-select" aria-label="${t("museum.filterByClade")}"
                     onchange="openMuseumClade(this.value)">
                 <option value="all" ${selectedMuseumClade === "all" ? "selected" : ""}>${t("museum.allClades")}</option>
+                <option value="other" ${selectedMuseumClade === "other" ? "selected" : ""}>${t("museum.otherClades")}</option>
                 ${collections.map(collection => `
                     <option value="${escapeChallengeHtml(collection.clade)}" ${selectedMuseumClade === collection.clade ? "selected" : ""}>
                         ${escapeChallengeHtml(collection.title)}
@@ -2078,9 +2079,22 @@ function updateMuseumCladeFilterDisplay() {
 
 function openMuseumClade(clade) {
     const isKnownClade = MUSEUM_ATLAS_COLLECTIONS.some(definition => definition.clade === clade);
-    selectedMuseumClade = clade === "all" || isKnownClade ? clade : "all";
+    selectedMuseumClade = clade === "all" || clade === "other" || isKnownClade ? clade : "all";
     updateMuseumCladeFilterDisplay();
     applyMuseumFilters();
+}
+
+function museumLineageMatchesClade(lineage, clade) {
+    if (clade === "all") return true;
+
+    const encodedLineage = `|${lineage || ""}|`;
+    if (clade === "other") {
+        return !MUSEUM_ATLAS_COLLECTIONS.some(definition =>
+            encodedLineage.includes(`|${definition.clade}|`)
+        );
+    }
+
+    return encodedLineage.includes(`|${clade}|`);
 }
 
 function clearMuseumCladeFilter() {
@@ -2219,8 +2233,9 @@ function applyMuseumFilters() {
             || card.dataset.museumLevel === selectedMuseumLevel;
         const matchesSearch = !museumSearchQuery
             || card.dataset.museumName.includes(museumSearchQuery);
-        const matchesClade = selectedMuseumClade === 'all'
-            || `|${card.dataset.museumLineage || ''}|`.includes(`|${selectedMuseumClade}|`);
+        const matchesClade = museumLineageMatchesClade(
+            card.dataset.museumLineage, selectedMuseumClade
+        );
         const isVisible = matchesLevel && matchesSearch && matchesClade;
 
         card.hidden = !isVisible;
@@ -2237,7 +2252,9 @@ function applyMuseumFilters() {
             : t('museum.genusMany');
         const cladeLabel = selectedMuseumClade === 'all'
             ? ''
-            : t('museum.inClade', { clade: selectedMuseumClade });
+            : selectedMuseumClade === 'other'
+                ? t('museum.outsideMainClades')
+                : t('museum.inClade', { clade: selectedMuseumClade });
         summary.textContent = t('museum.showing', {
             count: visibleCount,
             genera: generaLabel,
@@ -2251,7 +2268,9 @@ function applyMuseumFilters() {
         emptyState.hidden = visibleCount !== 0;
         emptyState.textContent = selectedMuseumClade === 'all'
             ? t('museum.noMatch')
-            : t('museum.noCladeMatch', { clade: selectedMuseumClade });
+            : selectedMuseumClade === 'other'
+                ? t('museum.noOtherCladeMatch')
+                : t('museum.noCladeMatch', { clade: selectedMuseumClade });
     }
 }
 
