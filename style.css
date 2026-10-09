@@ -1531,6 +1531,18 @@ textarea:focus-visible {
         margin-bottom: 12px;
     }
     .game-card { padding: 20px; }
+    #dino-input:focus {
+        /* Avoid a touch-focus halo that makes the input look enlarged on mobile. */
+        box-shadow:
+            inset 0 3px 6px rgba(0,0,0,0.7),
+            inset 0 -1px 0 rgba(255,255,255,0.05),
+            0 1px 0 rgba(255,255,255,0.08);
+    }
+    #dino-input:focus-visible {
+        /* Keep keyboard focus clear without drawing outside the field. */
+        outline: 2px solid var(--focus-ring);
+        outline-offset: -4px;
+    }
     .stats { 
         width: 100% !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important; 
