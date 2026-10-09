@@ -83,7 +83,7 @@ function initializeAutocomplete() {
     
     sugDiv.style.display = 'block';
     input.setAttribute('aria-expanded', 'true');
-    status.textContent = `${matches.length} dinosaur suggestion${matches.length === 1 ? '' : 's'} available.`;
+    status.textContent = t('autocomplete.available', { count: matches.length });
   });
 
   input.addEventListener('keydown', e => {

@@ -316,8 +316,9 @@ function generateDifficultyButton(difficulty, name, level, description, complete
 
 async function showStatsDashboard() {
     if (!currentUser) {
-    alert(t('stats.loginRequired'));
-    return;
+        await customAlert(t('stats.title'), t('stats.loginRequired'));
+        showLoginModal();
+        return;
     }
     setAppRoute('/stats');
     setHeaderControls('stats');
@@ -1233,7 +1234,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=22')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=23')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();

@@ -1,5 +1,5 @@
 {
-  "version": 22,
+  "version": 23,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Concornis": {
@@ -972,6 +972,12 @@
       "license": "CC BY-SA 3.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "source": "wikimedia"
+    },
+    "Naashoibitosaurus": {
+      "file_title": "File:Naashoibitosaurus ostromi.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Naashoibitosaurus_ostromi.png",
+      "resolve_commons_metadata": true,
       "source": "wikimedia"
     }
   }

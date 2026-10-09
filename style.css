@@ -4927,6 +4927,12 @@ body.light-mode .museum-entry-overlay {
     background: rgba(45, 35, 24, 0.74);
 }
 
+body.light-mode .museum-entry-read-more {
+    background: var(--bg-darkest);
+    border-color: var(--border-subtle);
+    box-shadow: 0 2px 8px rgba(74, 56, 41, 0.14);
+}
+
 body.light-mode .museum-time-range {
     border-color: #fff8e8;
     box-shadow: 0 0 8px rgba(92, 64, 51, 0.22);
