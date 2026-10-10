@@ -70,12 +70,19 @@
         title: 'El camino quedó sin conexión',
         copy: 'Phylosaur necesita conexión a internet para crear y validar desafíos. Vuelve a conectarte e inténtalo de nuevo.',
         retry: 'Intentar de nuevo', alt: 'Huella de Phylosaur'
+      },
+      de: {
+        metaTitle: 'Phylosaur - Offline',
+        title: 'Der Pfad ist offline',
+        copy: 'Phylosaur benötigt eine Internetverbindung, um Herausforderungen zu erstellen und zu überprüfen. Stelle die Verbindung wieder her und versuche es erneut.',
+        retry: 'Erneut versuchen', alt: 'Phylosaur-Fußabdruck'
       }
     };
     const storedLanguage = localStorage.getItem('phylosaur-language');
     const browserLanguage = storedLanguage || navigator.language || 'en';
     const locale = browserLanguage.toLowerCase().startsWith('pt')
-      ? 'pt-BR' : browserLanguage.toLowerCase().startsWith('es') ? 'es' : 'en';
+      ? 'pt-BR' : browserLanguage.toLowerCase().startsWith('es') ? 'es'
+        : browserLanguage.toLowerCase().startsWith('de') ? 'de' : 'en';
     const message = offlineMessages[locale];
     document.documentElement.lang = locale;
     document.title = message.metaTitle;
