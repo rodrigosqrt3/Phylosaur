@@ -49,7 +49,7 @@
   <link rel="icon" type="image/svg+xml" href="pwa-icon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <link rel="stylesheet" href="style.css?v=194">
+  <link rel="stylesheet" href="style.css?v=196">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,8 +57,8 @@
   <meta name="theme-color" content="#2d2318">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-  <script defer src="js/state.js?v=194"></script>
-  <script defer src="js/i18n.js?v=194"></script>
+  <script defer src="js/state.js?v=196"></script>
+  <script defer src="js/i18n.js?v=196"></script>
 </head>
 <body>
   <div class="info-shell">
@@ -80,41 +80,21 @@
       <article>
         <h2 data-i18n="about.title">About Phylosaur</h2>
         <p class="info-lead" data-i18n="about.lead">
-          Phylosaur is an independent educational game about the dinosaur family tree. A hidden genus must be
-          identified by comparing guesses across a branching classification. Each attempt reveals the deepest named
-          clade shared by the guess and the target, turning classification into a process of navigation rather than
-          memorization. Gradually, familiar names become landmarks within a larger evolutionary history.
+          Phylosaur is an independent educational game about the dinosaur family tree. The goal is to identify a hidden genus by guessing other genera. Each guess shows the deepest named clade that the guess shares with the target, so every attempt narrows the search. The catalogue holds more than 580 genera, from early dinosaurs such as Herrerasaurus to Mesozoic birds.
         </p>
         <p data-i18n-html="about.nameOrigin">
-          The name is a deliberate meeting of language and subject. The scientific element <em>phylo-</em>, from Greek
-          <em>phylon</em> (a lineage, tribe, or related group), points to phylogeny: the history and pattern of evolutionary
-          relationships. Its sound also recalls <em>philo-</em>, from Greek <em>philos</em>, associated with affection or love.
-          <em>-saur</em>, from Greek <em>sauros</em> (lizard), is the historical element familiar from <em>Dinosauria</em>
-          and countless dinosaur names.
+          The name combines two Greek roots. <em>Phylo-</em> comes from <em>phylon</em> (tribe, lineage) and is the root of phylogeny, the study of evolutionary relationships. <em>-saur</em> comes from <em>sauros</em> (lizard), the element used in <em>Dinosauria</em> and in most dinosaur names. The first part also sounds like <em>philo-</em>, from <em>philos</em> (dear, loved).
         </p>
         <p data-i18n="about.nameMeaning">
-          Phylosaur can therefore be read in two complementary ways: a game about dinosaur phylogeny and a small
-          expression of love for dinosaurs. The resemblance to "lizard" belongs to the history of the word, not to a
-          claim that dinosaurs were merely lizards.
+          That double reading is intentional. I made Phylosaur because I love these animals and the way their relationships can be read as a tree, so the name is both a game about dinosaur phylogeny and a small declaration of affection for them. The “lizard” in the name comes from the history of the word; dinosaurs were not lizards.
         </p>
 
         <h2 id="foundations" data-i18n="about.foundationsTitle">Phylogenetic foundations</h2>
         <p data-i18n="about.foundationsBody1">
-          Modern biological classification rests upon phylogenetic systematics, a methodology that organizes organisms
-          according to their evolutionary relationships rather than superficial morphological similarities. This
-          approach, pioneered by Willi Hennig in the mid-twentieth century, recognizes that meaningful taxonomic
-          groupings (clades) must be monophyletic, comprising an ancestor and all of its descendants. Each clade is
-          diagnosed by synapomorphies, which are derived character states inherited from a common ancestor and shared
-          exclusively among its descendants.
+          How to read the tree: every branching point is a clade, a group made of one ancestor and all of its descendants. Two genera that share a deeper clade are more closely related than two that only meet near the root. Classifying organisms by shared ancestry, rather than by overall resemblance, is called phylogenetic systematics, or cladistics. Willi Hennig formalized the method in the 1950s and 1960s. Clades are recognized by synapomorphies: derived features inherited from a common ancestor and shared by its descendants.
         </p>
         <p data-i18n="about.foundationsBody2">
-          Within this framework, Dinosauria represents a well-supported clade united by numerous osteological
-          synapomorphies. The group is formally diagnosed by features including an open acetabulum, an elongated
-          deltopectoral crest on the humerus, and modifications to the ankle joint that facilitate a parasagittal gait.
-          Dinosauria has traditionally been divided into Saurischia, characterized by a triradiate pelvis with the
-          pubis directed anteroventrally, and Ornithischia, distinguished by a retroverted pubis and predentary bone.
-          Modern phylogenetic analyses place Avialae (birds) within Saurischia as highly derived theropods, rendering
-          traditional distinctions between "dinosaurs" and "birds" paraphyletic and therefore scientifically obsolete.
+          Dinosauria is a well-supported clade. Features used to diagnose it include a perforate (open) hip socket, a long deltopectoral crest on the upper arm bone and a hinge-like ankle, which together relate to an upright stance with the legs held beneath the body. The group is traditionally divided into Saurischia, with a forward-pointing pubis, long neck vertebrae and a grasping hand with an enlarged thumb, and Ornithischia, with a backward-pointing pubis and a predentary bone at the tip of the lower jaw. Birds (Avialae) are theropods, and therefore saurischians. A group of “dinosaurs” that excludes birds is paraphyletic, which is why palaeontologists say non-avian dinosaurs when they mean the extinct forms.
         </p>
 
         <blockquote class="info-quote">
@@ -125,203 +105,127 @@
           </p>
           <cite>
             - Richard Owen (1842). <em>Report on British Fossil Reptiles, Part II.</em>
-            Report of the British Association for the Advancement of Science, 11: 60-204.
+            Report of the British Association for the Advancement of Science, 11: 60–204.
           </cite>
         </blockquote>
 
         <h2 id="mechanics" data-i18n="about.mechanicsTitle">Game mechanics and educational objectives</h2>
         <p data-i18n="about.mechanicsBody1">
-          Players are presented with a mystery taxon and infer its phylogenetic position through iterative hypothesis
-          testing. Each guess reveals the deepest stored node shared between the proposed taxon and the target, thereby
-          progressively constraining the phylogenetic search space. A distant guess may reveal only a broad branch,
-          while a close guess can expose a much more specific family or subgroup.
+          Each guess is compared with the hidden genus. The game shows the deepest stored clade the two share, which limits the remaining candidates to that part of the tree. A distant guess may only confirm a broad branch such as Theropoda; a close one can reveal a family or subfamily.
         </p>
         <p data-i18n="about.mechanicsBody2">
-          This mechanism mirrors the general process of phylogenetic inference, in which researchers place taxa by
-          testing relationships and identifying close relatives through character analysis and cladistic methodology.
-          The game simplifies that process into an ordered lineage comparison suitable for play.
+          This is a simplified version of what systematists do when they place a new fossil: compare it with known taxa and find where it shares the most derived features. The game replaces character analysis with one fixed, ordered lineage for each genus.
         </p>
         <p data-i18n="about.mechanicsBody3">
-          Hints reveal the next clade in the hidden lineage. If the full stored lineage is already known, remaining
-          hints instead reveal clues about the genus name. The waiting rule between hints gives the player time to use
-          the new information. The game tree records the strongest route reached so far. New genera encountered in
-          completed games are also added to the Museum. Museum discoveries contribute to collection achievements,
-          including milestones for major clades such as theropods, sauropods, ornithischians, ceratopsians,
-          thyreophorans, hadrosaurids, and maniraptorans. The Museum's Clade Atlas organizes the catalogue through
-          Theropoda, Sauropodomorpha, and Ornithischia while retaining early dinosaurs outside those principal
-          collections in the complete genus catalogue.
+          Hints reveal the next clade of the hidden lineage. Once the whole stored lineage is known, further hints give clues about the genus name instead. Two guesses are required between hints. Genera found in completed games enter the Museum, where the Clade Atlas groups them under Theropoda, Sauropodomorpha and Ornithischia. Museum discoveries count toward collection achievements: milestones for major clades, complete families such as spinosaurids and tyrannosauroids, and complete difficulty levels.
         </p>
         <ul>
           <li data-i18n="about.dailyRule">Daily challenges provide the same target worldwide for a selected level during each UTC calendar day.</li>
           <li data-i18n="about.practiceRule">Practice mode allows unlimited games without affecting Daily statistics.</li>
-          <li data-i18n="about.privateRule">Private challenges let friends play the same hidden dinosaur using a shared code.</li>
+          <li data-i18n="about.privateRule">
+            Private challenges let friends race to identify the same hidden genus using a shared code. A rematch starts a new race for the same group.
+          </li>
           <li data-i18n="about.guessLimitRule">The game currently has no fixed guess limit.</li>
         </ul>
 
         <h2 data-i18n="about.difficulty">Difficulty and public familiarity</h2>
         <p data-i18n="about.difficultyBody1">
-          The game offers five difficulty tiers determined by taxonomic familiarity as measured through thirty-day
-          Wikipedia pageview statistics. This serves as a proxy for public recognition rather than phylogenetic
-          complexity, fossil completeness, or scientific importance. Frequently visited genera tend toward lower
-          levels, while less familiar names tend toward higher levels. Higher levels therefore include taxa with lower
-          pageview counts, generally lesser-known genera that require broader taxonomic knowledge independently of
-          their scientific importance or systematic resolution.
+          There are five difficulty levels based on how familiar each genus is to the public, measured by English Wikipedia pageviews over the last 30 days. Familiar names fall into lower levels and obscure ones into higher levels. This measures public recognition only, not phylogenetic complexity, fossil completeness or scientific importance.
         </p>
         <p data-i18n="about.difficultyBody2">
-          Pageviews retrieved through Wikimedia services are an imperfect measure shaped by language, public interest,
-          media attention, and the collection period. Homonyms require special attention because traffic may refer to
-          a plant, place, person, or unrelated animal. Genera without reliable traffic data are handled conservatively.
+          Pageviews are an imperfect proxy: they depend on language, media attention and the collection period. Names shared with plants, places, people or other animals are checked separately, and genera without reliable data are assigned conservatively.
         </p>
 
         <h2 id="data" data-i18n="about.dataTitle">Data sources and taxonomic curation</h2>
         <p data-i18n-html="about.dataBody1">
-          The genus catalogue began with open paleontological occurrence and taxonomic data, particularly records
-          assembled through the Paleobiology Database, followed by filtering and manual review. The present lineage
-          database combines the project's earlier curated classifications with lineages retrieved through
-          <em>taxodist</em> from The Taxonomicon.
+          The genus list started from occurrence and taxonomic records in the Paleobiology Database, followed by filtering and manual review. Lineages combine the project's earlier curated classifications with paths retrieved from The Taxonomicon (S. J. Brands, Universal Taxonomic Services) through the R package <em>taxodist</em>.
         </p>
         <p data-i18n="about.dataBody2">
-          The sources are not simply placed side by side. Automated code cleans placeholder ranks, detects ambiguous
-          names and biological homonyms, removes playable genera used as internal clades, and aligns older fallback
-          paths to a shared taxonomic backbone. The hybrid-building process learns commonly supported paths from
-          successfully resolved genera and uses those paths to bring retained lineages into a coherent structure.
+          Scripts clean placeholder ranks, detect ambiguous names and homonyms, remove playable genera that appear as internal clades, and align older paths to a shared backbone built from well-resolved genera.
         </p>
         <p data-i18n="about.dataBody3">
-          Before an output is accepted, the database is checked for repeated nodes, placeholder clades, incorrect
-          lineage depths, playable genera appearing as ancestors, and named clades assigned to more than one parent.
-          When an automatic result is unresolved or collapses too much useful structure, a reviewed lineage can be
-          retained for later investigation. This produces a practical working tree while preserving a record of which
-          placements came from each source.
+          Each release is checked for repeated nodes, placeholder clades, inconsistent depths, playable genera listed as ancestors and clades with more than one parent. When an automatic result is unresolved or loses too much structure, a reviewed lineage is kept and the case is logged for later review. The result is a working tree, with a record of where each placement came from.
         </p>
         <p data-i18n="about.dataBody4">
-          Museum summaries are requested from Wikipedia for accessible orientation. Illustrations come from reusable
-          files identified through Wikimedia Commons or explicitly licensed Dinopedia pages. Existing reviewed choices
-          are preserved, while new fallback images must pass checks for subject relevance, file type, reusable
-          licensing, attribution, and minimum quality. Creator, source, and licence information accompanies each
-          available image so that visitors can follow it back to its original record.
+          Museum summaries come from Wikipedia. Illustrations are reusable files from Wikimedia Commons or explicitly licensed Dinopedia pages, checked for subject, file type, licence and quality. Each image shows its creator, source and licence.
         </p>
 
         <h2 id="mathematics" data-i18n="about.mathematicsTitle">Mathematical foundations</h2>
         <p data-i18n-html="about.mathBody1">
-          The proximity measure computed by Phylosaur has a precise mathematical interpretation. Let $L_A$ be the
-          ordered lineage of a guessed genus $A$, and let $L_B$ be the lineage of the hidden target $B$. Both sequences
-          begin at <em>Dinosauria</em> and proceed toward increasingly specific clades. The game counts how many
-          consecutive entries they share before diverging. If their longest common prefix has length $m(A,B)$, then:
+          Proximity is defined as follows. Let $L_A$ be the ordered lineage of a guessed genus $A$ and $L_B$ the lineage of the hidden target $B$. Both start at <em>Dinosauria</em> and run toward more specific clades. If the two lineages agree on their first $m(A,B)$ entries, then:
         </p>
         <div class="info-equation">
           $$m(A,B)=\max\left\{k: L_A[i]=L_B[i]\;\text{for every}\;0\le i&lt;k\right\}$$
         </div>
         <p data-i18n="about.mathBody2">
-          The final clade inside this common prefix is the deepest named common ancestor represented by the game. The
-          displayed proximity score is the shared-prefix length divided by the depth of the target:
+          The last clade in this shared prefix is the deepest common clade represented in the game. The proximity score is the shared length divided by the depth of the target:
         </p>
         <div class="info-equation">
           $$s(A,B)=100\times\frac{m(A,B)}{|L_B|}$$
         </div>
         <p data-i18n="about.mathBody3">
-          This percentage answers a direct game question: how much of the target's stored lineage has the guess followed
-          successfully? Because the denominator is $|L_B|$, the target's depth, the score need not be symmetric when two
-          genera have lineages of different lengths. Two distinct genera can occasionally share every stored clade and
-          reach 100% proximity; the exact genus name is still required to win.
+          The score answers one question: how much of the target's stored lineage has the guess followed? Because the denominator is the target depth $|L_B|$, the score is not symmetric when the lineages differ in length. Two genera can share every stored clade and score 100%; only the exact name wins.
         </p>
         <p data-i18n="about.mathBody4">
-          A related structural separation can be defined by treating every stored parent-child step as one unit:
+          A related distance counts each parent-child step as one unit:
         </p>
         <div class="info-equation">
           $$\Delta(A,B)=|L_A|+|L_B|-2m(A,B)$$
         </div>
         <p data-i18n="about.mathBody5">
-          This is not the percentage used during play, but it expresses how many stored steps separate the two lineage
-          paths after their divergence. Named clades are not evenly spaced units of time, anatomy, or evolutionary
-          change, so neither $s$ nor $\Delta$ should be interpreted as geological duration or morphological difference.
+          This value is not shown during play. It counts the steps that separate the two paths after they diverge. Named clades are not evenly spaced in time, anatomy or evolutionary change, so neither $s$ nor $\Delta$ measures geological time or morphological difference.
         </p>
         <p data-i18n="about.mathBody6">
-          From an information-theoretic perspective, each guess is a query that reveals the depth and identity of a
-          shared branch. The revealed clade restricts the remaining candidates to genera compatible with that portion
-          of the target path. Hints reduce uncertainty more directly by exposing the next clade or, after the stored
-          lineage is exhausted, a clue about the target name. The waiting rule between hints creates space for the
-          player to use the new information. Dinosaur branches are highly uneven:
-          one clade may contain hundreds of candidates while another contains only a few. Consequently, different
-          guesses can provide very different amounts of information, which is an important part of the strategy.
+          Each guess works as a query: the revealed clade removes every candidate outside that part of the target path, and hints remove candidates more directly. Branches are very uneven, with hundreds of genera in some clades and only a few in others, so the choice of guess changes how much you learn. That is most of the strategy.
         </p>
         <p data-i18n="about.mathBody7">
-          Difficulty stratification also has a statistical basis. Let $V=\{v_1,v_2,\ldots,v_n\}$ be the sorted vector
-          of usable thirty-day pageview totals. Fixed thresholds assign Level I at 4,500 views or more, Level II at
-          1,300–4,499, Level III at 550–1,299, Level IV at 250–549, and Level V below 250. Fixed boundaries preserve
-          the meaning of each level as the catalogue grows. To avoid abrupt changes between releases, an existing
-          genus moves by no more than two levels during one recalibration. These are empirical game-design categories
-          rather than universal measures of difficulty.
+          Let $V=\{v_1,v_2,\ldots,v_n\}$ be the thirty-day pageview totals of the catalogued genera. Each $v_i$ is compared with fixed thresholds: Level I at 4,500 views or more, Level II at 1,300–4,499, Level III at 550–1,299, Level IV at 250–549 and Level V below 250. Fixed thresholds keep the meaning of each level stable as the catalogue grows, and an existing genus moves at most two levels per recalibration. These are empirical game categories, not a general measure of difficulty.
         </p>
 
         <h2 id="limitations" data-i18n="about.limitationsTitle">Methodological considerations and limitations</h2>
         <p data-i18n="about.limitationsBody1">
-          Phylogenetic trees are hypotheses of evolutionary relationships, not immutable facts. The topology presented
-          here represents one interpretation of available data and may differ from analyses that use different
-          character matrices, taxon sampling strategies, or analytical methods. Phylogenetic resolution varies across
-          the dinosaurian tree. While some clades such as Tyrannosauridae exhibit robust support across multiple
-          independent analyses, others remain poorly resolved because of incomplete fossil records, morphological
-          conservatism, or competing interpretations. Users should interpret the topology with appropriate epistemic
-          humility, recognizing that scientific understanding of dinosaurian phylogeny continues to evolve.
+          Phylogenetic trees are hypotheses. The tree used here is one reading of the available evidence and can differ from analyses based on other character data, taxon samples or methods. Support also varies across the tree: Tyrannosauridae is recovered consistently, while other groups remain poorly resolved because of incomplete fossils or competing interpretations. Even the basic split is debated. In 2017, Baron, Norman and Barrett proposed Ornithoscelida, a clade uniting Ornithischia and Theropoda. The traditional division into Saurischia and Ornithischia is still the most widely used, and it is the one followed here.
         </p>
         <p data-i18n-html="about.limitationsBody2">
-          Taxonomic nomenclature follows standard conventions in which genus names are italicized and capitalized,
-          while higher-level clade names are rendered in standard font with initial capitalization. Some included taxa
-          may represent <em>nomina dubia</em>, names of doubtful validity based on insufficient diagnostic material, or
-          taxonomic wastebasket groups subject to continuing systematic revision.
+          Genus names are written in italics; names of higher clades are not. Some included taxa may be <em>nomina dubia</em>, names based on material too incomplete to diagnose, or members of loosely defined groups that are still under revision.
         </p>
         <p data-i18n="about.limitationsBody3">
-          The game must express each genus as one ordered path, but published analyses may instead recover competing
-          positions or an unresolved polytomy. Synonyms create another difficulty: a historical genus may later be
-          absorbed into another while remaining culturally or historically recognizable. Phylosaur may retain such
-          names when they contribute to the educational catalogue, while unresolved placements are recorded for future
-          review. The resulting tree is intentionally detailed, but its detail should not be confused with equal
-          certainty at every node.
+          The game needs one ordered path per genus, but published analyses may place a genus in competing positions or leave it in a polytomy, an unresolved branching point. Synonyms are another problem: a genus may be absorbed into another and still remain widely known. Such names may be kept for their educational value, and unresolved placements are logged for review. The tree is detailed, but that detail does not mean every node is equally certain.
         </p>
 
         <div class="info-note" data-i18n="about.scientificDisclaimer">
-          Phylosaur is an independent educational project and should not be treated as a primary scientific source.
-          For formal research, classifications and claims should be checked against the relevant systematic literature.
+          Phylosaur is an independent educational project, not a primary scientific source. For research, check classifications against the systematic literature.
         </div>
 
         <h2 id="resources" data-i18n="about.resourcesTitle">Acknowledgments and further resources</h2>
         <p data-i18n="about.resourcesBody1">
-          This project acknowledges the foundational work of paleontologists whose systematic research underlies our
-          current understanding of dinosaurian phylogeny. Readers seeking deeper engagement with the primary literature
-          can consult the Paleobiology Database, which archives stratigraphic and taxonomic occurrence data; the Tree
-          of Life Web Project, which provides broad phylogenetic overviews; Fossilworks, which maintains taxonomic and
-          bibliographic records; museum research pages; and the original systematic publications relevant to individual
-          clades and genera.
+          Phylosaur depends on the work of the palaeontologists whose descriptions and analyses produced this classification. For further reading: the Paleobiology Database (occurrence and taxonomic records), the Open Tree of Life (a synthesis of published phylogenies), museum research pages and the original description of each genus.
         </p>
         <p data-i18n-html="about.resourcesBody2">
-          Readers interested in formal training in phylogenetic methodology may also consult
-          <em>Phylogenetics: Theory and Practice of Phylogenetic Systematics</em> by E. O. Wiley and Bruce Lieberman,
-          or <em>Inferring Phylogenies</em> by Joseph Felsenstein.
+          For an introduction to dinosaurs: <em>Dinosaur Paleobiology</em> by Stephen Brusatte and <em>Dinosaurs: How They Lived and Evolved</em> by Darren Naish and Paul Barrett. For phylogenetic methods: <em>Phylogenetics: Theory and Practice of Phylogenetic Systematics</em> by E. O. Wiley and Bruce Lieberman, and <em>Inferring Phylogenies</em> by Joseph Felsenstein.
         </p>
 
         <section class="info-references" aria-labelledby="landmarks-title">
           <h3 id="landmarks-title" data-i18n="about.landmarksTitle">Selected scientific landmarks</h3>
           <ul>
             <li>Owen, R. (1842). <em>Report on British Fossil Reptiles, Part II.</em></li>
-            <li>Seeley, H. G. (1888). <em>On the Classification of the Fossil Animals Commonly Named Dinosauria.</em></li>
+            <li>Seeley, H. G. (1888). <em>On the Classification of the Fossil Animals Commonly Named Dinosauria.</em> Proceedings of the Royal Society of London, 43: 165–171.</li>
             <li>Hennig, W. (1966). <em>Phylogenetic Systematics.</em></li>
-            <li>Padian, K. &amp; Chiappe, L. M. (1998). <em>The Origin and Early Evolution of Birds.</em></li>
+            <li>Ostrom, J. H. (1976). <em>Archaeopteryx and the Origin of Birds.</em> Biological Journal of the Linnean Society, 8: 91–182.</li>
+            <li>Gauthier, J. (1986). <em>Saurischian Monophyly and the Origin of Birds.</em> Memoirs of the California Academy of Sciences, 8: 1–55.</li>
+            <li>Padian, K. &amp; Chiappe, L. M. (1998). <em>The Origin and Early Evolution of Birds.</em> Biological Reviews, 73: 1–42.</li>
             <li>Weishampel, D. B., Dodson, P. &amp; Osmólska, H., eds. (2004). <em>The Dinosauria</em>, 2nd ed.</li>
-            <li>Nesbitt, S. J. (2011). <em>The Early Evolution of Archosaurs: Relationships and the Origin of Major Clades.</em></li>
+            <li>Nesbitt, S. J. (2011). <em>The Early Evolution of Archosaurs: Relationships and the Origin of Major Clades.</em> Bulletin of the American Museum of Natural History, 352: 1–292.</li>
+            <li>Baron, M. G., Norman, D. B. &amp; Barrett, P. M. (2017). <em>A New Hypothesis of Dinosaur Relationships and Early Dinosaur Evolution.</em> Nature, 543: 501–506.</li>
           </ul>
         </section>
 
         <p data-i18n="about.educationalNotice">
-          Phylosaur is provided as an educational resource without commercial intent. Users are encouraged to provide
-          feedback regarding taxonomic inaccuracies, interface improvements, or pedagogical suggestions. While the
-          application aims for scientific rigor, it should not be cited as a primary source in formal academic contexts;
-          information should instead be traced to original systematic publications and supplementary references.
+          Phylosaur is non-commercial. Corrections about taxonomy, the interface or the teaching approach are welcome. Please do not cite it as a primary source; trace claims to the original publications instead.
         </p>
 
         <div class="info-note" data-i18n-html="about.activeDevelopment">
-          <strong>Active development:</strong> taxonomic inaccuracies, interface issues, missing genera, and other
-          problems may still occur. Questions, corrections, and feedback can be sent to
-          <a href="mailto:rodrigo03.villa@gmail.com">rodrigo03.villa@gmail.com</a>. Every message is read and deeply
-          appreciated.
+          <strong>Active development:</strong> taxonomic errors, interface problems and missing genera may still occur. Questions and corrections can be sent to <a href="mailto:rodrigo03.villa@gmail.com">rodrigo03.villa@gmail.com</a>. I read every message.
         </div>
       </article>
     </main>
