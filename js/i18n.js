@@ -3796,6 +3796,7 @@ function localizeTextNode(node) {
   if (!node?.nodeValue || currentLocale === 'en') return;
   const match = node.nodeValue.match(/^(\s*)(.*?)(\s*)$/s);
   if (!match || !match[2]) return;
+  if (node.parentElement?.closest('[data-localization-ignore]')) return;
   const translated = translateKnownText(match[2]);
   if (translated !== match[2]) node.nodeValue = `${match[1]}${translated}${match[3]}`;
 }
@@ -3835,13 +3836,6 @@ function initializeI18n() {
   if (selector) {
     selector.value = currentLocale;
     selector.setAttribute('aria-label', t('language.label'));
-    const labels = {
-      en: t('language.english'), 'pt-BR': t('language.portuguese'), es: t('language.spanish'),
-      ja: t('language.japanese'), fr: t('language.french'), de: t('language.german')
-    };
-    [...selector.options].forEach(option => {
-      option.title = labels[option.value] || option.textContent;
-    });
   }
   localizeDocument(document);
   phylosaurLocalizationObserver?.disconnect();
