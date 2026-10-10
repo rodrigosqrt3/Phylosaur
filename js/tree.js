@@ -28,6 +28,17 @@ if (typeof window.treeViewState === 'undefined') {
     };
 }
 
+const TREE_ZOOM_LEVELS = Object.freeze([0.5, 0.67, 0.8, 1, 1.25, 1.5, 2]);
+const TREE_ZOOM_STORAGE_KEY = 'phylosaur-tree-zoom';
+
+if (typeof window.treeZoom === 'undefined') {
+    window.treeZoom = 1;
+    try {
+        const stored = Number(localStorage.getItem(TREE_ZOOM_STORAGE_KEY));
+        if (TREE_ZOOM_LEVELS.includes(stored)) window.treeZoom = stored;
+    } catch (_err) { /* storage unavailable */ }
+}
+
 function resetTreeAnimationState() {
     window.treeAnimationState = {
         nodeKeys: new Set(),
@@ -169,6 +180,11 @@ function ensureTreeToolbar(container) {
                 <button type="button" class="tree-toolbar-btn" data-tree-action="latest">${t('tree.latestMove')}</button>
                 <button type="button" class="tree-toolbar-btn" data-tree-action="root">${t('tree.root')}</button>
                 <button type="button" class="tree-toolbar-btn" data-tree-action="expand">${t('tree.expandAll')}</button>
+                <div class="tree-zoom" role="group" aria-label="${t('tree.zoom')}">
+                    <button type="button" class="tree-zoom-btn" data-tree-action="zoom-out" aria-label="${t('tree.zoomOut')}" title="${t('tree.zoomOut')}">&minus;</button>
+                    <button type="button" class="tree-zoom-btn tree-zoom-value" data-tree-action="zoom-reset" aria-label="${t('tree.zoomReset')}" title="${t('tree.zoomReset')}">100%</button>
+                    <button type="button" class="tree-zoom-btn" data-tree-action="zoom-in" aria-label="${t('tree.zoomIn')}" title="${t('tree.zoomIn')}">+</button>
+                </div>
             </div>
         `;
         toolbar.addEventListener('click', event => {
@@ -177,6 +193,9 @@ function ensureTreeToolbar(container) {
             if (action === 'latest') focusTreeLatest();
             if (action === 'root') focusTreeRoot();
             if (action === 'expand') expandAllTreeClades();
+            if (action === 'zoom-out') stepTreeZoom(-1);
+            if (action === 'zoom-in') stepTreeZoom(1);
+            if (action === 'zoom-reset') setTreeZoom(1);
         });
         if (!toolbarHost) container.parentNode.insertBefore(toolbar, container);
     }
@@ -193,6 +212,91 @@ function ensureTreeToolbar(container) {
             : t('tree.nothingToCenter');
     }
     if (expandButton) expandButton.disabled = window.collapsedClades.size === 0;
+    updateTreeZoomControls();
+}
+
+function updateTreeZoomControls() {
+    const toolbar = document.querySelector('.tree-toolbar');
+    if (!toolbar) return;
+    const zoom = window.treeZoom;
+    const value = toolbar.querySelector('[data-tree-action="zoom-reset"]');
+    const zoomOut = toolbar.querySelector('[data-tree-action="zoom-out"]');
+    const zoomIn = toolbar.querySelector('[data-tree-action="zoom-in"]');
+    if (value) value.textContent = `${Math.round(zoom * 100)}%`;
+    if (zoomOut) zoomOut.disabled = zoom <= TREE_ZOOM_LEVELS[0];
+    if (zoomIn) zoomIn.disabled = zoom >= TREE_ZOOM_LEVELS[TREE_ZOOM_LEVELS.length - 1];
+}
+
+function stepTreeZoom(direction) {
+    const index = TREE_ZOOM_LEVELS.indexOf(window.treeZoom);
+    const next = TREE_ZOOM_LEVELS[Math.max(0, Math.min(TREE_ZOOM_LEVELS.length - 1, index + direction))];
+    setTreeZoom(next);
+}
+
+function setTreeZoom(zoom) {
+    if (!TREE_ZOOM_LEVELS.includes(zoom) || zoom === window.treeZoom) return;
+
+    const container = document.getElementById('tree-container');
+    const centerX = container && container.scrollWidth
+        ? (container.scrollLeft + container.clientWidth / 2) / container.scrollWidth : 0.5;
+    const centerY = container && container.scrollHeight
+        ? (container.scrollTop + container.clientHeight / 2) / container.scrollHeight : 0;
+
+    window.treeZoom = zoom;
+    try { localStorage.setItem(TREE_ZOOM_STORAGE_KEY, String(zoom)); } catch (_err) { /* storage unavailable */ }
+    updateTreeZoomControls();
+
+    if (layoutTreeSvg() && container) {
+        container.scrollLeft = centerX * container.scrollWidth - container.clientWidth / 2;
+        container.scrollTop = centerY * container.scrollHeight - container.clientHeight / 2;
+    }
+}
+
+// Sizes the tree to fit the panel, then applies the user's zoom on top of it.
+function layoutTreeSvg() {
+  const container = document.getElementById('tree-container');
+  const wrapper = document.getElementById('tree-scroll-wrapper');
+  const svg = document.getElementById('tree-svg');
+  const naturalW = Number(wrapper?.dataset.naturalWidth);
+  const naturalH = Number(wrapper?.dataset.naturalHeight);
+  if (!container || !svg || !naturalW || !naturalH) return false;
+
+  svg.style.width = '';
+  svg.style.height = '';
+  svg.style.margin = '';
+
+  const availW = container.getBoundingClientRect().width - 40;
+  const shouldScale = naturalW <= availW * 1.2;
+
+  svg.setAttribute('width', naturalW);
+  svg.setAttribute('height', naturalH);
+  if (shouldScale) {
+    const scale = Math.min(1, availW / naturalW);
+    wrapper.style.transform = `scale(${scale})`;
+    wrapper.style.transformOrigin = 'top center';
+    wrapper.style.width = '100%';
+    wrapper.style.height = (naturalH * scale) + 'px';
+    container.style.overflowX = 'hidden';
+  } else {
+    wrapper.style.transform = 'none';
+    wrapper.style.width = naturalW + 'px';
+    wrapper.style.height = naturalH + 'px';
+    container.style.overflowX = 'auto';
+  }
+
+  const zoom = window.treeZoom;
+  const fitted = zoom !== 1 ? svg.getBoundingClientRect() : null;
+  // A hidden tree (result screen) measures 0×0; the next render applies the zoom.
+  if (fitted && fitted.width > 0 && fitted.height > 0) {
+    wrapper.style.transform = 'none';
+    wrapper.style.width = '';
+    wrapper.style.height = '';
+    svg.style.width = (fitted.width * zoom) + 'px';
+    svg.style.height = (fitted.height * zoom) + 'px';
+    svg.style.margin = '0 auto';
+    container.style.overflowX = 'auto';
+  }
+  return true;
 }
 
 function toggleCladeCollapse(clade) {
@@ -237,6 +341,17 @@ function initTreePanning() {
     container.scrollLeft = scrollLeft - (x - startX);
     container.scrollTop  = scrollTop  - (y - startY);
   });
+
+  // Ctrl/Cmd + wheel (and trackpad pinch) steps through the zoom levels.
+  let wheelDelta = 0;
+  container.addEventListener('wheel', e => {
+    if (!(e.ctrlKey || e.metaKey) || !document.getElementById('tree-svg')) return;
+    e.preventDefault();
+    wheelDelta += e.deltaY;
+    if (Math.abs(wheelDelta) < 60) return;
+    stepTreeZoom(wheelDelta < 0 ? 1 : -1);
+    wheelDelta = 0;
+  }, { passive: false });
 
   // Touch devices use the container's native momentum scrolling.
 }
@@ -579,7 +694,7 @@ nodes.forEach((data, clade) => {
     g.style.cursor = 'pointer';
     makeTreeElementInteractive(
       g,
-      `Open information about the ${clade} clade`,
+      t('tree.cladeInfo', { clade }),
       () => showCladeInfo(clade)
     );
     
@@ -708,7 +823,7 @@ leafPositions.forEach((leaf, name) => {
       g.style.cursor = 'pointer';
       makeTreeElementInteractive(
         g,
-        `Open information about ${leaf.displayName}`,
+        t('tree.genusInfo', { name: leaf.displayName }),
         () => showCladeInfo(leaf.displayName)
       );
     }
@@ -774,26 +889,10 @@ leafPositions.forEach((leaf, name) => {
     const padding = 80;
     const naturalW = svgB.width + padding * 2;
     const naturalH = svgB.height + padding;
-    const availW = container.getBoundingClientRect().width - 40;
-    const shouldScale = naturalW <= availW * 1.2;
 
-    if (shouldScale) {
-      const scale = Math.min(1, availW / naturalW);
-      svg.setAttribute('width', naturalW);
-      svg.setAttribute('height', naturalH);
-      wrapper.style.transform = `scale(${scale})`;
-      wrapper.style.transformOrigin = 'top center';
-      wrapper.style.width = '100%';
-      wrapper.style.height = (naturalH * scale) + 'px';
-      container.style.overflowX = 'hidden';
-    } else {
-      svg.setAttribute('width', naturalW);
-      svg.setAttribute('height', naturalH);
-      wrapper.style.transform = 'none';
-      wrapper.style.width = naturalW + 'px';
-      wrapper.style.height = naturalH + 'px';
-      container.style.overflowX = 'auto';
-    }
+    wrapper.dataset.naturalWidth = naturalW;
+    wrapper.dataset.naturalHeight = naturalH;
+    layoutTreeSvg();
 
     container.scrollLeft = savedScrollLeft;
     container.scrollTop = savedScrollTop;

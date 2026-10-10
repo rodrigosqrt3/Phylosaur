@@ -76,13 +76,28 @@
         title: 'Der Pfad ist offline',
         copy: 'Phylosaur benötigt eine Internetverbindung, um Herausforderungen zu erstellen und zu überprüfen. Stelle die Verbindung wieder her und versuche es erneut.',
         retry: 'Erneut versuchen', alt: 'Phylosaur-Fußabdruck'
+      },
+      fr: {
+        metaTitle: 'Phylosaur - Hors ligne',
+        title: 'La piste est hors ligne',
+        copy: 'Phylosaur a besoin d’une connexion Internet pour créer et valider les défis. Reconnectez-vous et réessayez.',
+        retry: 'Réessayer', alt: 'Empreinte de Phylosaur'
+      },
+      ja: {
+        metaTitle: 'Phylosaur - オフライン',
+        title: 'オフラインになりました',
+        copy: 'Phylosaurでチャレンジを作成・検証するにはインターネット接続が必要です。接続を確認して、もう一度お試しください。',
+        retry: '再試行', alt: 'Phylosaurの足跡'
       }
     };
-    const storedLanguage = localStorage.getItem('phylosaur-language');
+    let storedLanguage = null;
+    try { storedLanguage = localStorage.getItem('phylosaur-language'); } catch (_error) {}
     const browserLanguage = storedLanguage || navigator.language || 'en';
     const locale = browserLanguage.toLowerCase().startsWith('pt')
       ? 'pt-BR' : browserLanguage.toLowerCase().startsWith('es') ? 'es'
-        : browserLanguage.toLowerCase().startsWith('de') ? 'de' : 'en';
+        : browserLanguage.toLowerCase().startsWith('de') ? 'de'
+          : browserLanguage.toLowerCase().startsWith('fr') ? 'fr'
+            : browserLanguage.toLowerCase().startsWith('ja') ? 'ja' : 'en';
     const message = offlineMessages[locale];
     document.documentElement.lang = locale;
     document.title = message.metaTitle;

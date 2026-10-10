@@ -579,8 +579,10 @@ async function showAbout() {
         focusAppScreenHeading();
     } catch (error) {
         if (!isCurrentRequest()) return;
+        // The raw error is English-only; keep it in the console, not on screen.
+        console.warn('About page could not be loaded:', error);
         appContent.innerHTML = `<div class="game-card about-screen">${renderAppState(
-            t('about.error'), { type: 'error', detail: error.message }
+            t('about.error'), { type: 'error' }
         )}<button class="btn-new-game" onclick="navigateToAppRoute('/')">${t('about.return')}</button></div>`;
         return;
     }

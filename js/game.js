@@ -729,7 +729,14 @@ function setGuessRequestPending(pending) {
         button.textContent = pending ? t('game.analyzing') : t('game.submit');
         button.disabled = unavailable;
     }
-    if (input) input.disabled = unavailable;
+    if (input) {
+        // While a request is pending the field is only read-only: disabling it
+        // would blur it and close the mobile keyboard after every guess.
+        input.readOnly = pending;
+        input.disabled = gameWon || challengeRaceClosing;
+        if (pending) input.setAttribute('aria-busy', 'true');
+        else input.removeAttribute('aria-busy');
+    }
     const giveUpButton = document.querySelector('.btn-giveup');
     if (giveUpButton) giveUpButton.disabled = unavailable;
     updateHintButtonState();
@@ -1085,19 +1092,24 @@ function toggleResultTreeView(showTree = true) {
 }
 
 async function giveUp() {
+    // Ask before locking the game, so the controls do not read "Analyzing…"
+    // while the player is still deciding.
+    if (gameWon || gameRequestPending || !gameSessionId || challengeRaceClosing
+        || document.querySelector('[data-app-modal="true"]')) return;
+    const isSameSession = getGameSessionGuard();
+    const confirm = await customConfirm(
+        t('game.giveUpTitle'),
+        t('game.giveUpCopy'),
+        t('game.giveUp'),
+        t('game.keepTrying'),
+        { focusCancel: true }
+    );
+    if (!isSameSession() || gameWon || challengeRaceClosing || confirm !== 'true') return;
+
     const isCurrentRequest = beginGameAction();
     if (!isCurrentRequest) return;
 
     try {
-        const confirm = await customConfirm(
-            t('game.giveUpTitle'),
-            t('game.giveUpCopy'),
-            t('game.giveUp'),
-            t('game.keepTrying')
-        );
-
-        if (!isCurrentRequest() || gameWon || challengeRaceClosing || confirm !== 'true') return;
-
         try {
             const data = await callGameApi('give_up', { sessionId: gameSessionId });
             if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
@@ -1424,7 +1436,7 @@ async function showVictory() {
     if (currentGameMode === 'challenge') {
         modeHTML = `
         <div class="challenge-result-note">
-            Friend Challenge <strong>${escapeChallengeHtml(currentChallengeCode)}</strong> - Daily statistics not affected
+            ${t('result.friendChallengeCode', { code: `<strong>${escapeChallengeHtml(currentChallengeCode)}</strong>` })} - ${t('result.dailyStatsUnaffected')}
         </div>
         <div class="challenge-placement-slot"></div>`;
     }
@@ -1442,7 +1454,7 @@ async function showVictory() {
                 <div class="victory-dino">${targetDino.nome}</div>
                 <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                     <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
-                    <span>${revealedClades.size} ${t(revealedClades.size === 1 ? 'game.cladeOne' : 'game.cladeMany')} ${t('game.revealed')}</span>
+                    <span>${revealedClades.size} ${t(revealedClades.size === 1 ? 'game.cladeOne' : 'game.cladeMany')} ${t(revealedClades.size === 1 ? 'game.revealedOne' : 'game.revealed')}</span>
                 </div>
             </div>
 

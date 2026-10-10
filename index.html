@@ -64,21 +64,23 @@
     } catch (_error) {}
   </script>
   
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="style.css?v=185">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
+          integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
+          crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="style.css?v=187">
   
-  <script defer src="js/config.js?v=185"></script>
-  <script defer src="js/state.js?v=185"></script>
-  <script defer src="js/i18n.js?v=185"></script>
-  <script defer src="js/api.js?v=185"></script>
-  <script defer src="js/autocomplete.js?v=185"></script>
-  <script defer src="js/db.js?v=185"></script>
-  <script defer src="js/auth.js?v=185"></script>
-  <script defer src="js/ui.js?v=185"></script>
-  <script defer src="js/screens.js?v=185"></script>
-  <script defer src="js/tree.js?v=185"></script>
-  <script defer src="js/game.js?v=185"></script>
-  <script defer src="js/main.js?v=185"></script>
+  <script defer src="js/config.js?v=187"></script>
+  <script defer src="js/state.js?v=187"></script>
+  <script defer src="js/i18n.js?v=187"></script>
+  <script defer src="js/api.js?v=187"></script>
+  <script defer src="js/autocomplete.js?v=187"></script>
+  <script defer src="js/db.js?v=187"></script>
+  <script defer src="js/auth.js?v=187"></script>
+  <script defer src="js/ui.js?v=187"></script>
+  <script defer src="js/screens.js?v=187"></script>
+  <script defer src="js/tree.js?v=187"></script>
+  <script defer src="js/game.js?v=187"></script>
+  <script defer src="js/main.js?v=187"></script>
 </head>
 <body>
   <script>
@@ -130,6 +132,46 @@
   </div>
 
   <script>
+    // Boot watchdog: if a script fails or never arrives, replace the endless
+    // spinner with a localized message and a reload button.
+    (function () {
+      var messages = {
+        en: ['Phylosaur could not finish loading. Check your connection and try again.', 'Reload'],
+        'pt-BR': ['Não foi possível terminar de carregar o Phylosaur. Verifique sua conexão e tente novamente.', 'Recarregar'],
+        es: ['No se pudo terminar de cargar Phylosaur. Revisa tu conexión e inténtalo de nuevo.', 'Recargar'],
+        fr: ['Phylosaur n’a pas pu finir de se charger. Vérifiez votre connexion et réessayez.', 'Recharger'],
+        de: ['Phylosaur konnte nicht vollständig geladen werden. Prüfe deine Verbindung und versuche es erneut.', 'Neu laden'],
+        ja: ['Phylosaurを読み込めませんでした。接続を確認して、もう一度お試しください。', '再読み込み']
+      };
+      function pickLocale() {
+        var wanted = '';
+        try { wanted = new URLSearchParams(location.search).get('lang') || localStorage.getItem('phylosaur-language') || ''; } catch (_error) {}
+        var candidates = [wanted].concat(navigator.languages || [navigator.language || '']);
+        for (var i = 0; i < candidates.length; i++) {
+          var code = String(candidates[i] || '');
+          if (/^pt/i.test(code)) return 'pt-BR';
+          var base = code.slice(0, 2).toLowerCase();
+          if (messages[base]) return base;
+        }
+        return 'en';
+      }
+      window.showPhylosaurBootError = function () {
+        if (window.phylosaurBooted) return;
+        var content = document.getElementById('app-content');
+        if (!content) return;
+        var text = messages[pickLocale()];
+        content.innerHTML = '<div class="game-card"><div class="app-state app-state-error" role="alert">'
+          + '<span class="app-state-icon" aria-hidden="true"></span>'
+          + '<div class="app-state-message"></div>'
+          + '<button type="button" class="btn-new-game app-state-action"></button></div></div>';
+        content.querySelector('.app-state-message').textContent = text[0];
+        var button = content.querySelector('.app-state-action');
+        button.textContent = text[1];
+        button.addEventListener('click', function () { location.reload(); });
+      };
+      setTimeout(window.showPhylosaurBootError, 20000);
+    })();
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })

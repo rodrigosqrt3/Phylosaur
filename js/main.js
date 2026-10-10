@@ -1,4 +1,6 @@
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// The client library comes from a CDN; if it failed to load, boot shows a
+// recoverable error instead of throwing here and leaving the spinner forever.
+const sb = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) || null;
 
 let lastTreeViewportWidth = window.innerWidth;
 let treeResizeTimer = null;
@@ -201,6 +203,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     savedTheme = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.theme) || 'dark';
   } catch (_error) {}
   applyTheme(savedTheme, { persist: false });
+
+  if (!sb) {
+    window.showPhylosaurBootError?.();
+    return;
+  }
+  window.phylosaurBooted = true;
 
   const hash = window.location.hash;
   const params = new URLSearchParams(hash.replace('#', ''));

@@ -165,7 +165,8 @@ function showModal(options) {
     if (options.buttons) {
         options.buttons.forEach((btn, index) => {
         const btnClass = btn.primary ? 'modal-btn-primary' : 'modal-btn-secondary';
-        html += `<button class="modal-btn ${btnClass}" data-result="${btn.value}">${btn.text}</button>`;
+        const autofocus = btn.autofocus ? ' data-autofocus="true"' : '';
+        html += `<button class="modal-btn ${btnClass}" data-result="${btn.value}"${autofocus}>${btn.text}</button>`;
         });
     } else {
         html += `<button class="modal-btn modal-btn-primary" data-result="ok">${t('common.ok')}</button>`;
@@ -237,7 +238,7 @@ function showModal(options) {
         document.addEventListener('keydown', modalKeyHandler, true);
         keyHandlerAttached = true;
         if (!isTopAppOverlay(overlay)) return;
-        const firstButton = box.querySelector('.modal-btn');
+        const firstButton = box.querySelector('.modal-btn[data-autofocus]') || box.querySelector('.modal-btn');
         if (firstButton) firstButton.focus();
         else box.focus();
     }, 0);
@@ -261,17 +262,19 @@ function customAlert(title, message) {
     return showModal({
     title: title,
     message: message,
-    buttons: [{ text: 'OK', value: 'ok', primary: true }]
+    buttons: [{ text: t('common.ok'), value: 'ok', primary: true }]
     });
 }
 
-function customConfirm(title, message, yesText = 'Yes', noText = 'No') {
+// focusCancel: start on the safe choice so a stray Enter cannot confirm a
+// destructive action.
+function customConfirm(title, message, yesText = 'Yes', noText = 'No', { focusCancel = false } = {}) {
     return showModal({
     title: title,
     message: message,
     buttons: [
         { text: yesText, value: true, primary: true },
-        { text: noText, value: false, primary: false }
+        { text: noText, value: false, primary: false, autofocus: focusCancel }
     ]
     });
 }
