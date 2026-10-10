@@ -905,7 +905,7 @@ async function showRestoredServerCompletion(data) {
     panel.innerHTML = `
         <div class="victory-heading">
             <h2>${wasRaceEliminated ? t('result.raceComplete') : data.gaveUp ? t('result.answerRevealedTitle') : t('result.completeTitle')}</h2>
-            <div class="victory-dino">${targetName}<button type="button" class="victory-curiosity" data-name="${escapeHtml(targetName)}" onclick="showDinoCuriosity(this)" aria-label="${t('result.curiosity', { name: escapeHtml(targetName) })}" title="${t('result.curiosity', { name: escapeHtml(targetName) })}">?</button></div>
+            <div class="victory-dino">${targetName}</div>
             <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                 <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
                 ${resultWasRevealed ? `<span>${t('result.answerRevealed')}</span>` : ''}

@@ -1151,7 +1151,7 @@ async function giveUp() {
         v.innerHTML = `
             <div class="victory-heading">
                 <h2>${t('result.answerRevealedTitle')}</h2>
-                <div class="victory-dino">${targetDino.nome}${buildCuriosityButton()}</div>
+                <div class="victory-dino">${targetDino.nome}</div>
                 <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                     <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
                     <span>${t('result.gaveUp')}</span>
@@ -1195,11 +1195,6 @@ async function giveUp() {
     } finally {
         if (isCurrentRequest()) setGuessRequestPending(false);
     }
-}
-
-function buildCuriosityButton() {
-    const label = t('result.curiosity', { name: escapeHtml(targetDino?.nome || '') });
-    return `<button type="button" class="victory-curiosity" data-name="${escapeHtml(targetDino?.nome || '')}" onclick="showDinoCuriosity(this)" aria-label="${label}" title="${label}">?</button>`;
 }
 
 function buildRematchButton() {
@@ -1492,19 +1487,47 @@ function summarizeEncyclopediaText(text, maxLength = 420) {
     return summary.trim().slice(0, maxLength);
 }
 
-async function showDinoCuriosity(button = null) {
-    const name = button?.dataset.name || targetDino?.nome;
-    if (!name || button?.getAttribute('aria-busy') === 'true') return;
+const DAILY_CURIOSITY_CLADES = Object.freeze([
+    'Abelisauridae', 'Alvarezsauridae', 'Ankylosauria', 'Ankylosauridae',
+    'Brachiosauridae', 'Carcharodontosauridae', 'Ceratopsia', 'Ceratopsidae', 'Ceratosauria',
+    'Coelophysoidea', 'Coelurosauria', 'Diplodocidae', 'Dromaeosauridae', 'Hadrosauridae',
+    'Heterodontosauridae', 'Lambeosaurinae', 'Maniraptora', 'Megalosauridae',
+    'Nodosauridae', 'Ornithischia', 'Ornithomimosauria', 'Ornithopoda', 'Oviraptorosauria',
+    'Pachycephalosauria', 'Saurischia', 'Sauropoda', 'Sauropodomorpha', 'Spinosauridae',
+    'Stegosauria', 'Therizinosauria', 'Theropoda', 'Thyreophora', 'Titanosauria',
+    'Troodontidae', 'Tyrannosauridae', 'Tyrannosauroidea'
+]);
+
+async function findDailyCuriosity() {
+    const clades = DAILY_CURIOSITY_CLADES;
+    const today = getTodayString();
+    let seed = 0;
+    for (const character of today) seed = (seed * 31 + character.charCodeAt(0)) >>> 0;
+    for (let offset = 0; offset < 3; offset++) {
+        const clade = clades[(seed + offset) % clades.length];
+        const info = await fetchWikipediaInfo(clade);
+        if (info?.description) return { clade, info };
+    }
+    return null;
+}
+
+async function showDailyCuriosity(button = null) {
+    if (button?.getAttribute('aria-busy') === 'true') return;
     button?.setAttribute('aria-busy', 'true');
-    let info = null;
+    let curiosity = null;
     try {
-        info = await fetchWikipediaInfo(name);
+        curiosity = await findDailyCuriosity();
+    } catch (error) {
+        console.warn('Daily curiosity unavailable:', error);
     } finally {
         button?.removeAttribute('aria-busy');
     }
+    const info = curiosity?.info;
     const summary = summarizeEncyclopediaText(info?.description);
     await showModal({
-        title: escapeHtml(name),
+        title: curiosity
+            ? `${t('home.curiosity')} · ${escapeHtml(curiosity.clade)}`
+            : t('home.curiosity'),
         message: summary ? `
             <p class="curiosity-text">${escapeHtml(summary)}</p>
             ${info.isLanguageFallback ? `<p class="encyclopedia-language-note">${t('encyclopedia.englishFallback')}</p>` : ''}
@@ -1576,7 +1599,7 @@ async function showVictory() {
             ${modeHTML}
             <div class="victory-heading">
                 <h2>${t('result.completeTitle')}</h2>
-                <div class="victory-dino">${targetDino.nome}${buildCuriosityButton()}</div>
+                <div class="victory-dino">${targetDino.nome}</div>
                 <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                     <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
                     <span>${revealedClades.size} ${t(revealedClades.size === 1 ? 'game.cladeOne' : 'game.cladeMany')} ${t(revealedClades.size === 1 ? 'game.revealedOne' : 'game.revealed')}</span>

@@ -17,6 +17,8 @@ async function showDifficultySelection() {
         <h2 class="difficulty-home-title screen-title">${t('home.daily')}</h2>
         <p class="difficulty-home-date">
             ${getCurrentDateFormatted()} — ${t('home.chooseLevel')}
+            <button type="button" class="home-curiosity" onclick="showDailyCuriosity(this)"
+                    aria-label="${t('home.curiosity')}" title="${t('home.curiosity')}">?</button>
         </p>
         <p class="difficulty-home-countdown">
         ${t('home.nextDaily')} <span id="countdown-timer">--:--:--</span>

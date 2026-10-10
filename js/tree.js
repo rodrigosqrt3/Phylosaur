@@ -180,11 +180,6 @@ function ensureTreeToolbar(container) {
                 <button type="button" class="tree-toolbar-btn" data-tree-action="latest">${t('tree.latestMove')}</button>
                 <button type="button" class="tree-toolbar-btn" data-tree-action="root">${t('tree.root')}</button>
                 <button type="button" class="tree-toolbar-btn" data-tree-action="expand">${t('tree.expandAll')}</button>
-                <div class="tree-zoom" role="group" aria-label="${t('tree.zoom')}">
-                    <button type="button" class="tree-zoom-btn" data-tree-action="zoom-out" aria-label="${t('tree.zoomOut')}" title="${t('tree.zoomOut')}">&minus;</button>
-                    <button type="button" class="tree-zoom-btn tree-zoom-value" data-tree-action="zoom-reset" aria-label="${t('tree.zoomReset')}" title="${t('tree.zoomReset')}">100%</button>
-                    <button type="button" class="tree-zoom-btn" data-tree-action="zoom-in" aria-label="${t('tree.zoomIn')}" title="${t('tree.zoomIn')}">+</button>
-                </div>
             </div>
         `;
         toolbar.addEventListener('click', event => {
@@ -193,9 +188,6 @@ function ensureTreeToolbar(container) {
             if (action === 'latest') focusTreeLatest();
             if (action === 'root') focusTreeRoot();
             if (action === 'expand') expandAllTreeClades();
-            if (action === 'zoom-out') stepTreeZoom(-1);
-            if (action === 'zoom-in') stepTreeZoom(1);
-            if (action === 'zoom-reset') setTreeZoom(1);
         });
         if (!toolbarHost) container.parentNode.insertBefore(toolbar, container);
     }
@@ -212,16 +204,41 @@ function ensureTreeToolbar(container) {
             : t('tree.nothingToCenter');
     }
     if (expandButton) expandButton.disabled = window.collapsedClades.size === 0;
+}
+
+function ensureTreeZoomDock(container) {
+    let dock = container.querySelector(':scope > .tree-zoom-dock');
+    if (!dock) {
+        dock = document.createElement('div');
+        dock.className = 'tree-zoom-dock';
+        dock.innerHTML = `
+            <div class="tree-zoom" role="group" aria-label="${t('tree.zoom')}">
+                <button type="button" class="tree-zoom-btn" data-tree-zoom="out" aria-label="${t('tree.zoomOut')}" title="${t('tree.zoomOut')}">&minus;</button>
+                <button type="button" class="tree-zoom-btn tree-zoom-value" data-tree-zoom="reset" aria-label="${t('tree.zoomReset')}" title="${t('tree.zoomReset')}">100%</button>
+                <button type="button" class="tree-zoom-btn" data-tree-zoom="in" aria-label="${t('tree.zoomIn')}" title="${t('tree.zoomIn')}">+</button>
+            </div>
+        `;
+        dock.addEventListener('click', event => {
+            const action = event.target.closest('[data-tree-zoom]')?.dataset.treeZoom;
+            if (action === 'out') stepTreeZoom(-1);
+            if (action === 'in') stepTreeZoom(1);
+            if (action === 'reset') setTreeZoom(1);
+        });
+    }
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    if (wrapper?.parentNode === container && dock.nextElementSibling !== wrapper) {
+        container.insertBefore(dock, wrapper);
+    }
     updateTreeZoomControls();
 }
 
 function updateTreeZoomControls() {
-    const toolbar = document.querySelector('.tree-toolbar');
-    if (!toolbar) return;
+    const dock = document.querySelector('.tree-zoom-dock');
+    if (!dock) return;
     const zoom = window.treeZoom;
-    const value = toolbar.querySelector('[data-tree-action="zoom-reset"]');
-    const zoomOut = toolbar.querySelector('[data-tree-action="zoom-out"]');
-    const zoomIn = toolbar.querySelector('[data-tree-action="zoom-in"]');
+    const value = dock.querySelector('[data-tree-zoom="reset"]');
+    const zoomOut = dock.querySelector('[data-tree-zoom="out"]');
+    const zoomIn = dock.querySelector('[data-tree-zoom="in"]');
     if (value) value.textContent = `${Math.round(zoom * 100)}%`;
     if (zoomOut) zoomOut.disabled = zoom <= TREE_ZOOM_LEVELS[0];
     if (zoomIn) zoomIn.disabled = zoom >= TREE_ZOOM_LEVELS[TREE_ZOOM_LEVELS.length - 1];
@@ -533,6 +550,7 @@ function renderTreeModel(nodes, leaves, animation = {}) {
   window.treeViewState.bestFocusKey = targetLeaf ? `leaf:${targetLeaf.name}` : 'node:Dinosauria';
   window.treeViewState.bestCladeName = targetLeaf?.parentNode || 'Dinosauria';
   ensureTreeToolbar(container);
+  ensureTreeZoomDock(container);
 
   if (animationMode === 'victory' && visibleTargetLeaf && !visibleTargetLeaf.isGiveUp) {
     victoryNodeKeys.add(`leaf:${visibleTargetLeaf.name}`);
