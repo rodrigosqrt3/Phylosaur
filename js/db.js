@@ -931,8 +931,9 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
         } catch (error) {
             console.warn('Stored game session could not be restored:', error);
             if (!isCurrentRequest()) return;
-            // A dropped connection must not cost the player their saved game.
-            if (!isStoredSessionRejected(error)) throw error;
+            // Only a 4xx answer means the session is gone, expired or not ours; a
+            // timeout, offline error or 5xx must not cost the player their saved game.
+            if (!(error?.status >= 400 && error.status < 500)) throw error;
             localStorage.removeItem(storageKey);
         }
     }
@@ -956,13 +957,6 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
     if (data.complete) await showRestoredServerCompletion(data);
 }
 
-// Only a definitive answer from the server (the session is gone, expired or not
-// ours) justifies forgetting a stored session; timeouts, offline and 5xx do not.
-function isStoredSessionRejected(error) {
-    const status = Number(error?.status);
-    return status >= 400 && status < 500 && status !== 408 && status !== 429;
-}
-
 async function loadChallengeDatabase(code, playerName, { isCurrentRequest = () => true } = {}) {
     const normalizedCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     const storageKey = getChallengeSessionStorageKey(normalizedCode);
@@ -980,7 +974,7 @@ async function loadChallengeDatabase(code, playerName, { isCurrentRequest = () =
             }
         } catch (error) {
             if (!isCurrentRequest()) return;
-            if (!isStoredSessionRejected(error)) throw error;
+            if (!(error?.status >= 400 && error.status < 500)) throw error;
             localStorage.removeItem(storageKey);
         }
     }
@@ -1026,7 +1020,7 @@ async function restoreStoredChallenge(code, {
     } catch (error) {
         if (!canRestore()) return false;
         console.warn('Stored friend challenge could not be restored:', error);
-        if (isStoredSessionRejected(error)) localStorage.removeItem(storageKey);
+        if (error?.status >= 400 && error.status < 500) localStorage.removeItem(storageKey);
         return false;
     }
 }
