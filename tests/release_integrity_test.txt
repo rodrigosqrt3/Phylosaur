@@ -718,7 +718,7 @@ Deno.test("all game JSON files are valid", () => {
   }
 });
 
-Deno.test("Portuguese, Spanish and Japanese catalogs are complete; every French catalog entry is localized", () => {
+Deno.test("all locale catalogs stay complete and German preserves only intentional shared terms", () => {
   const source = Deno.readTextFileSync(`${javascriptRoot}/i18n.${javascriptExtension}`);
   const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
   const workerSource = Deno.readTextFileSync(localSourceLayout ? "game/sw_service_worker.txt" : "sw.js");
@@ -737,6 +737,7 @@ Deno.test("Portuguese, Spanish and Japanese catalogs are complete; every French 
   const runtime = evaluate("pt-BR");
   const japanese = evaluate("ja-JP");
   const french = evaluate("fr-CA");
+  const german = evaluate("de-DE");
   const englishKeys = Object.keys(runtime.messages.en).sort();
   for (const locale of ["pt-BR", "es"]) {
     assert(
@@ -769,6 +770,319 @@ Deno.test("Portuguese, Spanish and Japanese catalogs are complete; every French 
   const placeholders = (message: string) => [...message.matchAll(/\{[A-Za-z0-9_]+\}/g)]
     .map(match => match[0]).sort();
   const markup = (message: string) => message.match(/<\/?[a-z][^>]*>/gi) || [];
+  const germanCoreKeys = ["app.metaTitle", "language.label", "language.german", "brand.subtitle", "nav.levels",
+    "nav.stats", "home.daily", "home.chooseLevel", "home.practice", "level.name1",
+    "level.name5", "game.guessLabel", "game.guessPlaceholder", "game.submit", "game.hint",
+    "game.giveUp", "game.treeEmpty", "game.giveUpCopy", "autocomplete.label",
+    "autocomplete.available"];
+  const germanAuthKeys = ["auth.accountAccess", "auth.signIn", "auth.createAccount", "auth.email",
+    "auth.emailPlaceholder", "auth.password", "auth.confirmPassword", "auth.passwordPlaceholder",
+    "auth.repeatPassword", "auth.forgot", "auth.backSignIn", "auth.playGuest", "auth.continueGuest",
+    "auth.resetCopy", "auth.sendReset", "auth.invalidCredentials", "auth.accountCreated", "auth.resetSent",
+    "auth.resetExpired", "auth.confirmLogout", "auth.confirmLogoutCopy", "auth.logout", "auth.choosePassword",
+    "auth.updatePassword", "auth.passwordUpdated", "auth.progressSaved", "auth.progressLinked",
+    "auth.requestFailed", "auth.validEmail", "auth.passwordRequired", "auth.passwordLength",
+    "auth.passwordMismatch", "auth.resetPassword", "auth.newPassword", "auth.setPassword"];
+  const germanExplorationKeys = Object.keys(german.messages.en).filter(key =>
+    key.startsWith("tree.") || key.startsWith("history."));
+const germanFinalKeys = ["about.loading", "about.return", "about.error", "api.timeout", "api.offline",
+    "api.unreachable", "api.invalidResponse", "api.signInRequired", "api.notAllowed", "api.notFound",
+    "api.conflict", "api.expired", "api.invalidRequest", "api.unavailable", "common.ok",
+    "media.imageViewer", "media.imageSource", "media.imageBy", "media.contributor", "media.relatedTaxonShort",
+    "media.relatedTaxonNotice", "media.closeAnywhere", "encyclopedia.englishFallback"];
+  const germanFriendsKeys = ["friends.private", "friends.intro", "friends.create", "friends.join",
+    "friends.yourName", "friends.playerName", "friends.level", "friends.createCode",
+    "friends.challengeCode", "friends.enter", "friends.or", "friends.note", "friends.creating",
+    "friends.entering", "friends.invalidCode", "friends.invalidCodeCopy", "friends.copyCode",
+    "friends.standings", "friends.challenge", "friends.updating", "friends.waiting",
+    "friends.raceComplete", "friends.raceProgress", "friends.raceCompleteCopy", "friends.codeCopied",
+    "friends.sendCode", "friends.codeTitle", "friends.standingsError", "friends.createError",
+    "friends.enterError", "friends.finished", "friends.raceClosed", "friends.playing", "friends.you",
+    "friends.standingDetails", "friends.challengeWithCode", "friends.noPlayers", "friends.scoresHidden",
+    "friends.currentRacePosition", "friends.finishingPosition", "friends.raceEndedAutomatically",
+    "friends.currentFinishingPosition"];
+  const germanGameFeedbackKeys = ["game.guessRejected", "game.displayErrorTitle", "game.displayErrorCopy",
+    "game.nameHintTitle", "game.nameHintFallback", "game.giveUpError", "game.cladeOne",
+    "game.cladeMany", "game.attemptsMade", "game.hintsRemaining", "game.cladesRevealed",
+    "game.loadError", "game.nameStartsWith", "game.nameHasLetters", "game.nameEndsWith",
+    "game.hintOne", "game.hintMany", "game.sessionUpdatedTitle", "game.sessionUpdatedCopy"];
+  const germanResultKeys = ["result.gaveUp", "result.share", "result.raceComplete", "result.shareErrorTitle",
+    "result.shareErrorCopy", "result.answerRevealedTitle", "result.completeTitle", "result.answerRevealed",
+    "result.back", "result.achievement", "result.saving", "result.challengeResult", "result.savedStatsRetry",
+    "result.shareTitle", "result.shareSpoilerFree", "result.distanceDistant", "result.distanceWarmer",
+    "result.distanceClose", "result.distanceVeryClose", "result.distanceSolved", "result.shareAction",
+    "result.copyResult", "result.copy", "result.shared", "result.copied", "result.dayMilestone",
+    "result.currentStreakDays", "result.bestStreakDays", "result.dayStreak", "result.achievementsUnlocked",
+    "result.newAchievementOne", "result.newAchievementMany", "result.nowInCollection", "result.discoveredTimes",
+    "result.newMuseumDiscovery", "result.museumDiscoveryUpdated", "result.museumRecordUpdated",
+    "result.addedToMuseum", "result.entryRemains", "result.friendChallengeCode", "result.placement",
+    "result.answerAfter", "result.solvedIn"];
+  const sharedGermanAchievementTerms = new Set(["achievement.progress"]);
+  const sharedGermanTerms = new Set(["museum.title", "museum.placePortugal",
+    "museum.placeChina", "museum.placeChile"]);
+  const sharedGermanIdenticalTerms = new Set(["nav.museum", "common.ok", "museum.title",
+    "museum.placePortugal", "museum.placeChina", "museum.placeChile", "achievement.progress"]);
+  const germanMuseumGalleryKeys = ["museum.loading", "museum.title", "museum.unlocked", "museum.unlockCopy",
+    "museum.view", "museum.atlas", "museum.genera", "museum.exploring", "museum.showAllClades",
+    "museum.search", "museum.searchPlaceholder", "museum.cladeFilter", "museum.allClades",
+    "museum.otherClades", "museum.difficultyFilter", "museum.filterLevel", "museum.all", "museum.noMatch",
+    "museum.progress", "museum.showing", "museum.genusOne", "museum.genusMany", "museum.inClade",
+    "museum.noCladeMatch", "museum.outsideMainClades", "museum.noOtherCladeMatch", "museum.opening",
+    "museum.viewEntry", "museum.openError"];
+  const germanMuseumDetailKeys = ["museum.classification", "museum.clickEnlarge", "museum.entry",
+    "museum.loadingImage", "museum.loadingIllustration", "museum.loadingOverview", "museum.loadingFossils",
+    "museum.noIllustration", "museum.noReviewedIllustration", "museum.noSummary", "museum.readWikipedia",
+    "museum.reviewedSources", "museum.when", "museum.where", "museum.rockUnits", "museum.locked",
+    "museum.taxonomicOverview", "museum.scientificSource", "museum.timeAndLocations", "museum.intervalReview",
+    "museum.locationsReview", "museum.modernGeographyNote", "museum.reviewedScope", "museum.millionYearsAgo",
+    "museum.ageNotAsserted", "museum.ageRange", "museum.openingName", "museum.openNameError",
+    "museum.viewLarger", "museum.unknownGenus", "museum.openEntryFor", "museum.preparingGenera", "museum.loadError"];
+  const germanMuseumAtlasKeys = ["museum.atlasIntro", "museum.atlasTheropoda", "museum.atlasSauropodomorpha",
+    "museum.atlasOrnithischia", "museum.discoveredTitle", "museum.exploreClade", "museum.discoveredCount",
+    "museum.branchPercent", "museum.selectedSubclades", "museum.filterByClade", "museum.atlasOutsideNote"];
+  const germanMuseumGeologyKeys = ["museum.triassic", "museum.jurassic", "museum.cretaceous",
+    "museum.termLateTriassic", "museum.termEarlyJurassic", "museum.termMiddleJurassic",
+    "museum.termLateJurassic", "museum.termEarlyCretaceous", "museum.termLateCretaceous",
+    "museum.ageAptianAlbian", "museum.ageBathonian", "museum.ageCallovian", "museum.ageCarnian",
+    "museum.ageCenomanianTuronian", "museum.ageEarlyMaastrichtian", "museum.ageEarlyTithonian",
+    "museum.ageKimmeridgianTithonian", "museum.ageLateCampanian",
+    "museum.ageLateCampanianEarlyMaastrichtian", "museum.ageLateKimmeridgian", "museum.ageLatestAlbian",
+    "museum.ageMaastrichtian", "museum.ageMiddleLateCampanian", "museum.ageSantonianCampanian",
+    "museum.ageTithonian"];
+  const germanMuseumUnlockHistoryKeys = ["museum.unlockDateUnavailable", "museum.unlockedOnce",
+    "museum.unlockedBeforeTracking", "museum.firstUnlocked", "museum.unlockedTimes",
+    "museum.lastUnlocked"];
+  const germanMuseumPlacesKeys = ["museum.closeImage", "museum.placeEurope", "museum.placeNorthAmerica",
+    "museum.placeSouthAmerica", "museum.placeAntarctica", "museum.placeAfrica", "museum.placeAsia",
+    "museum.placeGermany", "museum.placeUnitedStates", "museum.placeArgentina", "museum.placeMadagascar",
+    "museum.placeCanada", "museum.placePortugal", "museum.placeChina", "museum.placeMongolia",
+    "museum.placeFrance", "museum.placeUnitedKingdom", "museum.placeChile", "museum.placeSpain",
+    "museum.placeMorocco"];
+  const germanStatsKeys = ["stats.loading", "stats.loadError", "stats.title", "stats.subtitle",
+    "stats.gamesPlayed", "stats.gamesWon", "stats.successRate", "stats.bestScore", "stats.achievements",
+    "stats.recentGames", "stats.noStreak", "stats.noStreakCopy", "stats.currentStreak", "stats.forPlayer",
+    "stats.playerOverview", "stats.winOne", "stats.winMany", "stats.unlockedCount", "stats.bestDayOne",
+    "stats.bestDayMany", "stats.lastPlayed", "stats.latestActivity", "stats.winningPattern",
+    "stats.guessesPerWin", "stats.difficultyProfile", "stats.performanceLevel", "stats.noRecent",
+    "stats.loginRequired", "stats.histogramEmpty", "stats.distributionLabel", "stats.winLabelOne",
+    "stats.winLabelMany", "stats.recordWon", "stats.successRateValue", "stats.successValue",
+    "stats.notPlayed", "stats.noAverage", "stats.averageGuesses", "stats.todayHidden"];
+const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics.friends",
+    "analytics.unknown", "analytics.challengeCreated", "analytics.challengeJoined", "analytics.museumViewed",
+    "analytics.gameStarted", "analytics.gameWon", "analytics.gameAbandoned", "analytics.hintUsed",
+    "analytics.restricted", "analytics.loading", "analytics.loadError", "analytics.daySummary",
+    "analytics.completeRate", "analytics.sessions", "analytics.playerGames", "analytics.playerStreaks",
+    "analytics.lastDaily", "analytics.private", "analytics.title", "analytics.privacyCopy", "analytics.period",
+    "analytics.days", "analytics.uniqueVisitors", "analytics.untrackedSessions", "analytics.gamesStarted",
+    "analytics.gamesCompleted", "analytics.completion", "analytics.wins", "analytics.completedWinRate",
+    "analytics.averageGuesses", "analytics.averageHints", "analytics.newAccounts", "analytics.registeredAccounts",
+    "analytics.activeAccounts", "analytics.highestStreak", "analytics.noStreak", "analytics.anonymousSessions",
+    "analytics.friendChallenges", "analytics.joins", "analytics.museumViews", "analytics.registeredPlayers",
+    "analytics.noPlayerStats", "analytics.firstAccounts", "analytics.gamesByDay", "analytics.byLevel",
+    "analytics.byMode", "analytics.noGames", "analytics.recentActivity", "analytics.noActivity",
+    "analytics.partialData", "analytics.generated"];
+  const germanHowToKeys = ["howto.intro", "howto.step1", "howto.step1Copy", "howto.step2",
+    "howto.step2Copy", "howto.step3", "howto.step3Copy", "howto.step4", "howto.step4Copy",
+    "howto.tip", "howto.tipCopy", "howto.noLimit"];
+  const germanTutorialKeys = ["tutorial.interactive", "tutorial.skip", "tutorial.next", "tutorial.start",
+    "tutorial.step", "tutorial.guess", "tutorial.compare", "tutorial.followBranches", "tutorial.trySample",
+    "tutorial.sampleResult", "tutorial.exampleTrail", "tutorial.bestTrail", "tutorial.hintsAvailable",
+    "tutorial.startLabel", "tutorial.progress", "tutorial.progressLabel", "tutorial.tryFirst",
+    "tutorial.guessRevealed", "tutorial.loading", "tutorial.loadError", "tutorial.context",
+    "tutorial.restart", "tutorial.repeat", "tutorial.return", "tutorial.tryTitle", "tutorial.tryExpected",
+    "tutorial.followCoach", "tutorial.coachFirstTitle", "tutorial.coachFirstCopy", "tutorial.coachTreeTitle",
+    "tutorial.coachTreeCopy", "tutorial.coachHintTitle", "tutorial.coachHintCopy", "tutorial.coachCloserTitle",
+    "tutorial.coachCloserCopy", "tutorial.coachSolveTitle", "tutorial.coachSolveCopy", "tutorial.completeKicker",
+    "tutorial.completeTitle", "tutorial.completeCopy", "tutorial.playLevelOne"];
+  const germanAboutKeys = ["about.title", "about.metaTitle", "about.metaDescription", "about.pageNavigation",
+    "about.play", "about.foundations", "about.mechanics", "about.data", "about.mathematics",
+    "about.limitations", "about.resources", "about.returnSite", "about.lead", "about.nameOrigin",
+    "about.nameMeaning", "about.foundationsTitle", "about.foundationsBody1", "about.foundationsBody2",
+    "about.owenQuote", "about.mechanicsTitle", "about.mechanicsBody1", "about.mechanicsBody2",
+    "about.mechanicsBody3", "about.dailyRule", "about.practiceRule", "about.privateRule",
+    "about.guessLimitRule", "about.difficulty", "about.difficultyBody1", "about.difficultyBody2", "about.dataTitle", "about.dataBody1", "about.dataBody2",
+    "about.dataBody3", "about.dataBody4", "about.mathematicsTitle", "about.mathBody1",
+    "about.mathBody2", "about.mathBody3", "about.mathBody4", "about.mathBody5",
+    "about.mathBody6", "about.mathBody7", "about.limitationsTitle",
+    "about.limitationsBody1", "about.limitationsBody2", "about.limitationsBody3",
+    "about.scientificDisclaimer", "about.resourcesTitle", "about.resourcesBody1",
+    "about.resourcesBody2", "about.landmarksTitle", "about.educationalNotice",
+    "about.activeDevelopment"];
+
+
+
+
+  assert(german.locale === "de" && german.normalize("de-AT") === "de" && german.supported.includes("de")
+    && germanFinalKeys.every(key => german.messages.de[key]
+      && (german.messages.de[key] !== german.messages.en[key] || sharedGermanIdenticalTerms.has(key)))
+    && Object.keys(german.messages.de).sort().join("|") === englishKeys.join("|")
+    && Object.keys(german.messages.en).every(key => german.messages.de[key] &&
+      (german.messages.de[key] !== german.messages.en[key] || sharedGermanIdenticalTerms.has(key)))
+    && [...sharedGermanIdenticalTerms].every(key => german.messages.de[key] === german.messages.en[key])
+    && germanCoreKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanAuthKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanFriendsKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanGameFeedbackKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanResultKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanMuseumGalleryKeys.every(key => german.messages.de[key]
+      && (german.messages.de[key] !== german.messages.en[key] || sharedGermanTerms.has(key)))
+    && germanMuseumDetailKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanMuseumAtlasKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanMuseumGeologyKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanMuseumUnlockHistoryKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanMuseumPlacesKeys.every(key => german.messages.de[key]
+      && (german.messages.de[key] !== german.messages.en[key] || sharedGermanTerms.has(key)))
+    && Object.keys(german.messages.en).filter(key => key.startsWith("museum.")).every(key =>
+      german.messages.de[key] && (german.messages.de[key] !== german.messages.en[key]
+        || sharedGermanTerms.has(key)))
+    && germanStatsKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanAnalyticsKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanExplorationKeys.length === 31
+    && germanExplorationKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && Object.keys(german.messages.en).filter(key => key.startsWith("analytics.")).every(key =>
+      german.messages.de[key] && german.messages.de[key] !== german.messages.en[key])
+    && Object.keys(german.messages.en).filter(key => key.startsWith("achievement.")).every(key =>
+      german.messages.de[key] && (german.messages.de[key] !== german.messages.en[key]
+        || sharedGermanAchievementTerms.has(key)))
+    && germanHowToKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanTutorialKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && germanAboutKeys.every(key => german.messages.de[key]
+      && german.messages.de[key] !== german.messages.en[key])
+    && german.translate("home.daily") === "Tägliche Herausforderung"
+    && german.translate("app.metaTitle") === "Phylosaur – Ratespiel zur Dinosaurier-Phylogenie"
+    && german.translate("auth.resetCopy") === "Gib deine E-Mail-Adresse ein; wir senden dir einen Link zum Zurücksetzen deines Passworts."
+    && german.translate("auth.accountCreated") === "Konto erstellt! Bestätige deine E-Mail-Adresse und melde dich dann an."
+    && german.translate("about.loading") === "Phylosaur-Informationen werden geladen…"
+    && german.translate("about.return") === "Zurück zur Stufenauswahl"
+    && german.translate("about.error") === "Die Informationen zu Phylosaur konnten nicht geladen werden."
+    && german.translate("api.timeout") === "Der Spielserver hat zu lange für eine Antwort gebraucht. Bitte versuche es erneut."
+    && german.translate("media.imageViewer", { name: "Tyrannosaurus" }) === "Bildbetrachter für Tyrannosaurus"
+    && german.translate("media.relatedTaxonShort", { taxon: "Troodon" }) === "Troodon, verwandtes Taxon · "
+    && german.translate("media.relatedTaxonNotice", { depicted: "Coelophysis", subject: "Megalosaurus" }) ===
+      "Die Abbildung zeigt Coelophysis, ein verwandtes Taxon; sie ist keine Rekonstruktion von Megalosaurus."
+    && german.translate("encyclopedia.englishFallback") === "Zusammenfassung auf Englisch verfügbar."
+    && german.translate("common.ok") === "OK"
+    && german.translate("tree.center", { label: "Theropoda" }) === "Auf Theropoda zentrieren"
+    && german.translate("tree.loadingInfo", { clade: "Theropoda" }) === "Informationen zu Theropoda werden geladen…"
+    && german.translate("history.entryCount", { count: 4 }) === "4 Einträge"
+    && german.translate("history.nodes", { matches: 3, depth: 7, percent: 43 }) === "3/7 Knoten (43%)"
+    && german.translate("history.explainDivergence", { genus: "Tyrannosaurus", sharedClade: "Theropoda", nextGuessClade: "Tyrannosauroidea" }) ===
+      "<em>Tyrannosaurus</em> und das Ziel teilen Theropoda, aber Tyrannosaurus folgt dem Ast Tyrannosauroidea, der nicht zum Ziel gehört. Daher kann dieser Ast für das Ziel ausgeschlossen werden."
+    && german.translate("friends.raceProgress", { total: 4, completed: 2 }) === "4 Spieler · 2 fertig"
+    && german.translate("friends.challengeWithCode", { code: "ABC123" }) === "Herausforderung ABC123"
+    && german.translate("friends.standingDetails", { attempts: 3, hints: 1, playing: " · Spielt" }) ===
+      "Versuche: 3 · Hinweise: 1 · Spielt"
+    && german.translate("game.nameStartsWith", { value: "A" }) === "Der Name beginnt mit A."
+    && german.translate("game.nameHasLetters", { value: 8 }) === "Der Name hat 8 Buchstaben."
+    && german.translate("game.cladeMany") === "Kladen"
+    && german.translate("achievement.progress", { current: 3, target: 10, unit: "Gattungen" }) ===
+      "3 / 10 Gattungen"
+    && german.translate("achievement.first_win.desc") === "Schließe deine erste Herausforderung ab."
+    && german.translate("achievement.against_all_odds.desc") ===
+      "Gewinne nach mindestens 10 Tipps, ohne einen Hinweis zu verwenden."
+    && german.translate("achievement.theropod_tracker.desc") === "Entdecke 10 Gattungen aus Theropoda."
+    && german.translate("stats.forPlayer", { name: "Mara" }) === "Statistiken für Mara"
+    && german.translate("stats.winOne", { count: 1 }) === "1 Sieg"
+    && german.translate("stats.winMany", { count: 3 }) === "3 Siege"
+    && german.translate("stats.unlockedCount", { count: 8, total: 20 }) ===
+      "Freigeschaltet: 8 / 20"
+    && german.translate("stats.bestDayMany", { count: 12 }) === "Bestwert: 12 Tage"
+    && german.translate("stats.distributionLabel", { count: 7 }) ===
+      "Verteilung von 7 gewonnenen Partien nach Anzahl der Tipps"
+    && german.translate("stats.recordWon", { won: 4, played: 9 }) === "4/9 gewonnen"
+    && german.translate("stats.successRateValue", { rate: 75 }) === "75 % Erfolgsquote"
+    && german.translate("stats.averageGuesses", { count: 2.5, unit: "Tipps" }) ===
+      "Durchschnitt: 2.5 Tipps"
+    && german.translate("stats.todayHidden") === "Die heutige Antwort bleibt verborgen"
+    && german.translate("analytics.daySummary", { date: "2026-10-10", games: 12, visitors: 8 }) ===
+      "2026-10-10: 12 Spiele, 8 Besucher"
+    && german.translate("analytics.playerGames", { games: 10, wins: 7, rate: 70 }) ===
+      "10 Spiele · 7 Siege (70 %)"
+    && german.translate("analytics.playerStreaks", { current: 3, best: 9 }) === "Aktuell 3 · Bestwert 9"
+    && german.translate("analytics.days", { count: 30 }) === "30 Tage"
+    && german.translate("analytics.generated", { date: "2026-10-10" }) === "Erstellt am 2026-10-10"
+    && german.translate("analytics.privacyCopy") ===
+      "Private Administratoransicht. Registrierte Benutzernamen können angezeigt werden; E-Mail-Adressen, IP-Adressen und digitale Fingerabdrücke werden niemals einbezogen."
+    && german.translate("museum.progress", { unlocked: 12, total: 100, percent: 12 }) ===
+      "Freigeschaltet: 12 / 100 (12%)"
+    && german.translate("museum.showing", { count: 2, genera: "Gattungen", clade: " innerhalb der Klade Theropoda", unlocked: 1 }) ===
+      "2 Gattungen innerhalb der Klade Theropoda angezeigt · 1 freigeschaltet"
+    && german.translate("museum.inClade", { clade: "Theropoda" }) === " innerhalb der Klade Theropoda"
+    && german.translate("museum.millionYearsAgo", { oldest: 201, youngest: 145 }) ===
+      "201–145 Millionen Jahre vor heute"
+    && german.translate("museum.firstUnlocked", { date: "01.01.2026" }) ===
+      "Erstmals freigeschaltet am 01.01.2026"
+    && german.translate("museum.unlockedTimes", { count: 3 }) === "3-mal freigeschaltet"
+    && german.translate("museum.lastUnlocked", { date: "02.01.2026" }) ===
+      "Zuletzt freigeschaltet am 02.01.2026"
+    && german.translate("museum.closeImage") === "Bild schließen"
+    && german.translate("museum.placeEurope") === "Europa"
+    && german.translate("museum.placeChina") === "China"
+    && german.translate("museum.openingName", { name: "Tyrannosaurus" }) === "Tyrannosaurus wird geöffnet…"
+    && german.translate("museum.openNameError", { name: "Tyrannosaurus" }) === "Tyrannosaurus konnte nicht geöffnet werden."
+    && german.translate("museum.openEntryFor", { name: "Velociraptor" }) ===
+      "Museumseintrag für Velociraptor öffnen"
+    && german.translate("museum.discoveredTitle", { unlocked: 9, total: 25 }) === "9 von 25 entdeckt"
+    && german.translate("museum.exploreClade", { clade: "Theropoda", unlocked: 3, total: 8 }) ===
+      "Theropoda erkunden: 3 von 8 Gattungen entdeckt"
+    && german.translate("museum.discoveredCount", { total: 20 }) === "von 20 entdeckt"
+    && german.translate("museum.branchPercent", { percent: 40 }) === "40% dieses Zweigs"
+    && german.translate("museum.atlasOutsideNote").includes("Staurikosaurus")
+    && german.translate("result.currentStreakDays", { count: 4 }) === "Aktuelle Serie: 4 Tage"
+    && german.translate("result.addedToMuseum", { name: "Coelophysis" }) ===
+      "Coelophysis wurde dem Museum hinzugefügt"
+    && german.translate("result.placement", { placement: 2 }) === " • Platz 2"
+    && german.translate("result.solvedIn", { attempts: 5 }) === "In 5 gelöst"
+    && german.translate("game.submit") === "Absenden"
+    && german.translate("howto.step3") === "3. Hinweise"
+    && german.translate("tutorial.progress", { current: 2, total: 5 }) === "Schritt 2 von 5"
+    && german.translate("about.title") === "Über Phylosaur"
+    && german.translate("about.foundationsTitle") === "Phylogenetische Grundlagen"
+    && german.translate("about.mechanicsTitle") === "Spielmechanik und Lernziele"
+    && german.translate("about.difficulty") === "Schwierigkeitsstufen und Bekanntheit in der Öffentlichkeit"
+    && german.translate("about.difficultyBody1").includes("letzten 30 Tage")
+    && german.translate("about.dataTitle") === "Datenquellen und taxonomische Kuratierung"
+    && german.translate("about.dataBody1").includes("Paleobiology Database")
+    && german.translate("about.dataBody1").includes("<em>taxodist</em>")
+    && german.translate("about.mathematicsTitle") === "Mathematische Grundlagen"
+    && german.translate("about.mathBody1").includes("L_A")
+    && german.translate("about.mathBody5").includes("Delta")
+    && german.translate("about.mathBody7").includes("4.500 Aufrufen")
+    && german.translate("about.limitationsTitle") === "Methodische Überlegungen und Grenzen"
+    && german.translate("about.limitationsBody2").includes("<em>nomina dubia</em>")
+    && german.translate("about.scientificDisclaimer").includes("Primärquelle")
+    && german.translate("about.resourcesTitle") === "Danksagungen und weiterführende Ressourcen"
+    && german.translate("about.resourcesBody1").includes("Paleobiology Database")
+    && german.translate("about.resourcesBody2").includes("Inferring Phylogenies")
+    && german.translate("about.landmarksTitle") === "Ausgewählte wissenschaftliche Meilensteine"
+    && german.translate("about.educationalNotice").includes("Originalpublikationen")
+    && german.translate("about.activeDevelopment").includes("mailto:rodrigo03.villa@gmail.com")
+    && german.translate("autocomplete.available", { count: 2 }) === "Vorschläge für Dinosauriergattungen verfügbar: 2."
+    && german.translate("about.returnSite") === "Zurück zu Phylosaur",
+    "German must localize core game feedback, account screens, tree and history, friend challenges, result and sharing messages, Museum browsing, entry details, and the Clade Atlas, How to Play, the tutorial and the About introduction, game mechanics, difficulty, data curation and mathematics, limitations and resources while preserving inline links and citation titles.");
+  for (const [key, message] of Object.entries(german.messages.de) as [string, string][]) {
+    assert(JSON.stringify(placeholders(message)) === JSON.stringify(placeholders(german.messages.en[key]))
+      && JSON.stringify(markup(message)) === JSON.stringify(markup(german.messages.en[key])),
+      `German message changed its placeholders or inline markup: ${key}`);
+  }
+  const offlineSource = Deno.readTextFileSync(localSourceLayout ? "game/offline_html.txt" : "offline.html");
+  assert(offlineSource.includes("metaTitle: 'Phylosaur - Offline'")
+    && offlineSource.includes("browserLanguage.toLowerCase().startsWith('de')"),
+    "The offline screen must recognize and display German for German-language users.");
   assert(frenchLocalizedKeys.every(key => {
     const englishMessage = french.messages.en[key];
     const frenchMessage = french.messages.fr[key];
@@ -898,8 +1212,8 @@ Deno.test("Portuguese, Spanish and Japanese catalogs are complete; every French 
     }
   }
   assert(runtime.locale === "pt-BR" && evaluate("es-MX").locale === "es" &&
-    japanese.locale === "ja" && french.locale === "fr" && evaluate("de-DE").locale === "en",
-    "Browser-language detection must select PT-BR, Spanish, Japanese or French and otherwise fall back to English.");
+    japanese.locale === "ja" && french.locale === "fr" && german.locale === "de",
+    "Browser-language detection must select every supported locale and otherwise fall back to English.");
   assert(runtime.translate("home.daily") === "Desafio Diário",
     "The Portuguese catalog is not active.");
   assert(runtime.translate("achievement.first_win.name") === "Primeira vitória" &&
@@ -918,19 +1232,20 @@ Deno.test("Portuguese, Spanish and Japanese catalogs are complete; every French 
     "Language changes must explicitly reload while preserving the current hash route.");
   assert(!styleSource.includes('html[lang="ja"] body'),
     "Japanese typography must remain on the shared stylesheet defaults.");
-  assert(htmlSource.indexOf('src="js/state.js?v=156"') < htmlSource.indexOf('src="js/i18n.js?v=156"') &&
-    htmlSource.indexOf('src="js/i18n.js?v=156"') < htmlSource.indexOf('src="js/api.js?v=156"') &&
+  assert(htmlSource.indexOf('src="js/state.js?v=181"') < htmlSource.indexOf('src="js/i18n.js?v=181"') &&
+    htmlSource.indexOf('src="js/i18n.js?v=181"') < htmlSource.indexOf('src="js/api.js?v=181"') &&
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"')
-    && htmlSource.includes('value="ja"') && htmlSource.includes('value="fr"'),
+    && htmlSource.includes('value="ja"') && htmlSource.includes('value="fr"')
+    && htmlSource.includes('value="de"'),
     "The language module or selector is missing from the production shell.");
   assert(htmlSource.includes("localStorage.getItem('phylosaur-theme')") &&
     htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
     htmlSource.includes("document.body.classList.add('light-mode')") &&
     htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
-      htmlSource.indexOf('rel="stylesheet" href="style.css?v=156"'),
+      htmlSource.indexOf('rel="stylesheet" href="style.css?v=181"'),
     "The saved light theme must be applied before the stylesheet can paint the page.");
-  assert(workerSource.includes('"./js/i18n.js?v=156"'),
+  assert(workerSource.includes('"./js/i18n.js?v=181"'),
     "The localization module must be available offline.");
   assert(styleSource.includes(".header-theme-switch") &&
     styleSource.includes("order: 2") &&
@@ -1034,7 +1349,7 @@ function buildWikipediaIdentityRuntime(locale = "pt-BR") {
   const requests: Array<{ url: URL; signal: AbortSignal }> = [];
   const timers = new Map<number, () => void>();
   let nextTimer = 0;
-  const state: any = { pages: { en: [], pt: [], es: [], ja: [] }, entities: {}, handler: null };
+  const state: any = { pages: { en: [], pt: [], es: [], ja: [], fr: [], de: [] }, entities: {}, handler: null };
   const fetchMock = async (rawUrl: string, options: any) => {
     const url = new URL(rawUrl);
     requests.push({ url, signal: options.signal });
@@ -1068,9 +1383,9 @@ function buildWikipediaIdentityRuntime(locale = "pt-BR") {
 }
 
 Deno.test("Wikipedia rejects Chupkaornis to Velociraptor and uses the confirmed English summary", async () => {
-  for (const locale of ["pt-BR", "es", "ja"]) {
+  for (const locale of ["pt-BR", "es", "ja", "fr", "de"]) {
     const runtime = buildWikipediaIdentityRuntime(locale);
-    const language = locale === "pt-BR" ? "pt" : locale;
+    const language = ({ "pt-BR": "pt", es: "es", ja: "ja", fr: "fr", de: "de" } as Record<string, string>)[locale];
     runtime.state.pages.en = [runtime.page("Chupkaornis", "Q1", "Correct bird summary", {
       langlinks: [{ lang: language, "*": "Chupkaornis" }]
     })];
@@ -1086,9 +1401,9 @@ Deno.test("Wikipedia rejects Chupkaornis to Velociraptor and uses the confirmed 
 });
 
 Deno.test("Wikipedia follows legitimate translated titles and taxon redirects by scientific identity", async () => {
-  for (const locale of ["pt-BR", "es", "ja", "en"]) {
+  for (const locale of ["pt-BR", "es", "ja", "fr", "de", "en"]) {
     const runtime = buildWikipediaIdentityRuntime(locale);
-    const language = locale === "pt-BR" ? "pt" : locale;
+    const language = ({ "pt-BR": "pt", es: "es", ja: "ja", fr: "fr", de: "de", en: "en" } as Record<string, string>)[locale];
     runtime.state.pages.en = [runtime.page("Dinosaur", "Q3", "English summary", {
       langlinks: [{ lang: language, "*": "Dinossauros" }]
     })];
@@ -1098,8 +1413,11 @@ Deno.test("Wikipedia follows legitimate translated titles and taxon redirects by
     const result = await runtime.fetchWikipediaInfo("Dinosauria");
     assert(result?.wikidataId === "Q3" && result.language === language && !result.isLanguageFallback,
       "A translated title or redirect is legitimate only when scientific identity is preserved.");
-    if (language !== "en") assert(runtime.requests.at(-1)!.url.searchParams.get("titles") === "Dinossauros",
-      "The local title must come from the confirmed English article language link.");
+    if (language !== "en") {
+      assert(runtime.requests.at(-1)!.url.hostname === `${language}.wikipedia.org`
+        && runtime.requests.at(-1)!.url.searchParams.get("titles") === "Dinossauros",
+        "Every supported locale must request its own Wikipedia using the confirmed translated title.");
+    }
   }
   const runtime = buildWikipediaIdentityRuntime("en");
   runtime.state.pages.en = [runtime.page("Balaur", "Q4"), runtime.page("Balaur (dinosaur)", "Q5")];
@@ -1705,8 +2023,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
-  assert(aboutSource.includes('src="js/state.js?v=156"') &&
-    aboutSource.includes('src="js/i18n.js?v=156"') &&
+  assert(aboutSource.includes('src="js/state.js?v=181"') &&
+    aboutSource.includes('src="js/i18n.js?v=181"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
@@ -5185,7 +5503,7 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   for (const failure of ["network", "404", "500", "write", "open"]) {
     const runtime = buildServiceWorkerRuntime();
     if (["network", "404", "500"].includes(failure)) {
-      runtime.failures.fetchPath = "js/main.js?v=156";
+      runtime.failures.fetchPath = "js/main.js?v=181";
       runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
     }
     if (failure === "write") runtime.failures.putPath = "style.css";
@@ -5201,8 +5519,8 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   let resolve!: (value: Response) => void;
   let settled = false;
   const delayed = new Promise<Response>(yes => { resolve = yes; });
-  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=156") ? delayed
-    : new Response(request.url, { status: request.url.endsWith("style.css?v=156") ? 404 : 200 });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=181") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css?v=181") ? 404 : 200 });
   const install = runtime.event("install");
   const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
   for (let index = 0; index < 12; index++) await Promise.resolve();
