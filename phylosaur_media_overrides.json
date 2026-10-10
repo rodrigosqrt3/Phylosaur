@@ -1,17 +1,17 @@
 {
-  "version": 23,
+  "version": 24,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Concornis": {
+      "file_title": "File:Concornis lacustris 34.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Concornis_lacustris_34.jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Eoalulavis": {
       "file_title": "File:Eoaluavis life restoration.png",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Eoaluavis_life_restoration.png/960px-Eoaluavis_life_restoration.png",
       "file_page": "https://commons.wikimedia.org/wiki/File:Eoaluavis_life_restoration.png",
-      "artist": "Conty",
-      "license": "CC BY-SA 4.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
-      "depicted_taxon": "Eoalulavis",
-      "related_taxon": true,
+      "resolve_commons_metadata": true,
       "source": "wikimedia"
     },
     "Eustreptospondylus": {
@@ -652,13 +652,9 @@
       "source": "wikimedia"
     },
     "Overosaurus": {
-      "file_title": "File:Overosaurus life restoration.jpg",
-      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Overosaurus_life_restoration.jpg?width=960",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Overosaurus_life_restoration.jpg",
-      "artist": "Danny Cicchetti",
-      "license": "CC BY-SA 3.0",
-      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-      "usage_terms": "Creative Commons Attribution-Share Alike 3.0 Unported",
+      "file_title": "File:Overosaurus.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Overosaurus.png",
+      "resolve_commons_metadata": true,
       "source": "wikimedia"
     },
     "Austrocheirus": {
@@ -977,6 +973,91 @@
     "Naashoibitosaurus": {
       "file_title": "File:Naashoibitosaurus ostromi.png",
       "file_page": "https://commons.wikimedia.org/wiki/File:Naashoibitosaurus_ostromi.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Aratasaurus": {
+      "file_title": "File:Aratasaurus museunacionali.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Aratasaurus_museunacionali.jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Kryptops": {
+      "file_title": "File:Kryptops life restoration.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Kryptops_life_restoration.jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Xuanhuaceratops": {
+      "file_title": "File:Xuanhuaceratops niei head.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Xuanhuaceratops_niei_head.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Variraptor": {
+      "file_title": "File:Variraptor mechinorum reconstruction.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Variraptor_mechinorum_reconstruction.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Siamosaurus": {
+      "file_title": "File:Life reconstruction of Siamosaurus suteethorni.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Life_reconstruction_of_Siamosaurus_suteethorni.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia",
+      "editorial_note": "The creator describes this as a highly hypothetical reconstruction based on fragmentary material."
+    },
+    "Atacamatitan": {
+      "file_title": "File:Atacamatitan LM.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Atacamatitan_LM.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Caenagnathus": {
+      "file_title": "File:Caenagnathus.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Caenagnathus.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Chaoyangia": {
+      "file_title": "File:Chaoyangia beishanensis Chaoyang.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Chaoyangia_beishanensis_Chaoyang.jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Chupkaornis": {
+      "file_title": "File:Chupkaornis.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Chupkaornis.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Demandasaurus": {
+      "file_title": "File:Demandasaurus NT.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Demandasaurus_NT.jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Hesperosaurus": {
+      "file_title": "File:Hesperosaurus NT.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Hesperosaurus_NT.jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Lessemsaurus": {
+      "file_title": "File:Lessemsaurus Senckenberg.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Lessemsaurus_Senckenberg.jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Nanantius": {
+      "file_title": "File:Nanantius eos (holotype, QM F12992).png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Nanantius_eos_(holotype,_QM_F12992).png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Pycnonemosaurus": {
+      "file_title": "File:Pycnonemosaurus head.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Pycnonemosaurus_head.jpg",
       "resolve_commons_metadata": true,
       "source": "wikimedia"
     }
