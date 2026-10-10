@@ -1,5 +1,3 @@
-// The client library comes from a CDN; if it failed to load, boot shows a
-// recoverable error instead of throwing here and leaving the spinner forever.
 const sb = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) || null;
 
 let lastTreeViewportWidth = window.innerWidth;

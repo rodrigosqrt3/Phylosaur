@@ -730,8 +730,6 @@ function setGuessRequestPending(pending) {
         button.disabled = unavailable;
     }
     if (input) {
-        // While a request is pending the field is only read-only: disabling it
-        // would blur it and close the mobile keyboard after every guess.
         input.readOnly = pending;
         input.disabled = gameWon || challengeRaceClosing;
         if (pending) input.setAttribute('aria-busy', 'true');
@@ -1092,8 +1090,6 @@ function toggleResultTreeView(showTree = true) {
 }
 
 async function giveUp() {
-    // Ask before locking the game, so the controls do not read "Analyzing…"
-    // while the player is still deciding.
     if (gameWon || gameRequestPending || !gameSessionId || challengeRaceClosing
         || document.querySelector('[data-app-modal="true"]')) return;
     const isSameSession = getGameSessionGuard();
@@ -1155,7 +1151,7 @@ async function giveUp() {
         v.innerHTML = `
             <div class="victory-heading">
                 <h2>${t('result.answerRevealedTitle')}</h2>
-                <div class="victory-dino">${targetDino.nome}</div>
+                <div class="victory-dino">${targetDino.nome}${buildCuriosityButton()}</div>
                 <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                     <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
                     <span>${t('result.gaveUp')}</span>
@@ -1180,6 +1176,7 @@ async function giveUp() {
 
                 ${currentGameMode === 'challenge' ? `
                 <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
+                ${buildRematchButton()}
                 <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
                 <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
                     ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
@@ -1198,6 +1195,17 @@ async function giveUp() {
     } finally {
         if (isCurrentRequest()) setGuessRequestPending(false);
     }
+}
+
+function buildCuriosityButton() {
+    const label = t('result.curiosity', { name: escapeHtml(targetDino?.nome || '') });
+    return `<button type="button" class="victory-curiosity" data-name="${escapeHtml(targetDino?.nome || '')}" onclick="showDinoCuriosity(this)" aria-label="${label}" title="${label}">?</button>`;
+}
+
+function buildRematchButton() {
+    return currentGameMode === 'challenge'
+        ? `<button class="btn-hint victory-action-secondary" onclick="startRematch(this)">${t('friends.rematch')}</button>`
+        : '';
 }
 
 function buildVictoryStreakMarkup(streakData, milestone) {
@@ -1356,6 +1364,7 @@ async function persistVictoryResult() {
         newlyUnlockedAchievements = recordGuestGameResult(true);
     }
 
+    let achievementProgress = null;
     if (currentUserId) {
         try {
             const synchronization = await syncAccountAchievements();
@@ -1364,6 +1373,7 @@ async function persistVictoryResult() {
                 ...newlyUnlockedAchievements,
                 ...synchronization.newlyUnlocked
             ])];
+            achievementProgress = synchronization.progress;
         } catch (error) {
             console.error('Account achievement synchronization failed:', error);
         }
@@ -1373,7 +1383,8 @@ async function persistVictoryResult() {
         streakData,
         milestone,
         placement: currentChallengePlacement,
-        newlyUnlockedAchievements
+        newlyUnlockedAchievements,
+        achievementProgress
     };
 }
 
@@ -1401,6 +1412,7 @@ async function hydrateVictoryMetadata(panel, persistencePromise) {
             `;
         }
         status?.remove();
+        void fillVictoryGoal(panel, result.achievementProgress, isCurrentRequest);
     } catch (error) {
         if (!isCurrentRequest() || !panel.isConnected) return;
         console.error('Victory result persistence error:', error);
@@ -1409,6 +1421,119 @@ async function hydrateVictoryMetadata(panel, persistencePromise) {
         if (isCurrentRequest() && panel.isConnected) panel.querySelectorAll('[data-victory-action]').forEach(button => {
             button.disabled = false;
         });
+    }
+}
+
+async function getGuestGoalProgress() {
+    if (!Array.isArray(fullDatabase) || fullDatabase.length === 0) {
+        const catalog = await callGameApi('catalog');
+        if (!Array.isArray(fullDatabase) || fullDatabase.length === 0) {
+            fullDatabase = catalog.dinosaurs || [];
+        }
+        synchronizeGuestAchievements();
+    }
+    const museum = getGuestMuseumSnapshot(Object.values(readGuestAchievementProgress().results));
+    return {
+        ...Object.fromEntries(CLADE_ACHIEVEMENT_DEFINITIONS.map(definition => {
+            const current = Number(museum.cladeCounts[definition.clade] || 0);
+            return [definition.id, { current, target: definition.target, complete: current >= definition.target }];
+        })),
+        ...getCollectionAchievementProgress(museum.names)
+    };
+}
+
+function findNearestAchievementGoal(progressById) {
+    const lineage = Array.isArray(targetDino?.linhagem) ? targetDino.linhagem : [];
+    const level = targetDino?.dificuldade || selectedDifficulty;
+    return [...CLADE_ACHIEVEMENT_DEFINITIONS, ...COLLECTION_ACHIEVEMENT_DEFINITIONS]
+        .filter(definition => definition.clade ? lineage.includes(definition.clade) : definition.level === level)
+        .map(definition => {
+            const progress = progressById?.[definition.id];
+            const remaining = progress && !progress.complete
+                ? Number(progress.target) - Number(progress.current)
+                : 0;
+            return { definition, remaining };
+        })
+        .filter(goal => goal.remaining > 0 && goal.remaining <= 10)
+        .sort((first, second) => first.remaining - second.remaining)[0] || null;
+}
+
+async function fillVictoryGoal(panel, accountProgress, isCurrentRequest) {
+    const slot = panel.querySelector('.victory-goal-slot');
+    if (!slot) return;
+    try {
+        const progress = currentUserId ? accountProgress : await getGuestGoalProgress();
+        if (!isCurrentRequest() || !panel.isConnected) return;
+        const goal = findNearestAchievementGoal(progress);
+        if (!goal) {
+            slot.remove();
+            return;
+        }
+        slot.textContent = t(goal.remaining === 1 ? 'result.nextGoalOne' : 'result.nextGoalMany', {
+            count: goal.remaining,
+            name: getAchievementName(goal.definition)
+        });
+        slot.hidden = false;
+    } catch (error) {
+        console.warn('Next achievement goal unavailable:', error);
+        slot.remove();
+    }
+}
+
+function summarizeEncyclopediaText(text, maxLength = 420) {
+    const sentences = String(text || '').replace(/\s+/g, ' ').trim()
+        .match(/[^.!?。]+[.!?。]+(\s|$)|[^.!?。]+$/g) || [];
+    let summary = '';
+    for (const sentence of sentences) {
+        if (summary && (summary + sentence).length > maxLength) break;
+        summary += sentence;
+        if (summary.length >= 200) break;
+    }
+    return summary.trim().slice(0, maxLength);
+}
+
+async function showDinoCuriosity(button = null) {
+    const name = button?.dataset.name || targetDino?.nome;
+    if (!name || button?.getAttribute('aria-busy') === 'true') return;
+    button?.setAttribute('aria-busy', 'true');
+    let info = null;
+    try {
+        info = await fetchWikipediaInfo(name);
+    } finally {
+        button?.removeAttribute('aria-busy');
+    }
+    const summary = summarizeEncyclopediaText(info?.description);
+    await showModal({
+        title: escapeHtml(name),
+        message: summary ? `
+            <p class="curiosity-text">${escapeHtml(summary)}</p>
+            ${info.isLanguageFallback ? `<p class="encyclopedia-language-note">${t('encyclopedia.englishFallback')}</p>` : ''}
+            <a href="${escapeHtml(info.url)}" target="_blank" rel="noopener" class="clade-link">${t('tree.encyclopedia')}</a>
+        ` : `<p>${t('tree.noEncyclopedia')}</p>`,
+        closeOnOverlay: true
+    });
+}
+
+async function startRematch(button = null) {
+    if (currentGameMode !== 'challenge' || !gameSessionId || button?.disabled) return;
+    const originalText = button?.textContent;
+    if (button) {
+        button.disabled = true;
+        button.textContent = t('friends.rematchStarting');
+    }
+    try {
+        const data = await callGameApi('rematch_challenge', {
+            sessionId: gameSessionId,
+            playerName: currentChallengePlayerName || t('common.player')
+        });
+        localStorage.setItem(getChallengeSessionStorageKey(data.challenge.code), data.sessionId);
+        await startFriendChallengeFromPayload(data);
+    } catch (error) {
+        await customAlert(t('friends.rematchError'), escapeHtml(error.message));
+        if (button?.isConnected) {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
     }
 }
 
@@ -1451,7 +1576,7 @@ async function showVictory() {
             ${modeHTML}
             <div class="victory-heading">
                 <h2>${t('result.completeTitle')}</h2>
-                <div class="victory-dino">${targetDino.nome}</div>
+                <div class="victory-dino">${targetDino.nome}${buildCuriosityButton()}</div>
                 <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                     <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
                     <span>${revealedClades.size} ${t(revealedClades.size === 1 ? 'game.cladeOne' : 'game.cladeMany')} ${t(revealedClades.size === 1 ? 'game.revealedOne' : 'game.revealed')}</span>
@@ -1461,6 +1586,7 @@ async function showVictory() {
             ${buildResultMediaSlotMarkup()}
 
             ${buildVictoryDiscoveryMarkup(discovery)}
+            <p class="victory-goal-slot" hidden></p>
 
             ${streakHTML}
             ${achievementHTML}
@@ -1474,9 +1600,10 @@ async function showVictory() {
                     ${t('result.share')}
                 </button>
                 ${currentGameMode === 'challenge' ? `
-                <button class="btn-hint victory-action-secondary" data-victory-action onclick="showChallengeStandings()" disabled>${t('game.viewStandings')}</button>
-                <button class="btn-new-game" data-victory-action disabled onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
-                <button class="btn-new-game" data-victory-action disabled onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+                <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
+                ${buildRematchButton()}
+                <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
+                <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
                     ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
                 </button>`}
             </div>

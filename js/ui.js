@@ -266,8 +266,6 @@ function customAlert(title, message) {
     });
 }
 
-// focusCancel: start on the safe choice so a stray Enter cannot confirm a
-// destructive action.
 function customConfirm(title, message, yesText = 'Yes', noText = 'No', { focusCancel = false } = {}) {
     return showModal({
     title: title,

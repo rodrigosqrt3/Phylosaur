@@ -57,7 +57,7 @@ function emptyDailyCompletionStatus() {
 }
 
 function getImmediateDailyCompletionStatus() {
-    if (!currentUserId) return emptyDailyCompletionStatus();
+    if (!currentUserId) return getGuestDailyCompletionStatus();
     const cacheKey = `${currentUserId}:${getTodayString()}`;
     return dailyCompletionCache?.key === cacheKey
         ? { ...dailyCompletionCache.status }
@@ -439,6 +439,8 @@ async function showStatsDashboard() {
             </section>
         </div>
 
+        ${generateStatsHighlights(difficultyHistory, achievementHistory)}
+
         <div class="stats-section">
             <div class="stats-section-heading">
                 <div>
@@ -471,14 +473,77 @@ async function showStatsDashboard() {
     focusAppScreenHeading();
 }
 
+function generateStatsHighlights(difficultyHistory, wonResults) {
+    const levels = ['muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'];
+    const levelName = difficulty => t(`level.name${levels.indexOf(difficulty) + 1}`);
+    const localeTag = typeof getPhylosaurLocaleTag === 'function' ? getPhylosaurLocaleTag() : undefined;
+    const wins = (wonResults || []).filter(result => Number(result.guess_count) > 0);
+    const averagePerWin = wins.length
+        ? (wins.reduce((sum, result) => sum + Number(result.guess_count), 0) / wins.length)
+            .toLocaleString(localeTag, { maximumFractionDigits: 1 })
+        : '-';
+    const noHintWins = (wonResults || []).filter(result =>
+        Array.isArray(result.hint_history) && result.hint_history.length === 0).length;
+
+    const playedByLevel = new Map();
+    let hardestWon = -1;
+    (difficultyHistory || []).forEach(result => {
+        const index = levels.indexOf(result.difficulty);
+        if (index < 0) return;
+        playedByLevel.set(result.difficulty, (playedByLevel.get(result.difficulty) || 0) + 1);
+        if (result.won === true) hardestWon = Math.max(hardestWon, index);
+    });
+    const favorite = [...playedByLevel].sort((first, second) => second[1] - first[1]
+        || levels.indexOf(second[0]) - levels.indexOf(first[0]))[0]?.[0];
+
+    const tile = (value, label) => `
+        <div class="stat"><div class="stat-value">${escapeChallengeHtml(value)}</div><div class="stat-label">${label}</div></div>`;
+
+    return `
+        <div class="stats-section">
+            <div class="stats-section-heading">
+                <div>
+                    <p class="stats-section-kicker">${t('stats.highlightsKicker')}</p>
+                    <h3 class="stats-section-title">${t('stats.highlightsTitle')}</h3>
+                </div>
+            </div>
+            <div class="stats stats-highlights">
+                ${tile(averagePerWin, t('stats.averagePerWin'))}
+                ${tile(String(noHintWins), t('stats.noHintWins'))}
+                ${tile(favorite ? levelName(favorite) : '-', t('stats.favoriteLevel'))}
+                ${tile(hardestWon >= 0 ? levelName(levels[hardestWon]) : '-', t('stats.hardestWin'))}
+            </div>
+        </div>`;
+}
+
+function formatStatsDate(value) {
+    if (!value) return t('common.never');
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(String(value))
+        ? new Date(`${value}T00:00:00Z`)
+        : new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    const localeTag = typeof getPhylosaurLocaleTag === 'function' ? getPhylosaurLocaleTag() : undefined;
+    return date.toLocaleDateString(localeTag, { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+}
+
 function generateStreakDisplay(streakData) {
     if (!currentUser) return '';
+
+    const best = Number(streakData?.best) || 0;
+    const bestLine = best > 0
+        ? `<div class="streak-copy">${t(best === 1 ? 'stats.bestDayOne' : 'stats.bestDayMany', { count: best })}</div>`
+        : '';
+    const lastPlayedLine = streakData?.lastPlayed
+        ? `<div class="streak-meta">${t('stats.lastPlayed', { date: formatStatsDate(streakData.lastPlayed) })}</div>`
+        : '';
 
     if (!streakData || streakData.current === 0) {
     return `
         <div class="streak-card streak-card-empty">
         <div class="streak-empty-title">${t('stats.noStreak')}</div>
         <div class="streak-copy">${t('stats.noStreakCopy')}</div>
+        ${bestLine}
+        ${lastPlayedLine}
         </div>
     `;
     }
@@ -487,8 +552,8 @@ function generateStreakDisplay(streakData) {
     <div class="streak-card streak-card-active">
         <div class="streak-value">◆ ${streakData.current}</div>
         <div class="streak-heading">${t('stats.currentStreak')}</div>
-        <div class="streak-copy">${t(streakData.best === 1 ? 'stats.bestDayOne' : 'stats.bestDayMany', { count: streakData.best })}</div>
-        <div class="streak-meta">${t('stats.lastPlayed', { date: streakData.lastPlayed || t('common.never') })}</div>
+        ${bestLine}
+        <div class="streak-meta">${t('stats.lastPlayed', { date: formatStatsDate(streakData.lastPlayed) })}</div>
     </div>
     `;
 }
@@ -579,7 +644,6 @@ async function showAbout() {
         focusAppScreenHeading();
     } catch (error) {
         if (!isCurrentRequest()) return;
-        // The raw error is English-only; keep it in the console, not on screen.
         console.warn('About page could not be loaded:', error);
         appContent.innerHTML = `<div class="game-card about-screen">${renderAppState(
             t('about.error'), { type: 'error' }
@@ -738,23 +802,26 @@ function generateDifficultyStats(difficultyHistory) {
     const statsByDifficulty = new Map(difficultyOrder.map(difficulty => [difficulty, {
         played: 0,
         won: 0,
-        totalGuesses: 0
+        winningGuesses: 0
     }]));
 
     for (const result of difficultyHistory || []) {
         const stat = statsByDifficulty.get(result.difficulty);
         if (!stat) continue;
         stat.played += 1;
-        stat.won += result.won === true ? 1 : 0;
-        stat.totalGuesses += Math.max(0, Number(result.guess_count || 0));
+        if (result.won === true) {
+            stat.won += 1;
+            stat.winningGuesses += Math.max(0, Number(result.guess_count || 0));
+        }
     }
 
+    const localeTag = typeof getPhylosaurLocaleTag === 'function' ? getPhylosaurLocaleTag() : undefined;
     return `<div class="difficulty-stats-list">${difficultyOrder.map(difficulty => {
         const stat = statsByDifficulty.get(difficulty);
         const played = stat.played;
         const won = stat.won;
         const winRate = played > 0 ? Math.round((won / played) * 100) : 0;
-        const average = played > 0 ? Math.round(stat.totalGuesses / played) : 0;
+        const average = won > 0 ? Math.round((stat.winningGuesses / won) * 10) / 10 : 0;
         return `
             <article class="difficulty-stat-row">
                 <div class="difficulty-stat-heading">
@@ -768,9 +835,9 @@ function generateDifficultyStats(difficultyHistory) {
                     <span class="diff-winrate">${played
                         ? t('stats.successValue', { rate: winRate })
                         : t('stats.notPlayed')}</span>
-                    <span class="diff-avg">${played
+                    <span class="diff-avg">${won
                         ? t('stats.averageGuesses', {
-                            count: average,
+                            count: average.toLocaleString(localeTag, { maximumFractionDigits: 1 }),
                             unit: t(average === 1 ? 'game.guessOne' : 'game.guessMany')
                         })
                         : t('stats.noAverage')}</span>
@@ -1236,7 +1303,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=24')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=25')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
@@ -1443,10 +1510,15 @@ async function loadMuseumCardMedia({ card, generation }) {
     const media = await getCachedDinoMedia(name);
     if (!card.isConnected || generation !== museumMediaGeneration) return;
 
-    image.src = media?.url || 'dinosaur-footprint-1-svgrepo-com.svg';
-    image.classList.add('loaded');
+    const fallback = 'dinosaur-footprint-1-svgrepo-com.svg';
+    image.addEventListener('load', () => image.classList.add('loaded'));
+    image.addEventListener('error', () => {
+        if (image.getAttribute('src') === fallback) image.classList.add('loaded');
+        else image.src = fallback;
+    });
+    if (media?.url) image.src = media.url;
+    else image.classList.add('loaded');
     card.dataset.museumMediaState = 'loaded';
-
 
 }
 
@@ -2011,7 +2083,7 @@ function renderMuseumSpecimenCard(dino, unlockedSet) {
                      src="dinosaur-footprint-1-svgrepo-com.svg"
                      alt="${safeName}" loading="lazy" decoding="async" />
             </div>
-            <div class="museum-card-name">${safeName}</div>
+            <div class="museum-card-name" title="${safeName}">${safeName}</div>
             <div class="museum-card-clade">${escapeChallengeHtml(lastClade)}</div>
             <div class="museum-card-discovery">
                 <span>${escapeChallengeHtml(discovery.firstLabel)}</span>
@@ -2238,7 +2310,7 @@ function applyMuseumFilters() {
         const matchesLevel = selectedMuseumLevel === 'all'
             || card.dataset.museumLevel === selectedMuseumLevel;
         const matchesSearch = !museumSearchQuery
-            || card.dataset.museumName.includes(museumSearchQuery);
+            || (card.dataset.museumUnlocked === 'true' && card.dataset.museumName.includes(museumSearchQuery));
         const matchesClade = museumLineageMatchesClade(
             card.dataset.museumLineage, selectedMuseumClade
         );

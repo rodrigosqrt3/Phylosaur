@@ -13,6 +13,27 @@ const CLADE_ACHIEVEMENT_DEFINITIONS = [
     { id: 'feathered_branch', clade: 'Maniraptora', target: 10, category: 'clade' }
 ];
 
+const COLLECTION_ACHIEVEMENT_DEFINITIONS = [
+    { id: 'theropod_quarter', clade: 'Theropoda', share: 0.25, category: 'clade' },
+    { id: 'theropod_half', clade: 'Theropoda', share: 0.5, category: 'clade' },
+    { id: 'theropod_complete', clade: 'Theropoda', share: 1, category: 'clade' },
+    { id: 'sauropodomorph_quarter', clade: 'Sauropodomorpha', share: 0.25, category: 'clade' },
+    { id: 'sauropodomorph_half', clade: 'Sauropodomorpha', share: 0.5, category: 'clade' },
+    { id: 'sauropodomorph_complete', clade: 'Sauropodomorpha', share: 1, category: 'clade' },
+    { id: 'ornithischian_quarter', clade: 'Ornithischia', share: 0.25, category: 'clade' },
+    { id: 'ornithischian_half', clade: 'Ornithischia', share: 0.5, category: 'clade' },
+    { id: 'ornithischian_complete', clade: 'Ornithischia', share: 1, category: 'clade' },
+    { id: 'spinosaurid_family', clade: 'Spinosauridae', share: 1, category: 'clade' },
+    { id: 'pachycephalosaur_family', clade: 'Pachycephalosauria', share: 1, category: 'clade' },
+    { id: 'tyrannosauroid_family', clade: 'Tyrannosauroidea', share: 1, category: 'clade' },
+    { id: 'abelisaurid_family', clade: 'Abelisauridae', share: 1, category: 'clade' },
+    { id: 'level_one_complete', level: 'muito_facil', share: 1 },
+    { id: 'level_two_complete', level: 'facil', share: 1 },
+    { id: 'level_three_complete', level: 'normal', share: 1 },
+    { id: 'level_four_complete', level: 'dificil', share: 1 },
+    { id: 'level_five_complete', level: 'muito_dificil', share: 1 }
+];
+
 const ACHIEVEMENT_DEFINITIONS = [
     { id: 'first_win' }, { id: 'perfect_game' }, { id: 'ten_wins' },
     { id: 'fifty_wins' }, { id: 'hard_win' }, { id: 'very_hard_win' },
@@ -23,7 +44,9 @@ const ACHIEVEMENT_DEFINITIONS = [
     { id: 'deep_classification' }, { id: 'full_field_day' },
     { id: 'fourteen_day_expedition' }, { id: 'expedition_leader' },
     { id: 'podium_finish' }, { id: 'against_all_odds' },
-    ...CLADE_ACHIEVEMENT_DEFINITIONS
+    { id: 'first_guess' }, { id: 'race_champion' }, { id: 'welcome_back' },
+    ...CLADE_ACHIEVEMENT_DEFINITIONS,
+    ...COLLECTION_ACHIEVEMENT_DEFINITIONS
 ];
 
 function getAchievementName(achievement) {
@@ -143,7 +166,36 @@ function getGuestMuseumSnapshot(results) {
         });
     });
 
-    return { uniqueGenera: names.size, majorBranches: branches.size, cladeCounts };
+    return { uniqueGenera: names.size, majorBranches: branches.size, cladeCounts, names };
+}
+
+function getCollectionAchievementProgress(discoveredNames, catalog = fullDatabase) {
+    const dinosaurs = Array.isArray(catalog) ? catalog : [];
+    const catalogByName = new Map(dinosaurs.map(dino => [String(dino?.nome || '').trim().toLowerCase(), dino]));
+    return Object.fromEntries(COLLECTION_ACHIEVEMENT_DEFINITIONS.map(definition => {
+        const belongs = dino => definition.clade
+            ? Array.isArray(dino?.linhagem) && dino.linhagem.includes(definition.clade)
+            : dino?.dificuldade === definition.level;
+        const total = dinosaurs.filter(belongs).length;
+        const target = Math.max(1, Math.ceil(total * definition.share));
+        let current = 0;
+        discoveredNames.forEach(name => {
+            if (belongs(catalogByName.get(name))) current += 1;
+        });
+        return [definition.id, {
+            current: Math.min(current, target),
+            target,
+            unit: 'achievement.unit.genera',
+            complete: total > 0 && current >= target
+        }];
+    }));
+}
+
+function hasReturnAfterBreak(dates, breakDays = 7) {
+    const times = [...new Set(dates.filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date)))]
+        .sort()
+        .map(date => new Date(`${date}T00:00:00Z`).getTime());
+    return times.some((time, index) => index > 0 && time - times[index - 1] > breakDays * 86400000);
 }
 
 function evaluateGuestAchievements(results) {
@@ -154,6 +206,13 @@ function evaluateGuestAchievements(results) {
     const longestStreak = getLongestGuestDailyStreak(dailyResults);
     const museum = getGuestMuseumSnapshot(results);
     const bestDailyLevelCount = getBestCompletedDailyLevelCount(dailyResults);
+    const collection = getCollectionAchievementProgress(museum.names);
+    const raceWins = wins.filter(result =>
+        result.mode === 'challenge' && Number(result.challengePlacement) === 1
+    ).length;
+    const playedDates = results.map(result =>
+        String(result.playedDate || result.completedAt || '').slice(0, 10)
+    );
 
     return [
         ['first_win', dailyWins.length >= 1],
@@ -184,9 +243,16 @@ function evaluateGuestAchievements(results) {
             Number(result.challengePlacement) <= 3
         )],
         ['against_all_odds', wins.some(result => result.guessCount >= 10 && !result.usedHints)],
+        ['first_guess', wins.some(result => Number(result.guessCount) === 1)],
+        ['race_champion', raceWins >= 5],
+        ['welcome_back', hasReturnAfterBreak(playedDates)],
         ...CLADE_ACHIEVEMENT_DEFINITIONS.map(definition => [
             definition.id,
             Number(museum.cladeCounts[definition.clade] || 0) >= definition.target
+        ]),
+        ...COLLECTION_ACHIEVEMENT_DEFINITIONS.map(definition => [
+            definition.id,
+            collection[definition.id].complete
         ])
     ].filter(([, complete]) => complete).map(([id]) => id);
 }
@@ -420,9 +486,16 @@ function buildAchievementProgress(stats = {}, wonResults = [], supplementalProgr
         expedition_leader: binary(false),
         podium_finish: binary(false),
         against_all_odds: binary(false),
+        first_guess: binary(wins.some(result => Number(result.guess_count) === 1)),
+        race_champion: numeric(0, 5, 'achievement.unit.wins'),
+        welcome_back: binary(false),
         ...Object.fromEntries(CLADE_ACHIEVEMENT_DEFINITIONS.map(definition => [
             definition.id,
             numeric(0, definition.target, 'achievement.unit.genera')
+        ])),
+        ...Object.fromEntries(COLLECTION_ACHIEVEMENT_DEFINITIONS.map(definition => [
+            definition.id,
+            binary(false)
         ])),
         ...supplementalProgress
     };
@@ -586,11 +659,21 @@ function checkStreakMilestone(streak) {
 
 let dailyCompletionRequestGeneration = 0;
 
+function getGuestDailyCompletionStatus() {
+    const status = { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
+    const today = getTodayString();
+    Object.values(readGuestAchievementProgress().results || {}).forEach(result => {
+        if (result?.mode === 'daily' && result.won && result.playedDate === today
+            && Object.hasOwn(status, result.difficulty)) status[result.difficulty] = true;
+    });
+    return status;
+}
+
 async function getDailyCompletionStatus() {
     const generation = ++dailyCompletionRequestGeneration;
     const ownerId = currentUserId;
-    if (!currentUserId) return { muito_facil: false, facil: false, normal: false, dificil: false, muito_dificil: false };
-    
+    if (!currentUserId) return getGuestDailyCompletionStatus();
+
     const today = getTodayString();
     const cacheKey = `${ownerId}:${today}`;
     if (dailyCompletionCache?.key === cacheKey) {
@@ -822,7 +905,7 @@ async function showRestoredServerCompletion(data) {
     panel.innerHTML = `
         <div class="victory-heading">
             <h2>${wasRaceEliminated ? t('result.raceComplete') : data.gaveUp ? t('result.answerRevealedTitle') : t('result.completeTitle')}</h2>
-            <div class="victory-dino">${targetName}</div>
+            <div class="victory-dino">${targetName}<button type="button" class="victory-curiosity" data-name="${escapeHtml(targetName)}" onclick="showDinoCuriosity(this)" aria-label="${t('result.curiosity', { name: escapeHtml(targetName) })}" title="${t('result.curiosity', { name: escapeHtml(targetName) })}">?</button></div>
             <div class="victory-summary" aria-label="${t('game.resultSummary')}">
                 <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
                 ${resultWasRevealed ? `<span>${t('result.answerRevealed')}</span>` : ''}
@@ -840,8 +923,10 @@ async function showRestoredServerCompletion(data) {
 
         <div class="victory-actions">
             <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">${t('game.viewTree')}</button>
+            <button class="btn-hint victory-action-secondary" onclick="shareResult()" id="share-btn">${t('result.share')}</button>
             ${currentGameMode === 'challenge' ? `
             <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
+            <button class="btn-hint victory-action-secondary" onclick="startRematch(this)">${t('friends.rematch')}</button>
             <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
             <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
                 ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
@@ -931,8 +1016,6 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
         } catch (error) {
             console.warn('Stored game session could not be restored:', error);
             if (!isCurrentRequest()) return;
-            // Only a 4xx answer means the session is gone, expired or not ours; a
-            // timeout, offline error or 5xx must not cost the player their saved game.
             if (!(error?.status >= 400 && error.status < 500)) throw error;
             localStorage.removeItem(storageKey);
         }

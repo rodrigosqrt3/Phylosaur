@@ -36,7 +36,7 @@ if (typeof window.treeZoom === 'undefined') {
     try {
         const stored = Number(localStorage.getItem(TREE_ZOOM_STORAGE_KEY));
         if (TREE_ZOOM_LEVELS.includes(stored)) window.treeZoom = stored;
-    } catch (_err) { /* storage unavailable */ }
+    } catch (_err) {}
 }
 
 function resetTreeAnimationState() {
@@ -243,7 +243,7 @@ function setTreeZoom(zoom) {
         ? (container.scrollTop + container.clientHeight / 2) / container.scrollHeight : 0;
 
     window.treeZoom = zoom;
-    try { localStorage.setItem(TREE_ZOOM_STORAGE_KEY, String(zoom)); } catch (_err) { /* storage unavailable */ }
+    try { localStorage.setItem(TREE_ZOOM_STORAGE_KEY, String(zoom)); } catch (_err) {}
     updateTreeZoomControls();
 
     if (layoutTreeSvg() && container) {
@@ -252,7 +252,6 @@ function setTreeZoom(zoom) {
     }
 }
 
-// Sizes the tree to fit the panel, then applies the user's zoom on top of it.
 function layoutTreeSvg() {
   const container = document.getElementById('tree-container');
   const wrapper = document.getElementById('tree-scroll-wrapper');
@@ -286,7 +285,6 @@ function layoutTreeSvg() {
 
   const zoom = window.treeZoom;
   const fitted = zoom !== 1 ? svg.getBoundingClientRect() : null;
-  // A hidden tree (result screen) measures 0×0; the next render applies the zoom.
   if (fitted && fitted.width > 0 && fitted.height > 0) {
     wrapper.style.transform = 'none';
     wrapper.style.width = '';
@@ -342,7 +340,6 @@ function initTreePanning() {
     container.scrollTop  = scrollTop  - (y - startY);
   });
 
-  // Ctrl/Cmd + wheel (and trackpad pinch) steps through the zoom levels.
   let wheelDelta = 0;
   container.addEventListener('wheel', e => {
     if (!(e.ctrlKey || e.metaKey) || !document.getElementById('tree-svg')) return;

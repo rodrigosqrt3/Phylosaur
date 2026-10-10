@@ -1249,8 +1249,8 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     "Language changes must explicitly reload while preserving the current hash route.");
   assert(!styleSource.includes('html[lang="ja"] body'),
     "Japanese typography must remain on the shared stylesheet defaults.");
-  assert(htmlSource.indexOf('src="js/state.js?v=188"') < htmlSource.indexOf('src="js/i18n.js?v=188"') &&
-    htmlSource.indexOf('src="js/i18n.js?v=188"') < htmlSource.indexOf('src="js/api.js?v=188"') &&
+  assert(htmlSource.indexOf('src="js/state.js?v=191"') < htmlSource.indexOf('src="js/i18n.js?v=191"') &&
+    htmlSource.indexOf('src="js/i18n.js?v=191"') < htmlSource.indexOf('src="js/api.js?v=191"') &&
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"')
     && htmlSource.includes('value="ja"') && htmlSource.includes('value="fr"')
@@ -1266,12 +1266,12 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
     htmlSource.includes("document.body.classList.add('light-mode')") &&
     htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
-      htmlSource.indexOf('rel="stylesheet" href="style.css?v=188"'),
+      htmlSource.indexOf('rel="stylesheet" href="style.css?v=191"'),
     "The saved light theme must be applied before the stylesheet can paint the page.");
   assert(htmlSource.includes('<select id="language-select" data-localization-ignore') &&
     !htmlSource.includes('translate="no"'),
     "The app localizer must leave language names in the selector unchanged.");
-  assert(workerSource.includes('"./js/i18n.js?v=188"'),
+  assert(workerSource.includes('"./js/i18n.js?v=191"'),
     "The localization module must be available offline.");
   assert(styleSource.includes(".header-theme-switch") &&
     styleSource.includes("order: 2") &&
@@ -2070,8 +2070,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
-  assert(aboutSource.includes('src="js/state.js?v=188"') &&
-    aboutSource.includes('src="js/i18n.js?v=188"') &&
+  assert(aboutSource.includes('src="js/state.js?v=191"') &&
+    aboutSource.includes('src="js/i18n.js?v=191"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
@@ -3149,7 +3149,7 @@ Deno.test("Statistics records and SPA navigation use shared responsive accessibi
     difficultyMarkup.indexOf("Level III") < difficultyMarkup.indexOf("Level IV") &&
     difficultyMarkup.indexOf("Level IV") < difficultyMarkup.indexOf("Level V") &&
     difficultyMarkup.includes("1/2 won") &&
-    difficultyMarkup.includes("Average: 3 guesses") &&
+    difficultyMarkup.includes("Average: 2 guesses") &&
     difficultyMarkup.includes("Not played") &&
     difficultyMarkup.includes("No average yet"),
     "Difficulty performance must always show all five levels in canonical order.");
@@ -5022,8 +5022,6 @@ Deno.test("direct challenge restoration preserves newer screens, sessions, accou
     return { runtime, requests, counters };
   };
   const payload = { mode: "challenge", challenge: { code: "RAPTOR" } };
-  // "error" is a definitive server rejection; "network" is a dropped connection,
-  // which must keep the stored session so the player can resume later.
   for (const response of ["success", "invalid", "error", "network"]) {
     for (const scenario of ["navigate", "same-route", "account", "newer", "current"]) {
       const { runtime, requests, counters } = buildRuntime();
@@ -5553,7 +5551,7 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   for (const failure of ["network", "404", "500", "write", "open"]) {
     const runtime = buildServiceWorkerRuntime();
     if (["network", "404", "500"].includes(failure)) {
-      runtime.failures.fetchPath = "js/main.js?v=188";
+      runtime.failures.fetchPath = "js/main.js?v=191";
       runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
     }
     if (failure === "write") runtime.failures.putPath = "style.css";
@@ -5569,8 +5567,8 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   let resolve!: (value: Response) => void;
   let settled = false;
   const delayed = new Promise<Response>(yes => { resolve = yes; });
-  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=188") ? delayed
-    : new Response(request.url, { status: request.url.endsWith("style.css?v=188") ? 404 : 200 });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=191") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css?v=191") ? 404 : 200 });
   const install = runtime.event("install");
   const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
   for (let index = 0; index < 12; index++) await Promise.resolve();

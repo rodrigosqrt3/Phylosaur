@@ -105,10 +105,12 @@ function initializeAutocomplete() {
       e.preventDefault();
       if (document.querySelector('.modal-overlay')) return;
 
-      if (current) {
-        input.value = current.textContent.trim();
-        hideSuggestions();
-      }
+      const typed = input.value.trim().toLowerCase();
+      const typedIsGenus = database.some(dinosaur => dinosaur.nome.toLowerCase() === typed);
+      const listOpen = sugDiv.style.display !== 'none' && items.length > 0;
+      const chosen = current || (!typedIsGenus && listOpen ? items[0] : null);
+      if (chosen) input.value = chosen.textContent.trim();
+      hideSuggestions();
       makeGuess();
     } else if (e.key === 'Tab') {
       hideSuggestions();

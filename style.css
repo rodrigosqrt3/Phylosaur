@@ -1864,7 +1864,6 @@ textarea:focus-visible {
   outline-offset: -3px;
 }
 
-/* The tree is hidden behind the result panel until the player opens the review. */
 .game-session-card:has(#tree-container.tree-result-active:not(.tree-review-active)) .tree-zoom {
   display: none;
 }
@@ -2196,6 +2195,41 @@ body:not(.light-mode) .tree-node-group:hover rect {
 }
 
 .victory-media-loading,
+.victory-curiosity {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  min-height: 0;
+  margin-left: 10px;
+  padding: 0;
+  vertical-align: middle;
+  color: var(--color-muted);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  box-shadow: none;
+  font-size: 14px;
+  font-style: normal;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.victory-curiosity:hover:not(:disabled),
+.victory-curiosity[aria-busy="true"] {
+  color: var(--color-primary);
+  border-color: var(--color-accent);
+}
+
+.victory-goal-slot {
+  margin: 12px auto 0;
+  color: var(--color-muted);
+  font-size: 0.82em;
+  font-style: italic;
+  letter-spacing: 0.4px;
+  text-align: center;
+}
+
 .victory-save-status {
   margin: 18px auto 0;
   color: var(--color-muted);
@@ -5039,6 +5073,13 @@ body.light-mode .museum-time-range {
     .museum-card-art-container {
         height: 180px;
     }
+
+    .museum-card-name {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        hyphens: auto;
+        line-height: 1.2;
+    }
 }
 
 @media (max-width: 380px) {
@@ -7151,6 +7192,24 @@ body.light-mode .stat-label {
   min-height: 116px;
 }
 
+.stats-highlights {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.stats-highlights .stat {
+  display: grid;
+  align-content: center;
+  min-height: 104px;
+}
+
+.stats-highlights .stat-value {
+  font-size: 1.7em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
 .stats-insights-grid {
   display: grid;
   grid-template-columns: minmax(260px, 0.75fr) minmax(340px, 1.25fr);
@@ -7433,6 +7492,14 @@ body.light-mode .stat-label {
 
   .stats-overview .stat {
     min-height: 96px;
+  }
+
+  .stats-highlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats-highlights .stat-value {
+    font-size: 1.35em;
   }
 
   .stats-insights-grid {
