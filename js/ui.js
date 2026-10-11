@@ -25,29 +25,34 @@ function setHeaderControls(screen) {
       `<button class="btn-hint btn-header btn-header-icon btn-header-${name}" type="button"${action ? ` onclick="${action}"` : ''} title="${escapeHtml(label)}"${extra}>${glyph(name)}<span class="visually-hidden">${escapeHtml(label)}</span></button>`;
     const backBtn = (action, label) => iconBtn('back', label, action);
 
-    const statsBtn = currentUser ? iconBtn('stats', t('nav.stats'), 'showStatsDashboard()') : '';
-    const analyticsBtn = isAnalyticsAdmin ? iconBtn('analytics', t('nav.analytics'), 'showAnalyticsDashboard()') : '';
+    const current = name => screen === name ? ' aria-current="page"' : '';
+    const statsBtn = currentUser ? iconBtn('stats', t('nav.stats'), 'showStatsDashboard()', current('stats')) : '';
+    const analyticsBtn = isAnalyticsAdmin ? iconBtn('analytics', t('nav.analytics'), 'showAnalyticsDashboard()', current('analytics')) : '';
 
     const safeCurrentUser = escapeHtml(currentUser);
-    const signOutLabel = t('nav.signOut', { name: safeCurrentUser });
+    const accountLabel = t('nav.accountOf', { name: safeCurrentUser });
     const accountInitial = escapeHtml(Array.from(String(currentUser || '').trim())[0]?.toLocaleUpperCase() || '?');
-    const logoutBtn = currentUser
-      ? `<button class="btn-hint btn-header btn-header-icon btn-account btn-header-avatar" type="button" onclick="logout()" title="${signOutLabel}"><span class="header-avatar" aria-hidden="true">${accountInitial}</span><span class="visually-hidden">${signOutLabel}</span></button>`
+    const accountBtn = currentUser
+      ? `<button class="btn-hint btn-header btn-header-icon btn-account btn-header-avatar" type="button" onclick="showAccountPanel()" title="${accountLabel}"${current('account')}><span class="header-avatar" aria-hidden="true">${accountInitial}</span><span class="visually-hidden">${accountLabel}</span></button>`
       : '';
     const signInBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="showLoginModal()">${glyph('account')}<span>${t('nav.signIn')}</span></button>`;
 
+    const navigation = iconBtn('museum', t('nav.museum'), 'showMuseum()', current('museum'))
+      + analyticsBtn + (currentUser ? statsBtn + accountBtn : signInBtn);
+
     const map = {
       'login':        '',
-      'difficulty':   iconBtn('museum', t('nav.museum'), 'showMuseum()') + analyticsBtn + (currentUser ? statsBtn + logoutBtn : signInBtn),
-      'game':         backBtn("navigateToAppRoute('/')", t('nav.levels')) + (currentUser ? statsBtn : signInBtn),
-      'stats':        backBtn("navigateBackOrHome('/')", t('nav.back')),
-      'museum':       backBtn("navigateBackOrHome('/')", t('nav.back')),
-      'about':        backBtn("navigateBackOrHome('/')", t('nav.back')),
-      'practice-menu':backBtn("navigateToAppRoute('/')", t('nav.levels')),
-      'practice':     backBtn("navigateToAppRoute('/')", t('nav.levels')),
-      'friends':      backBtn("navigateBackOrHome('/')", t('nav.back')),
-      'challenge':    backBtn("navigateBackOrHome('/friends')", t('nav.friends')),
-      'analytics':    backBtn("navigateBackOrHome('/')", t('nav.back')),
+      'difficulty':   navigation,
+      'game':         backBtn("navigateToAppRoute('/')", t('nav.levels')) + navigation,
+      'stats':        backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
+      'museum':       backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
+      'about':        backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
+      'practice-menu':backBtn("navigateToAppRoute('/')", t('nav.levels')) + navigation,
+      'practice':     backBtn("navigateToAppRoute('/')", t('nav.levels')) + navigation,
+      'friends':      backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
+      'challenge':    backBtn("navigateBackOrHome('/friends')", t('nav.friends')) + navigation,
+      'analytics':    backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
+      'account':      backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
     };
 
     // Every screen reserves the same complete menu, even when it only shows

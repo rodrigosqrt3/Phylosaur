@@ -845,9 +845,7 @@ function generateDifficultyStats(difficultyHistory) {
 }
 
 function generateAchievements(unlockedSet, progressById = {}) {
-    const allAchievements = [...ACHIEVEMENT_DEFINITIONS].sort((a, b) =>
-        Number(unlockedSet?.has(b.id)) - Number(unlockedSet?.has(a.id))
-    );
+    const allAchievements = ACHIEVEMENT_DEFINITIONS;
 
     let html = '<div class="achievements-grid">';
     allAchievements.forEach(ach => {

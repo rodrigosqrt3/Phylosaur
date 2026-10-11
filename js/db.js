@@ -35,16 +35,15 @@ const COLLECTION_ACHIEVEMENT_DEFINITIONS = [
 ];
 
 const ACHIEVEMENT_DEFINITIONS = [
-    { id: 'first_win' }, { id: 'perfect_game' }, { id: 'ten_wins' },
-    { id: 'fifty_wins' }, { id: 'hard_win' }, { id: 'very_hard_win' },
-    { id: 'field_researcher' }, { id: 'persistence_pays' }, { id: 'independent_thinker' },
-    { id: 'complete_classification' }, { id: 'three_day_expedition' },
-    { id: 'seven_day_expedition' }, { id: 'museum_apprentice' },
-    { id: 'museum_curator' }, { id: 'across_dinosauria' }, { id: 'warmer_every_time' },
-    { id: 'deep_classification' }, { id: 'full_field_day' },
-    { id: 'fourteen_day_expedition' }, { id: 'expedition_leader' },
-    { id: 'podium_finish' }, { id: 'against_all_odds' },
-    { id: 'first_guess' }, { id: 'race_champion' }, { id: 'welcome_back' },
+    { id: 'first_win' }, { id: 'ten_wins' }, { id: 'fifty_wins' }, { id: 'field_researcher' },
+    { id: 'three_day_expedition' }, { id: 'seven_day_expedition' }, { id: 'fourteen_day_expedition' },
+    { id: 'welcome_back' },
+    { id: 'perfect_game' }, { id: 'first_guess' }, { id: 'independent_thinker' },
+    { id: 'warmer_every_time' }, { id: 'persistence_pays' }, { id: 'against_all_odds' },
+    { id: 'hard_win' }, { id: 'very_hard_win' }, { id: 'deep_classification' },
+    { id: 'complete_classification' }, { id: 'full_field_day' },
+    { id: 'expedition_leader' }, { id: 'podium_finish' }, { id: 'race_champion' },
+    { id: 'museum_apprentice' }, { id: 'museum_curator' }, { id: 'across_dinosauria' },
     ...CLADE_ACHIEVEMENT_DEFINITIONS,
     ...COLLECTION_ACHIEVEMENT_DEFINITIONS
 ];

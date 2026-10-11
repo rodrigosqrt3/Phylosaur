@@ -559,7 +559,7 @@ async function handleReset() {
   if (!loginIsValidEmail(email)) { loginShowFieldError('reset-email-err'); return; }
 
   return runAccountFormRequest("reset-btn", "reset", async request => {
-    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}${window.location.pathname}` });
     if (!request.isCurrent()) return;
     if (error) loginShowGlobalError("reset", error.message);
     else loginShowGlobalSuccess("reset", t("auth.resetSent"));
@@ -690,5 +690,125 @@ async function handlePasswordUpdate() {
     loginShowGlobalSuccess("update", t("auth.passwordUpdated"));
     window.history.replaceState({}, document.title, window.location.pathname);
     setTimeout(() => { if (request.isCurrent()) showDifficultySelection(); }, 1500);
+  });
+}
+
+const PHYLOSAUR_CONTACT_EMAIL = 'rodrigo03.villa@gmail.com';
+
+async function showAccountPanel() {
+  if (!currentUser) {
+    showLoginModal();
+    return;
+  }
+  setAppRoute('/account');
+  setHeaderControls('account');
+  const appContent = document.getElementById('app-content');
+  const ownerId = currentUserId;
+  const initial = escapeHtml(Array.from(String(currentUser).trim())[0]?.toLocaleUpperCase() || '?');
+  const contact = `<a href="mailto:${PHYLOSAUR_CONTACT_EMAIL}">${PHYLOSAUR_CONTACT_EMAIL}</a>`;
+  const faq = ['Daily', 'Progress', 'Forgot', 'Install', 'Error'].map(name => `
+        <details class="account-faq-item">
+          <summary>${t(`account.faq${name}Q`)}</summary>
+          <p>${t(`account.faq${name}A`, { email: contact })}</p>
+        </details>`).join('');
+
+  appContent.innerHTML = `
+    <div class="game-card account-card">
+      <div class="account-header">
+        <span class="account-avatar" aria-hidden="true">${initial}</span>
+        <div class="account-identity">
+          <h2 class="screen-title account-title">${t('account.title')}</h2>
+          <p class="account-name">${escapeHtml(currentUser)}</p>
+          <p class="account-email" id="account-email"></p>
+        </div>
+      </div>
+      <p class="account-subtitle">${t('account.subtitle')}</p>
+
+      <section class="account-section" aria-labelledby="account-security-title">
+        <h3 id="account-security-title">${t('account.security')}</h3>
+        <div class="login-global-error" id="account-global-error" role="alert"></div>
+        <div class="login-global-success" id="account-global-success" role="status" aria-live="polite"></div>
+        <div class="account-password-grid">
+          <div class="login-field">
+            <label for="account-password">${t('auth.newPassword')}</label>
+            <input type="password" id="account-password" placeholder="${t('auth.passwordPlaceholder')}"
+                   autocomplete="new-password" aria-describedby="account-password-err" />
+            <div class="login-field-error" id="account-password-err">${t('auth.passwordLength')}</div>
+          </div>
+          <div class="login-field">
+            <label for="account-confirm">${t('auth.confirmPassword')}</label>
+            <input type="password" id="account-confirm" placeholder="${t('auth.repeatPassword')}"
+                   autocomplete="new-password" aria-describedby="account-confirm-err" />
+            <div class="login-field-error" id="account-confirm-err">${t('auth.passwordMismatch')}</div>
+          </div>
+        </div>
+        <button class="btn-guess" id="account-password-btn" type="button" onclick="handleAccountPasswordChange()">
+          ${t('account.changePassword')}
+        </button>
+        <div class="account-reset-row">
+          <p>${t('account.resetByEmail')}</p>
+          <button class="btn-hint" id="account-reset-btn" type="button" onclick="handleAccountResetEmail()">
+            ${t('auth.sendReset')}
+          </button>
+        </div>
+      </section>
+
+      <section class="account-section" aria-labelledby="account-help-title">
+        <h3 id="account-help-title">${t('account.help')}</h3>
+        ${faq}
+      </section>
+
+      <section class="account-section account-signout">
+        <p>${t('account.signOutCopy')}</p>
+        <button class="btn-hint btn-account-signout" type="button" onclick="logout()">${t('auth.logout')}</button>
+      </section>
+    </div>`;
+
+  focusAppScreenHeading('.account-title');
+  try {
+    const { data } = await sb.auth.getSession();
+    const email = data?.session?.user?.email;
+    const emailElement = document.getElementById('account-email');
+    if (currentUserId === ownerId && emailElement && email) emailElement.textContent = email;
+  } catch (_error) {}
+}
+
+async function handleAccountPasswordChange() {
+  loginClearErrors();
+  const password = document.getElementById('account-password')?.value || '';
+  const confirm = document.getElementById('account-confirm')?.value || '';
+  let valid = true;
+
+  if (password.length < 6) { loginShowFieldError('account-password-err'); valid = false; }
+  if (password !== confirm) { loginShowFieldError('account-confirm-err'); valid = false; }
+  if (!valid) return;
+
+  return runAccountFormRequest('account-password-btn', 'account', async request => {
+    const { error } = await sb.auth.updateUser({ password });
+    if (!request.isCurrent()) return;
+    if (error) {
+      loginShowGlobalError('account', error.message);
+      return;
+    }
+    document.getElementById('account-password').value = '';
+    document.getElementById('account-confirm').value = '';
+    loginShowGlobalSuccess('account', t('account.passwordChanged'));
+  });
+}
+
+async function handleAccountResetEmail() {
+  loginClearErrors();
+  return runAccountFormRequest('account-reset-btn', 'account', async request => {
+    const { data } = await sb.auth.getSession();
+    const email = data?.session?.user?.email;
+    if (!request.isCurrent()) return;
+    if (!email) {
+      loginShowGlobalError('account', t('auth.requestFailed'));
+      return;
+    }
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}${window.location.pathname}` });
+    if (!request.isCurrent()) return;
+    if (error) loginShowGlobalError('account', error.message);
+    else loginShowGlobalSuccess('account', t('auth.resetSent'));
   });
 }

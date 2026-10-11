@@ -144,6 +144,8 @@ async function restoreAppRoute() {
     await renderRoute(() => showAbout());
   } else if (route === '/stats' && currentUser) {
     await renderRoute(() => showStatsDashboard());
+  } else if (route === '/account' && currentUser) {
+    await renderRoute(() => showAccountPanel());
   } else if (route === '/analytics' && isAnalyticsAdmin) {
     await renderRoute(() => showAnalyticsDashboard());
   } else if (parts[0] === 'game' && parts.length === 3
@@ -196,8 +198,7 @@ window.addEventListener('resize', () => {
 
 document.addEventListener('DOMContentLoaded', async function() {
   initializeI18n();
-  if (typeof watchGlassSelects === 'function') watchGlassSelects();
-  let savedTheme = 'dark';
+  if (typeof watchGlassSelects === 'function') watchGlassSelects();  let savedTheme = 'dark';
   try {
     savedTheme = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.theme) || 'dark';
   } catch (_error) {}
