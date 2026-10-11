@@ -302,40 +302,24 @@ function layoutTreeSvg() {
   const naturalH = Number(wrapper?.dataset.naturalHeight);
   if (!container || !svg || !naturalW || !naturalH) return false;
 
-  svg.style.width = '';
-  svg.style.height = '';
-  svg.style.margin = '';
+  const isCompact = window.matchMedia?.('(max-width: 768px)').matches;
+  const availW = container.clientWidth - (isCompact ? 24 : 44);
+  const availH = Math.max(300, Math.min(window.innerHeight * (isCompact ? 0.58 : 0.62), 680)) - 40;
+  const fit = Math.min(availW / naturalW, availH / naturalH);
+  const autoScale = Math.max(isCompact ? 0.98 : 0.8, Math.min(isCompact ? 1.15 : 1.35, fit));
+  const scale = autoScale * window.treeZoom;
+  const width = naturalW * scale;
+  const height = naturalH * scale;
 
-  const availW = container.getBoundingClientRect().width - 40;
-  const shouldScale = naturalW <= availW * 1.2;
-
+  wrapper.style.transform = 'none';
+  wrapper.style.width = '';
+  wrapper.style.height = '';
   svg.setAttribute('width', naturalW);
   svg.setAttribute('height', naturalH);
-  if (shouldScale) {
-    const scale = Math.min(1, availW / naturalW);
-    wrapper.style.transform = `scale(${scale})`;
-    wrapper.style.transformOrigin = 'top center';
-    wrapper.style.width = '100%';
-    wrapper.style.height = (naturalH * scale) + 'px';
-    container.style.overflowX = 'hidden';
-  } else {
-    wrapper.style.transform = 'none';
-    wrapper.style.width = naturalW + 'px';
-    wrapper.style.height = naturalH + 'px';
-    container.style.overflowX = 'auto';
-  }
-
-  const zoom = window.treeZoom;
-  const fitted = zoom !== 1 ? svg.getBoundingClientRect() : null;
-  if (fitted && fitted.width > 0 && fitted.height > 0) {
-    wrapper.style.transform = 'none';
-    wrapper.style.width = '';
-    wrapper.style.height = '';
-    svg.style.width = (fitted.width * zoom) + 'px';
-    svg.style.height = (fitted.height * zoom) + 'px';
-    svg.style.margin = '0 auto';
-    container.style.overflowX = 'auto';
-  }
+  svg.style.width = `${width}px`;
+  svg.style.height = `${height}px`;
+  svg.style.margin = '0 auto';
+  container.style.overflowX = width > availW + 1 ? 'auto' : 'hidden';
   return true;
 }
 
@@ -477,6 +461,18 @@ function fitTreeSvgLabel(label, maxWidth) {
 
   label.setAttribute('textLength', String(maxWidth));
   label.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+}
+
+function appendTreeSheen(group, x, y, width, height) {
+  const sheen = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  sheen.setAttribute('class', 'tree-sheen');
+  sheen.setAttribute('x', x);
+  sheen.setAttribute('y', y);
+  sheen.setAttribute('width', width);
+  sheen.setAttribute('height', height);
+  sheen.setAttribute('rx', '8');
+  sheen.setAttribute('fill', 'url(#tree-sheen-gradient)');
+  group.appendChild(sheen);
 }
 
 function renderTreeModel(nodes, leaves, animation = {}) {
@@ -692,7 +688,9 @@ function renderTreeModel(nodes, leaves, animation = {}) {
   
   svg.setAttribute('viewBox', `${minX - pad} 0 ${svgW} ${svgH}`);
   svg.setAttribute('preserveAspectRatio', 'xMidYMin meet');
-  svg.innerHTML = '';
+  svg.innerHTML = '<defs><linearGradient id="tree-sheen-gradient" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0" class="tree-sheen-start"/><stop offset="0.6" class="tree-sheen-end"/>'
+    + '</linearGradient></defs>';
   
   nodes.forEach((data, clade) => {
     const pos = nodePositions.get(clade);
@@ -749,7 +747,7 @@ nodes.forEach((data, clade) => {
     rect.setAttribute('y', pos.y - nodeHeight / 2);
     rect.setAttribute('width', nodeWidth);
     rect.setAttribute('height', nodeHeight);
-    rect.setAttribute('rx', '6');
+    rect.setAttribute('rx', '8');
     const isHinted = data.isHinted === true
       || (typeof hintHistory !== 'undefined'
         && Array.isArray(hintHistory)
@@ -757,9 +755,11 @@ nodes.forEach((data, clade) => {
     
     rect.setAttribute('fill', isHinted ? 'var(--tree-hint-bg)' : 'var(--tree-ancestor-bg)');
     rect.setAttribute('stroke', isHinted ? 'var(--tree-hint-border)' : 'var(--tree-ancestor-border)');
-    rect.setAttribute('stroke-width', '2.5');
+    rect.setAttribute('stroke-width', '1.5');
+    rect.setAttribute('class', isHinted ? 'tree-node-rect tree-node-rect-hint' : 'tree-node-rect');
     g.appendChild(rect);
-    
+    appendTreeSheen(g, pos.x - nodeWidth / 2, pos.y - nodeHeight / 2, nodeWidth, nodeHeight);
+
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     label.setAttribute('x', clade === 'Dinosauria' ? pos.x : pos.x - 12);
     label.setAttribute('y', pos.y);
@@ -810,7 +810,7 @@ nodes.forEach((data, clade) => {
       line.setAttribute('x2', pos.x + nodeWidth / 2 - 25);
       line.setAttribute('y2', pos.y + nodeHeight / 2);
       line.setAttribute('stroke', isHinted ? 'var(--tree-hint-border)' : 'var(--tree-ancestor-border)');
-      line.setAttribute('stroke-width', '1.5');
+      line.setAttribute('stroke-width', '1');
       toggleG.appendChild(line);
 
       const sym = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -820,7 +820,7 @@ nodes.forEach((data, clade) => {
       sym.setAttribute('dominant-baseline', 'middle');
       sym.setAttribute('font-size', '14px');
       sym.setAttribute('font-weight', 'bold');
-      sym.setAttribute('fill', '#fff');
+      sym.setAttribute('fill', 'var(--tree-label-ancestor)');
       sym.textContent = isCollapsed ? '+' : '−';
       toggleG.appendChild(sym);
       collapseToggle = toggleG;
@@ -889,28 +889,30 @@ leafPositions.forEach((leaf, name) => {
     rect.setAttribute('y', leaf.y - nodeHeight / 2);
     rect.setAttribute('width', nodeWidth);
     rect.setAttribute('height', nodeHeight);
-    rect.setAttribute('rx', '6');
-    
+    rect.setAttribute('rx', '8');
+    rect.setAttribute('class', 'tree-leaf-rect');
+
     if (leaf.isTarget && !leaf.isGiveUp) {
         rect.setAttribute('fill', 'var(--tree-target-bg)');
         rect.setAttribute('stroke', 'var(--tree-target-border)');
-        rect.setAttribute('stroke-width', '3');
+        rect.setAttribute('stroke-width', '2');
     } else if (leaf.isTarget && leaf.isGiveUp) {
         rect.setAttribute('fill', 'var(--tree-gaveup-bg)');
         rect.setAttribute('stroke', 'var(--tree-gaveup-border)');
-        rect.setAttribute('stroke-width', '3');
+        rect.setAttribute('stroke-width', '2');
     } else if (leaf.isHint) {
         rect.setAttribute('fill', 'var(--tree-leaf-hint-bg)');
         rect.setAttribute('stroke', 'var(--tree-leaf-hint-border)');
-        rect.setAttribute('stroke-width', '2');
-        rect.setAttribute('stroke-dasharray', '3,3');
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('stroke-dasharray', '4,3');
     } else {
         rect.setAttribute('fill', 'var(--tree-leaf-bg)');
         rect.setAttribute('stroke', 'var(--tree-leaf-border)');
-        rect.setAttribute('stroke-width', '2.5');
+        rect.setAttribute('stroke-width', '1.5');
     }
-    
+
     g.appendChild(rect);
+    appendTreeSheen(g, leaf.x - nodeWidth / 2, leaf.y - nodeHeight / 2, nodeWidth, nodeHeight);
     
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     label.setAttribute('x', leaf.x);

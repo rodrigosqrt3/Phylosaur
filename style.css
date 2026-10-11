@@ -62,26 +62,27 @@
     --color-warning-bg:     rgba(255, 149, 0, 0.10);
 
     /* ── Tree nodes (already existed, kept as-is) ── */
-    --tree-ancestor-bg:     #8b4726;
-    --tree-ancestor-border: #a6623d;
-    --tree-hint-bg:         #6b4a8b;
-    --tree-hint-border:     #a67cc9;
-    --tree-leaf-bg:         #355866;
-    --tree-leaf-border:     #6f98a3;
-    --tree-leaf-hover-bg:   #426b78;
-    --tree-leaf-border-hover:#91b5bd;
-    --tree-target-bg:       #4a7c59;
-    --tree-target-border:   #5a9c6b;
-    --tree-gaveup-bg:       #8b3a2a;
-    --tree-gaveup-border:   #c06040;
-    --tree-leaf-hint-bg:    rgba(166, 138, 90, 0.30);
-    --tree-leaf-hint-border:#a68a5a;
+    --tree-ancestor-bg:     rgba(176, 100, 38, 0.80);
+    --tree-ancestor-border: #e2b56c;
+    --tree-ancestor-hover-bg: rgba(196, 118, 50, 0.90);
+    --tree-hint-bg:         rgba(198, 150, 44, 0.74);
+    --tree-hint-border:     #f2d07a;
+    --tree-leaf-bg:         rgba(52, 116, 128, 0.74);
+    --tree-leaf-border:     #8ccad0;
+    --tree-leaf-hover-bg:   rgba(64, 136, 148, 0.86);
+    --tree-leaf-border-hover:#b2e2e6;
+    --tree-target-bg:       rgba(56, 150, 90, 0.86);
+    --tree-target-border:   #9fe4b2;
+    --tree-gaveup-bg:       rgba(186, 72, 42, 0.84);
+    --tree-gaveup-border:   #f39c74;
+    --tree-leaf-hint-bg:    rgba(212, 170, 76, 0.24);
+    --tree-leaf-hint-border:#e0c27a;
 
     /* ── Tree lines & circles ── */
     --tree-line:            #8b7355;
     --tree-line-revealed:   #c9a96e;
-    --tree-line-guess:      #6f98a3;
-    --tree-line-hint:       #a68a5a;
+    --tree-line-guess:      #74b0b8;
+    --tree-line-hint:       #d4ac62;
     --tree-circle-bg:       #2a1f16;
     --tree-circle-revealed-fill:  #c9a96e;
     --tree-circle-revealed-stroke:#f4e4c1;
@@ -93,7 +94,7 @@
     /* ── Tree labels ── */
     --tree-label:           #f4e4c1;
     --tree-label-revealed:  #f6fbf3;
-    --tree-label-guess:     #edf5f4;
+    --tree-label-guess:     #f0fafa;
     --tree-label-hint:      #8b7355;
     --tree-label-ancestor:  #f4e4c1;
 
@@ -276,16 +277,27 @@ html[data-theme="light"] body {
     --color-success-bg-alt: rgba(144, 238, 144, 0.15);
 
     --tree-label:           #2d2318;
-    --tree-leaf-bg:         #dce9ec;
-    --tree-leaf-border:     #557d88;
-    --tree-leaf-hover-bg:   #edf5f6;
-    --tree-leaf-border-hover:#355d68;
-    --tree-label-guess:     #294852;
+    --tree-ancestor-bg:     rgba(158, 90, 34, 0.94);
+    --tree-ancestor-border: #6b3c18;
+    --tree-ancestor-hover-bg: rgba(178, 106, 44, 0.97);
+    --tree-hint-bg:         rgba(184, 132, 28, 0.94);
+    --tree-hint-border:     #7a5410;
+    --tree-leaf-bg:         rgba(208, 234, 236, 0.94);
+    --tree-leaf-border:     #3f8590;
+    --tree-leaf-hover-bg:   rgba(222, 242, 244, 0.98);
+    --tree-leaf-border-hover:#2b6670;
+    --tree-target-bg:       rgba(50, 136, 78, 0.95);
+    --tree-target-border:   #225c34;
+    --tree-gaveup-bg:       rgba(180, 66, 36, 0.95);
+    --tree-gaveup-border:   #7c2c16;
+    --tree-leaf-hint-bg:    rgba(212, 170, 76, 0.26);
+    --tree-leaf-hint-border:#8b6a2c;
+    --tree-label-guess:     #1d4a52;
     --tree-label-hint:      #5a4a30;
-    --tree-label-ancestor:  #f4e4c1;
-    --tree-line-revealed:         #8b5e3c; 
-    --tree-line-guess:            #557d88;
-    --tree-line-hint:             #6b5340; 
+    --tree-label-ancestor:  #f8eedb;
+    --tree-line-revealed:         #8b5e3c;
+    --tree-line-guess:            #4f8c96;
+    --tree-line-hint:             #6b5340;
     --tree-circle-revealed-fill:  #8b5e3c;
 
     --diff-very-easy-border:      #2d8a5a;
@@ -1934,9 +1946,9 @@ min-width: 100%;
 
 @media (hover: hover) {
   .tree-node-group:hover rect {
-    fill: var(--tree-ancestor-border);
+    fill: var(--tree-ancestor-hover-bg);
     stroke: var(--tree-ancestor-border);
-    stroke-width: 3;
+    stroke-width: 2;
     filter: drop-shadow(0 0 12px rgba(201, 169, 110, 0.6));
   }
 }
@@ -8033,4 +8045,54 @@ html {
     min-width: 92px;
     padding: 0 18px;
   }
+}
+.tree-sheen {
+  fill: url(#tree-sheen-gradient) !important;
+  stroke: none !important;
+  filter: none !important;
+  pointer-events: none;
+}
+
+.tree-sheen-start {
+  stop-color: #fff6e4;
+  stop-opacity: 0.28;
+}
+
+.tree-sheen-end {
+  stop-color: #fff6e4;
+  stop-opacity: 0;
+}
+
+body.light-mode .tree-sheen-start,
+html[data-theme="light"] body .tree-sheen-start {
+  stop-opacity: 0.32;
+}
+
+.tree-node-rect,
+.tree-leaf-rect {
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.30));
+}
+
+body.light-mode .tree-node-rect,
+body.light-mode .tree-leaf-rect,
+html[data-theme="light"] body .tree-node-rect,
+html[data-theme="light"] body .tree-leaf-rect {
+  filter: drop-shadow(0 3px 6px rgba(62, 48, 31, 0.18));
+}
+
+.tree-node-rect-hint {
+  stroke-dasharray: 5 3;
+}
+body.light-mode .modal-title,
+html[data-theme="light"] body .modal-title {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 6px rgba(62, 48, 31, 0.14);
+}
+
+body.light-mode .tree-line.tree-line-best,
+html[data-theme="light"] body .tree-line.tree-line-best {
+  stroke: var(--tree-line-revealed);
+  filter: drop-shadow(0 0 3px rgba(139, 94, 60, 0.30));
+}
+.tree-leaf-target .tree-leaf-rect {
+  filter: drop-shadow(0 0 9px rgba(110, 210, 140, 0.35)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.30));
 }
