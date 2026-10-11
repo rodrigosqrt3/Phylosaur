@@ -1,7 +1,5 @@
 <p align="center">
-  <a href="https://rodrigosqrt3.github.io/Phylosaur/" aria-label="Play Phylosaur">
-    <img src="pwa-icon.svg" width="144" height="144" alt="Phylosaur golden dinosaur footprint">
-  </a>
+  <img src="pwa-icon.svg" width="144" height="144" alt="Phylosaur golden dinosaur footprint">
 </p>
 
 <h1 align="center">Phylosaur</h1>
@@ -23,13 +21,38 @@ target, gradually turning the classification into a navigable tree.
 
 - **Daily challenges** use the same target worldwide for each level and UTC date.
 - **Practice mode** provides unlimited games without affecting Daily statistics.
-- **Private challenges** let friends play the same hidden genus through a shared code.
-- **The Museum** records discovered genera and organizes them in a browsable Clade Atlas.
+- **Private challenges** let friends play the same hidden genus through a shared
+  code. When a round ends, a rematch can be started straight away.
+- **The Museum** keeps every genus you have discovered, with an image, a short
+  description and its place in a browsable Clade Atlas.
 - **Five difficulty levels** arrange genera by public familiarity, using thirty-day English Wikipedia pageviews as a proxy.
 
 Pageviews are not treated as a measure of scientific importance, fossil
 completeness, or phylogenetic complexity. They are an imperfect but reproducible
 way to distinguish familiar names from less widely recognized taxa.
+
+There are also achievements, some for streaks and quick wins and others for
+filling the Museum, from a quarter of all theropods to every known spinosaurid
+or abelisaurid in the game. The home screen shows a curiosity of the day about
+a different clade, and signed-in players get a statistics page with their best
+streak, guesses per win and recent games.
+
+Typing a guess is forgiving: accents and capitalisation are ignored, a full
+binomial such as *Tyrannosaurus rex* is accepted, and small spelling mistakes
+get a suggestion instead of an error. The tree can be zoomed and individual
+clades can be collapsed when it gets crowded.
+
+## Languages and devices
+
+Phylosaur is available in English, Portuguese (Brazil), Spanish, French, German
+and Japanese. The language follows the browser by default and can be changed at
+any time from the menu. Clade and genus names stay in their scientific form in
+every language.
+
+The game runs in any modern browser, on phones as well as on desktop, and has a
+light and a dark theme. It can be installed as an app from the browser menu,
+and the interface still opens without a connection, although guesses need to
+reach the server.
 
 ## Scientific approach
 

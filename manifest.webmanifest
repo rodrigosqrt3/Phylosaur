@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Phylosaur - Dinosaur Phylogeny Guessing Game",
   "short_name": "Phylosaur",
-  "description": "Identify a hidden dinosaur genus by following clues through the dinosaur family tree.",
+  "description": "Identify a hidden dinosaur genus by following clues through the dinosaur family tree. Daily challenges, practice, private games with friends and a Museum to collect more than 580 genera.",
   "lang": "en",
   "start_url": "./",
   "scope": "./",

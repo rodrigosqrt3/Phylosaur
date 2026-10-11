@@ -1,7 +1,47 @@
 {
-  "version": 24,
+  "version": 26,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Rahonavis": {
+      "file_title": "File:Rahonavis NT.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Rahonavis_NT.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Rahonavis_NT.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0",
+      "source": "wikimedia"
+    },
+    "Dilong": {
+      "file_title": "File:Dilong paradoxus VQER 35.JPG",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Dilong_paradoxus_VQER_35.JPG/960px-Dilong_paradoxus_VQER_35.JPG",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Dilong_paradoxus_VQER_35.JPG",
+      "artist": "Conty",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0",
+      "source": "wikimedia"
+    },
+    "Powellvenator": {
+      "file_title": "File:PowellvenatorRestoration.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/PowellvenatorRestoration.png/960px-PowellvenatorRestoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:PowellvenatorRestoration.png",
+      "artist": "LukasM0renoPaleoart",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0",
+      "source": "wikimedia"
+    },
+    "Skorpiovenator": {
+      "file_title": "File:Skorpiovenator bustingorryi by D-Juan.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Skorpiovenator_bustingorryi_by_D-Juan.jpg/960px-Skorpiovenator_bustingorryi_by_D-Juan.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Skorpiovenator_bustingorryi_by_D-Juan.jpg",
+      "artist": "Paleocolour",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
     "Concornis": {
       "file_title": "File:Concornis lacustris 34.jpg",
       "file_page": "https://commons.wikimedia.org/wiki/File:Concornis_lacustris_34.jpg",
@@ -798,15 +838,14 @@
       "source": "wikimedia"
     },
     "Maip": {
-      "file_title": "File:Maip macrothorax.png",
-      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Maip_macrothorax.png/960px-Maip_macrothorax.png",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Maip_macrothorax.png",
-      "artist": "Alexis M. Aranciaga Rolando, Matías J. Motta, Federico L. Agnolín, Makoto Manabe, Takanobu Tsuihiji, and Fernando E. Novas",
+      "file_title": "File:Maip macrothorax.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4d/Maip_macrothorax.jpg/960px-Maip_macrothorax.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Maip_macrothorax.jpg",
+      "artist": "Santiago Miner (Miner97)",
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-      "usage_terms": "Creative Commons Attribution-Share Alike 4.0 International",
-      "source": "wikimedia",
-      "editorial_note": "Descriptive-paper figure showing preserved material, thoracic reconstruction and excavation layout rather than speculative whole-body art."
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
     },
     "Meraxes": {
       "file_title": "File:Meraxes gigas skull reconstruction.png",

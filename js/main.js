@@ -196,6 +196,7 @@ window.addEventListener('resize', () => {
 
 document.addEventListener('DOMContentLoaded', async function() {
   initializeI18n();
+  if (typeof watchGlassSelects === 'function') watchGlassSelects();
   let savedTheme = 'dark';
   try {
     savedTheme = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.theme) || 'dark';
