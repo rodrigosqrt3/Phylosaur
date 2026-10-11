@@ -741,7 +741,7 @@ nodes.forEach((data, clade) => {
     makeTreeElementInteractive(
       g,
       t('tree.cladeInfo', { clade }),
-      () => showCladeInfo(clade)
+      () => showCladeInfo(clade, { reveal: true })
     );
     
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -880,7 +880,7 @@ leafPositions.forEach((leaf, name) => {
       makeTreeElementInteractive(
         g,
         t('tree.genusInfo', { name: leaf.displayName }),
-        () => showCladeInfo(leaf.displayName)
+        () => showCladeInfo(leaf.displayName, { reveal: true })
       );
     }
     

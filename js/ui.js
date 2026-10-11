@@ -613,6 +613,9 @@ async function showCladeInfo(cladeName, options = {}) {
         <div class="loading">${t('tree.loadingInfo', { clade: escapeChallengeHtml(cladeName) })}</div>
     </div>
     `;
+    if (options.reveal && globalThis.matchMedia?.('(max-width: 768px)').matches) {
+        infoDiv.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    }
 
     const wikiInfo = await fetchWikipediaInfo(cladeName);
     if (requestId !== cladeInfoRequestId || !infoDiv.isConnected) return;

@@ -678,7 +678,7 @@ to   { opacity: 1; transform: translateX(0); }
 .achievement-category {
   margin-bottom: 3px;
   color: var(--color-accent);
-  font-size: 0.74em;
+  font-size: 0.78em;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -757,7 +757,7 @@ to   { opacity: 1; transform: translateX(0); }
 
 .achievement-progress > span {
   color: var(--color-muted);
-  font-size: 0.72em;
+  font-size: 0.78em;
   letter-spacing: 0.02em;
   text-align: right;
 }
@@ -855,7 +855,7 @@ to   { opacity: 1; transform: translateX(0); }
 .btn-header {
   min-height: var(--control-sm);
   padding: 8px 14px;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.5px;
 }
 
@@ -1221,7 +1221,7 @@ display: none;
 button {
   min-height: 44px;
   padding: 14px 28px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   font-family: var(--font-control);
   border: 1px solid;
@@ -1490,7 +1490,7 @@ textarea:focus-visible {
 
 .game-session-stats .stat-label {
   margin-top: 5px;
-  font-size: 0.65rem;
+  font-size: 0.78rem;
   line-height: 1.3;
   letter-spacing: 0.08em;
 }
@@ -1588,7 +1588,7 @@ textarea:focus-visible {
         font-size: 1.6em !important; 
     }
     .stat-label {
-        font-size: 0.65em !important;
+        font-size: 0.78em !important;
         letter-spacing: 1px !important;
         word-break: break-word !important;
         hyphens: auto !important;
@@ -1626,7 +1626,7 @@ textarea:focus-visible {
         flex: 0 0 auto;
         width: auto !important;
         padding: 10px 18px;
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.03em;
     }
 
@@ -1671,7 +1671,7 @@ textarea:focus-visible {
     }
     #header-controls button {
         padding: 6px 10px;
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.5px;
     }
         }
@@ -1812,7 +1812,7 @@ textarea:focus-visible {
 
 .tree-toolbar-kicker {
   color: var(--color-muted);
-  font-size: 0.74em;
+  font-size: 0.78em;
   letter-spacing: 0.02em;
 }
 
@@ -1839,7 +1839,7 @@ textarea:focus-visible {
   background: var(--bg-panel-darker);
   border: 1px solid var(--border-subtle);
   box-shadow: none;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.03em;
 }
 
@@ -2155,7 +2155,7 @@ body:not(.light-mode) .tree-best-destination rect {
   background: var(--bg-panel);
   border: 1px solid var(--border-inner);
   border-radius: 999px;
-  font-size: 0.72em;
+  font-size: 0.78em;
   letter-spacing: 0.02em;
 }
 
@@ -2374,7 +2374,7 @@ body:not(.light-mode) .tree-best-destination rect {
 .victory-discovery-kicker {
   margin-bottom: 4px;
   color: var(--color-accent);
-  font-size: 0.74em;
+  font-size: 0.78em;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -2400,7 +2400,7 @@ body:not(.light-mode) .tree-best-destination rect {
 .victory-discovery-action {
   min-height: 40px;
   padding: 10px 14px;
-  font-size: 0.72em;
+  font-size: 0.78em;
   white-space: nowrap;
 }
 
@@ -2468,7 +2468,7 @@ body:not(.light-mode) .tree-best-destination rect {
 .victory-achievements-kicker {
   margin-bottom: 12px;
   color: var(--color-success-text);
-  font-size: 0.72em;
+  font-size: 0.78em;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -2583,7 +2583,7 @@ body:not(.light-mode) .tree-best-destination rect {
   }
 
   .victory-media-credit {
-    font-size: 0.72em;
+    font-size: 0.78em;
   }
 }
 
@@ -2751,7 +2751,7 @@ body:not(.light-mode) .tree-best-destination rect {
 
 .difficulty-level-description {
   color: var(--color-muted);
-  font-size: 0.72em;
+  font-size: 0.78em;
   font-style: italic;
 }
 
@@ -3100,7 +3100,7 @@ body:not(.light-mode) .tree-best-destination rect {
 .latest-guess-kicker {
   margin-bottom: 5px;
   color: var(--color-muted);
-  font-size: 0.74em;
+  font-size: 0.78em;
   letter-spacing: 0.02em;
 }
 
@@ -3198,7 +3198,7 @@ body:not(.light-mode) .tree-best-destination rect {
   background: var(--bg-panel-darker);
   border: 1px solid var(--border-inner);
   border-radius: 999px;
-  font-size: 0.72em;
+  font-size: 0.78em;
   white-space: nowrap;
 }
 
@@ -3345,9 +3345,9 @@ body:not(.light-mode) .tree-best-destination rect {
     grid-template-areas:
       "input"
       "tree"
+      "clade"
       "toolbar"
-      "history"
-      "clade";
+      "history";
     gap: 11px;
   }
   .latest-guess { padding: 11px 12px; }
@@ -3767,7 +3767,7 @@ body.light-mode .theme-switch-thumb {
 .museum-atlas-count > small {
     grid-column: 1 / -1;
     color: var(--color-muted);
-    font-size: 0.72em;
+    font-size: 0.78em;
     letter-spacing: 0;
 }
 
@@ -3792,7 +3792,7 @@ body.light-mode .theme-switch-thumb {
     display: block;
     margin-bottom: 5px;
     color: var(--color-muted);
-    font-size: 0.65em;
+    font-size: 0.78em;
     font-weight: 700;
     letter-spacing: 0;
 }
@@ -3811,7 +3811,7 @@ body.light-mode .theme-switch-thumb {
     padding: 6px 0;
     color: var(--color-secondary);
     border-bottom: 1px solid var(--border-inner);
-    font-size: 0.72em;
+    font-size: 0.78em;
 }
 
 .museum-atlas-subclades small {
@@ -3827,7 +3827,7 @@ body.light-mode .theme-switch-thumb {
     background: var(--bg-panel);
     border: 1px solid var(--border-inner);
     border-radius: var(--radius-control);
-    font-size: 0.72em;
+    font-size: 0.78em;
 }
 
 .museum-atlas-achievement > span {
@@ -4367,7 +4367,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-entry-kicker {
     margin-bottom: 7px;
     color: var(--color-muted);
-    font-size: 0.72em;
+    font-size: 0.78em;
     letter-spacing: 0.02em;
 }
 
@@ -4440,14 +4440,14 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     display: block;
     margin-top: 8px;
     color: var(--color-muted);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.02em;
 }
 
 .museum-entry-figure figcaption {
     margin-top: 7px;
     color: var(--color-muted);
-    font-size: 0.72em;
+    font-size: 0.78em;
     line-height: 1.5;
     text-align: center;
 }
@@ -4527,7 +4527,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-entry-paleo-label {
     margin-bottom: 8px;
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 600;
     letter-spacing: 0.02em;
 }
@@ -4545,7 +4545,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     display: block;
     margin-top: 4px;
     color: var(--color-secondary);
-    font-size: 0.72em;
+    font-size: 0.78em;
     line-height: 1.45;
 }
 
@@ -4562,7 +4562,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-time-periods span {
     padding-bottom: 5px;
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     letter-spacing: 0.2px;
     text-align: center;
 }
@@ -4611,7 +4611,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     justify-content: space-between;
     margin-top: 6px;
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
 }
 
 .museum-paleo-chips {
@@ -4627,7 +4627,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     background: var(--bg-panel-darker);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     letter-spacing: 0.4px;
 }
 
@@ -4650,7 +4650,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-entry-paleo-note {
     margin: 9px 3px 0;
     color: var(--color-muted);
-    font-size: 0.65em;
+    font-size: 0.78em;
     font-style: italic;
     line-height: 1.45;
 }
@@ -4661,7 +4661,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     color: var(--color-secondary);
     background: var(--bg-panel-darker);
     border-left: 2px solid var(--border-subtle);
-    font-size: 0.65em;
+    font-size: 0.78em;
     line-height: 1.5;
 }
 
@@ -4673,7 +4673,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
 .museum-entry-paleo-sources {
     margin: 11px 3px 0;
     color: var(--color-muted);
-    font-size: 0.65em;
+    font-size: 0.78em;
     line-height: 1.55;
 }
 
@@ -4736,7 +4736,7 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     background: var(--bg-panel);
     border: 1px solid var(--border-inner);
     border-radius: var(--radius-sm);
-    font-size: 0.72em;
+    font-size: 0.78em;
 }
 
 .museum-entry-lineage b {
@@ -5139,7 +5139,7 @@ body.light-mode .museum-time-range {
     .difficulty-home .difficulty-home-countdown {
         gap: 4px;
         padding: 6px 9px;
-        font-size: 0.72em;
+        font-size: 0.78em;
     }
 
     .difficulty-home .difficulty-home-levels {
@@ -5173,7 +5173,7 @@ body.light-mode .museum-time-range {
     .difficulty-home .difficulty-home-actions .btn-menu-action {
         min-height: 44px;
         padding: 10px 7px;
-        font-size: clamp(0.7rem, 3vw, 0.8rem);
+        font-size: clamp(0.75rem, 3vw, 0.8rem);
         letter-spacing: 0.5px;
     }
 
@@ -5200,7 +5200,7 @@ body.light-mode .museum-time-range {
     }
 
     .stat-label {
-        font-size: clamp(0.7rem, 3vw, 0.78rem) !important;
+        font-size: clamp(0.75rem, 3vw, 0.78rem) !important;
         letter-spacing: 0.6px !important;
     }
 
@@ -5226,7 +5226,7 @@ body.light-mode .museum-time-range {
 
     .game-session-stats .stat-label {
         margin-top: 4px;
-        font-size: clamp(0.62rem, 2.6vw, 0.7rem) !important;
+        font-size: 0.75rem !important;
         letter-spacing: 0.45px !important;
     }
 
@@ -5456,7 +5456,7 @@ body.light-mode .stat-label {
 
 .friends-kicker {
     color: var(--color-muted);
-    font-size: 0.72em;
+    font-size: 0.78em;
     letter-spacing: 0.02em;
 }
 
@@ -5487,7 +5487,7 @@ body.light-mode .stat-label {
     display: block;
     margin: 16px 0 7px;
     color: var(--color-muted);
-    font-size: 0.72em;
+    font-size: 0.78em;
     letter-spacing: 0.02em;
 }
 
@@ -5570,7 +5570,7 @@ body.light-mode .stat-label {
 
 .challenge-banner span {
     color: var(--color-muted);
-    font-size: 0.72em;
+    font-size: 0.78em;
     letter-spacing: 0.02em;
 }
 
@@ -5591,7 +5591,7 @@ body.light-mode .stat-label {
     padding-top: 10px;
     color: var(--color-muted);
     border-top: 1px solid var(--border-inner);
-    font-size: 0.72em;
+    font-size: 0.78em;
     letter-spacing: 0.02em;
     text-align: center;
 }
@@ -5808,14 +5808,14 @@ body.light-mode .stat-label {
 .analytics-metric-label {
     margin-top: 7px;
     color: var(--color-text-light);
-    font-size: 0.72em;
+    font-size: 0.78em;
     letter-spacing: 0.02em;
 }
 
 .analytics-metric-detail {
     margin-top: 6px;
     color: var(--color-muted);
-    font-size: 0.72em;
+    font-size: 0.78em;
     line-height: 1.35;
 }
 
@@ -5855,7 +5855,7 @@ body.light-mode .stat-label {
 
 .analytics-chart-value {
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
 }
 
 .analytics-chart-bar {
@@ -5868,7 +5868,7 @@ body.light-mode .stat-label {
 .analytics-chart-date {
     padding-top: 7px;
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     white-space: nowrap;
     transform: rotate(-45deg);
 }
@@ -5926,7 +5926,7 @@ body.light-mode .stat-label {
 .analytics-activity-row time,
 .analytics-generated {
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
 }
 
 .analytics-activity-row small {
@@ -5962,7 +5962,7 @@ body.light-mode .stat-label {
 .analytics-section-note,
 .analytics-data-warning {
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
 }
 
 .analytics-section-note {
@@ -6077,7 +6077,7 @@ body.light-mode .stat-label {
   gap: 5px 12px;
   margin-top: 12px;
   color: var(--color-muted);
-  font-size: 0.65em;
+  font-size: 0.78em;
   line-height: 1.5;
 }
 
@@ -6126,7 +6126,7 @@ body.light-mode .stat-label {
 
 .tutorial-levels small {
   color: var(--color-success);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   max-width: 100%;
   overflow-wrap: anywhere;
   letter-spacing: 0.3px;
@@ -6467,7 +6467,7 @@ body.light-mode .stat-label {
 .stats-section-kicker {
   margin-bottom: 7px;
   color: var(--color-accent);
-  font-size: 0.72em;
+  font-size: 0.78em;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -6490,7 +6490,7 @@ body.light-mode .stat-label {
 
 .stats-player-badge span {
   color: var(--color-muted);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   letter-spacing: 0.02em;
 }
 
@@ -6590,7 +6590,7 @@ body.light-mode .stat-label {
 
 .stats-section-heading > span {
   color: var(--color-muted);
-  font-size: 0.72em;
+  font-size: 0.78em;
   letter-spacing: 0.02em;
 }
 
@@ -6970,7 +6970,7 @@ body.light-mode .stat-label {
 
 .tutorial-coach-label {
     color: var(--color-primary);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     line-height: 1.2;
@@ -6991,7 +6991,7 @@ body.light-mode .stat-label {
 .tutorial-coach-action {
     min-height: 36px;
     padding: 8px 12px;
-    font-size: 0.65rem;
+    font-size: 0.78rem;
     letter-spacing: 0.03em;
     box-shadow: none;
 }
@@ -7063,7 +7063,7 @@ body.light-mode .stat-label {
 
 .tutorial-completion .tutorial-coach-progress {
     color: var(--color-primary);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.02em;
 }
@@ -7371,7 +7371,7 @@ body.light-mode .stat-label {
 
   .game-session-stats .stat-label {
     margin-top: 3px;
-    font-size: 0.5rem !important;
+    font-size: 0.64rem !important;
     line-height: 1.15;
     letter-spacing: 0.2px !important;
     overflow-wrap: anywhere;
@@ -8014,5 +8014,23 @@ html[data-theme="light"] body .game-card {
 @media (min-width: 781px) {
   .site-header-utility:not(:has(.header-controls-visible > :not(.btn-header-back))) .header-theme-row {
     border-left-color: transparent;
+  }
+}
+html {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 780px) {
+  .guess-primary-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .guess-primary-row .btn-guess {
+    width: auto !important;
+    min-width: 92px;
+    padding: 0 18px;
   }
 }

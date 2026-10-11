@@ -257,6 +257,4 @@ document.addEventListener('DOMContentLoaded', async function() {
   } else if (!restoredRoute) {
     restoredRoute = await restoreAppRoute();
   }
-
-  if (restoredRoute === '/') maybeShowFirstRunTutorial();
 });

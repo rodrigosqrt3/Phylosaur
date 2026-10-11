@@ -731,29 +731,12 @@ async function showHowToPlay() {
 
 const FIRST_RUN_TUTORIAL_KEY = PHYLOSAUR_STORAGE_KEYS.tutorialComplete;
 
-function hasCompletedFirstRunTutorial() {
-    try {
-        return localStorage.getItem(FIRST_RUN_TUTORIAL_KEY) === 'true';
-    } catch (_error) {
-        return true;
-    }
-}
-
 function markFirstRunTutorialComplete() {
     try {
         localStorage.setItem(FIRST_RUN_TUTORIAL_KEY, 'true');
     } catch (error) {
         console.warn('Could not save tutorial preference:', error);
     }
-}
-
-function maybeShowFirstRunTutorial() {
-    if (hasCompletedFirstRunTutorial()) return;
-    setTimeout(() => {
-        if (!hasCompletedFirstRunTutorial() && getCurrentAppRoute() === '/') {
-            showInteractiveTutorial({ firstRun: true });
-        }
-    }, 350);
 }
 
 function showInteractiveTutorial() {
