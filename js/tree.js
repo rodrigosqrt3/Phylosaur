@@ -226,15 +226,16 @@ function ensureTreeToolbar(container) {
 }
 
 function ensureTreeZoomDock(container) {
-    let dock = container.querySelector(':scope > .tree-zoom-dock');
+    let dock = container.parentElement?.querySelector(':scope > .tree-zoom-dock')
+        || container.querySelector(':scope > .tree-zoom-dock');
     if (!dock) {
         dock = document.createElement('div');
         dock.className = 'tree-zoom-dock';
         dock.innerHTML = `
             <div class="tree-zoom" role="group" aria-label="${t('tree.zoom')}">
-                <button type="button" class="tree-zoom-btn" data-tree-zoom="out" aria-label="${t('tree.zoomOut')}" title="${t('tree.zoomOut')}">&minus;</button>
-                <button type="button" class="tree-zoom-btn tree-zoom-value" data-tree-zoom="reset" aria-label="${t('tree.zoomReset')}" title="${t('tree.zoomReset')}">100%</button>
                 <button type="button" class="tree-zoom-btn" data-tree-zoom="in" aria-label="${t('tree.zoomIn')}" title="${t('tree.zoomIn')}">+</button>
+                <button type="button" class="tree-zoom-btn tree-zoom-value" data-tree-zoom="reset" aria-label="${t('tree.zoomReset')}" title="${t('tree.zoomReset')}">100%</button>
+                <button type="button" class="tree-zoom-btn" data-tree-zoom="out" aria-label="${t('tree.zoomOut')}" title="${t('tree.zoomOut')}">&minus;</button>
             </div>
         `;
         dock.addEventListener('click', event => {
@@ -244,9 +245,14 @@ function ensureTreeZoomDock(container) {
             if (action === 'reset') setTreeZoom(1);
         });
     }
-    const wrapper = document.getElementById('tree-scroll-wrapper');
-    if (wrapper?.parentNode === container && dock.nextElementSibling !== wrapper) {
-        container.insertBefore(dock, wrapper);
+    const frame = container.parentElement?.classList.contains('tree-frame') ? container.parentElement : null;
+    if (frame) {
+        if (dock.parentNode !== frame) frame.appendChild(dock);
+    } else {
+        const wrapper = document.getElementById('tree-scroll-wrapper');
+        if (wrapper?.parentNode === container && dock.nextElementSibling !== wrapper) {
+            container.insertBefore(dock, wrapper);
+        }
     }
     updateTreeZoomControls();
 }

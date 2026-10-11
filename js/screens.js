@@ -129,12 +129,14 @@ function showFriendChallenges(prefilledCode = '') {
             <p>${t('friends.intro')}</p>
         </div>
 
+        <div class="friend-identity">
+            <label class="friend-label" for="challenge-player-name">${t('friends.yourName')}</label>
+            <input class="friend-input" id="challenge-player-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="${t('friends.playerName')}" autocomplete="nickname">
+        </div>
+
         <div class="friends-grid">
             <section class="friend-panel">
                 <h3>${t('friends.create')}</h3>
-                <label class="friend-label" for="challenge-create-name">${t('friends.yourName')}</label>
-                <input class="friend-input" id="challenge-create-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="${t('friends.playerName')}">
-
                 <label class="friend-label" for="challenge-difficulty">${t('friends.level')}</label>
                 <select class="friend-input" id="challenge-difficulty">
                     <option value="muito_facil">${t('level.name1')}</option>
@@ -151,9 +153,6 @@ function showFriendChallenges(prefilledCode = '') {
 
             <section class="friend-panel">
                 <h3>${t('friends.join')}</h3>
-                <label class="friend-label" for="challenge-join-name">${t('friends.yourName')}</label>
-                <input class="friend-input" id="challenge-join-name" maxlength="24" value="${escapeChallengeHtml(suggestedName)}" placeholder="${t('friends.playerName')}">
-
                 <label class="friend-label" for="challenge-code">${t('friends.challengeCode')}</label>
                 <input class="friend-input challenge-code-input" id="challenge-code" maxlength="6" value="${escapeChallengeHtml(code)}" placeholder="RAPTOR" autocomplete="off" autocapitalize="characters" spellcheck="false"
                        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)"
@@ -166,7 +165,7 @@ function showFriendChallenges(prefilledCode = '') {
         <p class="friends-note">${t('friends.note')}</p>
     </div>`;
 
-    if (code) document.getElementById('challenge-join-name')?.focus();
+    if (code) document.getElementById('challenge-player-name')?.focus();
     else focusAppScreenHeading();
 }
 
@@ -193,7 +192,7 @@ function beginFriendChallengeRequest() {
 }
 
 async function createFriendChallenge() {
-    const nameInput = document.getElementById('challenge-create-name');
+    const nameInput = document.getElementById('challenge-player-name');
     const difficultyInput = document.getElementById('challenge-difficulty');
     const button = document.getElementById('create-challenge-btn');
     const playerName = nameInput?.value.trim().slice(0, 24) || t('common.player');
@@ -218,7 +217,7 @@ async function createFriendChallenge() {
 }
 
 async function joinFriendChallenge() {
-    const nameInput = document.getElementById('challenge-join-name');
+    const nameInput = document.getElementById('challenge-player-name');
     const codeInput = document.getElementById('challenge-code');
     const button = document.getElementById('join-challenge-btn');
     if (!button || button.disabled) return;
@@ -326,9 +325,7 @@ async function showStatsDashboard() {
     setAppRoute('/stats');
     setHeaderControls('stats');
     const appContent = document.getElementById('app-content');
-    appContent.innerHTML = `<div class="game-card stats-dashboard">${renderAppState(
-        t('stats.loading')
-    )}</div>`;
+    appContent.innerHTML = `<div class="game-card stats-dashboard">${renderStatsSkeleton()}</div>`;
     const loadingCard = appContent.firstElementChild;
     const statsOwnerId = currentUserId;
     const isCurrentRequest = () => appContent.firstElementChild === loadingCard
@@ -474,6 +471,20 @@ async function showStatsDashboard() {
     </div>
     `;
     focusAppScreenHeading();
+}
+
+function renderStatsSkeleton() {
+    const blocks = (count, className) => Array.from({ length: count },
+        () => `<span class="stats-skeleton-block ${className}"></span>`).join('');
+    return `
+        <div class="stats-skeleton" role="status" aria-live="polite">
+            <span class="visually-hidden">${t('stats.loading')}</span>
+            <div class="stats-skeleton-header" aria-hidden="true">
+                ${blocks(1, 'stats-skeleton-title')}${blocks(1, 'stats-skeleton-line')}
+            </div>
+            <div class="stats-skeleton-grid" aria-hidden="true">${blocks(4, 'stats-skeleton-card')}</div>
+            <div class="stats-skeleton-panels" aria-hidden="true">${blocks(2, 'stats-skeleton-panel')}</div>
+        </div>`;
 }
 
 function generateStatsHighlights(difficultyHistory, wonResults) {
@@ -1307,7 +1318,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=25')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=26')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
@@ -2257,13 +2268,19 @@ async function showMuseum() {
                     ${renderMuseumLevelFilter()}
                 </div>
 
-                <div class="museum-filter-summary" id="museum-filter-summary" aria-live="polite">
-                    ${t('museum.showing', {
-                        count: totalCount,
-                        genera: t('museum.genusMany'),
-                        clade: '',
-                        unlocked: totalUnlocked
-                    })}
+                <div class="museum-filter-row">
+                    <div class="museum-filter-summary" id="museum-filter-summary" aria-live="polite">
+                        ${t('museum.showing', {
+                            count: totalCount,
+                            genera: t('museum.genusMany'),
+                            clade: '',
+                            unlocked: totalUnlocked
+                        })}
+                    </div>
+                    <label class="museum-unlocked-toggle" for="museum-unlocked-only">
+                        <input type="checkbox" id="museum-unlocked-only" onchange="applyMuseumFilters()">
+                        <span>${t('museum.unlockedOnly')}</span>
+                    </label>
                 </div>
 
                 <div class="museum-grid" id="museum-grid" data-render-state="pending">
@@ -2311,10 +2328,12 @@ function applyMuseumFilters() {
 
     let visibleCount = 0;
     let visibleUnlocked = 0;
+    const unlockedOnly = Boolean(document.getElementById('museum-unlocked-only')?.checked);
 
     cards.forEach(card => {
-        const matchesLevel = selectedMuseumLevel === 'all'
-            || card.dataset.museumLevel === selectedMuseumLevel;
+        const matchesLevel = (selectedMuseumLevel === 'all'
+            || card.dataset.museumLevel === selectedMuseumLevel)
+            && (!unlockedOnly || card.dataset.museumUnlocked === 'true');
         const matchesSearch = !museumSearchQuery
             || (card.dataset.museumUnlocked === 'true' && card.dataset.museumName.includes(museumSearchQuery));
         const matchesClade = museumLineageMatchesClade(

@@ -4,35 +4,56 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phylosaur - Dinosaur Phylogeny Guessing Game</title>
-  <meta name="description" content="Identify a hidden dinosaur genus by following clues through the dinosaur family tree. Play daily challenges, practice levels, and private games with friends.">
+  <meta name="description" content="Identify a hidden dinosaur genus by following clues through the dinosaur family tree. Daily challenges, practice, private games with friends and a Museum to collect more than 580 genera.">
   <link rel="canonical" href="https://rodrigosqrt3.github.io/Phylosaur/">
+  <link rel="alternate" hreflang="x-default" href="https://rodrigosqrt3.github.io/Phylosaur/">
+  <link rel="alternate" hreflang="en" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=en">
+  <link rel="alternate" hreflang="pt-BR" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=pt-BR">
+  <link rel="alternate" hreflang="es" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=es">
+  <link rel="alternate" hreflang="fr" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=fr">
+  <link rel="alternate" hreflang="de" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=de">
+  <link rel="alternate" hreflang="ja" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=ja">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Phylosaur">
   <meta property="og:title" content="Phylosaur - Dinosaur Phylogeny Guessing Game">
   <meta property="og:description" content="Find the hidden dinosaur by following clues through its evolutionary family tree.">
   <meta property="og:url" content="https://rodrigosqrt3.github.io/Phylosaur/">
-  <meta property="og:image" content="https://rodrigosqrt3.github.io/Phylosaur/pwa-icon-512.png">
-  <meta property="og:image:width" content="512">
-  <meta property="og:image:height" content="512">
-  <meta property="og:image:alt" content="Phylosaur golden dinosaur footprint logo">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="pt_BR">
+  <meta property="og:locale:alternate" content="es_ES">
+  <meta property="og:locale:alternate" content="fr_FR">
+  <meta property="og:locale:alternate" content="de_DE">
+  <meta property="og:locale:alternate" content="ja_JP">
+  <meta property="og:image" content="https://rodrigosqrt3.github.io/Phylosaur/social-card.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Phylosaur logo beside a small dinosaur family tree with one hidden genus marked by a question mark">
 
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Phylosaur - Dinosaur Phylogeny Guessing Game">
   <meta name="twitter:description" content="Find the hidden dinosaur by following clues through its evolutionary family tree.">
-  <meta name="twitter:image" content="https://rodrigosqrt3.github.io/Phylosaur/pwa-icon-512.png">
+  <meta name="twitter:image" content="https://rodrigosqrt3.github.io/Phylosaur/social-card.jpg">
+  <meta name="twitter:image:alt" content="Phylosaur logo beside a small dinosaur family tree with one hidden genus marked by a question mark">
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
+    "@type": ["VideoGame", "WebApplication"],
     "name": "Phylosaur",
     "url": "https://rodrigosqrt3.github.io/Phylosaur/",
-    "description": "A dinosaur guessing game based on phylogenetic classification.",
+    "description": "A dinosaur guessing game based on phylogenetic classification. Each guess shows where the hidden genus sits in the dinosaur family tree.",
+    "image": "https://rodrigosqrt3.github.io/Phylosaur/social-card.jpg",
     "applicationCategory": "GameApplication",
+    "genre": ["Educational game", "Puzzle game", "Daily puzzle"],
+    "about": { "@type": "Thing", "name": "Dinosaur phylogeny" },
+    "gamePlatform": "Web browser",
+    "playMode": ["SinglePlayer", "MultiPlayer"],
     "operatingSystem": "Any",
     "browserRequirements": "Requires JavaScript and an internet connection",
-    "inLanguage": "en",
+    "inLanguage": ["en", "pt-BR", "es", "fr", "de", "ja"],
+    "author": { "@type": "Person", "name": "Rodrigo Fonseca Villa" },
     "isAccessibleForFree": true,
     "offers": {
       "@type": "Offer",
@@ -67,20 +88,20 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
           integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
           crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="style.css?v=197">
+  <link rel="stylesheet" href="style.css?v=202">
   
-  <script defer src="js/config.js?v=197"></script>
-  <script defer src="js/state.js?v=197"></script>
-  <script defer src="js/i18n.js?v=197"></script>
-  <script defer src="js/api.js?v=197"></script>
-  <script defer src="js/autocomplete.js?v=197"></script>
-  <script defer src="js/db.js?v=197"></script>
-  <script defer src="js/auth.js?v=197"></script>
-  <script defer src="js/ui.js?v=197"></script>
-  <script defer src="js/screens.js?v=197"></script>
-  <script defer src="js/tree.js?v=197"></script>
-  <script defer src="js/game.js?v=197"></script>
-  <script defer src="js/main.js?v=197"></script>
+  <script defer src="js/config.js?v=202"></script>
+  <script defer src="js/state.js?v=202"></script>
+  <script defer src="js/i18n.js?v=202"></script>
+  <script defer src="js/api.js?v=202"></script>
+  <script defer src="js/autocomplete.js?v=202"></script>
+  <script defer src="js/db.js?v=202"></script>
+  <script defer src="js/auth.js?v=202"></script>
+  <script defer src="js/ui.js?v=202"></script>
+  <script defer src="js/screens.js?v=202"></script>
+  <script defer src="js/tree.js?v=202"></script>
+  <script defer src="js/game.js?v=202"></script>
+  <script defer src="js/main.js?v=202"></script>
 </head>
 <body>
   <script>

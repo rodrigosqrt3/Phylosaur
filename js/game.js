@@ -60,9 +60,11 @@ function renderGameSessionShell(loadingMessage, { contextLabel = '', tutorial = 
                     </div>
                 </div>
 
-                <div id="tree-container">
-                    <div id="tree-scroll-wrapper">
-                        ${renderAppState(loadingMessage, { compact: true })}
+                <div class="tree-frame">
+                    <div id="tree-container">
+                        <div id="tree-scroll-wrapper">
+                            ${renderAppState(loadingMessage, { compact: true })}
+                        </div>
                     </div>
                 </div>
                 <div id="clade-info"></div>

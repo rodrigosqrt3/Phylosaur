@@ -13,43 +13,50 @@ function setHeaderControls(screen) {
     const controls = document.getElementById('header-controls');
     if (!controls) return;
 
-    const statsBtn = currentUser
-      ? `<button class="btn-hint btn-header" onclick="showStatsDashboard()">${t('nav.stats')}</button>`
-      : '';
+    const glyphs = {
+      museum: '<path d="M3 9.2 12 4l9 5.2"/><path d="M4.5 9.8h15"/><path d="M6.5 12v5.5M10.2 12v5.5M13.8 12v5.5M17.5 12v5.5"/><path d="M4 20h16"/>',
+      stats: '<path d="M6.5 18v-2M12 18v-7M17.5 18V6" stroke-width="3.2"/>',
+      analytics: '<path d="M4 18l5-6 4 3 7-8"/><path d="M15 7h5v5"/>',
+      account: '<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>',
+      back: '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
+    };
+    const glyph = name => `<svg class="header-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${glyphs[name]}</svg>`;
+    const iconBtn = (name, label, action = '', extra = '') =>
+      `<button class="btn-hint btn-header btn-header-icon btn-header-${name}" type="button"${action ? ` onclick="${action}"` : ''} title="${escapeHtml(label)}"${extra}>${glyph(name)}<span class="visually-hidden">${escapeHtml(label)}</span></button>`;
+    const backBtn = (action, label) => iconBtn('back', label, action);
 
-    const analyticsBtn = isAnalyticsAdmin
-      ? `<button class="btn-hint btn-header" onclick="showAnalyticsDashboard()">${t('nav.analytics')}</button>`
-      : '';
+    const statsBtn = currentUser ? iconBtn('stats', t('nav.stats'), 'showStatsDashboard()') : '';
+    const analyticsBtn = isAnalyticsAdmin ? iconBtn('analytics', t('nav.analytics'), 'showAnalyticsDashboard()') : '';
 
     const safeCurrentUser = escapeHtml(currentUser);
     const logoutBtn = currentUser
-      ? `<button class="btn-hint btn-header btn-account" onclick="logout()" title="${escapeHtml(t('nav.signOut', { name: currentUser }))}">${safeCurrentUser}</button>`
+      ? `<button class="btn-hint btn-header btn-with-icon btn-account" onclick="logout()" title="${escapeHtml(t('nav.signOut', { name: currentUser }))}">${glyph('account')}<span>${safeCurrentUser}</span></button>`
       : '';
+    const signInBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="showLoginModal()">${glyph('account')}<span>${t('nav.signIn')}</span></button>`;
 
-    const backBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.levels')}</span></button>`;
-
-const map = {
+    const map = {
       'login':        '',
-      'difficulty': `<button class="btn-hint btn-header" onclick="showMuseum()">${t('nav.museum')}</button>` + analyticsBtn + (currentUser ? statsBtn + logoutBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">${t('nav.signIn')}</button>`),
-      'game': backBtn + (currentUser ? statsBtn : `<button class="btn-hint btn-header" onclick="showLoginModal()">${t('nav.signIn')}</button>`),
-      'stats':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
-      'museum':       `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
-      'about':        `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
-      'practice-menu':`<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.levels')}</span></button>`,
-      'practice':     `<button class="btn-hint btn-header btn-with-icon" onclick="navigateToAppRoute('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.levels')}</span></button>`,
-      'friends':      `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
-      'challenge':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/friends')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.friends')}</span></button>`,
-      'analytics':    `<button class="btn-hint btn-header btn-with-icon" onclick="navigateBackOrHome('/')"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('nav.back')}</span></button>`,
+      'difficulty':   iconBtn('museum', t('nav.museum'), 'showMuseum()') + analyticsBtn + (currentUser ? statsBtn + logoutBtn : signInBtn),
+      'game':         backBtn("navigateToAppRoute('/')", t('nav.levels')) + (currentUser ? statsBtn : signInBtn),
+      'stats':        backBtn("navigateBackOrHome('/')", t('nav.back')),
+      'museum':       backBtn("navigateBackOrHome('/')", t('nav.back')),
+      'about':        backBtn("navigateBackOrHome('/')", t('nav.back')),
+      'practice-menu':backBtn("navigateToAppRoute('/')", t('nav.levels')),
+      'practice':     backBtn("navigateToAppRoute('/')", t('nav.levels')),
+      'friends':      backBtn("navigateBackOrHome('/')", t('nav.back')),
+      'challenge':    backBtn("navigateBackOrHome('/friends')", t('nav.friends')),
+      'analytics':    backBtn("navigateBackOrHome('/')", t('nav.back')),
     };
 
     // Every screen reserves the same complete menu, even when it only shows
     // Back or has no actions. Account/permission updates cannot resize the shell.
     controls.classList.toggle('stable-header-controls', true);
+    const reserved = ' tabindex="-1" disabled';
     const sizingMenu = `
         <div class="header-controls-reserve" aria-hidden="true" inert>
-          <button class="btn-hint btn-header" type="button" tabindex="-1" disabled>${t('nav.museum')}</button>
-          <button class="btn-hint btn-header" type="button" tabindex="-1" disabled>${t('nav.analytics')}</button>
-          <button class="btn-hint btn-header" type="button" tabindex="-1" disabled>${t('nav.stats')}</button>
+          ${iconBtn('museum', t('nav.museum'), '', reserved)}
+          ${iconBtn('analytics', t('nav.analytics'), '', reserved)}
+          ${iconBtn('stats', t('nav.stats'), '', reserved)}
           <button class="btn-hint btn-header header-account-reserve" type="button" tabindex="-1" disabled>${t('common.player')}</button>
         </div>`;
     controls.innerHTML = sizingMenu + `<div class="header-controls-visible">${map[screen] || ''}</div>`;
