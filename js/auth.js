@@ -724,6 +724,24 @@ async function showAccountPanel() {
       </div>
       <p class="account-subtitle">${t('account.subtitle')}</p>
 
+      <section class="account-section" aria-labelledby="account-profile-title">
+        <h3 id="account-profile-title">${t('account.profile')}</h3>
+        <div class="login-global-error" id="account-profile-global-error" role="alert"></div>
+        <div class="login-global-success" id="account-profile-global-success" role="status" aria-live="polite"></div>
+        <div class="account-name-row">
+          <div class="login-field">
+            <label for="account-name-input">${t('account.playerName')}</label>
+            <input type="text" id="account-name-input" maxlength="24" value="${escapeHtml(currentUser)}"
+                   autocomplete="nickname" spellcheck="false" aria-describedby="account-name-hint account-name-err" />
+            <div class="login-field-error" id="account-name-err">${t('account.nameInvalid')}</div>
+            <p class="account-field-hint" id="account-name-hint">${t('account.nameHint')}</p>
+          </div>
+          <button class="btn-hint" id="account-name-btn" type="button" onclick="handleAccountNameChange()">
+            ${t('account.saveName')}
+          </button>
+        </div>
+      </section>
+
       <section class="account-section" aria-labelledby="account-security-title">
         <h3 id="account-security-title">${t('account.security')}</h3>
         <div class="login-global-error" id="account-global-error" role="alert"></div>
@@ -761,6 +779,23 @@ async function showAccountPanel() {
       <section class="account-section account-signout">
         <p>${t('account.signOutCopy')}</p>
         <button class="btn-hint btn-account-signout" type="button" onclick="logout()">${t('auth.logout')}</button>
+      </section>
+
+      <section class="account-section account-danger" aria-labelledby="account-delete-title">
+        <h3 id="account-delete-title">${t('account.deleteTitle')}</h3>
+        <p>${t('account.deleteCopy')}</p>
+        <div class="login-global-error" id="account-danger-global-error" role="alert"></div>
+        <div class="account-name-row">
+          <div class="login-field">
+            <label for="account-delete-password">${t('account.deletePassword')}</label>
+            <input type="password" id="account-delete-password" autocomplete="current-password"
+                   aria-describedby="account-delete-password-err" />
+            <div class="login-field-error" id="account-delete-password-err">${t('auth.passwordRequired')}</div>
+          </div>
+          <button class="btn-hint btn-account-delete" id="account-delete-btn" type="button" onclick="handleAccountDelete()">
+            ${t('account.deleteButton')}
+          </button>
+        </div>
       </section>
     </div>`;
 
@@ -810,5 +845,79 @@ async function handleAccountResetEmail() {
     if (!request.isCurrent()) return;
     if (error) loginShowGlobalError('account', error.message);
     else loginShowGlobalSuccess('account', t('auth.resetSent'));
+  });
+}
+
+async function handleAccountNameChange() {
+  loginClearErrors();
+  const username = String(document.getElementById('account-name-input')?.value || '')
+    .normalize('NFC').trim().replace(/\s+/g, ' ');
+  if (username.length < 3 || username.length > 24 || !/^[\p{L}\p{N}][\p{L}\p{N} _.-]*$/u.test(username)) {
+    loginShowFieldError('account-name-err');
+    return;
+  }
+  if (username === currentUser) return;
+
+  return runAccountFormRequest('account-name-btn', 'account-profile', async request => {
+    try {
+      const data = await callGameApi('update_username', { username });
+      if (!request.isCurrent()) return;
+      currentUser = data.username;
+      const nameElement = document.querySelector('.account-name');
+      const avatarElement = document.querySelector('.account-avatar');
+      if (nameElement) nameElement.textContent = data.username;
+      if (avatarElement) avatarElement.textContent = Array.from(data.username)[0]?.toLocaleUpperCase() || '?';
+      setHeaderControls('account');
+      loginShowGlobalSuccess('account-profile', t('account.nameSaved'));
+    } catch (error) {
+      if (!request.isCurrent()) return;
+      loginShowGlobalError('account-profile', error.status === 409 ? t('account.nameTaken')
+        : error.status === 400 ? t('account.nameInvalid') : error.message);
+    }
+  });
+}
+
+async function handleAccountDelete() {
+  loginClearErrors();
+  const password = document.getElementById('account-delete-password')?.value || '';
+  if (!password) {
+    loginShowFieldError('account-delete-password-err');
+    return;
+  }
+  const ownerId = currentUserId;
+  const confirmed = await customConfirm(
+    t('account.deleteConfirmTitle'),
+    t('account.deleteConfirmCopy'),
+    t('account.deleteButton'),
+    t('common.cancel'),
+    { focusCancel: true }
+  );
+  if (confirmed !== 'true' || currentUserId !== ownerId) return;
+
+  return runAccountFormRequest('account-delete-btn', 'account-danger', async request => {
+    const { data } = await sb.auth.getSession();
+    const email = data?.session?.user?.email;
+    const { error: passwordError } = email
+      ? await sb.auth.signInWithPassword({ email, password })
+      : { error: true };
+    if (!request.isCurrent()) return;
+    if (passwordError) {
+      loginShowGlobalError('account-danger', t('account.deleteWrongPassword'));
+      return;
+    }
+
+    await callGameApi('delete_account', { confirm: true });
+    accountRequestGeneration++;
+    currentUser = null;
+    currentUserId = null;
+    isAnalyticsAdmin = false;
+    analyticsAccessChecked = true;
+    if (typeof museumDiscoveryRecords !== 'undefined') museumDiscoveryRecords = {};
+    clearAccountProgressState();
+    try {
+      await sb.auth.signOut({ scope: 'local' });
+    } catch (_error) {}
+    showDifficultySelection();
+    await customAlert(t('account.deletedTitle'), t('account.deleted'));
   });
 }

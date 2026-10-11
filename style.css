@@ -8495,3 +8495,50 @@ html[data-theme="light"] body .stats-dashboard .stat {
     width: 100%;
   }
 }
+.account-name-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0 14px;
+}
+
+.account-name-row .btn-hint {
+  margin-top: 26px;
+  min-height: var(--control-lg);
+}
+
+.account-field-hint {
+  margin-top: 6px;
+  color: var(--color-muted);
+  font-size: 0.85em;
+}
+
+.account-danger {
+  border-color: rgba(192, 96, 64, 0.38);
+}
+
+.account-danger h3 {
+  color: var(--color-danger-light);
+}
+
+.account-danger > p {
+  margin-bottom: 14px;
+  color: var(--color-secondary);
+  line-height: 1.6;
+}
+
+.btn-account-delete {
+  color: var(--color-danger-light);
+  border-color: var(--color-danger-dark);
+}
+
+@media (max-width: 600px) {
+  .account-name-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .account-name-row .btn-hint {
+    width: 100%;
+    margin-top: 4px;
+  }
+}
