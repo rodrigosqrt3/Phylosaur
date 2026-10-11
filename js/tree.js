@@ -136,10 +136,29 @@ function focusTreeKey(key, options = {}) {
     }
 
     if (options.expand !== false && window.collapsedClades.size && window.currentTreeSnapshot) {
-        window.collapsedClades.clear();
+        expandTreeAncestorsOf(key);
         renderTreeSnapshot(window.currentTreeSnapshot);
         requestAnimationFrame(() => requestAnimationFrame(focusVisibleElement));
     }
+}
+
+function expandTreeAncestorsOf(key) {
+    const snapshot = window.currentTreeSnapshot;
+    const parentOf = new Map();
+    (snapshot?.nodes || []).forEach(node => (node.children || []).forEach(child => parentOf.set(child, node.name)));
+    let start = null;
+    if (key.startsWith('node:')) {
+        start = parentOf.get(key.slice('node:'.length)) || null;
+    } else {
+        const leaf = (snapshot?.leaves || []).find(item => `leaf:${item.name}` === key
+            || `display:${item.displayName}` === key);
+        start = leaf?.parentNode || null;
+    }
+    if (!start) {
+        window.collapsedClades.clear();
+        return;
+    }
+    for (let clade = start; clade; clade = parentOf.get(clade)) window.collapsedClades.delete(clade);
 }
 
 function focusTreeBestTrail() {
@@ -315,6 +334,7 @@ function layoutTreeSvg() {
 }
 
 function toggleCladeCollapse(clade) {
+    const hadFocus = document.activeElement?.dataset?.treeToggle === clade;
     if (window.collapsedClades.has(clade)) {
         window.collapsedClades.delete(clade);
     } else {
@@ -322,6 +342,11 @@ function toggleCladeCollapse(clade) {
     }
     if (window.currentTreeSnapshot) {
         renderTreeSnapshot(window.currentTreeSnapshot);
+    }
+    if (hadFocus) {
+        const toggle = [...document.querySelectorAll('[data-tree-toggle]')]
+            .find(element => element.dataset.treeToggle === clade);
+        toggle?.focus({ preventScroll: true });
     }
 }
 
@@ -753,6 +778,7 @@ nodes.forEach((data, clade) => {
       const toggleG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       const isCollapsed = window.collapsedClades.has(clade);
       toggleG.setAttribute('class', 'tree-collapse-toggle');
+      toggleG.dataset.treeToggle = clade;
       toggleG.style.cursor = 'pointer';
       makeTreeElementInteractive(
         toggleG,
@@ -763,6 +789,15 @@ nodes.forEach((data, clade) => {
         }
       );
       
+      const hitArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      hitArea.setAttribute('x', pos.x + nodeWidth / 2 - 25);
+      hitArea.setAttribute('y', pos.y - nodeHeight / 2);
+      hitArea.setAttribute('width', 25);
+      hitArea.setAttribute('height', nodeHeight);
+      hitArea.setAttribute('fill', 'transparent');
+      hitArea.setAttribute('pointer-events', 'all');
+      toggleG.appendChild(hitArea);
+
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       line.setAttribute('x1', pos.x + nodeWidth / 2 - 25);
       line.setAttribute('y1', pos.y - nodeHeight / 2);

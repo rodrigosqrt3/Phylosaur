@@ -585,6 +585,26 @@ async function continueAsGuest() {
   showDifficultySelection();
 }
 
+function watchExternalSignOut() {
+  sb.auth.onAuthStateChange(event => {
+    if (event !== "SIGNED_OUT" || !currentUserId) return;
+    const ownerId = currentUserId;
+    setTimeout(async () => {
+      if (currentUserId !== ownerId) return;
+      const { data } = await sb.auth.getSession();
+      if (data?.session || currentUserId !== ownerId) return;
+      currentUser = null;
+      currentUserId = null;
+      isAnalyticsAdmin = false;
+      analyticsAccessChecked = true;
+      if (typeof museumDiscoveryRecords !== 'undefined') museumDiscoveryRecords = {};
+      clearAccountProgressState();
+      showDifficultySelection();
+      await customAlert(t("auth.accountAccess"), t("auth.sessionExpired"));
+    }, 600);
+  });
+}
+
 async function logout() {
   const ownerId = currentUserId;
   const generation = accountRequestGeneration;

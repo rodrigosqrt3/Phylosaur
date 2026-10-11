@@ -1,15 +1,23 @@
 // ═══════════════════════════════════════════════
 // AUTOCOMPLETE
 // ═══════════════════════════════════════════════
+function foldTaxonText(value) {
+  return String(value || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[\s_-]+/g, ' ').trim();
+}
+
 function getRankedDinosaurSuggestions(candidates, query, excludedNames = new Set()) {
-  const text = String(query || '').trim().toLowerCase();
+  const text = foldTaxonText(query);
   if (text.length < 2) return [];
+  const genusPart = text.split(' ')[0];
 
   const matches = [];
   for (const dinosaur of candidates) {
-    const name = dinosaur.nome.toLowerCase();
-    if (excludedNames.has(name) || !name.includes(text)) continue;
-    const rank = name === text ? 0 : name.startsWith(text) ? 1 : 2;
+    const name = foldTaxonText(dinosaur.nome);
+    if (excludedNames.has(dinosaur.nome.toLowerCase())) continue;
+    const matchesText = name.includes(text) || (text.includes(' ') && name === genusPart);
+    if (!matchesText) continue;
+    const rank = name === text || name === genusPart ? 0 : name.startsWith(text) ? 1 : 2;
     matches.push({ dinosaur, name, rank });
   }
 
@@ -61,6 +69,7 @@ function initializeAutocomplete() {
   };
 
   input.addEventListener('input', function() {
+    if (typeof clearGuessFeedback === 'function') clearGuessFeedback();
     const text = this.value.toLowerCase().trim();
     
     if (text.length < 2) {
@@ -102,11 +111,12 @@ function initializeAutocomplete() {
       const prev = items[currentIndex - 1] || items[items.length - 1];
       highlightSuggestion(prev);
     } else if (e.key === 'Enter') {
+      if (e.isComposing || e.keyCode === 229) return;
       e.preventDefault();
       if (document.querySelector('.modal-overlay')) return;
 
-      const typed = input.value.trim().toLowerCase();
-      const typedIsGenus = database.some(dinosaur => dinosaur.nome.toLowerCase() === typed);
+      const typed = foldTaxonText(input.value);
+      const typedIsGenus = database.some(dinosaur => foldTaxonText(dinosaur.nome) === typed);
       const listOpen = sugDiv.style.display !== 'none' && items.length > 0;
       const chosen = current || (!typedIsGenus && listOpen ? items[0] : null);
       if (chosen) input.value = chosen.textContent.trim();

@@ -207,6 +207,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     return;
   }
   window.phylosaurBooted = true;
+  watchExternalSignOut();
 
   const hash = window.location.hash;
   const params = new URLSearchParams(hash.replace('#', ''));

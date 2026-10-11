@@ -588,7 +588,7 @@ async function pollChallengeRaceStatus() {
 function startChallengeStatusPolling() {
     stopChallengeStatusPolling();
     void pollChallengeRaceStatus();
-    challengeStatusPollTimer = setInterval(() => void pollChallengeRaceStatus(), 4000);
+    challengeStatusPollTimer = setInterval(() => void pollChallengeRaceStatus(), 6000);
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -782,6 +782,93 @@ async function explainPracticeGuess(guessIndex) {
     await customAlert(t('history.explainTitle'), message);
 }
 
+function foldGuessText(value) {
+    return String(value || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .toLowerCase().replace(/[\s_-]+/g, ' ').trim();
+}
+
+function findGuessCandidate(input) {
+    const text = foldGuessText(input);
+    const genusPart = text.split(' ')[0];
+    return database.find(dinosaur => foldGuessText(dinosaur.nome) === text)
+        || (text.includes(' ') ? database.find(dinosaur => foldGuessText(dinosaur.nome) === genusPart) : null)
+        || null;
+}
+
+function suggestClosestGenus(input) {
+    const text = foldGuessText(input).split(' ')[0];
+    if (text.length < 3) return null;
+    const distance = (first, second) => {
+        let previous = Array.from({ length: second.length + 1 }, (_, index) => index);
+        for (let row = 1; row <= first.length; row++) {
+            const current = [row];
+            for (let column = 1; column <= second.length; column++) {
+                current[column] = Math.min(previous[column] + 1, current[column - 1] + 1,
+                    previous[column - 1] + (first[row - 1] === second[column - 1] ? 0 : 1));
+            }
+            previous = current;
+        }
+        return previous[second.length];
+    };
+    let best = null;
+    for (const dinosaur of database) {
+        if (guessedNames.has(dinosaur.nome.toLowerCase())) continue;
+        const score = distance(text, foldGuessText(dinosaur.nome));
+        if (!best || score < best.score) best = { name: dinosaur.nome, score };
+    }
+    return best && best.score <= Math.max(2, Math.floor(text.length * 0.25)) ? best.name : null;
+}
+
+function announceToScreenReader(message) {
+    if (!document.body) return;
+    let region = document.getElementById('sr-announcer');
+    if (!region) {
+        region = document.createElement('div');
+        region.id = 'sr-announcer';
+        region.className = 'visually-hidden';
+        region.setAttribute('aria-live', 'polite');
+        region.setAttribute('aria-atomic', 'true');
+        document.body.appendChild(region);
+    }
+    region.textContent = '';
+    setTimeout(() => { region.textContent = message; }, 50);
+}
+
+function clearGuessFeedback() {
+    const feedback = document.querySelector('.guess-feedback');
+    if (feedback) feedback.hidden = true;
+}
+
+function showGuessFeedback(message, suggestion = null) {
+    const section = document.querySelector('.input-section');
+    if (!section) return;
+    let feedback = section.querySelector('.guess-feedback');
+    if (!feedback) {
+        feedback = document.createElement('p');
+        feedback.className = 'guess-feedback';
+        feedback.setAttribute('role', 'alert');
+        section.appendChild(feedback);
+    }
+    feedback.textContent = message;
+    if (suggestion) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'guess-feedback-suggestion';
+        button.textContent = t('game.didYouMean', { name: suggestion });
+        button.addEventListener('click', () => {
+            const input = document.getElementById('dino-input');
+            if (input) input.value = suggestion;
+            clearGuessFeedback();
+            makeGuess();
+        });
+        feedback.append(' ', button);
+    }
+    feedback.hidden = false;
+    feedback.classList.remove('is-shaking');
+    void feedback.offsetWidth;
+    feedback.classList.add('is-shaking');
+}
+
 async function makeGuess() {
     if (gameWon || document.querySelector('[data-app-modal="true"]')) return;
     if (currentGameMode === 'tutorial') return makeTutorialGuess();
@@ -796,22 +883,21 @@ async function makeServerGuess() {
     const guessName = input?.value.trim() || '';
 
     if (!guessName) {
-        await customAlert(t('game.enterNameTitle'), t('game.enterNameCopy'));
+        showGuessFeedback(t('game.enterNameTitle'));
         return;
     }
 
-    const available = database.find(
-        dinosaur => dinosaur.nome.toLowerCase() === guessName.toLowerCase()
-    );
+    const available = findGuessCandidate(guessName);
     if (!available) {
-        await customAlert(t('game.notFoundTitle'), t('game.notFoundCopy'));
+        showGuessFeedback(t('game.notFoundCopy'), suggestClosestGenus(guessName));
         return;
     }
 
     if (guessedNames.has(available.nome.toLowerCase())) {
-        await customAlert(t('game.alreadyGuessedTitle'), t('game.alreadyGuessedCopy'));
+        showGuessFeedback(t('game.alreadyGuessedCopy'));
         return;
     }
+    clearGuessFeedback();
 
     const isCurrentRequest = beginGameAction();
     if (!isCurrentRequest) return;
@@ -856,6 +942,9 @@ async function makeServerGuess() {
             data.guess?.nome ? `display:${data.guess.nome}` : null
         );
         updateServerGameDisplay(data);
+        announceToScreenReader(data.won
+            ? `${t('result.completeTitle')}: ${data.guess.nome}`
+            : `${data.guess.nome}: ${data.guess.lastCommonClade || 'Dinosauria'}, ${Number(data.guess.percentage || 0)}%`);
 
         if (input) input.value = '';
         const suggestions = document.getElementById('suggestions');
@@ -1796,10 +1885,20 @@ function getCurrentDateFormatted() {
     return formatPhylosaurDate(today, options);
 }
 
+let countdownTimer = null;
+
 function startCountdown() {
+    clearTimeout(countdownTimer);
+    const startedOn = getTodayString();
+
     function update() {
         const timer = document.getElementById('countdown-timer');
         if (!timer) return;
+
+        if (getTodayString() !== startedOn) {
+            if (getCurrentAppRoute() === '/') showDifficultySelection();
+            return;
+        }
 
         const now = new Date();
         const nextUtcMidnight = Date.UTC(
@@ -1816,7 +1915,14 @@ function startCountdown() {
 
         timer.textContent = `${h}:${m}:${s}`;
 
-        setTimeout(update, 1000);
+        const localReset = document.getElementById('countdown-local');
+        if (localReset && !localReset.textContent) {
+            const localeTag = typeof getPhylosaurLocaleTag === 'function' ? getPhylosaurLocaleTag() : undefined;
+            const time = new Date(nextUtcMidnight).toLocaleTimeString(localeTag, { hour: '2-digit', minute: '2-digit' });
+            localReset.textContent = t('home.resetLocal', { time });
+        }
+
+        countdownTimer = setTimeout(update, 1000);
     }
 
     update();

@@ -22,6 +22,7 @@ async function showDifficultySelection() {
         </p>
         <p class="difficulty-home-countdown">
         ${t('home.nextDaily')} <span id="countdown-timer">--:--:--</span>
+        <span id="countdown-local" class="countdown-local"></span>
         </p>
 
         <div class="difficulty-home-levels">
@@ -1097,6 +1098,7 @@ async function loadMuseumPaleodataCatalog() {
             }))
             .catch(error => {
                 console.warn('Museum paleodata catalog unavailable:', error);
+                museumPaleodataCatalogPromise = null;
                 return { timeline: { oldest_ma: 251.9, youngest_ma: 66 }, taxa: {} };
             });
     }
@@ -1313,6 +1315,7 @@ async function loadMuseumOverrideCatalog() {
             .then(catalog => catalog.taxa || {})
             .catch(error => {
                 console.warn('Museum media overrides unavailable:', error);
+                museumOverrideCatalogPromise = null;
                 return {};
             });
     }
@@ -1330,6 +1333,7 @@ async function loadMuseumFallbackCatalog() {
             .then(catalog => catalog.taxa || {})
             .catch(error => {
                 console.warn('Museum fallback catalog unavailable:', error);
+                museumFallbackCatalogPromise = null;
                 return {};
             });
     }

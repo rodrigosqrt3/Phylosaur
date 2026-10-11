@@ -59,6 +59,8 @@ function applyTheme(theme, { persist = true } = {}) {
     currentTheme = theme === 'light' ? 'light' : 'dark';
     document.documentElement.dataset.theme = currentTheme;
     document.body.classList.toggle('light-mode', currentTheme === 'light');
+    document.querySelector('meta[name="theme-color"]')
+        ?.setAttribute('content', currentTheme === 'light' ? '#f5f0e8' : '#2d2318');
     if (persist) {
         try {
             localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.theme, currentTheme);
@@ -142,7 +144,9 @@ function showModal(options) {
     }
     
     if (options.message) {
-        html += `<div class="modal-message">${options.message}</div>`;
+        const messageId = `modal-message-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+        overlay.setAttribute('aria-describedby', messageId);
+        html += `<div class="modal-message" id="${messageId}">${options.message}</div>`;
     }
     
     if (options.info) {
@@ -377,6 +381,12 @@ function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
 
 let cladeInfoRequestId = 0;
 
+function formatTaxonName(name) {
+    const safeName = escapeChallengeHtml(name);
+    const isGenus = [...(database || []), ...(fullDatabase || [])].some(dino => dino?.nome === name);
+    return isGenus ? `<em>${safeName}</em>` : safeName;
+}
+
 async function showCladeInfo(cladeName, options = {}) {
     const infoDiv = document.getElementById('clade-info');
     if (!infoDiv || !cladeName) return;
@@ -395,14 +405,14 @@ async function showCladeInfo(cladeName, options = {}) {
     if (!wikiInfo) {
     infoDiv.innerHTML = `
         <div class="clade-info">
-        <h3>${escapeChallengeHtml(heading)}: ${escapeChallengeHtml(cladeName)}</h3>
+        <h3>${escapeChallengeHtml(heading)}: ${formatTaxonName(cladeName)}</h3>
         <p class="clade-empty-copy">${t('tree.noEncyclopedia')}</p>
         </div>
     `;
     return;
     }
 
-    let html = `<div class="clade-info"><h3>${escapeChallengeHtml(heading)}: ${escapeChallengeHtml(cladeName)}</h3><div class="clade-content">`;
+    let html = `<div class="clade-info"><h3>${escapeChallengeHtml(heading)}: ${formatTaxonName(cladeName)}</h3><div class="clade-content">`;
     
     if (wikiInfo.image) {
     html += `<img src="${escapeChallengeHtml(wikiInfo.image)}" alt="${escapeChallengeHtml(wikiInfo.title)}" class="clade-image" />`;

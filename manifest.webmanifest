@@ -11,6 +11,11 @@
   "background_color": "#1f1812",
   "theme_color": "#2d2318",
   "categories": ["games", "education"],
+  "shortcuts": [
+    { "name": "Practice", "url": "./#/practice", "icons": [{ "src": "pwa-icon-192.png", "sizes": "192x192" }] },
+    { "name": "Friend challenge", "url": "./#/friends", "icons": [{ "src": "pwa-icon-192.png", "sizes": "192x192" }] },
+    { "name": "Museum", "url": "./#/museum", "icons": [{ "src": "pwa-icon-192.png", "sizes": "192x192" }] }
+  ],
   "icons": [
     {
       "src": "pwa-icon-192.png",

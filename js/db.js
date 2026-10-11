@@ -319,114 +319,6 @@ function recordGuestDailyResult(won) {
     return recordGuestGameResult(won);
 }
 
-async function updateStatsAfterGame(won, guessCount, difficulty) {
-  if (!currentUserId) return [];
-
-    const { data: current } = await sb.from('statistics')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .single();
-
-    const base = current || {
-        games_played: 0,
-        games_won: 0,
-        total_guesses: 0,
-        best_score: null
-    };
-
-    const newPlayed  = base.games_played + 1;
-    const newWon     = base.games_won + (won ? 1 : 0);
-    const newTotal   = base.total_guesses + guessCount;
-    const newBest    = won && (base.best_score === null || guessCount < base.best_score)
-                        ? guessCount
-                        : base.best_score;
-
-    await sb.from('statistics').upsert({
-        user_id:      currentUserId,
-        games_played: newPlayed,
-        games_won:    newWon,
-        total_guesses: newTotal,
-        best_score:   newBest,
-        updated_at:   new Date().toISOString()
-    }, { onConflict: 'user_id' });
-
-    userStats.gamesPlayed  = newPlayed;
-    userStats.gamesWon     = newWon;
-    userStats.totalGuesses = newTotal;
-    userStats.bestScore    = newBest;
-
-    try {
-        return await checkAchievements(won, guessCount, {
-            usedHints: hintHistory.length > 0,
-            currentStreak: Number(base.current_streak || 0),
-            bestStreak: Number(base.best_streak || 0),
-            difficulty
-        });
-    } catch (error) {
-        console.error('Achievement check failed:', error);
-        return [];
-    }
-    }
-
-async function checkAchievements(won, guessCount, context = {}) {
-    if (!currentUserId) return;
-
-    const { data: completedLevels } = await sb.from('daily_results')
-        .select('difficulty')
-        .eq('user_id', currentUserId)
-        .eq('won', true);
-
-    const gameDifficulty = context.difficulty || selectedDifficulty;
-    const wonLevels = new Set((completedLevels || []).map(result => result.difficulty));
-    if (won && gameDifficulty) wonLevels.add(gameDifficulty);
-
-    const allLevels = ['muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'];
-    const completedEveryLevel = allLevels.every(difficulty => wonLevels.has(difficulty));
-    const currentStreak = Math.max(
-        Number(context.currentStreak || 0),
-        Number(context.bestStreak || 0)
-    );
-    const usedHints = context.usedHints === true;
-    
-    const achievements = [
-        { id: 'first_win', condition: () => userStats.gamesWon >= 1 },
-        { id: 'perfect_game', condition: () => won && guessCount <= 3 },
-        { id: 'ten_wins', condition: () => userStats.gamesWon >= 10 },
-        { id: 'fifty_wins', condition: () => userStats.gamesWon >= 50 },
-        { id: 'hard_win', condition: () => won && gameDifficulty === 'dificil' },
-        { id: 'very_hard_win', condition: () => won && gameDifficulty === 'muito_dificil' },
-        { id: 'field_researcher', condition: () => userStats.gamesPlayed >= 10 },
-        { id: 'persistence_pays', condition: () => won && guessCount >= 10 },
-        { id: 'independent_thinker', condition: () => won && !usedHints },
-        { id: 'complete_classification', condition: () => completedEveryLevel },
-        { id: 'three_day_expedition', condition: () => currentStreak >= 3 },
-        { id: 'seven_day_expedition', condition: () => currentStreak >= 7 }
-    ];
-
-    const { data: existing } = await sb.from('achievements')
-        .select('achievement_id')
-        .eq('user_id', currentUserId);
-
-    const unlocked = new Set(existing ? existing.map(a => a.achievement_id) : []);
-    const newlyUnlocked = [];
-
-    for (const ach of achievements) {
-        if (ach.condition() && !unlocked.has(ach.id)) {
-        const { error } = await sb.from('achievements')
-            .insert({ user_id: currentUserId, achievement_id: ach.id });
-        if (error) {
-            console.error(`Could not unlock achievement ${ach.id}:`, error);
-            continue;
-        }
-        unlocked.add(ach.id);
-        newlyUnlocked.push(ach.id);
-        showAchievementNotification(ach.id);
-        }
-    }
-
-    return newlyUnlocked;
-}
-
 function buildAchievementProgress(stats = {}, wonResults = [], supplementalProgress = {}) {
     const gamesPlayed = Number(stats?.games_played || 0);
     const gamesWon = Number(stats?.games_won || 0);
@@ -558,91 +450,6 @@ function showAchievementNotification(name) {
             if (!stack.children.length) stack.remove();
         }, 350);
       }, 3000);
-}
-
-async function clearGameProgress(difficulty) {
-    if (!currentUserId) return;
-    const today = getTodayString();
-    await sb.from('daily_results')
-    .delete()
-    .eq('user_id', currentUserId)
-    .eq('played_date', today)
-    .eq('difficulty', difficulty)
-    .eq('won', false); 
-}
-
-async function markDailyChallengeCompleted(difficulty) {
-    if (!currentUserId) return;
-    const today = getTodayString();
-    await sb.from('daily_results').upsert({
-    user_id: currentUserId,
-    played_date: today,
-    difficulty: difficulty,
-    target_dino: targetDino.nome,
-    guess_count: guesses.length,
-    won: gameWon,
-    guesses: guesses.map(g => ({ nome: g.dino.nome, isHint: g.isHint || false })),
-    revealed_clades: Array.from(revealedClades),
-    hint_history: hintHistory
-    }, { onConflict: 'user_id,played_date,difficulty' });
-    dailyCompletionCache = null;
-}
-
-async function getStreakData() {
-    if (!currentUserId) return { current: 0, best: 0, lastPlayed: null };
-
-    const { data } = await sb.from('statistics')
-    .select('current_streak, best_streak, last_played')
-    .eq('user_id', currentUserId)
-    .single();
-
-    if (!data) return { current: 0, best: 0, lastPlayed: null };
-    return { current: data.current_streak || 0, best: data.best_streak || 0, lastPlayed: data.last_played };
-}
-
-async function saveStreakData(streakData) {
-    if (!currentUserId) return;
-
-    await sb.from('statistics').upsert({
-    user_id: currentUserId,
-    current_streak: streakData.current,
-    best_streak: streakData.best,
-    last_played: streakData.lastPlayed
-    }, { onConflict: 'user_id' });
-}
-
-async function updateStreak() {
-    if (!currentUserId) return { current: 0, best: 0 };
-
-    const today = getTodayString();
-    const streakData = await getStreakData();
-
-    if (streakData.lastPlayed === today) return streakData;
-
-    const yesterdayStr = getUtcDateOffsetString(-1);
-    const tomorrowStr = getUtcDateOffsetString(1);
-
-    // Compatibility with streaks saved by the old local-date system in
-    // time zones that were already on the following calendar day.
-    if (streakData.lastPlayed === tomorrowStr) {
-        streakData.lastPlayed = today;
-        await saveStreakData(streakData);
-        return streakData;
-    }
-
-    if (streakData.lastPlayed === yesterdayStr) {
-    streakData.current++;
-    } else if (!streakData.lastPlayed) {
-    streakData.current = 1;
-    } else {
-    streakData.current = 1;
-    }
-
-    if (streakData.current > streakData.best) streakData.best = streakData.current;
-    streakData.lastPlayed = today;
-
-    await saveStreakData(streakData);
-    return streakData;
 }
 
 function checkStreakMilestone(streak) {
@@ -1118,7 +925,7 @@ async function loadPracticeDatabase(difficulty, forceClean = true, resumeAutomat
         if (wrapper && document.getElementById('tree-scroll-wrapper') === wrapper
             && currentUserId === gameOwnerId) wrapper.innerHTML = renderAppState(t('game.loadError'), {
             type: 'error', detail: error.message, compact: true
-        });
+        }) + buildGameRetryButton('startPracticeChallenge', difficulty);
     }
 }
 
@@ -1132,8 +939,13 @@ async function loadDailyDatabase(difficulty, forceClean = false, resumeAutomatic
         if (wrapper && document.getElementById('tree-scroll-wrapper') === wrapper
             && currentUserId === gameOwnerId) wrapper.innerHTML = renderAppState(t('game.loadError'), {
             type: 'error', detail: error.message, compact: true
-        });
+        }) + buildGameRetryButton('startDailyChallenge', difficulty);
     }
+}
+
+function buildGameRetryButton(starter, difficulty) {
+    if (!/^[a-z_]+$/.test(String(difficulty))) return '';
+    return `<div class="app-state-retry"><button type="button" class="btn-hint" onclick="${starter}('${difficulty}', { restoreExisting: true })">${t('common.retry')}</button></div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
