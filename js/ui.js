@@ -29,8 +29,10 @@ function setHeaderControls(screen) {
     const analyticsBtn = isAnalyticsAdmin ? iconBtn('analytics', t('nav.analytics'), 'showAnalyticsDashboard()') : '';
 
     const safeCurrentUser = escapeHtml(currentUser);
+    const signOutLabel = t('nav.signOut', { name: safeCurrentUser });
+    const accountInitial = escapeHtml(Array.from(String(currentUser || '').trim())[0]?.toLocaleUpperCase() || '?');
     const logoutBtn = currentUser
-      ? `<button class="btn-hint btn-header btn-with-icon btn-account" onclick="logout()" title="${escapeHtml(t('nav.signOut', { name: currentUser }))}">${glyph('account')}<span>${safeCurrentUser}</span></button>`
+      ? `<button class="btn-hint btn-header btn-header-icon btn-account btn-header-avatar" type="button" onclick="logout()" title="${signOutLabel}"><span class="header-avatar" aria-hidden="true">${accountInitial}</span><span class="visually-hidden">${signOutLabel}</span></button>`
       : '';
     const signInBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="showLoginModal()">${glyph('account')}<span>${t('nav.signIn')}</span></button>`;
 
@@ -57,7 +59,7 @@ function setHeaderControls(screen) {
           ${iconBtn('museum', t('nav.museum'), '', reserved)}
           ${iconBtn('analytics', t('nav.analytics'), '', reserved)}
           ${iconBtn('stats', t('nav.stats'), '', reserved)}
-          <button class="btn-hint btn-header header-account-reserve" type="button" tabindex="-1" disabled>${t('common.player')}</button>
+          <button class="btn-hint btn-header btn-header-icon header-account-reserve" type="button" tabindex="-1" disabled>${glyph('account')}<span class="visually-hidden">${t('common.player')}</span></button>
         </div>`;
     controls.innerHTML = sizingMenu + `<div class="header-controls-visible">${map[screen] || ''}</div>`;
 }
