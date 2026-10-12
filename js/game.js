@@ -84,8 +84,9 @@ const TUTORIAL_GUESS_SEQUENCE = Object.freeze([
 const TUTORIAL_DINOSAURS = Object.freeze([
     {
         nome: 'Triceratops',
-        linhagem: ['Dinosauria', 'Ornithischia', 'Genasauria', 'Cerapoda', 'Marginocephalia',
-            'Ceratopsia', 'Neoceratopsia', 'Coronosauria', 'Ceratopsidae', 'Chasmosaurinae']
+        linhagem: ['Dinosauria', 'Ornithischia', 'Genasauria', 'Neornithischia', 'Cerapoda', 'Marginocephalia',
+            'Ceratopsia', 'Neoceratopsia', 'Coronosauria', 'Ceratopsoidea', 'Ceratopsidae',
+            'Chasmosaurinae', 'Triceratopsini']
     },
     {
         nome: 'Brachiosaurus',
@@ -98,8 +99,8 @@ const TUTORIAL_DINOSAURS = Object.freeze([
         nome: 'Tyrannosaurus',
         linhagem: ['Dinosauria', 'Saurischia', 'Eusaurischia', 'Theropoda', 'Neotheropoda',
             'Averostra', 'Tetanurae', 'Orionides', 'Avetheropoda', 'Coelurosauria',
-            'Tyrannoraptora', 'Tyrannosauroidea', 'Tyrannosauridae', 'Tyrannosaurinae',
-            'Tyrannosaurini']
+            'Tyrannoraptora', 'Tyrannosauroidea', 'Pantyrannosauria', 'Eutyrannosauria',
+            'Tyrannosauridae', 'Tyrannosaurinae', 'Tyrannosaurini']
     },
     {
         nome: 'Velociraptor',
