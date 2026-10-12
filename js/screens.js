@@ -1079,7 +1079,7 @@ async function ensureMuseumCatalogLineages(catalog) {
 
 async function loadMuseumPaleodataCatalog() {
     if (!museumPaleodataCatalogPromise) {
-        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=3')
+        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=4')
             .then(response => {
                 if (!response.ok) throw new Error(`Paleodata catalog HTTP ${response.status}`);
                 return response.json();
@@ -1127,6 +1127,14 @@ const MUSEUM_PALEODATA_TERM_KEYS = Object.freeze({
     'Middle–Late Campanian': 'museum.ageMiddleLateCampanian',
     'Santonian–Campanian': 'museum.ageSantonianCampanian',
     'Tithonian': 'museum.ageTithonian',
+    'Albian': 'museum.ageAlbian',
+    'Aptian': 'museum.ageAptian',
+    'Barremian–Early Aptian': 'museum.ageBarremianEarlyAptian',
+    'Campanian': 'museum.ageCampanian',
+    'Cenomanian': 'museum.ageCenomanian',
+    'Late Carnian': 'museum.ageLateCarnian',
+    'Late Maastrichtian': 'museum.ageLateMaastrichtian',
+    'Norian': 'museum.ageNorian',
     'Triassic': 'museum.triassic',
     'Jurassic': 'museum.jurassic',
     'Cretaceous': 'museum.cretaceous',
@@ -1148,7 +1156,10 @@ const MUSEUM_PALEODATA_TERM_KEYS = Object.freeze({
     'United Kingdom': 'museum.placeUnitedKingdom',
     'Chile': 'museum.placeChile',
     'Spain': 'museum.placeSpain',
-    'Morocco': 'museum.placeMorocco'
+    'Morocco': 'museum.placeMorocco',
+    'Belgium': 'museum.placeBelgium',
+    'Brazil': 'museum.placeBrazil',
+    'Egypt': 'museum.placeEgypt'
 });
 
 function localizeMuseumPaleodataTerm(value) {

@@ -1,12 +1,70 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-26",
+  "generated_at": "2026-10-12",
   "description": "Source-verified Museum paleodata. Only records with verification.status equal to source_verified are rendered by the app. Modern countries identify fossil collection locations, not reconstructed Mesozoic geography or a complete biological range.",
   "timeline": {
     "oldest_ma": 251.9,
     "youngest_ma": 66.0
   },
   "taxa": {
+    "Allosaurus": {
+      "period": "Late Jurassic",
+      "age_text": "Kimmeridgian–Tithonian",
+      "countries": ["United States", "Portugal"],
+      "continents": ["North America", "Europe"],
+      "formations": ["Morrison Formation", "Lourinhã Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Allosaurus fragilis and A. jimmadseni from the Morrison Formation of the western United States, and Allosaurus material from the Lourinhã Formation of Portugal, counted at genus level whether or not A. europaeus is a separate species. Referrals from other continents are excluded.",
+        "sources": [
+          {
+            "citation": "Chure & Loewen (2020), PeerJ 8:e7803",
+            "url": "https://doi.org/10.7717/peerj.7803"
+          },
+          {
+            "citation": "Burigo & Mateus (2025), Diversity 17(1):29",
+            "url": "https://doi.org/10.3390/d17010029"
+          }
+        ]
+      }
+    },
+    "Amazonsaurus": {
+      "period": "Early Cretaceous",
+      "age_text": "Aptian–Albian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Itapecuru Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Amazonsaurus maranhensis from the Itapecuru Formation (Parnaíba Basin) of Itapecuru-Mirim, Maranhão State, Brazil. A narrower age than Aptian–Albian is not asserted.",
+        "sources": [
+          {
+            "citation": "Carvalho, Avilla & Salgado (2003), Cretaceous Research 24(6):697–713",
+            "url": "https://doi.org/10.1016/j.cretres.2003.07.005"
+          }
+        ]
+      }
+    },
+    "Aratasaurus": {
+      "period": "Early Cretaceous",
+      "age_text": "Aptian–Albian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Romualdo Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Aratasaurus museunacionali from the base of the Romualdo Formation (Araripe Basin) near Santana do Cariri, Ceará, Brazil. Published ages for the formation differ between Aptian and Albian, so only Aptian–Albian is asserted.",
+        "sources": [
+          {
+            "citation": "Sayão et al. (2020), Scientific Reports 10:10892",
+            "url": "https://doi.org/10.1038/s41598-020-67822-9"
+          }
+        ]
+      }
+    },
     "Archaeopteryx": {
       "period": "Late Jurassic",
       "age_text": "Tithonian",
@@ -33,6 +91,28 @@
         ]
       }
     },
+    "Argentinosaurus": {
+      "period": "Late Cretaceous",
+      "age_text": "Cenomanian–Turonian",
+      "countries": ["Argentina"],
+      "continents": ["South America"],
+      "formations": ["Huincul Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Argentinosaurus huinculensis from the Huincul Formation (Neuquén Group) near Plaza Huincul, Neuquén Province, Argentina, originally reported as the Río Limay Formation. A narrower range than Cenomanian–Turonian is not asserted.",
+        "sources": [
+          {
+            "citation": "Bonaparte & Coria (1993), Ameghiniana 30(3):271–282",
+            "url": "https://www.ameghiniana.org.ar/index.php/ameghiniana/article/view/2163"
+          },
+          {
+            "citation": "Garrido (2010), Revista del Museo Argentino de Ciencias Naturales 12:121–177",
+            "url": "https://doi.org/10.22179/revmacn.12.239"
+          }
+        ]
+      }
+    },
     "Brachiosaurus": {
       "period": "Late Jurassic",
       "age_text": "Kimmeridgian–Tithonian",
@@ -51,6 +131,28 @@
           {
             "citation": "Taylor (2011), correction to the Brachiosaurus–Giraffatitan separation",
             "url": "https://doi.org/10.1080/02724634.2011.557115"
+          }
+        ]
+      }
+    },
+    "Buriolestes": {
+      "period": "Late Triassic",
+      "age_text": "Late Carnian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Santa Maria Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Buriolestes schultzi from the Hyperodapedon Assemblage Zone of the Santa Maria Formation (Candelária Sequence), Rio Grande do Sul, Brazil. A narrower numerical range is not asserted.",
+        "sources": [
+          {
+            "citation": "Cabreira et al. (2016), Current Biology 26:3090–3095",
+            "url": "https://doi.org/10.1016/j.cub.2016.09.040"
+          },
+          {
+            "citation": "Langer, Ramezani & Da Rosa (2018), Gondwana Research 57:133–140",
+            "url": "https://doi.org/10.1016/j.gr.2018.01.005"
           }
         ]
       }
@@ -77,6 +179,28 @@
         ]
       }
     },
+    "Coelophysis": {
+      "period": "Late Triassic",
+      "age_text": "Late Triassic",
+      "countries": ["United States"],
+      "continents": ["North America"],
+      "formations": ["Chinle Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Coelophysis bauri from the Ghost Ranch (Whitaker) quarry in the Chinle Formation of New Mexico, USA. The quarry's stage is debated, so no stage is asserted; Megapnosaurus and fragmentary referrals from other localities are excluded.",
+        "sources": [
+          {
+            "citation": "Schwartz & Gillette (1994), Journal of Paleontology 68:1118–1130",
+            "url": "https://doi.org/10.1017/S0022336000026718"
+          },
+          {
+            "citation": "Bugos & McDavid (2024), Acta Palaeontologica Polonica 69",
+            "url": "https://doi.org/10.4202/app.01085.2023"
+          }
+        ]
+      }
+    },
     "Cryolophosaurus": {
       "period": "Early Jurassic",
       "age_text": "Early Jurassic",
@@ -95,6 +219,28 @@
           {
             "citation": "Smith et al. (2007), Zoological Journal of the Linnean Society 151:377–421",
             "url": "https://experts.umn.edu/en/publications/osteology-of-cryolophosaurus-ellioti-dinosauria-theropoda-from-th/"
+          }
+        ]
+      }
+    },
+    "Deinonychus": {
+      "period": "Early Cretaceous",
+      "age_text": "Aptian–Albian",
+      "countries": ["United States"],
+      "continents": ["North America"],
+      "formations": ["Cloverly Formation", "Antlers Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Deinonychus antirrhopus from the Cloverly Formation of Montana and Wyoming and the Antlers Formation of Oklahoma, USA. Isolated teeth from other units are excluded as tentative referrals.",
+        "sources": [
+          {
+            "citation": "Ostrom (1969), Peabody Museum of Natural History Bulletin 30",
+            "url": "https://doi.org/10.12987/9781933789408"
+          },
+          {
+            "citation": "Frederickson, Engel & Cifelli (2020), Palaeogeography, Palaeoclimatology, Palaeoecology 552:109780",
+            "url": "https://doi.org/10.1016/j.palaeo.2020.109780"
           }
         ]
       }
@@ -121,7 +267,25 @@
         ]
       }
     },
-    "Herrerasaurus": {
+    "Diplodocus": {
+      "period": "Late Jurassic",
+      "age_text": "Kimmeridgian–Tithonian",
+      "countries": ["United States"],
+      "continents": ["North America"],
+      "formations": ["Morrison Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Diplodocus from the Upper Jurassic Morrison Formation of the western United States. Other diplodocids such as Galeamopus, Supersaurus and the Portuguese Dinheirosaurus are excluded.",
+        "sources": [
+          {
+            "citation": "Tschopp, Mateus & Benson (2015), PeerJ 3:e857",
+            "url": "https://doi.org/10.7717/peerj.857"
+          }
+        ]
+      }
+    },
+    "Eoraptor": {
       "period": "Late Triassic",
       "age_text": "Carnian",
       "countries": ["Argentina"],
@@ -129,16 +293,78 @@
       "formations": ["Ischigualasto Formation"],
       "verification": {
         "status": "source_verified",
-        "reviewed_at": "2026-08-26",
-        "scope": "Herrerasaurus ischigualastensis from Carnian strata of the Ischigualasto Formation in northwestern Argentina.",
+        "reviewed_at": "2026-10-12",
+        "scope": "Eoraptor lunensis from the Ischigualasto Formation of San Juan Province, Argentina. A narrower numerical range is not asserted.",
         "sources": [
           {
-            "citation": "Martínez & Alcober (2009), PLOS ONE 4:e4397",
-            "url": "https://doi.org/10.1371/journal.pone.0004397"
+            "citation": "Sereno et al. (1993), Nature 361:64–66",
+            "url": "https://doi.org/10.1038/361064a0"
           },
           {
-            "citation": "Martínez & Alcober (2010), ZooKeys 63:55–81",
-            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3088398/"
+            "citation": "Sereno, Martínez & Alcober (2012), Journal of Vertebrate Paleontology 32(sup1):83–179",
+            "url": "https://doi.org/10.1080/02724634.2013.820113"
+          }
+        ]
+      }
+    },
+    "Giganotosaurus": {
+      "period": "Late Cretaceous",
+      "age_text": "Cenomanian",
+      "countries": ["Argentina"],
+      "continents": ["South America"],
+      "formations": ["Candeleros Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Giganotosaurus carolinii from the Candeleros Formation (Neuquén Group) of Neuquén Province, Argentina. An early Cenomanian placement has been proposed, but only Cenomanian is asserted.",
+        "sources": [
+          {
+            "citation": "Coria & Salgado (1995), Nature 377:224–226",
+            "url": "https://doi.org/10.1038/377224a0"
+          },
+          {
+            "citation": "Garrido (2010), Revista del Museo Argentino de Ciencias Naturales 12:121–177",
+            "url": "https://doi.org/10.22179/revmacn.12.239"
+          }
+        ]
+      }
+    },
+    "Gondwanatitan": {
+      "period": "Late Cretaceous",
+      "age_text": "Late Cretaceous",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Adamantina Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Gondwanatitan faustoi from the Adamantina Formation (Bauru Group) near Álvares Machado, São Paulo State, Brazil. No stage is asserted because published ages for the formation range from Turonian–Santonian to Campanian–early Maastrichtian.",
+        "sources": [
+          {
+            "citation": "Nascimento et al. (2025), Andean Geology 52(3):343–362",
+            "url": "https://doi.org/10.5027/andgeoV52n3-3797"
+          }
+        ]
+      }
+    },
+    "Guaibasaurus": {
+      "period": "Late Triassic",
+      "age_text": "Norian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Candelária Sequence (Riograndia Assemblage Zone)"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Guaibasaurus candelariensis from Riograndia Assemblage Zone beds of Rio Grande do Sul, Brazil, traditionally called the Caturrita Formation and now placed in the upper Candelária Sequence. The Norian age is consistent with a U–Pb maximum depositional age of about 225 Ma; a narrower range is not asserted.",
+        "sources": [
+          {
+            "citation": "Langer, Bittencourt & Schultz (2011), Earth and Environmental Science Transactions of the Royal Society of Edinburgh 101:301–332",
+            "url": "https://doi.org/10.1017/S175569101102007X"
+          },
+          {
+            "citation": "Langer, Ramezani & Da Rosa (2018), Gondwana Research 57:133–140",
+            "url": "https://doi.org/10.1016/j.gr.2018.01.005"
           }
         ]
       }
@@ -161,6 +387,94 @@
           {
             "citation": "Curtice et al. (2024), The Anatomical Record",
             "url": "https://doi.org/10.1002/ar.25520"
+          }
+        ]
+      }
+    },
+    "Herrerasaurus": {
+      "period": "Late Triassic",
+      "age_text": "Carnian",
+      "countries": ["Argentina"],
+      "continents": ["South America"],
+      "formations": ["Ischigualasto Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-08-26",
+        "scope": "Herrerasaurus ischigualastensis from Carnian strata of the Ischigualasto Formation in northwestern Argentina.",
+        "sources": [
+          {
+            "citation": "Martínez & Alcober (2009), PLOS ONE 4:e4397",
+            "url": "https://doi.org/10.1371/journal.pone.0004397"
+          },
+          {
+            "citation": "Martínez & Alcober (2010), ZooKeys 63:55–81",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3088398/"
+          }
+        ]
+      }
+    },
+    "Iguanodon": {
+      "period": "Early Cretaceous",
+      "age_text": "Barremian–Early Aptian",
+      "countries": ["Belgium"],
+      "continents": ["Europe"],
+      "formations": ["Sainte-Barbe Clays Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Iguanodon bernissartensis from the Sainte-Barbe Clays at Bernissart, Belgium. Historic Iguanodon species now placed in other genera are excluded, and referrals from England, Spain and elsewhere are not listed here.",
+        "sources": [
+          {
+            "citation": "Charig & Chapman (1998), Bulletin of Zoological Nomenclature 55:99–104",
+            "url": "https://doi.org/10.5962/bhl.part.157"
+          },
+          {
+            "citation": "Yans et al. (2005), Comptes Rendus Palevol 4:135–150",
+            "url": "https://doi.org/10.1016/j.crpv.2004.12.003"
+          }
+        ]
+      }
+    },
+    "Irritator": {
+      "period": "Early Cretaceous",
+      "age_text": "Aptian–Albian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Romualdo Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Irritator challengeri, known from the holotype skull, from the Romualdo Formation (Santana Group, Araripe Basin) of Ceará, Brazil. Angaturama limai material is excluded. Recent work favours a late Aptian age and older literature an Albian one, so only Aptian–Albian is asserted.",
+        "sources": [
+          {
+            "citation": "Martill et al. (1996), Journal of the Geological Society 153:5–8",
+            "url": "https://doi.org/10.1144/gsjgs.153.1.0005"
+          },
+          {
+            "citation": "Sues et al. (2002), Journal of Vertebrate Paleontology 22:535–547",
+            "url": "https://doi.org/10.1671/0272-4634(2002)022[0535:ICASDT]2.0.CO;2"
+          },
+          {
+            "citation": "Schade et al. (2023), Palaeontologia Electronica 26(2):a17",
+            "url": "https://doi.org/10.26879/1242"
+          }
+        ]
+      }
+    },
+    "Itapeuasaurus": {
+      "period": "Late Cretaceous",
+      "age_text": "Cenomanian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Alcântara Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Itapeuasaurus cajapioensis from the Alcântara Formation (São Luís Basin) at Itapeua beach, Cajapió, Maranhão State, Brazil. A sub-stage age is not asserted.",
+        "sources": [
+          {
+            "citation": "Lindoso et al. (2019), Cretaceous Research 104:104191",
+            "url": "https://doi.org/10.1016/j.cretres.2019.104191"
           }
         ]
       }
@@ -209,6 +523,148 @@
         ]
       }
     },
+    "Microraptor": {
+      "period": "Early Cretaceous",
+      "age_text": "Aptian",
+      "countries": ["China"],
+      "continents": ["Asia"],
+      "formations": ["Jiufotang Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Microraptor from the Jiufotang Formation (Jehol Group) of Liaoning, China. Other Jehol dromaeosaurids, such as Sinornithosaurus and Changyuraptor, are excluded.",
+        "sources": [
+          {
+            "citation": "Xu, Zhou & Wang (2000), Nature 408:705–708",
+            "url": "https://doi.org/10.1038/35047056"
+          },
+          {
+            "citation": "Xu et al. (2003), Nature 421:335–340",
+            "url": "https://doi.org/10.1038/nature01342"
+          }
+        ]
+      }
+    },
+    "Oxalaia": {
+      "period": "Late Cretaceous",
+      "age_text": "Cenomanian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Alcântara Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Oxalaia quilombensis, known from a partial snout and a maxillary fragment, from the Alcântara Formation (Laje do Coringa site) on Cajual Island, Maranhão, Brazil. A narrower numerical range is not asserted.",
+        "sources": [
+          {
+            "citation": "Kellner et al. (2011), Anais da Academia Brasileira de Ciências 83:99–108",
+            "url": "https://doi.org/10.1590/S0001-37652011000100006"
+          }
+        ]
+      }
+    },
+    "Pampadromaeus": {
+      "period": "Late Triassic",
+      "age_text": "Late Carnian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Santa Maria Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Pampadromaeus barberenai from the Hyperodapedon Assemblage Zone of the Santa Maria Formation, Rio Grande do Sul, Brazil. A narrower numerical range is not asserted.",
+        "sources": [
+          {
+            "citation": "Cabreira et al. (2011), Naturwissenschaften 98:1035–1040",
+            "url": "https://doi.org/10.1007/s00114-011-0858-0"
+          },
+          {
+            "citation": "Langer, Ramezani & Da Rosa (2018), Gondwana Research 57:133–140",
+            "url": "https://doi.org/10.1016/j.gr.2018.01.005"
+          }
+        ]
+      }
+    },
+    "Parasaurolophus": {
+      "period": "Late Cretaceous",
+      "age_text": "Late Campanian",
+      "countries": ["Canada", "United States"],
+      "continents": ["North America"],
+      "formations": ["Dinosaur Park Formation", "Kaiparowits Formation", "Fruitland Formation", "Kirtland Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Parasaurolophus walkeri from the Dinosaur Park Formation of Alberta, and P. tubicen and P. cyrtocristatus from the Fruitland, Kirtland and Kaiparowits formations of New Mexico and Utah. Fragmentary material only tentatively assigned to the genus is excluded.",
+        "sources": [
+          {
+            "citation": "Farke et al. (2013), PeerJ 1:e182",
+            "url": "https://doi.org/10.7717/peerj.182"
+          },
+          {
+            "citation": "Gates, Evans & Sertich (2021), PeerJ 9:e10669",
+            "url": "https://doi.org/10.7717/peerj.10669"
+          }
+        ]
+      }
+    },
+    "Patagotitan": {
+      "period": "Early Cretaceous",
+      "age_text": "Albian",
+      "countries": ["Argentina"],
+      "continents": ["South America"],
+      "formations": ["Cerro Barcino Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Patagotitan mayorum from the Cerro Castaño Member of the Cerro Barcino Formation at La Flecha, Chubut Province, Argentina. U–Pb dates point to about 101.6 Ma, but only Albian is asserted.",
+        "sources": [
+          {
+            "citation": "Carballido et al. (2017), Proceedings of the Royal Society B 284:20171219",
+            "url": "https://doi.org/10.1098/rspb.2017.1219"
+          }
+        ]
+      }
+    },
+    "Santanaraptor": {
+      "period": "Early Cretaceous",
+      "age_text": "Aptian–Albian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Romualdo Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Santanaraptor placidus from the Romualdo Formation (Santana Group, Araripe Basin), northeastern Brazil. Published ages for the formation differ between Aptian and Albian, so only Aptian–Albian is asserted.",
+        "sources": [
+          {
+            "citation": "Delcourt et al. (2025), The Anatomical Record",
+            "url": "https://doi.org/10.1002/ar.70085"
+          }
+        ]
+      }
+    },
+    "Saturnalia": {
+      "period": "Late Triassic",
+      "age_text": "Late Carnian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Santa Maria Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Saturnalia tupiniquim from the Hyperodapedon Assemblage Zone of the Santa Maria Formation (Candelária Sequence), Rio Grande do Sul, Brazil. The late Carnian age follows the U–Pb dating of the unit; no numerical age is asserted for the type site itself.",
+        "sources": [
+          {
+            "citation": "Langer et al. (1999), Comptes Rendus de l'Académie des Sciences IIA 329:511–517",
+            "url": "https://doi.org/10.1016/S1251-8050(00)80025-7"
+          },
+          {
+            "citation": "Langer, Ramezani & Da Rosa (2018), Gondwana Research 57:133–140",
+            "url": "https://doi.org/10.1016/j.gr.2018.01.005"
+          }
+        ]
+      }
+    },
     "Scutellosaurus": {
       "period": "Early Jurassic",
       "age_text": "Early Jurassic",
@@ -223,6 +679,72 @@
           {
             "citation": "Breeden et al. (2021), Royal Society Open Science 8:201676",
             "url": "https://doi.org/10.1098/rsos.201676"
+          }
+        ]
+      }
+    },
+    "Spinosaurus": {
+      "period": "Late Cretaceous",
+      "age_text": "Cenomanian",
+      "countries": ["Egypt", "Morocco"],
+      "continents": ["Africa"],
+      "formations": ["Bahariya Formation", "Kem Kem Group"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Spinosaurus aegyptiacus from the Bahariya Formation of Egypt (the destroyed holotype) and the mainstream referral of Kem Kem Group material from southeastern Morocco. The identity of the Kem Kem material remains debated; records from Brazil, Tunisia and elsewhere are excluded.",
+        "sources": [
+          {
+            "citation": "Ibrahim et al. (2014), Science 345:1613–1616",
+            "url": "https://doi.org/10.1126/science.1258750"
+          },
+          {
+            "citation": "Ibrahim et al. (2020), Nature 581:67–70",
+            "url": "https://doi.org/10.1038/s41586-020-2190-3"
+          }
+        ]
+      }
+    },
+    "Staurikosaurus": {
+      "period": "Late Triassic",
+      "age_text": "Carnian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Santa Maria Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Staurikosaurus pricei, known only from the holotype, from the Santa Maria Formation of Rio Grande do Sul, Brazil. A sub-stage placement and a numerical age are not asserted.",
+        "sources": [
+          {
+            "citation": "Colbert (1970), American Museum Novitates 2405:1–39",
+            "url": "https://www.biodiversitylibrary.org/bibliography/207311"
+          },
+          {
+            "citation": "Bittencourt & Kellner (2009), Zootaxa 2079:1–56",
+            "url": "https://doi.org/10.11646/zootaxa.2079.1.1"
+          }
+        ]
+      }
+    },
+    "Stegosaurus": {
+      "period": "Late Jurassic",
+      "age_text": "Kimmeridgian–Tithonian",
+      "countries": ["United States"],
+      "continents": ["North America"],
+      "formations": ["Morrison Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Stegosaurus from the Upper Jurassic Morrison Formation of the western United States. Portuguese material reported as Stegosaurus cf. ungulatus is excluded as a tentative referral, and Hesperosaurus is not counted.",
+        "sources": [
+          {
+            "citation": "Maidment et al. (2008), Journal of Systematic Palaeontology 6:367–407",
+            "url": "https://doi.org/10.1017/S1477201908002459"
+          },
+          {
+            "citation": "Maidment, Brassey & Barrett (2015), PLOS ONE 10:e0138352",
+            "url": "https://doi.org/10.1371/journal.pone.0138352"
           }
         ]
       }
@@ -245,6 +767,120 @@
           {
             "citation": "Brown, Holmes & Currie (2020), Vertebrate Anatomy Morphology Palaeontology 8:67–95",
             "url": "https://doi.org/10.18435/vamp29361"
+          }
+        ]
+      }
+    },
+    "Tapuiasaurus": {
+      "period": "Early Cretaceous",
+      "age_text": "Aptian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Quiricó Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Tapuiasaurus macedoi from the Quiricó Formation (Sanfranciscana Basin) near Coração de Jesus, northern Minas Gerais, Brazil, dated as Aptian on the basis of its fish fauna. A numerical age is not asserted.",
+        "sources": [
+          {
+            "citation": "Zaher et al. (2011), PLoS ONE 6(2):e16663",
+            "url": "https://doi.org/10.1371/journal.pone.0016663"
+          }
+        ]
+      }
+    },
+    "Triceratops": {
+      "period": "Late Cretaceous",
+      "age_text": "Late Maastrichtian",
+      "countries": ["United States", "Canada"],
+      "continents": ["North America"],
+      "formations": ["Hell Creek Formation", "Lance Formation", "Laramie Formation", "Scollard Formation", "Frenchman Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Triceratops horridus and T. prorsus from upper Maastrichtian formations of the western United States and of Alberta and Saskatchewan, Canada. Torosaurus and other chasmosaurines are not counted as Triceratops here.",
+        "sources": [
+          {
+            "citation": "Forster (1996), Journal of Vertebrate Paleontology 16:246–258",
+            "url": "https://doi.org/10.1080/02724634.1996.10011312"
+          },
+          {
+            "citation": "Scannella et al. (2014), PNAS 111:10245–10250",
+            "url": "https://doi.org/10.1073/pnas.1313334111"
+          }
+        ]
+      }
+    },
+    "Tyrannosaurus": {
+      "period": "Late Cretaceous",
+      "age_text": "Late Maastrichtian",
+      "countries": ["United States", "Canada"],
+      "continents": ["North America"],
+      "formations": ["Hell Creek Formation", "Lance Formation", "Scollard Formation", "Frenchman Formation", "North Horn Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Tyrannosaurus rex from upper Maastrichtian formations of the western United States and of Alberta and Saskatchewan, Canada. Asian Tarbosaurus and the debated older New Mexico material described as T. mcraeensis are excluded.",
+        "sources": [
+          {
+            "citation": "Osborn (1905), Bulletin of the AMNH 21:259–265",
+            "url": "http://hdl.handle.net/2246/1464"
+          },
+          {
+            "citation": "Brochu (2003), Journal of Vertebrate Paleontology 22(sup4):1–138",
+            "url": "https://doi.org/10.1080/02724634.2003.10010947"
+          },
+          {
+            "citation": "McIver (2002), Canadian Journal of Earth Sciences 39:207–221",
+            "url": "https://doi.org/10.1139/e01-073"
+          }
+        ]
+      }
+    },
+    "Uberabatitan": {
+      "period": "Late Cretaceous",
+      "age_text": "Maastrichtian",
+      "countries": ["Brazil"],
+      "continents": ["South America"],
+      "formations": ["Serra da Galga Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Uberabatitan ribeiroi from Uberaba, Minas Gerais, Brazil, in the unit originally described as the Serra da Galga Member of the Marília Formation (Bauru Group) and now ranked as the Serra da Galga Formation. The Maastrichtian age is biostratigraphic; no radiometric age is asserted.",
+        "sources": [
+          {
+            "citation": "Salgado & Carvalho (2008), Palaeontology 51:881–901",
+            "url": "https://doi.org/10.1111/j.1475-4983.2008.00781.x"
+          },
+          {
+            "citation": "Silva Junior et al. (2019), Zootaxa 4577(3)",
+            "url": "https://doi.org/10.11646/zootaxa.4577.3.1"
+          },
+          {
+            "citation": "Soares et al. (2021), Geological Journal 56(2)",
+            "url": "https://doi.org/10.1002/gj.3987"
+          }
+        ]
+      }
+    },
+    "Velociraptor": {
+      "period": "Late Cretaceous",
+      "age_text": "Campanian",
+      "countries": ["Mongolia"],
+      "continents": ["Asia"],
+      "formations": ["Djadokhta Formation"],
+      "verification": {
+        "status": "source_verified",
+        "reviewed_at": "2026-10-12",
+        "scope": "Velociraptor mongoliensis from the Djadokhta Formation of Mongolia. Velociraptor osmolskae from Inner Mongolia, China, is excluded because its placement in the genus has been questioned.",
+        "sources": [
+          {
+            "citation": "Godefroit et al. (2008), Journal of Vertebrate Paleontology 28:432–438",
+            "url": "https://doi.org/10.1671/0272-4634(2008)28[432:ANSOVD]2.0.CO;2"
+          },
+          {
+            "citation": "King et al. (2020), Journal of Anatomy 237:861–869",
+            "url": "https://doi.org/10.1111/joa.13253"
           }
         ]
       }
