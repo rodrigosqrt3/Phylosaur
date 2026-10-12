@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v211";
+const CACHE_VERSION = "phylosaur-shell-v212";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -9,19 +9,19 @@ const CORE_ASSETS = [
   "./manifest.webmanifest",
   "./phylosaur_media_overrides.json?v=26",
   "./phylosaur_paleodata.json",
-  "./style.css?v=211",
-  "./js/config.js?v=211",
-  "./js/state.js?v=211",
-  "./js/i18n.js?v=211",
-  "./js/api.js?v=211",
-  "./js/autocomplete.js?v=211",
-  "./js/db.js?v=211",
-  "./js/auth.js?v=211",
-  "./js/ui.js?v=211",
-  "./js/screens.js?v=211",
-  "./js/tree.js?v=211",
-  "./js/game.js?v=211",
-  "./js/main.js?v=211"
+  "./style.css?v=212",
+  "./js/config.js?v=212",
+  "./js/state.js?v=212",
+  "./js/i18n.js?v=212",
+  "./js/api.js?v=212",
+  "./js/autocomplete.js?v=212",
+  "./js/db.js?v=212",
+  "./js/auth.js?v=212",
+  "./js/ui.js?v=212",
+  "./js/screens.js?v=212",
+  "./js/tree.js?v=212",
+  "./js/game.js?v=212",
+  "./js/main.js?v=212"
 ];
 
 // Decorative/install icons must not invalidate an otherwise complete shell.
@@ -29,7 +29,9 @@ const OPTIONAL_ASSETS = [
   "./pwa-icon-192.png",
   "./pwa-icon-512.png",
   "./apple-touch-icon.png",
-  "./pwa-icon.svg"
+  "./pwa-icon.svg",
+  "./pwa-icon-maskable-512.png",
+  "./favicon.svg"
 ];
 
 async function cacheAvailableCoreAssets() {
