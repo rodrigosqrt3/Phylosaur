@@ -1,7 +1,67 @@
 {
-  "version": 27,
+  "version": 28,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Astrophocaudia": {
+      "file_title": "File:Astrophocaudia LM.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Astrophocaudia_LM.png/960px-Astrophocaudia_LM.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Astrophocaudia_LM.png",
+      "artist": "Levi B. Martinez-Reza",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
+    "Nanosaurus": {
+      "file_title": "File:NanosaurusJF.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/NanosaurusJF.png/960px-NanosaurusJF.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:NanosaurusJF.png",
+      "artist": "Jfstudiospaleoart",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Einiosaurus": {
+      "file_title": "File:Einiosaurus BW.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Einiosaurus_BW.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Einiosaurus_BW.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0",
+      "source": "wikimedia"
+    },
+    "Qiupalong": {
+      "file_title": "File:Qiupalong Restoration.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Qiupalong_Restoration.png/960px-Qiupalong_Restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Qiupalong_Restoration.png",
+      "artist": "PaleoNeolitic",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0",
+      "source": "wikimedia"
+    },
+    "Liaoningornis": {
+      "file_title": "File:Liaoningornis 2.JPG",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/Liaoningornis_2.JPG/960px-Liaoningornis_2.JPG",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Liaoningornis_2.JPG",
+      "artist": "Conty",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0",
+      "source": "wikimedia"
+    },
+    "Judiceratops": {
+      "file_title": "File:Judiceratops NT small.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/26/Judiceratops_NT_small.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Judiceratops_NT_small.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
     "Aegyptosaurus": {
       "file_title": "File:Aegyptosaurus LM.png",
       "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Aegyptosaurus_LM.png/960px-Aegyptosaurus_LM.png",
