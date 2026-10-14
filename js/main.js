@@ -185,6 +185,43 @@ window.addEventListener('popstate', () => {
   if (appRoutingReady) restoreAppRoute();
 });
 
+if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+
+window.addEventListener('pagehide', () => {
+  try {
+    sessionStorage.setItem(PHYLOSAUR_STORAGE_KEYS.reloadScroll,
+      JSON.stringify({ url: window.location.href, y: Math.round(window.scrollY) }));
+  } catch (_error) {}
+});
+
+function restoreReloadScrollPosition() {
+  let saved = null;
+  try {
+    saved = JSON.parse(sessionStorage.getItem(PHYLOSAUR_STORAGE_KEYS.reloadScroll) || 'null');
+    sessionStorage.removeItem(PHYLOSAUR_STORAGE_KEYS.reloadScroll);
+  } catch (_error) {}
+  const navigation = performance.getEntriesByType?.('navigation')?.[0];
+  if (!saved || saved.url !== window.location.href || !(saved.y > 0)
+      || (navigation && navigation.type !== 'reload')) return;
+
+  const interactions = ['wheel', 'touchstart', 'keydown', 'mousedown'];
+  let cancelled = false;
+  const cancel = () => { cancelled = true; };
+  const stop = () => interactions.forEach(type => window.removeEventListener(type, cancel));
+  interactions.forEach(type => window.addEventListener(type, cancel, { passive: true }));
+  const deadline = performance.now() + 5000;
+  const attempt = () => {
+    if (cancelled) return stop();
+    const maxY = document.documentElement.scrollHeight - window.innerHeight;
+    if (maxY >= saved.y || performance.now() > deadline) {
+      window.scrollTo({ top: Math.min(saved.y, Math.max(0, maxY)), behavior: 'instant' });
+      return stop();
+    }
+    requestAnimationFrame(attempt);
+  };
+  requestAnimationFrame(attempt);
+}
+
 window.addEventListener('resize', () => {
   const nextWidth = window.innerWidth;
   if (nextWidth === lastTreeViewportWidth) return;
@@ -203,6 +240,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     savedTheme = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.theme) || 'dark';
   } catch (_error) {}
   applyTheme(savedTheme, { persist: false });
+  restoreReloadScrollPosition();
 
   if (!sb) {
     window.showPhylosaurBootError?.();
