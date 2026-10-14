@@ -1079,7 +1079,7 @@ async function ensureMuseumCatalogLineages(catalog) {
 
 async function loadMuseumPaleodataCatalog() {
     if (!museumPaleodataCatalogPromise) {
-        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=4')
+        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=6')
             .then(response => {
                 if (!response.ok) throw new Error(`Paleodata catalog HTTP ${response.status}`);
                 return response.json();
@@ -1135,6 +1135,12 @@ const MUSEUM_PALEODATA_TERM_KEYS = Object.freeze({
     'Late Carnian': 'museum.ageLateCarnian',
     'Late Maastrichtian': 'museum.ageLateMaastrichtian',
     'Norian': 'museum.ageNorian',
+    'Barremian': 'museum.ageBarremian',
+    'Barremian–Aptian': 'museum.ageBarremianAptian',
+    'Campanian–Maastrichtian': 'museum.ageCampanianMaastrichtian',
+    'Late Campanian–Maastrichtian': 'museum.ageLateCampanianMaastrichtian',
+    'Kimmeridgian': 'museum.ageKimmeridgian',
+    'Oxfordian': 'museum.ageOxfordian',
     'Triassic': 'museum.triassic',
     'Jurassic': 'museum.jurassic',
     'Cretaceous': 'museum.cretaceous',
@@ -1159,7 +1165,14 @@ const MUSEUM_PALEODATA_TERM_KEYS = Object.freeze({
     'Morocco': 'museum.placeMorocco',
     'Belgium': 'museum.placeBelgium',
     'Brazil': 'museum.placeBrazil',
-    'Egypt': 'museum.placeEgypt'
+    'Egypt': 'museum.placeEgypt',
+    'Russia': 'museum.placeRussia',
+    'Switzerland': 'museum.placeSwitzerland',
+    'Tanzania': 'museum.placeTanzania',
+    'Lesotho': 'museum.placeLesotho',
+    'Niger': 'museum.placeNiger',
+    'South Africa': 'museum.placeSouthAfrica',
+    'Zimbabwe': 'museum.placeZimbabwe'
 });
 
 function localizeMuseumPaleodataTerm(value) {
@@ -1310,7 +1323,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=26')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=27')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();

@@ -7956,6 +7956,21 @@ html[data-theme="light"] body .game-card {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), var(--elev-3);
 }
 
+body.light-mode .clade-link,
+html[data-theme="light"] body .clade-link {
+  background: #4a3829;
+  border-color: #4a3829;
+  color: #f8f6f3;
+}
+
+@media (hover: hover) {
+  body.light-mode .clade-link:hover,
+  html[data-theme="light"] body .clade-link:hover {
+    background: var(--bg-card);
+    color: #2d2318;
+  }
+}
+
 .site-header .language-picker {
   position: relative;
 }

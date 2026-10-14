@@ -1,7 +1,57 @@
 {
-  "version": 26,
+  "version": 27,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Aegyptosaurus": {
+      "file_title": "File:Aegyptosaurus LM.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Aegyptosaurus_LM.png/960px-Aegyptosaurus_LM.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Aegyptosaurus_LM.png",
+      "artist": "Levi Martinez-Reza",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
+    "Angaturama": {
+      "file_title": "File:Angaturama limai skeleton.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Angaturama_limai_skeleton.jpg/960px-Angaturama_limai_skeleton.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Angaturama_limai_skeleton.jpg",
+      "artist": "João de Deus Vidal Jr",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Cathartesaura": {
+      "file_title": "File:Cathartesaura caudals.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Cathartesaura_caudals.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Cathartesaura_caudals.png",
+      "artist": "Pablo A. Gallina & Sebastián Apesteguía",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0",
+      "source": "wikimedia"
+    },
+    "Chenanisaurus": {
+      "file_title": "File:Chenanisaurus barbaricus.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Chenanisaurus_barbaricus.jpg/960px-Chenanisaurus_barbaricus.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Chenanisaurus_barbaricus.jpg",
+      "artist": "Paleocolour",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Leyesaurus": {
+      "file_title": "File:Leyesaurus silhouette.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Leyesaurus_silhouette.png/960px-Leyesaurus_silhouette.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Leyesaurus_silhouette.png",
+      "artist": "Cecilia Apaldetti, Ricardo N. Martinez, Oscar A. Alcober and Diego Pol",
+      "license": "CC BY 2.5",
+      "license_url": "https://creativecommons.org/licenses/by/2.5",
+      "usage_terms": "Creative Commons Attribution 2.5",
+      "source": "wikimedia"
+    },
     "Rahonavis": {
       "file_title": "File:Rahonavis NT.jpg",
       "url": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Rahonavis_NT.jpg",
