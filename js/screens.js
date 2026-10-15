@@ -1079,7 +1079,7 @@ async function ensureMuseumCatalogLineages(catalog) {
 
 async function loadMuseumPaleodataCatalog() {
     if (!museumPaleodataCatalogPromise) {
-        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=8')
+        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=9')
             .then(response => {
                 if (!response.ok) throw new Error(`Paleodata catalog HTTP ${response.status}`);
                 return response.json();
@@ -1152,6 +1152,7 @@ const MUSEUM_PALEODATA_TERM_KEYS = Object.freeze({
     'Santonian': 'museum.ageSantonian',
     'Turonian': 'museum.ageTuronian',
     'Turonian–Coniacian': 'museum.ageTuronianConiacian',
+    'Late Turonian–Early Coniacian': 'museum.ageLateTuronianEarlyConiacian',
     'Triassic': 'museum.triassic',
     'Jurassic': 'museum.jurassic',
     'Cretaceous': 'museum.cretaceous',
