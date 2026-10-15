@@ -1251,6 +1251,7 @@ async function giveUp() {
             </div>
 
             ${buildResultMediaSlotMarkup()}
+            <div class="victory-field-notes-slot" hidden></div>
 
             ${currentGameMode === 'challenge' && currentChallengePlacement ? `
             <div class="race-placement-card">
@@ -1279,6 +1280,7 @@ async function giveUp() {
         container.insertBefore(v, container.firstChild);
         hydrateResultMedia(v, targetDino.nome, resultMediaPromise);
         isGiveUpMode = true;
+        hydrateFieldNotes(v);
         gameWon = true;
         setTreeAnimationMode('reveal');
         redrawGameTree();
@@ -1652,6 +1654,97 @@ async function startRematch(button = null) {
     }
 }
 
+function findClosestFieldGuess() {
+    let closest = null;
+    for (const guess of guesses) {
+        if (guess.isHint === true || !guess.dino?.nome || guess.dino.nome === targetDino?.nome) continue;
+        const matches = Math.max(0, Number(guess.proximity?.matches) || 0);
+        if (!closest || matches > closest.matches) closest = { name: guess.dino.nome, matches };
+    }
+    return closest;
+}
+
+function buildFieldNoteMarkup(label, value, note = '', wide = false) {
+    return `
+        <div class="victory-field-note${wide ? ' victory-field-note--wide' : ''}">
+            <div class="victory-field-note-label">${label}</div>
+            <strong>${value}</strong>
+            ${note ? `<span>${note}</span>` : ''}
+        </div>
+    `;
+}
+
+function buildFieldNotesMarkup(lineage, paleodata, closest) {
+    const localize = typeof localizeMuseumPaleodataTerm === 'function'
+        ? localizeMuseumPaleodataTerm
+        : value => String(value || '');
+    const notes = [];
+
+    if (paleodata) {
+        const period = escapeHtml(localize(paleodata.period));
+        const age = paleodata.age_text && paleodata.age_text !== paleodata.period
+            ? ` · ${escapeHtml(localize(paleodata.age_text))}` : '';
+        notes.push(buildFieldNoteMarkup(t('museum.when'), `${period}${age}`));
+        const countries = (paleodata.countries || []).map(country => escapeHtml(localize(country)));
+        if (countries.length) notes.push(buildFieldNoteMarkup(t('museum.where'), countries.join(' · ')));
+        const formations = paleodata.formations || [];
+        if (formations.length) {
+            const extra = formations.length > 2 ? ` ${t('result.fieldMore', { count: formations.length - 2 })}` : '';
+            notes.push(buildFieldNoteMarkup(t('museum.rockUnits'),
+                formations.slice(0, 2).map(escapeHtml).join(' · ') + extra));
+        }
+    }
+
+    const group = lineage.at(-1);
+    if (group) notes.push(buildFieldNoteMarkup(t('result.fieldGroup'), escapeHtml(group), '', !paleodata));
+
+    if (closest?.matches > 0 && lineage.length) {
+        const sharedClade = lineage[Math.min(closest.matches, lineage.length) - 1];
+        const copy = closest.matches >= lineage.length
+            ? t('result.fieldClosestSameGroup', { clade: escapeHtml(sharedClade) })
+            : t('result.fieldClosestCopy', {
+                clade: escapeHtml(sharedClade),
+                matches: closest.matches,
+                total: lineage.length
+            });
+        notes.push(buildFieldNoteMarkup(t('result.fieldClosest'), `<em>${escapeHtml(closest.name)}</em>`, copy, true));
+    } else if (!closest && !isGiveUpMode && guesses.some(guess => guess.isHint !== true)) {
+        notes.push(buildFieldNoteMarkup(t('result.fieldClosest'), t('result.fieldFirstTry'), '', true));
+    }
+
+    if (!notes.length) return '';
+    return `
+        <section class="victory-field-notes" aria-label="${t('result.fieldNotes')}">
+            <div class="victory-field-notes-kicker">${t('result.fieldNotes')}</div>
+            <div class="victory-field-notes-grid">${notes.join('')}</div>
+        </section>
+    `;
+}
+
+async function hydrateFieldNotes(panel) {
+    const slot = panel.querySelector('.victory-field-notes-slot');
+    if (!slot || !targetDino) return;
+    const lineage = Array.isArray(targetDino.linhagem) ? targetDino.linhagem : [];
+    const closest = findClosestFieldGuess();
+    let paleodata = null;
+    try {
+        if (typeof loadMuseumPaleodataCatalog === 'function') {
+            const record = (await loadMuseumPaleodataCatalog()).taxa?.[targetDino.nome];
+            if (record?.verification?.status === 'source_verified') paleodata = record;
+        }
+    } catch (error) {
+        console.warn('Field notes paleodata unavailable:', error);
+    }
+    if (!slot.isConnected) return;
+    const markup = buildFieldNotesMarkup(lineage, paleodata, closest);
+    if (!markup) {
+        slot.remove();
+        return;
+    }
+    slot.innerHTML = markup;
+    slot.hidden = false;
+}
+
 async function showVictory() {
     const discovery = registerDiscovery(targetDino.nome, currentMuseumProof);
     const persistencePromise = persistVictoryResult();
@@ -1699,6 +1792,7 @@ async function showVictory() {
             </div>
 
             ${buildResultMediaSlotMarkup()}
+            <div class="victory-field-notes-slot" hidden></div>
 
             ${buildVictoryDiscoveryMarkup(discovery)}
             <p class="victory-goal-slot" hidden></p>
@@ -1729,6 +1823,7 @@ async function showVictory() {
     museumButton?.addEventListener('click', () => openVictoryMuseumEntry(targetDino.nome, museumButton));
     hydrateVictoryDiscoveryCount(v, targetDino.nome, discovery.isFirstDiscovery, discovery.discoveryCount);
     hydrateResultMedia(v, targetDino.nome, resultMediaPromise);
+    hydrateFieldNotes(v);
     hydrateVictoryMetadata(v, persistencePromise);
     revealResultPanel(container, v);
 }

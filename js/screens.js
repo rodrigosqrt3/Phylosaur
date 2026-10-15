@@ -1079,7 +1079,7 @@ async function ensureMuseumCatalogLineages(catalog) {
 
 async function loadMuseumPaleodataCatalog() {
     if (!museumPaleodataCatalogPromise) {
-        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=6')
+        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=8')
             .then(response => {
                 if (!response.ok) throw new Error(`Paleodata catalog HTTP ${response.status}`);
                 return response.json();
@@ -1141,6 +1141,17 @@ const MUSEUM_PALEODATA_TERM_KEYS = Object.freeze({
     'Late Campanian–Maastrichtian': 'museum.ageLateCampanianMaastrichtian',
     'Kimmeridgian': 'museum.ageKimmeridgian',
     'Oxfordian': 'museum.ageOxfordian',
+    'Sinemurian': 'museum.ageSinemurian',
+    'Berriasian–Early Hauterivian': 'museum.ageBerriasianEarlyHauterivian',
+    'Berriasian–Valanginian': 'museum.ageBerriasianValanginian',
+    'Coniacian–Santonian': 'museum.ageConiacianSantonian',
+    'Early Campanian': 'museum.ageEarlyCampanian',
+    'Late Albian': 'museum.ageLateAlbian',
+    'Late Barremian–Early Aptian': 'museum.ageLateBarremianEarlyAptian',
+    'Late Turonian': 'museum.ageLateTuronian',
+    'Santonian': 'museum.ageSantonian',
+    'Turonian': 'museum.ageTuronian',
+    'Turonian–Coniacian': 'museum.ageTuronianConiacian',
     'Triassic': 'museum.triassic',
     'Jurassic': 'museum.jurassic',
     'Cretaceous': 'museum.cretaceous',
@@ -1172,7 +1183,17 @@ const MUSEUM_PALEODATA_TERM_KEYS = Object.freeze({
     'Lesotho': 'museum.placeLesotho',
     'Niger': 'museum.placeNiger',
     'South Africa': 'museum.placeSouthAfrica',
-    'Zimbabwe': 'museum.placeZimbabwe'
+    'Zimbabwe': 'museum.placeZimbabwe',
+    'India': 'museum.placeIndia',
+    'Angola': 'museum.placeAngola',
+    'Australia': 'museum.placeAustralia',
+    'Japan': 'museum.placeJapan',
+    'Laos': 'museum.placeLaos',
+    'Malawi': 'museum.placeMalawi',
+    'Mexico': 'museum.placeMexico',
+    'Oceania': 'museum.placeOceania',
+    'Thailand': 'museum.placeThailand',
+    'Uzbekistan': 'museum.placeUzbekistan'
 });
 
 function localizeMuseumPaleodataTerm(value) {

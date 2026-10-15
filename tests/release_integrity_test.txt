@@ -767,7 +767,7 @@ Deno.test("all locale catalogs stay complete and German preserves only intention
   const sharedFrenchTerms = new Set(["game.cladeOne", "game.cladeMany", "tree.clade", "museum.cladeFilter",
     "museum.classification", "museum.placeEurope", "museum.placeMadagascar", "museum.placeCanada",
     "museum.placePortugal", "museum.placeFrance", "museum.placeLesotho", "museum.placeNiger",
-    "museum.placeZimbabwe", "analytics.sessions", "achievement.progress", "achievement.unit.branches"]);
+    "museum.placeZimbabwe", "museum.placeAngola", "museum.placeLaos", "museum.placeMalawi", "analytics.sessions", "achievement.progress", "achievement.unit.branches"]);
 
   const placeholders = (message: string) => [...message.matchAll(/\{[A-Za-z0-9_]+\}/g)]
     .map(match => match[0]).sort();
@@ -821,10 +821,12 @@ const germanFinalKeys = ["about.loading", "about.return", "about.error", "api.ti
     "result.answerAfter", "result.solvedIn"];
   const sharedGermanAchievementTerms = new Set(["achievement.progress"]);
   const sharedGermanTerms = new Set(["museum.title", "museum.placePortugal",
-    "museum.placeChina", "museum.placeChile", "museum.placeLesotho", "museum.placeNiger"]);
+    "museum.placeChina", "museum.placeChile", "museum.placeLesotho", "museum.placeNiger",
+    "museum.placeAngola", "museum.placeJapan", "museum.placeLaos", "museum.placeMalawi", "museum.placeThailand"]);
   const sharedGermanIdenticalTerms = new Set(["nav.museum", "common.ok", "museum.title",
     "museum.placePortugal", "museum.placeChina", "museum.placeChile", "museum.placeLesotho",
-    "museum.placeNiger", "achievement.progress"]);
+    "museum.placeNiger", "museum.placeAngola", "museum.placeJapan", "museum.placeLaos", "museum.placeMalawi",
+    "museum.placeThailand", "achievement.progress"]);
   const germanMuseumGalleryKeys = ["museum.loading", "museum.title", "museum.unlocked", "museum.unlockCopy",
     "museum.view", "museum.atlas", "museum.genera", "museum.exploring", "museum.showAllClades",
     "museum.search", "museum.searchPlaceholder", "museum.cladeFilter", "museum.allClades",
@@ -1250,8 +1252,8 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     "Language changes must explicitly reload while preserving the current hash route.");
   assert(!styleSource.includes('html[lang="ja"] body'),
     "Japanese typography must remain on the shared stylesheet defaults.");
-  assert(htmlSource.indexOf('src="js/state.js?v=221"') < htmlSource.indexOf('src="js/i18n.js?v=221"') &&
-    htmlSource.indexOf('src="js/i18n.js?v=221"') < htmlSource.indexOf('src="js/api.js?v=221"') &&
+  assert(htmlSource.indexOf('src="js/state.js?v=224"') < htmlSource.indexOf('src="js/i18n.js?v=224"') &&
+    htmlSource.indexOf('src="js/i18n.js?v=224"') < htmlSource.indexOf('src="js/api.js?v=224"') &&
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"')
     && htmlSource.includes('value="ja"') && htmlSource.includes('value="fr"')
@@ -1267,12 +1269,12 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
     htmlSource.includes("document.body.classList.add('light-mode')") &&
     htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
-      htmlSource.indexOf('rel="stylesheet" href="style.css?v=221"'),
+      htmlSource.indexOf('rel="stylesheet" href="style.css?v=224"'),
     "The saved light theme must be applied before the stylesheet can paint the page.");
   assert(htmlSource.includes('<select id="language-select" data-localization-ignore') &&
     !htmlSource.includes('translate="no"'),
     "The app localizer must leave language names in the selector unchanged.");
-  assert(workerSource.includes('"./js/i18n.js?v=221"'),
+  assert(workerSource.includes('"./js/i18n.js?v=224"'),
     "The localization module must be available offline.");
   assert(styleSource.includes(".header-theme-switch") &&
     styleSource.includes("order: 2") &&
@@ -2077,8 +2079,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
-  assert(aboutSource.includes('src="js/state.js?v=221"') &&
-    aboutSource.includes('src="js/i18n.js?v=221"') &&
+  assert(aboutSource.includes('src="js/state.js?v=224"') &&
+    aboutSource.includes('src="js/i18n.js?v=224"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
@@ -4173,6 +4175,7 @@ Deno.test("guess, hint and give-up actions serialize and discard obsolete result
       const loadResultMedia = () => { counters.media++; return Promise.resolve(null); };
       const buildResultMediaSlotMarkup = () => "";
       const hydrateResultMedia = () => {};
+      const hydrateFieldNotes = () => {};
       const redrawGameTree = () => {};
       const revealResultPanel = () => {};
       ${hintState}
@@ -5557,7 +5560,7 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   for (const failure of ["network", "404", "500", "write", "open"]) {
     const runtime = buildServiceWorkerRuntime();
     if (["network", "404", "500"].includes(failure)) {
-      runtime.failures.fetchPath = "js/main.js?v=221";
+      runtime.failures.fetchPath = "js/main.js?v=224";
       runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
     }
     if (failure === "write") runtime.failures.putPath = "style.css";
@@ -5573,8 +5576,8 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   let resolve!: (value: Response) => void;
   let settled = false;
   const delayed = new Promise<Response>(yes => { resolve = yes; });
-  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=221") ? delayed
-    : new Response(request.url, { status: request.url.endsWith("style.css?v=221") ? 404 : 200 });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=224") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css?v=224") ? 404 : 200 });
   const install = runtime.event("install");
   const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
   for (let index = 0; index < 12; index++) await Promise.resolve();
