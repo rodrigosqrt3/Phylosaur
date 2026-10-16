@@ -1345,7 +1345,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=28')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=29')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
