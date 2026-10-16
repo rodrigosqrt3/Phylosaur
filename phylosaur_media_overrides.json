@@ -1,5 +1,5 @@
 {
-  "version": 28,
+  "version": 29,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Astrophocaudia": {
@@ -1207,6 +1207,30 @@
     "Pycnonemosaurus": {
       "file_title": "File:Pycnonemosaurus head.jpg",
       "file_page": "https://commons.wikimedia.org/wiki/File:Pycnonemosaurus_head.jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Charonosaurus": {
+      "file_title": "File:Charonosaurus jiayensis profile.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Charonosaurus_jiayensis_profile.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Lesothosaurus": {
+      "file_title": "File:Lesothosaurus ER670.JPG",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Lesothosaurus_ER670.JPG",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Wuerhosaurus": {
+      "file_title": "File:Wuerhosaurus homheni.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Wuerhosaurus_homheni.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Ojoraptorsaurus": {
+      "file_title": "File:Ojoraptorsaurus boerei profile reconstruction.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Ojoraptorsaurus_boerei_profile_reconstruction.jpg",
       "resolve_commons_metadata": true,
       "source": "wikimedia"
     }
