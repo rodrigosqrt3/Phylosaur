@@ -4836,6 +4836,24 @@ function localizeDocument(root = document) {
   }
 }
 
+// The raw HTML has no canonical link on purpose: a static one would point every
+// ?lang= variant at the English page. Each supported URL declares itself instead.
+function syncPhylosaurCanonical() {
+  const page = document.querySelector('link[rel="alternate"][hreflang="x-default"]');
+  if (!page) return;
+  const canonicalUrl = new URL(page.href);
+  const requested = new URLSearchParams(window.location.search).get('lang');
+  if (PHYLOSAUR_SUPPORTED_LOCALES.includes(requested)) canonicalUrl.searchParams.set('lang', requested);
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.rel = 'canonical';
+    document.head.appendChild(canonical);
+  }
+  canonical.href = canonicalUrl.href;
+  document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonicalUrl.href);
+}
+
 let phylosaurLocalizationObserver = null;
 
 function initializeI18n() {
@@ -4844,12 +4862,7 @@ function initializeI18n() {
     document.title = t('app.metaTitle');
     document.querySelector('meta[name="description"]')?.setAttribute('content', t('app.metaDescription'));
   }
-  const canonical = document.querySelector('link[rel="canonical"]');
-  if (canonical && new URLSearchParams(window.location.search).has('lang')) {
-    const canonicalUrl = new URL(canonical.href);
-    canonicalUrl.searchParams.set('lang', currentLocale);
-    canonical.href = canonicalUrl.href;
-  }
+  syncPhylosaurCanonical();
   const selector = document.getElementById('language-select');
   if (selector) {
     selector.value = currentLocale;
