@@ -779,7 +779,7 @@ function updateGuessHistory() {
         <details class="guess-history-details"${wasExpanded ? ' open' : ''}>
             <summary>
                 <span class="guess-history-title">${t('history.title')}</span>
-                <span class="guess-history-count">${t('history.entryCount', { count: entryCount })}</span>
+                <span class="guess-history-count">${t(entryCount === 1 ? 'history.entryCountOne' : 'history.entryCount', { count: entryCount })}</span>
             </summary>
             <div class="guess-history-list">${historyItems}</div>
         </details>`;

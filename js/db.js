@@ -713,7 +713,7 @@ async function showRestoredServerCompletion(data) {
             <h2>${wasRaceEliminated ? t('result.raceComplete') : data.gaveUp ? t('result.answerRevealedTitle') : t('result.completeTitle')}</h2>
             <div class="victory-dino">${targetName}</div>
             <div class="victory-summary" aria-label="${t('game.resultSummary')}">
-                <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
+                <span>${t(guesses.length === 1 ? 'game.attemptCountOne' : 'game.attemptCountMany', { count: guesses.length })}</span>
                 ${resultWasRevealed ? `<span>${t('result.answerRevealed')}</span>` : ''}
             </div>
         </div>

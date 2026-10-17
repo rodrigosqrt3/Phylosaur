@@ -1101,7 +1101,9 @@ async function loadMuseumPaleodataCatalog() {
 function formatMuseumAge(value) {
     const age = Number(value);
     if (!Number.isFinite(age)) return '';
-    return Number.isInteger(age) ? String(age) : age.toFixed(1);
+    return Number.isInteger(age)
+        ? String(age)
+        : age.toLocaleString(getPhylosaurLocaleTag(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
 const MUSEUM_PALEODATA_TERM_KEYS = Object.freeze({
@@ -1268,6 +1270,8 @@ function renderMuseumPaleodata(record, timeline = {}) {
         : 0;
     const ageLabel = record.age_text
         ? String(record.age_text)
+        : hasAgeRange && maxMa === minMa
+            ? t('museum.millionYearsAgoSingle', { age: formatMuseumAge(maxMa) })
         : hasAgeRange
             ? t('museum.millionYearsAgo', {
                 oldest: formatMuseumAge(maxMa),

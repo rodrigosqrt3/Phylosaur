@@ -764,7 +764,7 @@ Deno.test("all locale catalogs stay complete and German preserves only intention
     french.translate("analytics.title") === "Analyses de Phylosaur",
     "French must localize the core, About, account, statistics and Analytics screens.");
   const frenchLocalizedKeys = englishKeys;
-  const sharedFrenchTerms = new Set(["game.cladeOne", "game.cladeMany", "tree.clade", "museum.cladeFilter",
+  const sharedFrenchTerms = new Set(["common.ok", "game.cladeOne","game.cladeMany", "tree.clade", "museum.cladeFilter",
     "museum.classification", "museum.placeEurope", "museum.placeMadagascar", "museum.placeCanada",
     "museum.placePortugal", "museum.placeFrance", "museum.placeLesotho", "museum.placeNiger",
     "museum.placeZimbabwe", "museum.placeAngola", "museum.placeLaos", "museum.placeMalawi", "analytics.sessions", "achievement.progress", "achievement.unit.branches"]);
@@ -953,7 +953,7 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
       && german.messages.de[key] !== german.messages.en[key])
     && germanAnalyticsKeys.every(key => german.messages.de[key]
       && german.messages.de[key] !== german.messages.en[key])
-    && germanExplorationKeys.length === 37
+    && germanExplorationKeys.length === 38
     && germanExplorationKeys.every(key => german.messages.de[key]
       && german.messages.de[key] !== german.messages.en[key])
     && Object.keys(german.messages.en).filter(key => key.startsWith("analytics.")).every(key =>
@@ -979,14 +979,14 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     && german.translate("media.relatedTaxonShort", { taxon: "Troodon" }) === "Troodon, verwandtes Taxon · "
     && german.translate("media.relatedTaxonNotice", { depicted: "Coelophysis", subject: "Megalosaurus" }) ===
       "Die Abbildung zeigt Coelophysis, ein verwandtes Taxon; sie ist keine Rekonstruktion von Megalosaurus."
-    && german.translate("encyclopedia.englishFallback") === "Zusammenfassung auf Englisch verfügbar."
+    && german.translate("encyclopedia.englishFallback") === "Zusammenfassung nur auf Englisch verfügbar."
     && german.translate("common.ok") === "OK"
     && german.translate("tree.center", { label: "Theropoda" }) === "Auf Theropoda zentrieren"
     && german.translate("tree.loadingInfo", { clade: "Theropoda" }) === "Informationen zu Theropoda werden geladen…"
     && german.translate("history.entryCount", { count: 4 }) === "4 Einträge"
-    && german.translate("history.nodes", { matches: 3, depth: 7, percent: 43 }) === "3/7 Knoten (43%)"
+    && german.translate("history.nodes", { matches: 3, depth: 7, percent: 43 }) === "3/7 Knoten (43 %)"
     && german.translate("history.explainDivergence", { genus: "Tyrannosaurus", sharedClade: "Theropoda", nextGuessClade: "Tyrannosauroidea" }) ===
-      "<em>Tyrannosaurus</em> und das Ziel teilen Theropoda, aber <em>Tyrannosaurus</em> folgt dem Ast Tyrannosauroidea, der nicht zum Ziel gehört. Daher kann dieser Ast für das Ziel ausgeschlossen werden."
+      "<em>Tyrannosaurus</em> und das Ziel teilen Theropoda, aber <em>Tyrannosaurus</em> folgt dem Ast Tyrannosauroidea, den das Ziel nicht teilt. Damit ist dieser Ast für das Ziel ausgeschlossen."
     && german.translate("friends.raceProgress", { total: 4, completed: 2 }) === "4 Spieler · 2 fertig"
     && german.translate("friends.challengeWithCode", { code: "ABC123" }) === "Herausforderung ABC123"
     && german.translate("friends.standingDetails", { attempts: 3, hints: 1, playing: " · Spielt" }) ===
@@ -1023,7 +1023,7 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     && german.translate("analytics.privacyCopy") ===
       "Private Administratoransicht. Registrierte Benutzernamen können angezeigt werden; E-Mail-Adressen, IP-Adressen und digitale Fingerabdrücke werden niemals einbezogen."
     && german.translate("museum.progress", { unlocked: 12, total: 100, percent: 12 }) ===
-      "Freigeschaltet: 12 / 100 (12%)"
+      "Freigeschaltet: 12 / 100 (12 %)"
     && german.translate("museum.showing", { count: 2, genera: "Gattungen", clade: " innerhalb der Klade Theropoda", unlocked: 1 }) ===
       "2 Gattungen innerhalb der Klade Theropoda angezeigt · 1 freigeschaltet"
     && german.translate("museum.inClade", { clade: "Theropoda" }) === " innerhalb der Klade Theropoda"
@@ -1045,13 +1045,13 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     && german.translate("museum.exploreClade", { clade: "Theropoda", unlocked: 3, total: 8 }) ===
       "Theropoda erkunden: 3 von 8 Gattungen entdeckt"
     && german.translate("museum.discoveredCount", { total: 20 }) === "von 20 entdeckt"
-    && german.translate("museum.branchPercent", { percent: 40 }) === "40% dieses Zweigs"
+    && german.translate("museum.branchPercent", { percent: 40 }) === "40 % dieses Asts"
     && german.translate("museum.atlasOutsideNote").includes("Staurikosaurus")
     && german.translate("result.currentStreakDays", { count: 4 }) === "Aktuelle Serie: 4 Tage"
     && german.translate("result.addedToMuseum", { name: "Coelophysis" }) ===
       "Coelophysis wurde dem Museum hinzugefügt"
     && german.translate("result.placement", { placement: 2 }) === " • Platz 2"
-    && german.translate("result.solvedIn", { attempts: 5 }) === "In 5 gelöst"
+    && german.translate("result.solvedIn", { attempts: 5 }) === "Mit 5 gelöst"
     && german.translate("game.submit") === "Absenden"
     && german.translate("howto.step3") === "3. Hinweise"
     && german.translate("tutorial.progress", { current: 2, total: 5 }) === "Schritt 2 von 5"
@@ -1101,7 +1101,7 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     const placeholders = (message: string) => [...message.matchAll(/\{[A-Za-z0-9_]+\}/g)]
       .map(match => match[0]).sort();
     const markup = (message: string) => message.match(/<\/?[a-z][^>]*>/gi) || [];
-    assert(japaneseMessage !== englishMessage, `Japanese message is still English: ${key}`);
+    assert(japaneseMessage !== englishMessage || key === "common.ok", `Japanese message is still English: ${key}`);
     assert(JSON.stringify(placeholders(japaneseMessage)) === JSON.stringify(placeholders(englishMessage)),
       `Japanese message changed its placeholders: ${key}`);
     assert(JSON.stringify(markup(japaneseMessage)) === JSON.stringify(markup(englishMessage)),
@@ -1132,7 +1132,7 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     && japaneseCoreKeys.every(key => japanese.messages.ja[key]
       && japanese.messages.ja[key] !== japanese.messages.en[key])
     && JSON.stringify(Object.keys(japanese.messages.ja).sort()) === JSON.stringify(englishKeys)
-    && japanese.translate("home.daily") === "今日のチャレンジ"
+    && japanese.translate("home.daily") === "デイリーチャレンジ"
     && japanese.translate("howto.step4") === "4. 5段階の難易度"
     && japanese.translate("about.title") === "Phylosaurについて"
     && japanese.translate("about.foundationsTitle") === "系統発生学の基礎"
@@ -1252,8 +1252,8 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     "Language changes must explicitly reload while preserving the current hash route.");
   assert(!styleSource.includes('html[lang="ja"] body'),
     "Japanese typography must remain on the shared stylesheet defaults.");
-  assert(htmlSource.indexOf('src="js/state.js?v=226"') < htmlSource.indexOf('src="js/i18n.js?v=226"') &&
-    htmlSource.indexOf('src="js/i18n.js?v=226"') < htmlSource.indexOf('src="js/api.js?v=226"') &&
+  assert(htmlSource.indexOf('src="js/state.js?v=227"') < htmlSource.indexOf('src="js/i18n.js?v=227"') &&
+    htmlSource.indexOf('src="js/i18n.js?v=227"') < htmlSource.indexOf('src="js/api.js?v=227"') &&
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"')
     && htmlSource.includes('value="ja"') && htmlSource.includes('value="fr"')
@@ -1269,12 +1269,12 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
     htmlSource.includes("document.body.classList.add('light-mode')") &&
     htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
-      htmlSource.indexOf('rel="stylesheet" href="style.css?v=226"'),
+      htmlSource.indexOf('rel="stylesheet" href="style.css?v=227"'),
     "The saved light theme must be applied before the stylesheet can paint the page.");
   assert(htmlSource.includes('<select id="language-select" data-localization-ignore') &&
     !htmlSource.includes('translate="no"'),
     "The app localizer must leave language names in the selector unchanged.");
-  assert(workerSource.includes('"./js/i18n.js?v=226"'),
+  assert(workerSource.includes('"./js/i18n.js?v=227"'),
     "The localization module must be available offline.");
   assert(styleSource.includes(".header-theme-switch") &&
     styleSource.includes("order: 2") &&
@@ -2079,8 +2079,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
-  assert(aboutSource.includes('src="js/state.js?v=226"') &&
-    aboutSource.includes('src="js/i18n.js?v=226"') &&
+  assert(aboutSource.includes('src="js/state.js?v=227"') &&
+    aboutSource.includes('src="js/i18n.js?v=227"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
@@ -5560,7 +5560,7 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   for (const failure of ["network", "404", "500", "write", "open"]) {
     const runtime = buildServiceWorkerRuntime();
     if (["network", "404", "500"].includes(failure)) {
-      runtime.failures.fetchPath = "js/main.js?v=226";
+      runtime.failures.fetchPath = "js/main.js?v=227";
       runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
     }
     if (failure === "write") runtime.failures.putPath = "style.css";
@@ -5576,8 +5576,8 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   let resolve!: (value: Response) => void;
   let settled = false;
   const delayed = new Promise<Response>(yes => { resolve = yes; });
-  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=226") ? delayed
-    : new Response(request.url, { status: request.url.endsWith("style.css?v=226") ? 404 : 200 });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=227") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css?v=227") ? 404 : 200 });
   const install = runtime.event("install");
   const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
   for (let index = 0; index < 12; index++) await Promise.resolve();

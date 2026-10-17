@@ -1245,7 +1245,7 @@ async function giveUp() {
                 <h2>${t('result.answerRevealedTitle')}</h2>
                 <div class="victory-dino">${targetDino.nome}</div>
                 <div class="victory-summary" aria-label="${t('game.resultSummary')}">
-                    <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
+                    <span>${t(guesses.length === 1 ? 'game.attemptCountOne' : 'game.attemptCountMany', { count: guesses.length })}</span>
                     <span>${t('result.gaveUp')}</span>
                 </div>
             </div>
@@ -1303,16 +1303,16 @@ function buildVictoryStreakMarkup(streakData, milestone) {
         return `
             <div class="streak-celebration streak-celebration--milestone">
             <div class="streak-milestone-title">◆ ${t('result.dayMilestone', { count: milestone })} ◆</div>
-            <div class="streak-current">${t('result.currentStreakDays', { count: streakData.current })}</div>
-            <div class="streak-best">${t('result.bestStreakDays', { count: streakData.best })}</div>
+            <div class="streak-current">${t(streakData.current === 1 ? 'result.currentStreakDayOne' : 'result.currentStreakDays', { count: streakData.current })}</div>
+            <div class="streak-best">${t(streakData.best === 1 ? 'result.bestStreakDayOne' : 'result.bestStreakDays', { count: streakData.best })}</div>
             </div>
         `;
     }
 
     return `
         <div class="streak-celebration">
-        <div class="streak-title">◆ ${t('result.dayStreak', { count: streakData.current })}</div>
-        <div class="streak-best">${t('result.bestStreakDays', { count: streakData.best })}</div>
+        <div class="streak-title">◆ ${t(streakData.current === 1 ? 'result.dayStreakOne' : 'result.dayStreak', { count: streakData.current })}</div>
+        <div class="streak-best">${t(streakData.best === 1 ? 'result.bestStreakDayOne' : 'result.bestStreakDays', { count: streakData.best })}</div>
         </div>
     `;
 }
@@ -1786,8 +1786,8 @@ async function showVictory() {
                 <h2>${t('result.completeTitle')}</h2>
                 <div class="victory-dino">${targetDino.nome}</div>
                 <div class="victory-summary" aria-label="${t('game.resultSummary')}">
-                    <span>${guesses.length} ${t(guesses.length === 1 ? 'game.attemptOne' : 'game.attemptMany')}</span>
-                    <span>${revealedClades.size} ${t(revealedClades.size === 1 ? 'game.cladeOne' : 'game.cladeMany')} ${t(revealedClades.size === 1 ? 'game.revealedOne' : 'game.revealed')}</span>
+                    <span>${t(guesses.length === 1 ? 'game.attemptCountOne' : 'game.attemptCountMany', { count: guesses.length })}</span>
+                    <span>${t(revealedClades.size === 1 ? 'game.revealedCladesOne' : 'game.revealedCladesMany', { count: revealedClades.size })}</span>
                 </div>
             </div>
 
@@ -1861,8 +1861,8 @@ function getShareResultData() {
         ? t('result.friendChallengeCode', { code: currentChallengeCode })
         : isPracticeMode ? t('analytics.practice') : t('home.daily');
     const hintCount = Array.isArray(hintHistory) ? hintHistory.length : 0;
-    const attemptLabel = `${actualGuesses.length} ${t(actualGuesses.length === 1 ? 'game.guessOne' : 'game.guessMany')}`;
-    const hintLabel = `${hintCount} ${t(hintCount === 1 ? 'game.hintOne' : 'game.hintMany')}`;
+    const attemptLabel = t(actualGuesses.length === 1 ? 'result.guessCountOne' : 'result.guessCountMany', { count: actualGuesses.length });
+    const hintLabel = t(hintCount === 1 ? 'result.hintCountOne' : 'result.hintCountMany', { count: hintCount });
     const placementLabel = currentGameMode === 'challenge' && currentChallengePlacement
         ? t('result.placement', { placement: currentChallengePlacement })
         : '';
