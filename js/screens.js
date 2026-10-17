@@ -52,7 +52,8 @@ async function showDifficultySelection() {
     `;
     startCountdown();
     void refreshDifficultySelectionAccountState();
-    focusAppScreenHeading();
+    // The home screen is what search engines index, so it keeps the full localized title.
+    focusAppScreenHeading('.screen-title', { documentTitle: t('app.metaTitle') });
 }
 
 function emptyDailyCompletionStatus() {

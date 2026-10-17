@@ -111,7 +111,7 @@ function renderAppState(message, { type = 'loading', detail = '', compact = fals
     </div>`;
 }
 
-function focusAppScreenHeading(selector = '.screen-title') {
+function focusAppScreenHeading(selector = '.screen-title', { documentTitle = '' } = {}) {
     queueMicrotask(() => {
         if (document.querySelector('.modal-overlay, .tutorial-overlay, [aria-modal="true"]')) return;
         const appContent = document.getElementById('app-content');
@@ -126,7 +126,8 @@ function focusAppScreenHeading(selector = '.screen-title') {
         }
 
         const label = heading.textContent?.replace(/\s+/g, ' ').trim();
-        if (label) document.title = `${label} - Phylosaur`;
+        if (documentTitle) document.title = documentTitle;
+        else if (label) document.title = `${label} - Phylosaur`;
     });
 }
 
