@@ -1,5 +1,5 @@
 {
-  "version": 30,
+  "version": 31,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Astrophocaudia": {
@@ -1279,6 +1279,16 @@
       "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2e/Ligabueino_andesi_paleoart.png/960px-Ligabueino_andesi_paleoart.png",
       "file_page": "https://commons.wikimedia.org/wiki/File:Ligabueino_andesi_paleoart.png",
       "artist": "Paleo lazo yt",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Gnathovorax": {
+      "file_title": "File:Gnathofodaofodao.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Gnathofodaofodao.png/960px-Gnathofodaofodao.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Gnathofodaofodao.png",
+      "artist": "CaetaMS",
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
