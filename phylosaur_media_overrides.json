@@ -1,5 +1,5 @@
 {
-  "version": 29,
+  "version": 30,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Astrophocaudia": {
@@ -1232,6 +1232,56 @@
       "file_title": "File:Ojoraptorsaurus boerei profile reconstruction.jpg",
       "file_page": "https://commons.wikimedia.org/wiki/File:Ojoraptorsaurus_boerei_profile_reconstruction.jpg",
       "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Saichania": {
+      "file_title": "File:Saichania 1 001.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/7/72/Saichania_1_001.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Saichania_1_001.jpg",
+      "artist": "JaviDex",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Animantarx": {
+      "file_title": "File:Animantarx 04829.JPG",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/Animantarx_04829.JPG/960px-Animantarx_04829.JPG",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Animantarx_04829.JPG",
+      "artist": "Conty",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0",
+      "source": "wikimedia"
+    },
+    "Thecodontosaurus": {
+      "file_title": "File:1836 - Thecodontosaurus.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/1836_-_Thecodontosaurus.png/960px-1836_-_Thecodontosaurus.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:1836_-_Thecodontosaurus.png",
+      "artist": "Atlantis536",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0",
+      "usage_terms": "Creative Commons Zero 1.0 Universal Public Domain Dedication",
+      "source": "wikimedia"
+    },
+    "Mapusaurus": {
+      "file_title": "File:Mapusaurus Roseae restoration.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Mapusaurus_Roseae_restoration.png/960px-Mapusaurus_Roseae_restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Mapusaurus_Roseae_restoration.png",
+      "artist": "KoprX",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Ligabueino": {
+      "file_title": "File:Ligabueino andesi paleoart.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2e/Ligabueino_andesi_paleoart.png/960px-Ligabueino_andesi_paleoart.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Ligabueino_andesi_paleoart.png",
+      "artist": "Paleo lazo yt",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
       "source": "wikimedia"
     }
   }
