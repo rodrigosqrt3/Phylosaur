@@ -1,5 +1,5 @@
 {
-  "version": 31,
+  "version": 33,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Astrophocaudia": {
@@ -1289,6 +1289,26 @@
       "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Gnathofodaofodao.png/960px-Gnathofodaofodao.png",
       "file_page": "https://commons.wikimedia.org/wiki/File:Gnathofodaofodao.png",
       "artist": "CaetaMS",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Andesaurus": {
+      "file_title": "File:Andesaurus LM.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Andesaurus_LM.png/960px-Andesaurus_LM.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Andesaurus_LM.png",
+      "artist": "Levi Bernardo",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
+    "Saurornithoides": {
+      "file_title": "File:Saurornithoides restoration.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/Saurornithoides_restoration.png/960px-Saurornithoides_restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Saurornithoides_restoration.png",
+      "artist": "Audrey.m.horn",
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
