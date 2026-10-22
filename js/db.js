@@ -289,7 +289,7 @@ function recordGuestGameResult(won) {
             sessionId: gameSessionId || null,
             mode: currentGameMode,
             playedDate: getTodayString(),
-            difficulty: selectedDifficulty,
+            difficulty: targetDino?.dificuldade || selectedDifficulty,
             won: won === true,
             guessCount: guesses.length,
             usedHints: hintHistory.length > 0,
@@ -571,7 +571,9 @@ function applyServerGamePayload(data) {
         targetDino = {
             nome: data.target.nome,
             linhagem: Array.isArray(data.target.linhagem) ? data.target.linhagem : [],
-            profundidade: data.target.profundidade
+            profundidade: data.target.profundidade,
+            // The real level, revealed only once the game is over (custom pools span levels).
+            dificuldade: data.target.dificuldade || null
         };
     } else {
         targetDino = null;
@@ -734,7 +736,7 @@ async function showRestoredServerCompletion(data) {
             <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
             <button class="btn-hint victory-action-secondary" onclick="startRematch(this)">${t('friends.rematch')}</button>
             <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
-            <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+            <button class="btn-new-game" onclick="${isPracticeMode ? getPracticeReplayAction() : 'showDifficultySelection()'}">
                 ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
             </button>`}
         </div>
@@ -943,7 +945,7 @@ async function loadDailyDatabase(difficulty, forceClean = false, resumeAutomatic
 }
 
 function buildGameRetryButton(starter, difficulty) {
-    if (!/^[a-z_]+$/.test(String(difficulty))) return '';
+    if (!/^[a-z_]+$/.test(String(difficulty)) && !parseCustomPoolKey(difficulty)) return '';
     return `<div class="app-state-retry"><button type="button" class="btn-hint" onclick="${starter}('${difficulty}', { restoreExisting: true })">${t('common.retry')}</button></div>`;
 }
 
@@ -1053,7 +1055,7 @@ function registerDiscovery(dinoName, museumProof = null) {
             dinoName,
             discoveredAt,
             source,
-            difficulty: selectedDifficulty,
+            difficulty: targetDino?.dificuldade || selectedDifficulty,
             sessionId: gameSessionId || null,
             ownerId: currentUserId || null,
             firstKnownUnlock: !wasAlreadyUnlocked,

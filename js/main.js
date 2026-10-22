@@ -150,7 +150,7 @@ async function restoreAppRoute() {
     await renderRoute(() => showAnalyticsDashboard());
   } else if (parts[0] === 'game' && parts.length === 3
       && ['daily', 'practice'].includes(parts[1])
-      && APP_ROUTE_DIFFICULTIES.has(parts[2])) {
+      && (APP_ROUTE_DIFFICULTIES.has(parts[2]) || (parts[1] === 'practice' && parseCustomPoolKey(parts[2])))) {
     if (parts[1] === 'practice') {
       await renderRoute(() => startPracticeChallenge(parts[2], { restoreExisting: true }));
     } else {

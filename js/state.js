@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════
 // GLOBAL STATE
 // ═══════════════════════════════════════════════
-const PHYLOSAUR_RELEASE_VERSION = 236;
+const PHYLOSAUR_RELEASE_VERSION = 237;
 const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   theme: 'phylosaur-theme',
   language: 'phylosaur-language',
@@ -13,8 +13,48 @@ const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   discoveryEvents: 'phylosaur-discovery-events-v1',
   accountDiscoveryPrefix: 'phylosaur-account-discoveries-v1:',
   sessionCredentialPrefix: 'phylosaur-session-credential-v1:',
-  reloadScroll: 'phylosaur-reload-scroll-v1'
+  reloadScroll: 'phylosaur-reload-scroll-v1',
+  customChallenge: 'phylosaur-custom-challenge-v1'
 });
+
+// Custom challenges: a pool key such as 'custom:muito_facil,facil:Theropoda' travels
+// wherever a difficulty does (mirrors parsePoolKey in the edge function). One level
+// without a clade is just that level, so classic challenges keep working.
+const PHYLOSAUR_LEVELS = Object.freeze(['muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil']);
+const CUSTOM_POOL_CLADES = Object.freeze(['Theropoda', 'Sauropodomorpha', 'Ornithischia']);
+const MINIMUM_CUSTOM_POOL_SIZE = 10;
+
+function buildPoolKey(levels, clade) {
+  const chosen = PHYLOSAUR_LEVELS.filter(level => levels.includes(level));
+  const validClade = CUSTOM_POOL_CLADES.includes(clade) ? clade : null;
+  if (chosen.length === 1 && !validClade) return chosen[0];
+  return chosen.length ? `custom:${chosen.join(',')}:${validClade || '*'}` : '';
+}
+
+function parseCustomPoolKey(value) {
+  const match = /^custom:([a-z_,]+):([A-Za-z]+|\*)$/.exec(String(value || ''));
+  if (!match) return null;
+  const levels = match[1].split(',');
+  const clade = match[2] === '*' ? null : match[2];
+  if (levels.some(level => !PHYLOSAUR_LEVELS.includes(level)) || new Set(levels).size !== levels.length) return null;
+  if (clade && !CUSTOM_POOL_CLADES.includes(clade)) return null;
+  return { levels, clade };
+}
+
+// Practice "play again": a custom pool starts another game with the same filters.
+function getPracticeReplayAction() {
+  return parseCustomPoolKey(selectedDifficulty)
+    ? `startPracticeChallenge('${selectedDifficulty}')`
+    : 'showPracticeMode()';
+}
+
+// "Levels I, II · Theropoda" style label for a custom pool.
+function describeCustomPool(value) {
+  const pool = parseCustomPoolKey(value);
+  if (!pool) return '';
+  const numerals = pool.levels.map(level => ['I', 'II', 'III', 'IV', 'V'][PHYLOSAUR_LEVELS.indexOf(level)]);
+  return [`${t('friends.level')} ${numerals.join(', ')}`, pool.clade].filter(Boolean).join(' · ');
+}
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, character => ({

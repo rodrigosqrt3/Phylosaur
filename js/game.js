@@ -1271,7 +1271,7 @@ async function giveUp() {
                 <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
                 ${buildRematchButton()}
                 <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
-                <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+                <button class="btn-new-game" onclick="${isPracticeMode ? getPracticeReplayAction() : 'showDifficultySelection()'}">
                     ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
                 </button>`}
             </div>
@@ -1812,7 +1812,7 @@ async function showVictory() {
                 <button class="btn-hint victory-action-secondary" onclick="showChallengeStandings()">${t('game.viewStandings')}</button>
                 ${buildRematchButton()}
                 <button class="btn-new-game" onclick="showFriendChallenges()">${t('game.returnFriends')}</button>` : `
-                <button class="btn-new-game" onclick="${isPracticeMode ? 'showPracticeMode()' : 'showDifficultySelection()'}">
+                <button class="btn-new-game" onclick="${isPracticeMode ? getPracticeReplayAction() : 'showDifficultySelection()'}">
                     ${isPracticeMode ? t('game.playAgain') : t('game.returnLevels')}
                 </button>`}
             </div>
@@ -1867,10 +1867,11 @@ function getShareResultData() {
         ? t('result.placement', { placement: currentChallengePlacement })
         : '';
 
+    const customPoolLabel = describeCustomPool(selectedDifficulty);
     return {
-        title: `Phylosaur - ${diffNames[selectedDifficulty] || t('friends.challenge')}`,
+        title: `Phylosaur - ${customPoolLabel ? t('friends.customLabel') : diffNames[selectedDifficulty] || t('friends.challenge')}`,
         modeLabel,
-        difficultyLabel: diffNames[selectedDifficulty] || t('friends.challenge'),
+        difficultyLabel: customPoolLabel || diffNames[selectedDifficulty] || t('friends.challenge'),
         dateLabel: getCurrentDateFormatted(),
         rows,
         attemptLabel,

@@ -121,11 +121,13 @@ function showFriendChallenges(prefilledCode = '') {
     const appContent = document.getElementById('app-content');
     const suggestedName = currentChallengePlayerName || currentUser || '';
     const code = String(prefilledCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    const saved = readSavedCustomChallenge();
+    const numerals = ['I', 'II', 'III', 'IV', 'V'];
 
     appContent.innerHTML = `
     <div class="game-card friends-hub">
         <div class="friends-heading">
-            <div class="friends-kicker">${t('friends.private')}</div>
+            <div class="friends-kicker">${t('friends.kicker')}</div>
             <h2 class="screen-title">${t('home.friends')}</h2>
             <p>${t('friends.intro')}</p>
         </div>
@@ -138,16 +140,31 @@ function showFriendChallenges(prefilledCode = '') {
         <div class="friends-grid">
             <section class="friend-panel">
                 <h3>${t('friends.create')}</h3>
-                <label class="friend-label" for="challenge-difficulty">${t('friends.level')}</label>
-                <select class="friend-input" id="challenge-difficulty">
-                    <option value="muito_facil">${t('level.name1')}</option>
-                    <option value="facil">${t('level.name2')}</option>
-                    <option value="normal" selected>${t('level.name3')}</option>
-                    <option value="dificil">${t('level.name4')}</option>
-                    <option value="muito_dificil">${t('level.name5')}</option>
+                <fieldset class="challenge-filter">
+                    <legend class="friend-label">${t('friends.level')}</legend>
+                    <div class="challenge-level-options">
+                        ${PHYLOSAUR_LEVELS.map((level, index) => `
+                        <label class="challenge-level-option" title="${t(`level.name${index + 1}`)}">
+                            <input type="checkbox" name="challenge-level" value="${level}"
+                                   aria-label="${t(`level.name${index + 1}`)}"
+                                   ${saved.levels.includes(level) ? 'checked' : ''} onchange="updateCustomChallengePool()">
+                            <span>${numerals[index]}</span>
+                        </label>`).join('')}
+                    </div>
+                </fieldset>
+                <label class="friend-label" for="challenge-clade">${t('friends.clade')}</label>
+                <select class="friend-input" id="challenge-clade" onchange="updateCustomChallengePool()">
+                    <option value="">${t('friends.allClades')}</option>
+                    ${CUSTOM_POOL_CLADES.map(clade => `
+                    <option value="${clade}" ${saved.clade === clade ? 'selected' : ''}>${clade}</option>`).join('')}
                 </select>
+                <input type="hidden" id="challenge-difficulty" value="${buildPoolKey(saved.levels, saved.clade)}">
+                <p class="challenge-pool-count" id="challenge-pool-count" aria-live="polite">${t('friends.poolLoading')}</p>
 
-                <button class="btn-guess friend-action" id="create-challenge-btn" onclick="createFriendChallenge()">${t('friends.createCode')}</button>
+                <div class="challenge-create-actions">
+                    <button class="btn-hint friend-action" id="play-solo-btn" onclick="startCustomPractice()">${t('friends.playSolo')}</button>
+                    <button class="btn-guess friend-action" id="create-challenge-btn" onclick="createFriendChallenge()">${t('friends.createCode')}</button>
+                </div>
             </section>
 
             <div class="friends-divider" aria-hidden="true"><span>${t('friends.or')}</span></div>
@@ -168,6 +185,92 @@ function showFriendChallenges(prefilledCode = '') {
 
     if (code) document.getElementById('challenge-player-name')?.focus();
     else focusAppScreenHeading();
+    void updateCustomChallengePool();
+}
+
+function readSavedCustomChallenge() {
+    const fallback = { levels: ['normal'], clade: null };
+    try {
+        const saved = JSON.parse(localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.customChallenge) || 'null');
+        const levels = Array.isArray(saved?.levels) ? PHYLOSAUR_LEVELS.filter(level => saved.levels.includes(level)) : [];
+        return levels.length
+            ? { levels, clade: CUSTOM_POOL_CLADES.includes(saved?.clade) ? saved.clade : null }
+            : fallback;
+    } catch (error) {
+        return fallback;
+    }
+}
+
+let customChallengeCatalogPromise = null;
+
+// The same catalog as the Museum (level and lineage of every active genus), so the
+// screen can tell how many genera a filter allows before anything is created.
+function loadCustomChallengeCatalog() {
+    if (fullDatabase.length > 0 && fullDatabase.every(dino => dino.dificuldade && Array.isArray(dino.linhagem))) {
+        return Promise.resolve(fullDatabase);
+    }
+    customChallengeCatalogPromise ??= callGameApi('catalog')
+        .then(catalog => ensureMuseumCatalogLineages(catalog.dinosaurs || []))
+        .catch(error => {
+            customChallengeCatalogPromise = null;
+            throw error;
+        });
+    return customChallengeCatalogPromise;
+}
+
+let customChallengePoolGeneration = 0;
+
+async function updateCustomChallengePool() {
+    const levels = [...document.querySelectorAll('input[name="challenge-level"]:checked')].map(input => input.value);
+    const clade = document.getElementById('challenge-clade')?.value || null;
+    const poolInput = document.getElementById('challenge-difficulty');
+    const status = document.getElementById('challenge-pool-count');
+    if (!poolInput || !status) return;
+    const poolKey = buildPoolKey(levels, clade);
+    poolInput.value = poolKey;
+    try {
+        localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.customChallenge, JSON.stringify({ levels, clade }));
+    } catch (error) {
+        // Remembering the filters is only a convenience.
+    }
+
+    const generation = ++customChallengePoolGeneration;
+    const show = (message, blocked) => {
+        status.textContent = message;
+        status.classList.toggle('challenge-pool-warning', blocked);
+        poolInput.dataset.poolBlocked = blocked ? 'true' : 'false';
+    };
+    if (!poolKey) {
+        show(t('friends.chooseLevel'), true);
+        return;
+    }
+
+    try {
+        const catalog = await loadCustomChallengeCatalog();
+        if (generation !== customChallengePoolGeneration || !status.isConnected) return;
+        const count = catalog.filter(dino => levels.includes(dino.dificuldade)
+            && (!clade || (Array.isArray(dino.linhagem) && dino.linhagem.includes(clade)))).length;
+        const tooSmall = Boolean(parseCustomPoolKey(poolKey)) && count < MINIMUM_CUSTOM_POOL_SIZE;
+        show(tooSmall
+            ? t('friends.poolTooSmall', { count, minimum: MINIMUM_CUSTOM_POOL_SIZE })
+            : t('friends.poolCount', { count }), tooSmall);
+    } catch (error) {
+        // Without the catalog the count is unknown; the server still validates the pool.
+        if (generation !== customChallengePoolGeneration || !status.isConnected) return;
+        console.warn('Challenge pool could not be counted:', error);
+        show('', false);
+    }
+}
+
+async function startCustomPractice() {
+    const poolInput = document.getElementById('challenge-difficulty');
+    const poolKey = poolInput?.value || '';
+    if (!poolKey || poolInput.dataset.poolBlocked === 'true') {
+        await customAlert(t('friends.create'),
+            document.getElementById('challenge-pool-count')?.textContent || t('friends.chooseLevel'));
+        return;
+    }
+    await startPracticeChallenge(poolKey);
 }
 
 function beginFriendChallengeRequest() {
@@ -197,6 +300,11 @@ async function createFriendChallenge() {
     const difficultyInput = document.getElementById('challenge-difficulty');
     const button = document.getElementById('create-challenge-btn');
     const playerName = nameInput?.value.trim().slice(0, 24) || t('common.player');
+    if (!difficultyInput?.value || difficultyInput.dataset?.poolBlocked === 'true') {
+        await customAlert(t('friends.create'),
+            document.getElementById('challenge-pool-count')?.textContent || t('friends.chooseLevel'));
+        return;
+    }
     const request = beginFriendChallengeRequest();
     if (!request) return;
 
