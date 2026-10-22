@@ -1,5 +1,5 @@
 {
-  "version": 33,
+  "version": 34,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Astrophocaudia": {
@@ -1245,13 +1245,13 @@
       "source": "wikimedia"
     },
     "Animantarx": {
-      "file_title": "File:Animantarx 04829.JPG",
-      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/Animantarx_04829.JPG/960px-Animantarx_04829.JPG",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Animantarx_04829.JPG",
-      "artist": "Conty",
-      "license": "CC BY 3.0",
-      "license_url": "https://creativecommons.org/licenses/by/3.0",
-      "usage_terms": "Creative Commons Attribution 3.0",
+      "file_title": "File:Animantarx ramaljonesi.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/28/Animantarx_ramaljonesi.png/960px-Animantarx_ramaljonesi.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Animantarx_ramaljonesi.png",
+      "artist": "Connor Ashbridge",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
       "source": "wikimedia"
     },
     "Thecodontosaurus": {
@@ -1309,6 +1309,36 @@
       "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/Saurornithoides_restoration.png/960px-Saurornithoides_restoration.png",
       "file_page": "https://commons.wikimedia.org/wiki/File:Saurornithoides_restoration.png",
       "artist": "Audrey.m.horn",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Liliensternus": {
+      "file_title": "File:Liliensternus NT.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/0/00/Liliensternus_NT.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Liliensternus_NT.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
+    "Paralititan": {
+      "file_title": "File:Paralititan stromeri.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Paralititan_stromeri.jpg/960px-Paralititan_stromeri.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Paralititan_stromeri.jpg",
+      "artist": "Dmitry Bogdanov",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0",
+      "source": "wikimedia"
+    },
+    "Betasuchus": {
+      "file_title": "File:Betasuchus by jonagold2000-d9vf4gw.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Betasuchus_by_jonagold2000-d9vf4gw.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Betasuchus_by_jonagold2000-d9vf4gw.png",
+      "artist": "Jonagold2000",
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
