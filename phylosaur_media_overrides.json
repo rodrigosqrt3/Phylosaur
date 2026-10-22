@@ -1,5 +1,5 @@
 {
-  "version": 34,
+  "version": 35,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Astrophocaudia": {
@@ -1342,6 +1342,56 @@
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Uberabatitan": {
+      "file_title": "File:Uberabatitan riberoi profile reconstruction.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Uberabatitan_riberoi_profile_reconstruction.jpg/960px-Uberabatitan_riberoi_profile_reconstruction.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Uberabatitan_riberoi_profile_reconstruction.jpg",
+      "artist": "LancianIdolatry",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "usage_terms": "Creative Commons Zero, Public Domain Dedication",
+      "source": "wikimedia"
+    },
+    "Tazoudasaurus": {
+      "file_title": "File:Tazoudasaurus Scale.svg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Tazoudasaurus_Scale.svg/960px-Tazoudasaurus_Scale.svg.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Tazoudasaurus_Scale.svg",
+      "artist": "Slate Weasel",
+      "license": "Public domain",
+      "license_url": "",
+      "usage_terms": "Public domain",
+      "source": "wikimedia"
+    },
+    "Haya": {
+      "file_title": "File:Haya griva NT.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Haya_griva_NT.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Haya_griva_NT.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Anoplosaurus": {
+      "file_title": "File:Anoplosaurus PLATE XXXI.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Anoplosaurus_PLATE_XXXI.png/960px-Anoplosaurus_PLATE_XXXI.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Anoplosaurus_PLATE_XXXI.png",
+      "artist": "Harry Seeley",
+      "license": "Public domain",
+      "license_url": "",
+      "usage_terms": "Public-domain historical illustration",
+      "source": "wikimedia"
+    },
+    "Laevisuchus": {
+      "file_title": "File:Laevisuchus cervical vertebra.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Laevisuchus_cervical_vertebra.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Laevisuchus_cervical_vertebra.png",
+      "artist": "Fernando Novas, Federico Agnolin, Saswati Bandyopadhyay",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "usage_terms": "Creative Commons Attribution 3.0",
       "source": "wikimedia"
     }
   }
