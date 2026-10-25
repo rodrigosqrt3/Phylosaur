@@ -1,5 +1,5 @@
 {
-  "version": 35,
+  "version": 36,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Astrophocaudia": {
@@ -1392,6 +1392,56 @@
       "license": "CC BY 3.0",
       "license_url": "https://creativecommons.org/licenses/by/3.0",
       "usage_terms": "Creative Commons Attribution 3.0",
+      "source": "wikimedia"
+    },
+    "Bahariasaurus": {
+      "file_title": "File:BahariasaurusNV.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/BahariasaurusNV.jpg/960px-BahariasaurusNV.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:BahariasaurusNV.jpg",
+      "artist": "Foolp",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Tsintaosaurus": {
+      "file_title": "File:Tsintaosaurus spinorhinus NT.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Tsintaosaurus_spinorhinus_NT.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Tsintaosaurus_spinorhinus_NT.jpg",
+      "artist": "Nobu Tamura",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
+    "Magnapaulia": {
+      "file_title": "File:Magnapaulia laticaudus transparent.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Magnapaulia_laticaudus_transparent.png/960px-Magnapaulia_laticaudus_transparent.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Magnapaulia_laticaudus_transparent.png",
+      "artist": "Dmitry Bogdanov, modified by FunkMonk",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
+    "Podokesaurus": {
+      "file_title": "File:Podokesaurus restoration.jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/Podokesaurus_restoration.jpg/960px-Podokesaurus_restoration.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Podokesaurus_restoration.jpg",
+      "artist": "FunkMonk",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
+    "Amazonsaurus": {
+      "file_title": "File:Amazonsaurus LM.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/Amazonsaurus_LM.png/960px-Amazonsaurus_LM.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Amazonsaurus_LM.png",
+      "artist": "Levi Martinez-Reza",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
       "source": "wikimedia"
     }
   }
