@@ -46,6 +46,7 @@ function setHeaderControls(screen) {
       'game':         backBtn("navigateToAppRoute('/')", t('nav.levels')) + navigation,
       'stats':        backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
       'museum':       backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
+      'cladogram':    backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
       'about':        backBtn("navigateBackOrHome('/')", t('nav.back')) + navigation,
       'practice-menu':backBtn("navigateToAppRoute('/')", t('nav.levels')) + navigation,
       'practice':     backBtn("navigateToAppRoute('/')", t('nav.levels')) + navigation,

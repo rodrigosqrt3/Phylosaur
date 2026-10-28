@@ -2022,6 +2022,8 @@ async function showMuseumEntry(name) {
             <h2>${safeName}</h2>
             <div class="museum-entry-meta">${escapeChallengeHtml(family)}</div>
             <div class="museum-entry-first-discovery">${escapeChallengeHtml(discovery.firstLabel)}</div>
+            <button type="button" class="museum-entry-tree-link" data-cladogram-focus="${safeName}"
+                    onclick="openCladogramFromMuseum(this.dataset.cladogramFocus)">${t('cladogram.viewInTree')}</button>
         </header>
 
         <div class="museum-entry-layout">
@@ -2390,6 +2392,9 @@ async function showMuseum() {
                     <div style="font-size:0.85em; color:var(--color-muted); font-style:italic;">
                         ${t('museum.unlockCopy')}
                     </div>
+                    <button type="button" class="btn-hint cladogram-open-button" onclick="showCladogram({ focus: '' })">
+                        ${t('cladogram.openTree')}
+                    </button>
                 </div>
 
                 <div id="museum-specimens-panel">

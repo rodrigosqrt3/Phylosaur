@@ -136,6 +136,8 @@ async function restoreAppRoute() {
     if (!museumVisible) await renderRoute(() => showMuseum());
     if (!isCurrentRequest()) return getCurrentAppRoute();
     await renderRoute(() => showMuseumEntry(decodeURIComponent(parts.slice(1).join('/'))));
+  } else if (route === '/cladogram') {
+    if (!document.querySelector('#app-content .cladogram-viewport')) await renderRoute(() => showCladogram());
   } else if (route === '/practice') {
     renderRoute(() => showPracticeMode());
   } else if (route === '/friends') {
