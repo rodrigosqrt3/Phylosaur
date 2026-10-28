@@ -1918,6 +1918,20 @@ function openMuseumImageViewer() {
     viewer.querySelector('.museum-image-viewer-close').focus({ preventScroll: true });
 }
 
+// The report arrives with the genus, lineage, language and release already filled in.
+function buildMuseumReportMailto(name, lineage) {
+    const body = [
+        t('museum.reportPrompt'),
+        '',
+        '',
+        '---',
+        `Genus: ${name}`,
+        `Lineage: ${(Array.isArray(lineage) ? lineage : []).join(' › ')}`,
+        `Language: ${currentLocale} · Release: ${PHYLOSAUR_RELEASE_VERSION}`
+    ].join('\n');
+    return `mailto:rodrigo03.villa@gmail.com?subject=${encodeURIComponent(`Phylosaur · ${name}`)}&body=${encodeURIComponent(body)}`;
+}
+
 async function showMuseumEntry(name) {
     setAppRoute(`/museum/${encodeURIComponent(name)}`);
     closeMuseumEntry();
@@ -2050,7 +2064,10 @@ async function showMuseumEntry(name) {
                 <h3>${t('museum.classification')}</h3>
                 <div class="museum-entry-lineage">${lineage || '<span>Dinosauria</span>'}</div>
 
-                <div class="museum-entry-read-more-slot"></div>
+                <div class="museum-entry-footer-links">
+                    <div class="museum-entry-read-more-slot"></div>
+                    <a class="museum-entry-report-link" href="${escapeChallengeHtml(buildMuseumReportMailto(name, dino.linhagem))}">${t('museum.reportError')}</a>
+                </div>
             </section>
         </div>
     `);

@@ -8707,6 +8707,32 @@ html[data-theme="light"] body .stats-dashboard .stat {
   margin-top: 14px;
 }
 
+.museum-entry-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-top: 28px;
+}
+
+.museum-entry-footer-links .museum-entry-read-more {
+  margin-top: 0;
+}
+
+.museum-entry-report-link {
+  color: var(--color-muted);
+  font-size: 0.78em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .museum-entry-report-link:hover {
+    color: var(--color-accent);
+  }
+}
+
 .museum-entry-tree-link {
   margin-top: 10px;
   padding: 0;
