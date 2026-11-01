@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════
 // GLOBAL STATE
 // ═══════════════════════════════════════════════
-const PHYLOSAUR_RELEASE_VERSION = 241;
+const PHYLOSAUR_RELEASE_VERSION = 242;
 const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   theme: 'phylosaur-theme',
   language: 'phylosaur-language',
@@ -14,7 +14,9 @@ const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   accountDiscoveryPrefix: 'phylosaur-account-discoveries-v1:',
   sessionCredentialPrefix: 'phylosaur-session-credential-v1:',
   reloadScroll: 'phylosaur-reload-scroll-v1',
-  customChallenge: 'phylosaur-custom-challenge-v1'
+  customChallenge: 'phylosaur-custom-challenge-v1',
+  museumFilters: 'phylosaur-museum-filters-v1',
+  cladogramView: 'phylosaur-cladogram-view-v1'
 });
 
 // Custom challenges: a pool key such as 'custom:muito_facil,facil:Theropoda' travels

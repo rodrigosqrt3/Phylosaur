@@ -1090,6 +1090,35 @@ const MUSEUM_ATLAS_COLLECTIONS = [
     }
 ];
 
+let museumUnlockedOnly = false;
+
+// Gallery filters survive a reload in the same tab, but not a new visit.
+function saveMuseumFilters() {
+    try {
+        sessionStorage.setItem(PHYLOSAUR_STORAGE_KEYS.museumFilters, JSON.stringify({
+            level: selectedMuseumLevel,
+            clade: selectedMuseumClade,
+            search: museumSearchQuery,
+            unlockedOnly: museumUnlockedOnly
+        }));
+    } catch (_error) {}
+}
+
+(function restoreMuseumFilters() {
+    let saved = null;
+    try {
+        saved = JSON.parse(sessionStorage.getItem(PHYLOSAUR_STORAGE_KEYS.museumFilters) || 'null');
+    } catch (_error) {}
+    if (!saved) return;
+    if (['all', ...PHYLOSAUR_LEVELS].includes(saved.level)) selectedMuseumLevel = saved.level;
+    if (saved.clade === 'all' || saved.clade === 'other'
+        || MUSEUM_ATLAS_COLLECTIONS.some(definition => definition.clade === saved.clade)) {
+        selectedMuseumClade = saved.clade;
+    }
+    if (typeof saved.search === 'string') museumSearchQuery = saved.search.trim().toLowerCase().slice(0, 80);
+    museumUnlockedOnly = saved.unlockedOnly === true;
+})();
+
 let museumOverrideCatalogPromise = null;
 const museumCommonsOverrideRequests = new Map();
 let museumFallbackCatalogPromise = null;
@@ -2319,6 +2348,8 @@ function ensureMuseumSpecimensRendered() {
 function initializeMuseumGallery() {
     const specimensPanel = document.getElementById("museum-specimens-panel");
     if (specimensPanel) specimensPanel.hidden = false;
+    const unlockedToggle = document.getElementById("museum-unlocked-only");
+    if (unlockedToggle) unlockedToggle.checked = museumUnlockedOnly;
 
     if (ensureMuseumSpecimensRendered()) {
         applyMuseumFilters();
@@ -2483,6 +2514,10 @@ function updateMuseumSearch(value) {
 }
 
 function applyMuseumFilters() {
+    const unlockedToggle = document.getElementById('museum-unlocked-only');
+    if (unlockedToggle) museumUnlockedOnly = unlockedToggle.checked;
+    saveMuseumFilters();
+
     const cards = museumFilterCards.length
         ? museumFilterCards
         : [...document.querySelectorAll('.museum-card[data-museum-level]')];
@@ -2490,7 +2525,7 @@ function applyMuseumFilters() {
 
     let visibleCount = 0;
     let visibleUnlocked = 0;
-    const unlockedOnly = Boolean(document.getElementById('museum-unlocked-only')?.checked);
+    const unlockedOnly = museumUnlockedOnly;
 
     cards.forEach(card => {
         const matchesLevel = (selectedMuseumLevel === 'all'

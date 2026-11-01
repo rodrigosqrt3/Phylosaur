@@ -24,6 +24,40 @@ let cladogramRoot = null;
 let cladogramZoom = 1;
 let cladogramLayout = null;
 let cladogramHighlightKey = '';
+let cladogramReloadScroll = null;
+
+// Open clades, zoom and the viewport position survive a reload in the same tab.
+window.addEventListener('pagehide', () => {
+    const viewport = document.getElementById('cladogram-viewport');
+    try {
+        sessionStorage.setItem(PHYLOSAUR_STORAGE_KEYS.cladogramView, JSON.stringify({
+            expanded: cladogramExpanded ? [...cladogramExpanded] : null,
+            zoom: cladogramZoom,
+            focus: cladogramFocusName,
+            highlight: cladogramHighlightKey,
+            scroll: viewport
+                ? { left: Math.round(viewport.scrollLeft), top: Math.round(viewport.scrollTop) }
+                : null
+        }));
+    } catch (_error) {}
+});
+
+(function restoreCladogramView() {
+    let saved = null;
+    try {
+        saved = JSON.parse(sessionStorage.getItem(PHYLOSAUR_STORAGE_KEYS.cladogramView) || 'null');
+    } catch (_error) {}
+    if (!saved) return;
+    if (Array.isArray(saved.expanded)) {
+        cladogramExpanded = new Set(saved.expanded.filter(name => typeof name === 'string'));
+    }
+    if (CLADOGRAM_ZOOM_STEPS.includes(saved.zoom)) cladogramZoom = saved.zoom;
+    if (typeof saved.focus === 'string') cladogramFocusName = saved.focus;
+    if (typeof saved.highlight === 'string') cladogramHighlightKey = saved.highlight;
+    if (Number.isFinite(saved.scroll?.left) && Number.isFinite(saved.scroll?.top)) {
+        cladogramReloadScroll = saved.scroll;
+    }
+})();
 
 function buildCladogramTree(dinosaurs, unlockedSet) {
     const createNode = (name, depth, parent) => ({
@@ -457,7 +491,10 @@ function openCladogramFromMuseum(name) {
 async function showCladogram({ focus = null } = {}) {
     setAppRoute('/cladogram');
     setHeaderControls('cladogram');
-    if (focus !== null) cladogramFocusName = focus;
+    if (focus !== null) {
+        cladogramFocusName = focus;
+        cladogramReloadScroll = null;
+    }
     const appContent = document.getElementById('app-content');
 
     appContent.innerHTML = `<div class="game-card">${renderAppState(t('cladogram.loading'))}</div>`;
@@ -542,7 +579,13 @@ async function showCladogram({ focus = null } = {}) {
         initCladogramPanning(document.getElementById('cladogram-viewport'));
         drawCladogram();
         focusAppScreenHeading();
-        if (!cladogramFocusName || !revealCladogramTarget(cladogramFocusName)) {
+        const reloadScroll = cladogramReloadScroll;
+        cladogramReloadScroll = null;
+        if (reloadScroll) {
+            const viewport = document.getElementById('cladogram-viewport');
+            viewport.scrollLeft = reloadScroll.left;
+            viewport.scrollTop = reloadScroll.top;
+        } else if (!cladogramFocusName || !revealCladogramTarget(cladogramFocusName)) {
             scrollCladogramTo(cladogramHighlightKey || 'clade:Dinosauria', 'auto');
         }
     } catch (err) {
