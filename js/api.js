@@ -211,20 +211,36 @@ async function initializeAnalyticsAccess() {
   return request.promise;
 }
 
-function getStoredGameSessionIds(limit = 10) {
-  const sessionIds = [];
-
+// localStorage.key() order is unspecified, so sessions are ranked explicitly:
+// undated ones (current practice, friend races) first, then Daily by date.
+function getStoredGameSessionEntries() {
+  const entries = [];
   for (let index = 0; index < localStorage.length; index++) {
     const key = localStorage.key(index);
     if (!key?.startsWith('phylosaur-session:')) continue;
-
     const sessionId = localStorage.getItem(key);
-    if (sessionId && !sessionIds.includes(sessionId)) {
-      sessionIds.push(sessionId);
+    if (!sessionId) continue;
+    const date = /^phylosaur-session:daily:[^:]+:(\d{4}-\d{2}-\d{2})$/.exec(key)?.[1] || null;
+    entries.push({ key, sessionId, date });
+  }
+  return entries.sort((a, b) => String(b.date || '9999').localeCompare(String(a.date || '9999')));
+}
+
+function getStoredGameSessionIds(limit = 10) {
+  const sessionIds = [...new Set(getStoredGameSessionEntries().map(entry => entry.sessionId))];
+  return sessionIds.slice(0, Math.max(1, Number(limit) || 10));
+}
+
+// After a successful claim, past Daily sessions that were sent are either
+// linked to the account or not claimable; forgetting them keeps the list short.
+function forgetClaimedDailySessions(sessionIds) {
+  const sent = new Set(sessionIds);
+  const today = new Date().toISOString().slice(0, 10);
+  for (const entry of getStoredGameSessionEntries()) {
+    if (entry.date && entry.date < today && sent.has(entry.sessionId)) {
+      try { localStorage.removeItem(entry.key); } catch (_error) {}
     }
   }
-
-  return sessionIds.slice(0, Math.max(1, Number(limit) || 10));
 }
 
 function getGameSessionStorageKey(mode, difficulty) {
@@ -290,11 +306,19 @@ async function fetchWikipediaInfo(cladeName) {
         format: 'json', origin: '*'
       });
       const data = await readJson(`https://www.wikidata.org/w/api.php?${parameters}`);
-      return pages.find(page =>
-        (data?.entities?.[page.pageprops.wikibase_item]?.claims?.P225 || []).some(claim =>
-          claim.rank !== 'deprecated' && claim.mainsnak?.snaktype === 'value'
-          && String(claim.mainsnak.datavalue?.value || '')
-            .trim().normalize('NFC').toLowerCase() === taxonName)) || null;
+      const scientificNames = page =>
+        (data?.entities?.[page.pageprops.wikibase_item]?.claims?.P225 || [])
+          .filter(claim => claim.rank !== 'deprecated' && claim.mainsnak?.snaktype === 'value')
+          .map(claim => String(claim.mainsnak.datavalue?.value || '').trim().normalize('NFC').toLowerCase());
+      // Monotypic genera often share one item (and article) with their type
+      // species, so "Genus species" of this same genus also confirms it, but
+      // only when no candidate carries the exact name.
+      const isOwnBinomial = name => {
+        const words = name.split(/\s+/);
+        return words.length === 2 && words[0] === taxonName;
+      };
+      return pages.find(page => scientificNames(page).includes(taxonName))
+        || pages.find(page => scientificNames(page).some(isOwnBinomial)) || null;
     };
     const toSummary = (page, language) => page?.extract?.trim() ? {
       title: page.title,

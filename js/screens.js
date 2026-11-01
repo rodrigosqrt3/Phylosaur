@@ -1091,6 +1091,8 @@ const MUSEUM_ATLAS_COLLECTIONS = [
 ];
 
 let museumUnlockedOnly = false;
+// The search box keeps what the player typed; filtering uses museumSearchQuery.
+let museumSearchText = '';
 
 // Gallery filters survive a reload in the same tab, but not a new visit.
 function saveMuseumFilters() {
@@ -1098,7 +1100,7 @@ function saveMuseumFilters() {
         sessionStorage.setItem(PHYLOSAUR_STORAGE_KEYS.museumFilters, JSON.stringify({
             level: selectedMuseumLevel,
             clade: selectedMuseumClade,
-            search: museumSearchQuery,
+            search: museumSearchText,
             unlockedOnly: museumUnlockedOnly
         }));
     } catch (_error) {}
@@ -1115,7 +1117,10 @@ function saveMuseumFilters() {
         || MUSEUM_ATLAS_COLLECTIONS.some(definition => definition.clade === saved.clade)) {
         selectedMuseumClade = saved.clade;
     }
-    if (typeof saved.search === 'string') museumSearchQuery = saved.search.trim().toLowerCase().slice(0, 80);
+    if (typeof saved.search === 'string') {
+        museumSearchText = saved.search.slice(0, 80);
+        museumSearchQuery = museumSearchText.trim().toLowerCase();
+    }
     museumUnlockedOnly = saved.unlockedOnly === true;
 })();
 
@@ -2350,6 +2355,10 @@ function initializeMuseumGallery() {
     if (specimensPanel) specimensPanel.hidden = false;
     const unlockedToggle = document.getElementById("museum-unlocked-only");
     if (unlockedToggle) unlockedToggle.checked = museumUnlockedOnly;
+    const searchInput = document.getElementById("museum-search-input");
+    if (searchInput && museumSearchText.trim().toLowerCase() === museumSearchQuery) {
+        searchInput.value = museumSearchText;
+    }
 
     if (ensureMuseumSpecimensRendered()) {
         applyMuseumFilters();
@@ -2505,7 +2514,8 @@ function switchMuseumLevel(level) {
 }
 
 function updateMuseumSearch(value) {
-    museumSearchQuery = String(value || '').trim().toLowerCase();
+    museumSearchText = String(value || '');
+    museumSearchQuery = museumSearchText.trim().toLowerCase();
     if (museumFilterFrame !== null) return;
     museumFilterFrame = requestAnimationFrame(() => {
         museumFilterFrame = null;

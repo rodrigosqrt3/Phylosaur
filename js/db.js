@@ -1237,6 +1237,7 @@ async function claimGuestProgressOnLogin({ showNotice = false } = {}) {
             sessionIds,
             guestAchievementIds
         });
+        forgetClaimedDailySessions(sessionIds);
         dailyCompletionCache = null;
 
         if (result.statistics) {

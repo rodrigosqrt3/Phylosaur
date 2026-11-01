@@ -121,90 +121,6 @@ async function initUserStatsRow(ownerId = currentUserId, isCurrent = () => curre
   if (error) throw error;
 }
 
-function showLoginScreen() {
-  setHeaderControls('login');
-  const appContent = document.getElementById('app-content');
-
-  appContent.innerHTML = `
-    <div class="game-card login-card">
-      <div class="tab-row login-tab-row" role="tablist" aria-label="${t('auth.accountAccess')}">
-        <button class="tab-btn active" id="tab-signin" role="tab" aria-selected="true"
-                aria-controls="login-panel-signin" onclick="loginSwitchTab('signin')">${t('auth.signIn')}</button>
-        <button class="tab-btn" id="tab-register" role="tab" aria-selected="false"
-                aria-controls="login-panel-register" onclick="loginSwitchTab('register')">${t('auth.createAccount')}</button>
-      </div>
-
-      <div class="login-form-panel active" id="login-panel-signin" role="tabpanel" aria-labelledby="tab-signin">
-        <div class="login-global-error" id="signin-global-error"></div>
-        <div class="login-global-success" id="signin-global-success"></div>
-        <div class="login-field">
-          <label for="signin-email">${t('auth.email')}</label>
-          <input type="email" id="signin-email" placeholder="${t('auth.emailPlaceholder')}" autocomplete="email" />
-          <div class="login-field-error" id="signin-email-err">${t('auth.validEmail')}</div>
-        </div>
-        <div class="login-field">
-          <label for="signin-password">${t('auth.password')}</label>
-          <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password" />
-          <div class="login-field-error" id="signin-password-err">${t('auth.passwordRequired')}</div>
-        </div>
-        <button type="button" class="login-forgot login-text-action" onclick="loginShowReset()">${t('auth.forgot')}</button>
-        <button class="btn-guess btn-block btn-large" id="signin-btn" onclick="handleSignIn()">
-          ${t('auth.signIn')}
-        </button>
-      </div>
-
-      <div class="login-form-panel" id="login-panel-register" role="tabpanel" aria-labelledby="tab-register">
-        <div class="login-global-error" id="register-global-error"></div>
-        <div class="login-global-success" id="register-global-success"></div>
-        <div class="login-field">
-          <label for="reg-email">${t('auth.email')}</label>
-          <input type="email" id="reg-email" placeholder="${t('auth.emailPlaceholder')}" autocomplete="email" />
-          <div class="login-field-error" id="reg-email-err">${t('auth.validEmail')}</div>
-        </div>
-        <div class="login-field">
-          <label for="reg-password">${t('auth.password')}</label>
-          <input type="password" id="reg-password" placeholder="${t('auth.passwordPlaceholder')}" autocomplete="new-password" />
-          <div class="login-field-error" id="reg-password-err">${t('auth.passwordLength')}</div>
-        </div>
-        <div class="login-field login-field-last">
-          <label for="reg-confirm">${t('auth.confirmPassword')}</label>
-          <input type="password" id="reg-confirm" placeholder="${t('auth.repeatPassword')}" autocomplete="new-password" />
-          <div class="login-field-error" id="reg-confirm-err">${t('auth.passwordMismatch')}</div>
-        </div>
-        <button class="btn-guess btn-block btn-large" id="register-btn" onclick="handleRegister()">
-          ${t('auth.createAccount')}
-        </button>
-      </div>
-
-      <div class="login-form-panel" id="login-panel-reset">
-        <button type="button" class="login-text-action login-back-link" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('auth.backSignIn')}</span></button>
-        <p class="login-reset-title">${t('auth.resetPassword')}</p>
-        <p class="login-reset-copy">
-          ${t('auth.resetCopy')}
-        </p>
-        <div class="login-global-error" id="reset-global-error"></div>
-        <div class="login-global-success" id="reset-global-success"></div>
-        <div class="login-field login-field-last">
-          <label for="reset-email">${t('auth.email')}</label>
-          <input type="email" id="reset-email" placeholder="${t('auth.emailPlaceholder')}" />
-          <div class="login-field-error" id="reset-email-err">${t('auth.validEmail')}</div>
-        </div>
-        <button class="btn-guess btn-block btn-large" id="reset-btn" onclick="handleReset()">
-          ${t('auth.sendReset')}
-        </button>
-      </div>
-
-      <p class="login-guest-action">
-        <button onclick="continueAsGuest()" class="btn-hint btn-block btn-large btn-spaced">
-          ${t('auth.playGuest')}
-        </button>
-      </p>
-    </div>
-  `;
-
-  document.addEventListener('keydown', loginEnterHandler);
-}
-
 let activeLoginModalCleanup = null;
 
 function showLoginModal() {
@@ -274,6 +190,8 @@ function showLoginModal() {
 
     <div class="login-form-panel" id="login-panel-reset">
       <button type="button" class="login-text-action login-back-link" onclick="loginShowReset(false)"><i class="ui-icon ui-icon-arrow-left" aria-hidden="true"></i><span>${t('auth.backSignIn')}</span></button>
+      <p class="login-reset-title">${t('auth.resetPassword')}</p>
+      <p class="login-reset-copy">${t('auth.resetCopy')}</p>
       <div class="login-global-error" id="reset-global-error"></div>
       <div class="login-global-success" id="reset-global-success"></div>
       <div class="login-field login-field-last">
@@ -301,6 +219,12 @@ function showLoginModal() {
       event.preventDefault();
       event.stopImmediatePropagation();
       closeLoginModal();
+      return;
+    }
+    // The fields are not in a <form>, so Enter submits the visible panel here.
+    if (event.key === 'Enter' && event.target?.tagName === 'INPUT') {
+      event.preventDefault();
+      loginEnterHandler(event);
       return;
     }
     if (event.key !== 'Tab') return;
@@ -374,8 +298,7 @@ async function handleAccountSignIn(modal = false) {
       if (error) {
         const message = error.code === "invalid_credentials" || error.message?.includes("Invalid login credentials")
           ? t("auth.invalidCredentials")
-          : error.status >= 500 || error.name === "AuthRetryableFetchError"
-            ? t("auth.requestFailed") : error.message || t("auth.requestFailed");
+          : getLocalizedAuthError(error);
         loginShowGlobalError("signin", message);
         return;
       }
@@ -407,9 +330,8 @@ async function handleAccountSignIn(modal = false) {
       if (!request.isCurrent()) return;
       if (modal) {
         closeLoginModal();
-        setHeaderControls(selectedDifficulty ? "game" : "difficulty");
+        refreshScreenAfterModalLogin();
       } else {
-        document.removeEventListener("keydown", loginEnterHandler);
         showDifficultySelection();
       }
     } finally {
@@ -420,6 +342,43 @@ async function handleAccountSignIn(modal = false) {
       }
     }
   });
+}
+
+// A modal sign-in keeps the player where they were: the header is rebuilt for
+// the same screen, and only account-dependent content is refreshed.
+function refreshScreenAfterModalLogin() {
+  setHeaderControls(document.getElementById("header-controls")?.dataset.screen || "difficulty");
+  const route = getCurrentAppRoute();
+  if (route === "/" && typeof refreshDifficultySelectionAccountState === "function") {
+    void refreshDifficultySelectionAccountState();
+  } else if (route === "/museum" && typeof showMuseum === "function") {
+    void showMuseum();
+  } else if (route === "/cladogram" && typeof refreshCladogramInPlace === "function") {
+    void refreshCladogramInPlace();
+  } else if (typeof initializeAnalyticsAccess === "function") {
+    void initializeAnalyticsAccess()
+      .then(isAdmin => { if (isAdmin) refreshHeaderControls(); })
+      .catch(() => {});
+  }
+}
+
+// Supabase Auth messages are English-only; known cases map to translations.
+function getLocalizedAuthError(error) {
+  const code = String(error?.code || "");
+  const message = String(error?.message || "");
+  if (["user_already_exists", "email_exists"].includes(code) || /already registered/i.test(message)) {
+    return t("auth.errorAccountExists");
+  }
+  if (code === "email_not_confirmed" || /email not confirmed/i.test(message)) {
+    return t("auth.errorEmailNotConfirmed");
+  }
+  if (code.startsWith("over_") || error?.status === 429 || /security purposes|rate limit/i.test(message)) {
+    return t("auth.errorRateLimited");
+  }
+  if (code === "weak_password" || /password should/i.test(message)) return t("auth.errorWeakPassword");
+  if (code === "same_password" || /different from the old/i.test(message)) return t("auth.errorSamePassword");
+  if (code === "email_address_invalid") return t("auth.validEmail");
+  return t("auth.requestFailed");
 }
 
 async function handleRegisterModal() {
@@ -445,7 +404,7 @@ async function handleAccountRegister() {
       authenticated = data;
       if (!request.isCurrent()) return;
       if (error) {
-        loginShowGlobalError("register", error.message);
+        loginShowGlobalError("register", getLocalizedAuthError(error));
         return;
       }
       if (data?.user) {
@@ -539,8 +498,8 @@ function loginEnterHandler(e) {
   const active = document.querySelector('.login-form-panel.active');
   if (!active) return;
   const id = active.id;
-  if (id === 'login-panel-signin')        handleSignIn();
-  else if (id === 'login-panel-register') handleRegister();
+  if (id === 'login-panel-signin')        handleSignInModal();
+  else if (id === 'login-panel-register') handleRegisterModal();
   else if (id === 'login-panel-reset')    handleReset();
 }
 
@@ -561,7 +520,7 @@ async function handleReset() {
   return runAccountFormRequest("reset-btn", "reset", async request => {
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}${window.location.pathname}` });
     if (!request.isCurrent()) return;
-    if (error) loginShowGlobalError("reset", error.message);
+    if (error) loginShowGlobalError("reset", getLocalizedAuthError(error));
     else loginShowGlobalSuccess("reset", t("auth.resetSent"));
   });
 }
@@ -658,7 +617,8 @@ function showPasswordUpdateForm() {
       <div class="login-field login-field-last">
         <label for="update-confirm">${t('auth.confirmPassword')}</label>
         <input type="password" id="update-confirm" placeholder="${t('auth.repeatPassword')}"
-               autocomplete="new-password" aria-describedby="update-confirm-err" />
+               autocomplete="new-password" aria-describedby="update-confirm-err"
+               onkeydown="if (event.key === 'Enter') handlePasswordUpdate()" />
         <div class="login-field-error" id="update-confirm-err">${t('auth.passwordMismatch')}</div>
       </div>
       <button class="btn-guess btn-block btn-large" id="update-btn" onclick="handlePasswordUpdate()">
@@ -684,7 +644,7 @@ async function handlePasswordUpdate() {
     const { error } = await sb.auth.updateUser({ password });
     if (!request.isCurrent()) return;
     if (error) {
-      loginShowGlobalError("update", error.message);
+      loginShowGlobalError("update", getLocalizedAuthError(error));
       return;
     }
     loginShowGlobalSuccess("update", t("auth.passwordUpdated"));
@@ -732,7 +692,8 @@ async function showAccountPanel() {
           <div class="login-field">
             <label for="account-name-input">${t('account.playerName')}</label>
             <input type="text" id="account-name-input" maxlength="24" value="${escapeHtml(currentUser)}"
-                   autocomplete="nickname" spellcheck="false" aria-describedby="account-name-hint account-name-err" />
+                   autocomplete="nickname" spellcheck="false" aria-describedby="account-name-hint account-name-err"
+                   onkeydown="if (event.key === 'Enter') handleAccountNameChange()" />
             <div class="login-field-error" id="account-name-err">${t('account.nameInvalid')}</div>
             <p class="account-field-hint" id="account-name-hint">${t('account.nameHint')}</p>
           </div>
@@ -756,7 +717,8 @@ async function showAccountPanel() {
           <div class="login-field">
             <label for="account-confirm">${t('auth.confirmPassword')}</label>
             <input type="password" id="account-confirm" placeholder="${t('auth.repeatPassword')}"
-                   autocomplete="new-password" aria-describedby="account-confirm-err" />
+                   autocomplete="new-password" aria-describedby="account-confirm-err"
+                   onkeydown="if (event.key === 'Enter') handleAccountPasswordChange()" />
             <div class="login-field-error" id="account-confirm-err">${t('auth.passwordMismatch')}</div>
           </div>
         </div>
@@ -822,7 +784,7 @@ async function handleAccountPasswordChange() {
     const { error } = await sb.auth.updateUser({ password });
     if (!request.isCurrent()) return;
     if (error) {
-      loginShowGlobalError('account', error.message);
+      loginShowGlobalError('account', getLocalizedAuthError(error));
       return;
     }
     document.getElementById('account-password').value = '';
@@ -843,7 +805,7 @@ async function handleAccountResetEmail() {
     }
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}${window.location.pathname}` });
     if (!request.isCurrent()) return;
-    if (error) loginShowGlobalError('account', error.message);
+    if (error) loginShowGlobalError('account', getLocalizedAuthError(error));
     else loginShowGlobalSuccess('account', t('auth.resetSent'));
   });
 }

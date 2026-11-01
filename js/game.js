@@ -463,7 +463,12 @@ async function startFriendChallengeFromPayload(data) {
     isPracticeMode = false;
     selectedDifficulty = data.difficulty;
     currentChallengeCode = data.challenge?.code || currentChallengeCode;
-    if (currentChallengeCode) setAppRoute(`/challenge/${currentChallengeCode}`);
+    // A rematch replaces the finished race in history, so Back/Friends skips it.
+    if (currentChallengeCode) {
+        setAppRoute(`/challenge/${currentChallengeCode}`, {
+            replace: getCurrentAppRoute().startsWith('/challenge/')
+        });
+    }
     currentChallengePlayerName = data.challenge?.playerName || currentChallengePlayerName || t('common.player');
     currentChallengeCreatorName = data.challenge?.creatorName || currentChallengeCreatorName;
     currentChallengePlacement = data.challenge?.placement ?? null;
@@ -496,6 +501,17 @@ async function startFriendChallengeFromPayload(data) {
     } else {
         startChallengeStatusPolling();
     }
+}
+
+// True while the game screen for this route is still mounted, e.g. under a
+// Museum entry opened from the result panel; closing it must not reload the game.
+function isGameRouteMounted(route) {
+    if (!document.getElementById('tree-scroll-wrapper')) return false;
+    const parts = normalizeAppRoute(route).split('/').filter(Boolean);
+    if (parts[0] === 'challenge') {
+        return currentGameMode === 'challenge' && currentChallengeCode === decodeURIComponent(parts[1] || '');
+    }
+    return parts[0] === 'game' && currentGameMode === parts[1] && selectedDifficulty === parts[2];
 }
 
 function getChallengeSessionGuard() {
@@ -1638,14 +1654,26 @@ async function startRematch(button = null) {
         button.disabled = true;
         button.textContent = t('friends.rematchStarting');
     }
+    // Unlike getChallengeSessionGuard, a race closing meanwhile (which stops
+    // polling) must not cancel the rematch the player asked for.
+    const wrapper = document.getElementById('tree-scroll-wrapper');
+    const sessionId = gameSessionId;
+    const ownerId = currentUserId;
+    const isCurrentRequest = () => Boolean(wrapper)
+        && document.getElementById('tree-scroll-wrapper') === wrapper
+        && gameSessionId === sessionId && currentUserId === ownerId;
     try {
         const data = await callGameApi('rematch_challenge', {
             sessionId: gameSessionId,
             playerName: currentChallengePlayerName || t('common.player')
         });
+        // The seat is kept for a later visit, but a player who left the race
+        // screen meanwhile is not pulled back into it.
         localStorage.setItem(getChallengeSessionStorageKey(data.challenge.code), data.sessionId);
+        if (!isCurrentRequest()) return;
         await startFriendChallengeFromPayload(data);
     } catch (error) {
+        if (!isCurrentRequest()) return;
         await customAlert(t('friends.rematchError'), escapeHtml(error.message));
         if (button?.isConnected) {
             button.disabled = false;

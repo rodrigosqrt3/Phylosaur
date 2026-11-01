@@ -12,6 +12,7 @@ function setHeaderControls(screen) {
     }
     const controls = document.getElementById('header-controls');
     if (!controls) return;
+    controls.dataset.screen = screen;
 
     const glyphs = {
       museum: '<path d="M3 9.2 12 4l9 5.2"/><path d="M4.5 9.8h15"/><path d="M6.5 12v5.5M10.2 12v5.5M13.8 12v5.5M17.5 12v5.5"/><path d="M4 20h16"/>',
@@ -68,6 +69,13 @@ function setHeaderControls(screen) {
           <button class="btn-hint btn-header btn-header-icon header-account-reserve" type="button" tabindex="-1" disabled>${glyph('account')}<span class="visually-hidden">${t('common.player')}</span></button>
         </div>`;
     controls.innerHTML = sizingMenu + `<div class="header-controls-visible">${map[screen] || ''}</div>`;
+}
+
+// Rebuilds the header of the screen already shown, after account or admin
+// access changes, without the screen-change side effects of a new name.
+function refreshHeaderControls() {
+    const screen = document.getElementById('header-controls')?.dataset.screen;
+    if (screen) setHeaderControls(screen);
 }
 
 function applyTheme(theme, { persist = true } = {}) {

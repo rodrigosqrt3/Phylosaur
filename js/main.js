@@ -148,8 +148,12 @@ async function restoreAppRoute() {
     await renderRoute(() => showStatsDashboard());
   } else if (route === '/account' && currentUser) {
     await renderRoute(() => showAccountPanel());
-  } else if (route === '/analytics' && isAnalyticsAdmin) {
+  } else if (route === '/analytics' && currentUser && await initializeAnalyticsAccess()) {
+    if (!isCurrentRequest()) return getCurrentAppRoute();
     await renderRoute(() => showAnalyticsDashboard());
+  } else if ((parts[0] === 'game' || parts[0] === 'challenge')
+      && typeof isGameRouteMounted === 'function' && isGameRouteMounted(route)) {
+    // Overlays above the game were closed above; the game itself stays as is.
   } else if (parts[0] === 'game' && parts.length === 3
       && ['daily', 'practice'].includes(parts[1])
       && (APP_ROUTE_DIFFICULTIES.has(parts[2]) || (parts[1] === 'practice' && parseCustomPoolKey(parts[2])))) {
@@ -281,6 +285,12 @@ document.addEventListener('DOMContentLoaded', async function() {
   const userInitialization = initializeUserSystem();
   appRoutingReady = true;
   const challengeCode = new URLSearchParams(window.location.search).get('challenge');
+  if (challengeCode) {
+    // A shared link is consumed once; later routes and reloads must not reopen it.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('challenge');
+    window.history.replaceState(window.history.state, document.title, url.href);
+  }
   let restoredRoute;
   if (!challengeCode && getCurrentAppRoute() === '/') {
     await showDifficultySelection();
@@ -297,5 +307,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     restoredRoute = '/friends';
   } else if (!restoredRoute) {
     restoredRoute = await restoreAppRoute();
+  }
+  // Screens render their header before admin access is known; the home screen
+  // refreshes its own, every other restored screen is updated here.
+  if (currentUser && restoredRoute !== '/') {
+    void initializeAnalyticsAccess()
+      .then(isAdmin => { if (isAdmin) refreshHeaderControls(); })
+      .catch(() => {});
   }
 });

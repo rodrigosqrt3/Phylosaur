@@ -482,6 +482,16 @@ function initCladogramPanning(viewport) {
     });
 }
 
+// Redraws for another account's discoveries (after a sign-in) without moving
+// the page or the tree viewport.
+async function refreshCladogramInPlace() {
+    const viewport = document.getElementById('cladogram-viewport');
+    if (viewport) cladogramReloadScroll = { left: viewport.scrollLeft, top: viewport.scrollTop };
+    const pageY = window.scrollY;
+    await showCladogram();
+    if (document.getElementById('cladogram-viewport')) window.scrollTo({ top: pageY, behavior: 'instant' });
+}
+
 function openCladogramFromMuseum(name) {
     closeMuseumEntry();
     showCladogram({ focus: name });
