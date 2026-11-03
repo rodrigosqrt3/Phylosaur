@@ -1492,7 +1492,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=36')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=37')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
@@ -2693,6 +2693,9 @@ async function showAnalyticsDashboard(days = 30) {
             })}</span>
             <span>${t('analytics.playerStreaks', {
                 current: player.currentStreak, best: player.bestStreak
+            })}</span>
+            <span>${t('analytics.playerMuseum', {
+                count: player.museumUnlocked || 0, total: summary.museumTotal || '?'
             })}</span>
             <time>${t('analytics.lastDaily', { date: escapeChallengeHtml(lastPlayed) })}</time>
         </div>`;

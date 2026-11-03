@@ -6095,7 +6095,7 @@ body.light-mode .stat-label {
 
 .analytics-player-row {
     display: grid;
-    grid-template-columns: 34px minmax(130px, 0.8fr) minmax(190px, 1.35fr) minmax(145px, 0.8fr) auto;
+    grid-template-columns: 34px minmax(130px, 0.8fr) minmax(190px, 1.35fr) minmax(145px, 0.8fr) minmax(100px, 0.6fr) auto;
     align-items: center;
     gap: 12px;
     padding: 11px 12px;
