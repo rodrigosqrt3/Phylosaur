@@ -1,7 +1,17 @@
 {
-  "version": 36,
+  "version": 37,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Orodromeus": {
+      "file_title": "File:Orodromeus (pencil 2013).png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Orodromeus_%28pencil_2013%29.png/960px-Orodromeus_%28pencil_2013%29.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Orodromeus_(pencil_2013).png",
+      "artist": "Tomopteryx",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
     "Astrophocaudia": {
       "file_title": "File:Astrophocaudia LM.png",
       "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Astrophocaudia_LM.png/960px-Astrophocaudia_LM.png",
@@ -1345,13 +1355,27 @@
       "source": "wikimedia"
     },
     "Uberabatitan": {
-      "file_title": "File:Uberabatitan riberoi profile reconstruction.jpg",
-      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Uberabatitan_riberoi_profile_reconstruction.jpg/960px-Uberabatitan_riberoi_profile_reconstruction.jpg",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Uberabatitan_riberoi_profile_reconstruction.jpg",
-      "artist": "LancianIdolatry",
-      "license": "CC0",
-      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-      "usage_terms": "Creative Commons Zero, Public Domain Dedication",
+      "file_title": "File:Uberabatitan in a camp on MafraSC.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Uberabatitan_in_a_camp_on_MafraSC.png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Coahuilaceratops": {
+      "file_title": "File:Life reconstruction of Coahuilaceratops (cropped).png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Life_reconstruction_of_Coahuilaceratops_(cropped).png",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Montanoceratops": {
+      "file_title": "File:Montanoceratops BW flipped.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Montanoceratops_BW_flipped.jpg",
+      "resolve_commons_metadata": true,
+      "source": "wikimedia"
+    },
+    "Nemegtomaia": {
+      "file_title": "File:Nesting Nemegtomaia.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Nesting_Nemegtomaia.jpg",
+      "resolve_commons_metadata": true,
       "source": "wikimedia"
     },
     "Tazoudasaurus": {
