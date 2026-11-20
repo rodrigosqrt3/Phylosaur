@@ -86,6 +86,44 @@ function updateDifficultyCompletionStatus(status) {
     });
 }
 
+function isGuestAccountNoteDismissed() {
+    try {
+        return localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.guestAccountNoteDismissed) === '1';
+    } catch (_error) {
+        return false;
+    }
+}
+
+function dismissGuestAccountNote() {
+    try {
+        localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.guestAccountNoteDismissed, '1');
+    } catch (_error) {}
+    document.querySelector('.guest-account-note')?.remove();
+}
+
+// A quiet, dismissible hint under the home actions; only guests see it.
+function updateGuestAccountNote(homeCard) {
+    const wrap = homeCard?.querySelector('.difficulty-home-actions-wrap');
+    if (!wrap) return;
+    const existing = wrap.querySelector('.guest-account-note');
+    if (currentUserId || isGuestAccountNoteDismissed()) {
+        existing?.remove();
+        return;
+    }
+    if (existing) return;
+    const note = document.createElement('div');
+    note.className = 'guest-account-note';
+    note.setAttribute('role', 'note');
+    note.innerHTML = `
+        <span class="guest-account-note-text">${t('home.guestNote')}
+            <button type="button" class="guest-account-note-action" onclick="showLoginModal()">${t('home.guestNoteAction')}</button>
+        </span>
+        <button type="button" class="guest-account-note-dismiss" onclick="dismissGuestAccountNote()"
+                aria-label="${t('home.guestNoteDismiss')}" title="${t('home.guestNoteDismiss')}">&times;</button>
+    `;
+    wrap.appendChild(note);
+}
+
 let difficultyAccountRefreshGeneration = 0;
 
 async function refreshDifficultySelectionAccountState() {
@@ -107,6 +145,7 @@ async function refreshDifficultySelectionAccountState() {
         ]);
         if (!isCurrentRequest()) return;
         updateDifficultyCompletionStatus(completionStatus);
+        updateGuestAccountNote(homeCard);
         setHeaderControls('difficulty');
     } catch (error) {
         if (!isCurrentRequest()) return;

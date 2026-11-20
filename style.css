@@ -2870,6 +2870,55 @@ body:not(.light-mode) .tree-best-destination rect {
   }
 }
 
+.guest-account-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  max-width: 460px;
+  margin: 6px auto 0;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.guest-account-note-text {
+  text-align: center;
+}
+
+.guest-account-note-action {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--border-subtle);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.guest-account-note-dismiss {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .guest-account-note-action:hover,
+  .guest-account-note-dismiss:hover {
+    color: var(--color-primary);
+    text-decoration-color: currentColor;
+  }
+}
+
 @keyframes shimmer {
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }

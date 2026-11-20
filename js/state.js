@@ -1,12 +1,13 @@
 // ═══════════════════════════════════════════════
 // GLOBAL STATE
 // ═══════════════════════════════════════════════
-const PHYLOSAUR_RELEASE_VERSION = 245;
+const PHYLOSAUR_RELEASE_VERSION = 246;
 const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   theme: 'phylosaur-theme',
   language: 'phylosaur-language',
   visitorId: 'phylosaur-visitor-id',
   guestAchievements: 'phylosaur-guest-achievements-v1',
+  guestAccountNoteDismissed: 'phylosaur-guest-account-note-v1',
   tutorialComplete: 'phylosaur-tutorial-v1-complete',
   museumImageCache: 'phylosaur-image-cache-v5',
   legacyDiscoveries: 'phylosaur-discoveries',
