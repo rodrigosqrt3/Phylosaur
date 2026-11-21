@@ -617,6 +617,31 @@ function formatTaxonName(name) {
     return isGenus ? `<em>${safeName}</em>` : safeName;
 }
 
+// Ancestors of a clade or genus, nearest first, read from the catalog's lineages.
+function getCladeAncestors(name) {
+    const catalog = [...(database || []), ...(fullDatabase || [])];
+    const genus = catalog.find(dino => dino?.nome === name && Array.isArray(dino.linhagem));
+    if (genus) return [...genus.linhagem].reverse();
+    for (const dino of catalog) {
+        const lineage = Array.isArray(dino?.linhagem) ? dino.linhagem : null;
+        const index = lineage ? lineage.indexOf(name) : -1;
+        if (index > 0) return lineage.slice(0, index).reverse();
+    }
+    return [];
+}
+
+// When a clade has no encyclopedia entry, the player still gets context from the
+// closest ancestor that has one; the caller labels it so it never looks like an error.
+async function fetchCladeInfoWithFallback(cladeName) {
+    const own = await fetchWikipediaInfo(cladeName);
+    if (own) return { info: own, usedClade: cladeName };
+    for (const ancestor of getCladeAncestors(cladeName).slice(0, 8)) {
+        const info = await fetchWikipediaInfo(ancestor);
+        if (info) return { info, usedClade: ancestor };
+    }
+    return { info: null, usedClade: cladeName };
+}
+
 async function showCladeInfo(cladeName, options = {}) {
     const infoDiv = document.getElementById('clade-info');
     if (!infoDiv || !cladeName) return;
@@ -632,7 +657,7 @@ async function showCladeInfo(cladeName, options = {}) {
         infoDiv.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
     }
 
-    const wikiInfo = await fetchWikipediaInfo(cladeName);
+    const { info: wikiInfo, usedClade } = await fetchCladeInfoWithFallback(cladeName);
     if (requestId !== cladeInfoRequestId || !infoDiv.isConnected) return;
 
     if (!wikiInfo) {
@@ -645,7 +670,12 @@ async function showCladeInfo(cladeName, options = {}) {
     return;
     }
 
-    let html = `<div class="clade-info"><h3>${escapeChallengeHtml(heading)}: ${formatTaxonName(cladeName)}</h3><div class="clade-content">`;
+    const fallbackNote = usedClade !== cladeName
+        ? `<p class="clade-fallback-note">${t('tree.fallbackClade', {
+            ancestor: `<span class="clade-fallback-name">${escapeChallengeHtml(usedClade)}</span>`
+        })}</p>`
+        : '';
+    let html = `<div class="clade-info"><h3>${escapeChallengeHtml(heading)}: ${formatTaxonName(cladeName)}</h3>${fallbackNote}<div class="clade-content">`;
     
     if (wikiInfo.image) {
     html += `<img src="${escapeChallengeHtml(wikiInfo.image)}" alt="${escapeChallengeHtml(wikiInfo.title)}" class="clade-image" />`;

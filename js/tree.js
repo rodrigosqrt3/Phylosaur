@@ -306,7 +306,10 @@ function layoutTreeSvg() {
   const availW = container.clientWidth - (isCompact ? 24 : 44);
   const availH = Math.max(300, Math.min(window.innerHeight * (isCompact ? 0.58 : 0.62), 680)) - 40;
   const fit = Math.min(availW / naturalW, availH / naturalH);
-  const autoScale = Math.max(isCompact ? 0.98 : 0.8, Math.min(isCompact ? 1.15 : 1.35, fit));
+  // Labels are drawn at 11-15px; the floor keeps them at that size on large screens
+  // instead of shrinking a tall, narrow first-guess tree to fit its height. The
+  // container scrolls and the zoom dock can still zoom out.
+  const autoScale = Math.max(1, Math.min(isCompact ? 1.15 : 1.35, fit));
   const scale = autoScale * window.treeZoom;
   const width = naturalW * scale;
   const height = naturalH * scale;

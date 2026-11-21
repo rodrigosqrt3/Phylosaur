@@ -1535,7 +1535,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=39')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=40')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
@@ -2747,6 +2747,30 @@ async function showAnalyticsDashboard(days = 30) {
     const pagination = data.pagination || {};
     const hasTruncatedData = Object.values(pagination).some(Boolean);
 
+    // Totals since the first recorded game; shown only once the server sends them.
+    const allTime = summary.allTime;
+    const allTimeSince = allTime?.firstSessionAt
+        ? t('analytics.allTimeSince', {
+            date: new Date(allTime.firstSessionAt).toLocaleDateString(
+                currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale
+            )
+        })
+        : '';
+    const allTimeSection = `
+        <section class="analytics-section analytics-all-time">
+            <h3>${t('analytics.allTimeTitle')}</h3>
+            ${allTime ? `
+            <p class="analytics-section-note">${t('analytics.allTimeCopy')}</p>
+            <div class="analytics-metrics">
+                ${analyticsMetricCard(t('analytics.uniqueVisitors'), allTime.uniqueVisitors, allTimeSince)}
+                ${analyticsMetricCard(t('analytics.gamesStarted'), allTime.totalSessions)}
+                ${analyticsMetricCard(t('analytics.gamesCompleted'), allTime.completedGames)}
+                ${analyticsMetricCard(t('analytics.wins'), allTime.wins)}
+                ${analyticsMetricCard(t('analytics.registeredAccounts'), summary.registeredAccounts)}
+            </div>` : `
+            <p class="analytics-section-note">${t('analytics.allTimeUnavailable')}</p>`}
+        </section>`;
+
     appContent.innerHTML = `
     <div class="game-card analytics-dashboard">
         <div class="analytics-header">
@@ -2760,6 +2784,10 @@ async function showAnalyticsDashboard(days = 30) {
             </div>
         </div>
 
+        ${allTimeSection}
+
+        <section class="analytics-section">
+        <h3>${t('analytics.days', { count: data.days })}</h3>
         <div class="analytics-metrics">
             ${analyticsMetricCard(t('analytics.uniqueVisitors'), summary.uniqueVisitors, t('analytics.untrackedSessions', { count: summary.untrackedSessions || 0 }))}
             ${analyticsMetricCard(t('analytics.gamesStarted'), summary.totalSessions)}
@@ -2774,6 +2802,7 @@ async function showAnalyticsDashboard(days = 30) {
             ${analyticsMetricCard(t('analytics.friendChallenges'), summary.challengesCreated, t('analytics.joins', { count: summary.challengeJoins }))}
             ${analyticsMetricCard(t('analytics.museumViews'), summary.museumViews)}
         </div>
+        </section>
 
         <section class="analytics-section">
             <h3>${t('analytics.registeredPlayers')}</h3>

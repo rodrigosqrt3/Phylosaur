@@ -1621,6 +1621,46 @@ async function findDailyCuriosity() {
     return null;
 }
 
+// Fills the "genera you have discovered in this clade" line once the modal is open,
+// so reading the curiosity never waits for the catalog or the discovery records.
+async function hydrateCuriosityDiscoveries(slot, clade) {
+    if (!slot) return;
+    try {
+        let catalog = fullDatabase;
+        if (!Array.isArray(catalog) || catalog.length === 0) {
+            const loaded = await callGameApi('catalog');
+            catalog = loaded.dinosaurs || [];
+        }
+        catalog = await ensureMuseumCatalogLineages(catalog);
+        fullDatabase = catalog;
+        const records = await getDiscoveryRecords();
+        if (!slot.isConnected) return;
+
+        const unlocked = new Set(Object.values(records).map(record => String(record.name).toLowerCase()));
+        const members = catalog
+            .filter(dino => Array.isArray(dino.linhagem) && dino.linhagem.includes(clade))
+            .map(dino => dino.nome)
+            .sort((first, second) => first.localeCompare(second));
+        if (!members.length) return;
+
+        const found = members.filter(name => unlocked.has(name.toLowerCase()));
+        if (!found.length) {
+            slot.innerHTML = `<p class="curiosity-discovered">${t('home.curiosityNoneYet', { total: members.length })}</p>`;
+            return;
+        }
+        const shown = found.slice(0, 12);
+        const names = shown.map(name => `<em>${escapeHtml(name)}</em>`).join(' · ');
+        const more = found.length > shown.length
+            ? ` · ${t('home.curiosityMore', { count: found.length - shown.length })}`
+            : '';
+        slot.innerHTML = `
+            <p class="curiosity-discovered">${t('home.curiosityDiscovered', { found: found.length, total: members.length })}</p>
+            <p class="curiosity-genera">${names}${more}</p>`;
+    } catch (error) {
+        console.warn('Curiosity discoveries unavailable:', error);
+    }
+}
+
 async function showDailyCuriosity(button = null) {
     if (button?.getAttribute('aria-busy') === 'true') return;
     button?.setAttribute('aria-busy', 'true');
@@ -1634,17 +1674,29 @@ async function showDailyCuriosity(button = null) {
     }
     const info = curiosity?.info;
     const summary = summarizeEncyclopediaText(info?.description);
-    await showModal({
+    const image = summary && /^https:\/\//.test(info?.image || '')
+        ? `<img class="curiosity-image" src="${escapeHtml(info.image)}" alt="" loading="lazy" onerror="this.remove()">`
+        : '';
+    const modalPromise = showModal({
         title: curiosity
             ? `${t('home.curiosity')} · ${escapeHtml(curiosity.clade)}`
             : t('home.curiosity'),
         message: summary ? `
+            ${image}
             <p class="curiosity-text">${escapeHtml(summary)}</p>
             ${info.isLanguageFallback ? `<p class="encyclopedia-language-note">${t('encyclopedia.englishFallback')}</p>` : ''}
+            <div class="curiosity-discoveries" data-curiosity-discoveries></div>
             <a href="${escapeHtml(info.url)}" target="_blank" rel="noopener" class="clade-link">${t('tree.encyclopedia')}</a>
         ` : `<p>${t('tree.noEncyclopedia')}</p>`,
         closeOnOverlay: true
     });
+    if (summary && curiosity) {
+        void hydrateCuriosityDiscoveries(
+            document.querySelector('[data-curiosity-discoveries]'),
+            curiosity.clade
+        );
+    }
+    await modalPromise;
 }
 
 async function startRematch(button = null) {
