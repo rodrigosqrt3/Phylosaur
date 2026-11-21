@@ -145,7 +145,7 @@ async function refreshDifficultySelectionAccountState() {
         ]);
         if (!isCurrentRequest()) return;
         updateDifficultyCompletionStatus(completionStatus);
-        updateGuestAccountNote(homeCard);
+        if (typeof updateGuestAccountNote === 'function') updateGuestAccountNote(homeCard);
         setHeaderControls('difficulty');
     } catch (error) {
         if (!isCurrentRequest()) return;

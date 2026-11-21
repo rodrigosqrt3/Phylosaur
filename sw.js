@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v247";
+const CACHE_VERSION = "phylosaur-shell-v248";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -9,20 +9,20 @@ const CORE_ASSETS = [
   "./manifest.webmanifest",
   "./phylosaur_media_overrides.json?v=39",
   "./phylosaur_paleodata.json?v=10",
-  "./style.css?v=247",
-  "./js/config.js?v=247",
-  "./js/state.js?v=247",
-  "./js/i18n.js?v=247",
-  "./js/api.js?v=247",
-  "./js/autocomplete.js?v=247",
-  "./js/db.js?v=247",
-  "./js/auth.js?v=247",
-  "./js/ui.js?v=247",
-  "./js/screens.js?v=247",
-  "./js/cladogram.js?v=247",
-  "./js/tree.js?v=247",
-  "./js/game.js?v=247",
-  "./js/main.js?v=247"
+  "./style.css?v=248",
+  "./js/config.js?v=248",
+  "./js/state.js?v=248",
+  "./js/i18n.js?v=248",
+  "./js/api.js?v=248",
+  "./js/autocomplete.js?v=248",
+  "./js/db.js?v=248",
+  "./js/auth.js?v=248",
+  "./js/ui.js?v=248",
+  "./js/screens.js?v=248",
+  "./js/cladogram.js?v=248",
+  "./js/tree.js?v=248",
+  "./js/game.js?v=248",
+  "./js/main.js?v=248"
 ];
 
 // Decorative/install icons must not invalidate an otherwise complete shell.
