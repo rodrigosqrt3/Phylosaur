@@ -1261,7 +1261,7 @@ async function ensureMuseumCatalogLineages(catalog) {
 
 async function loadMuseumPaleodataCatalog() {
     if (!museumPaleodataCatalogPromise) {
-        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=9')
+        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=10')
             .then(response => {
                 if (!response.ok) throw new Error(`Paleodata catalog HTTP ${response.status}`);
                 return response.json();
@@ -1531,7 +1531,7 @@ function renderMuseumPaleodata(record, timeline = {}) {
 
 async function loadMuseumOverrideCatalog() {
     if (!museumOverrideCatalogPromise) {
-        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=38')
+        museumOverrideCatalogPromise = fetch('phylosaur_media_overrides.json?v=39')
             .then(response => {
                 if (!response.ok) throw new Error(`Media overrides HTTP ${response.status}`);
                 return response.json();
