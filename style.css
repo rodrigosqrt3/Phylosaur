@@ -4475,6 +4475,15 @@ body.light-mode .difficulty-btn .tier-indicator.filled {
     box-shadow: var(--elev-3);
 }
 
+.hint-highlight {
+    color: var(--color-primary);
+    font-size: 1.2em;
+}
+
+.museum-entry-loading.is-error {
+    color: var(--color-danger);
+}
+
 .museum-entry-loading {
     padding: 80px 20px;
     text-align: center;
@@ -7834,65 +7843,6 @@ html[data-theme="light"] body h1 {
   border: 1px solid var(--glass-edge);
   border-radius: 999px;
   font-size: 0.85em;
-}
-
-.stats-skeleton {
-  display: grid;
-  gap: 24px;
-}
-
-.stats-skeleton-block {
-  display: block;
-  background: linear-gradient(90deg, var(--bg-panel-subtle) 0%, var(--glass-glow) 50%, var(--bg-panel-subtle) 100%);
-  background-size: 200% 100%;
-  border-radius: var(--radius-md);
-  animation: statsSkeletonShimmer 1.4s ease-in-out infinite;
-}
-
-.stats-skeleton-header {
-  display: grid;
-  gap: 10px;
-}
-
-.stats-skeleton-title {
-  width: min(260px, 70%);
-  height: 34px;
-}
-
-.stats-skeleton-line {
-  width: min(420px, 90%);
-  height: 14px;
-}
-
-.stats-skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 14px;
-}
-
-.stats-skeleton-card {
-  height: 96px;
-}
-
-.stats-skeleton-panels {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 18px;
-}
-
-.stats-skeleton-panel {
-  height: 220px;
-}
-
-@keyframes statsSkeletonShimmer {
-  from { background-position: 100% 0; }
-  to { background-position: -100% 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .stats-skeleton-block {
-    animation: none;
-  }
 }
 
 @media (max-width: 600px) {

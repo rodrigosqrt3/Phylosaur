@@ -473,8 +473,8 @@ async function showStatsDashboard() {
     setAppRoute('/stats');
     setHeaderControls('stats');
     const appContent = document.getElementById('app-content');
-    appContent.innerHTML = `<div class="game-card stats-dashboard">${renderStatsSkeleton()}</div>`;
-    const loadingCard = appContent.firstElementChild;
+    appContent.innerHTML = `<div class="game-card stats-dashboard">${renderAppState(t('stats.loading'))}</div>`;
+    let loadingCard = appContent.firstElementChild;
     const statsOwnerId = currentUserId;
     const isCurrentRequest = () => appContent.firstElementChild === loadingCard
         && currentUserId === statsOwnerId && Boolean(currentUser);
@@ -483,16 +483,10 @@ async function showStatsDashboard() {
     try {
         results = await Promise.all([
         sb.from('statistics').select('*').eq('user_id', statsOwnerId).single(),
-        sb.from('daily_results')
-            .select('difficulty, guess_count, won')
-            .eq('user_id', statsOwnerId),
+        fetchAllDailyResults('difficulty, guess_count, hint_history, won', statsOwnerId),
         sb.from('daily_results').select('*').eq('user_id', statsOwnerId)
             .order('created_at', { ascending: false }).limit(10),
-        sb.from('achievements').select('achievement_id').eq('user_id', statsOwnerId),
-        sb.from('daily_results')
-            .select('difficulty, guess_count, hint_history, won')
-            .eq('user_id', statsOwnerId)
-            .eq('won', true)
+        sb.from('achievements').select('achievement_id').eq('user_id', statsOwnerId)
         ]);
         if (!isCurrentRequest()) return;
         const failedResult = results.find((result, index) => result.error
@@ -506,12 +500,13 @@ async function showStatsDashboard() {
         )}</div>`;
         return;
     }
-    const [statsResult, difficultyHistoryResult, recentGamesResult, achievementsResult, achievementHistoryResult] = results;
+    const [statsResult, dailyResult, recentGamesResult, achievementsResult] = results;
     const stats = statsResult.data;
-    const difficultyHistory = difficultyHistoryResult.data || [];
+    const dailyRows = dailyResult.data || [];
+    const difficultyHistory = dailyRows;
+    const achievementHistory = dailyRows.filter(result => result.won === true);
     const recentGames = recentGamesResult.data;
     const achievements = achievementsResult.data;
-    const achievementHistory = achievementHistoryResult.data || [];
 
     const gamesPlayed = stats?.games_played || 0;
     const gamesWon = stats?.games_won || 0;
@@ -520,34 +515,19 @@ async function showStatsDashboard() {
     let unlockedAchievements = new Set(achievements ? achievements.map(a => a.achievement_id) : []);
     let supplementalAchievementProgress = {};
 
-    try {
-        const synchronization = await syncHistoricalAchievements(
-            stats,
-            achievementHistory,
-            unlockedAchievements
-        );
-        unlockedAchievements = synchronization.unlockedSet;
-    } catch (error) {
-        console.error('Historical achievement synchronization failed:', error);
-    }
-    if (!isCurrentRequest()) return;
-
-    try {
-        const accountSynchronization = await syncAccountAchievements();
-        accountSynchronization.unlockedIds.forEach(id => unlockedAchievements.add(id));
-        supplementalAchievementProgress = accountSynchronization.progress;
-    } catch (error) {
-        console.error('Extended achievement synchronization failed:', error);
-    }
-    if (!isCurrentRequest()) return;
-
-    const achievementProgress = buildAchievementProgress(
-        stats,
-        achievementHistory,
-        supplementalAchievementProgress
-    );
-    const unlockedAchievementCount = ACHIEVEMENT_DEFINITIONS
-        .filter(achievement => unlockedAchievements.has(achievement.id)).length;
+    // The panel is drawn first from the saved achievements and refreshed in place
+    // once the two synchronizations below finish, so slow network calls never
+    // keep the whole screen waiting.
+    const renderAchievementsPanel = (unlockedSet, supplementalProgress) => {
+        const unlockedAchievementCount = ACHIEVEMENT_DEFINITIONS
+            .filter(achievement => unlockedSet.has(achievement.id)).length;
+        return `
+        <div class="achievements-heading">
+            <h3>${t('stats.achievements')}</h3>
+            <span>${t('stats.unlockedCount', { count: unlockedAchievementCount, total: ACHIEVEMENT_DEFINITIONS.length })}</span>
+        </div>
+        ${generateAchievements(unlockedSet, buildAchievementProgress(stats, achievementHistory, supplementalProgress))}`;
+    };
 
     const safeCurrentUser = escapeChallengeHtml(currentUser);
 
@@ -599,13 +579,7 @@ async function showStatsDashboard() {
             ${generateDifficultyStats(difficultyHistory)}
         </div>
 
-        <div class="achievements-panel">
-        <div class="achievements-heading">
-            <h3>${t('stats.achievements')}</h3>
-            <span>${t('stats.unlockedCount', { count: unlockedAchievementCount, total: ACHIEVEMENT_DEFINITIONS.length })}</span>
-        </div>
-        ${generateAchievements(unlockedAchievements, achievementProgress)}
-        </div>
+        <div class="achievements-panel" data-stats-achievements>${renderAchievementsPanel(unlockedAchievements, supplementalAchievementProgress)}</div>
 
         <div class="stats-section">
             <div class="stats-section-heading">
@@ -618,21 +592,51 @@ async function showStatsDashboard() {
         </div>
     </div>
     `;
+    loadingCard = appContent.firstElementChild;
+
+    try {
+        const synchronization = await syncHistoricalAchievements(
+            stats,
+            achievementHistory,
+            unlockedAchievements
+        );
+        unlockedAchievements = synchronization.unlockedSet;
+    } catch (error) {
+        console.error('Historical achievement synchronization failed:', error);
+    }
+    if (!isCurrentRequest()) return;
+
+    try {
+        const accountSynchronization = await syncAccountAchievements();
+        accountSynchronization.unlockedIds.forEach(id => unlockedAchievements.add(id));
+        supplementalAchievementProgress = accountSynchronization.progress;
+    } catch (error) {
+        console.error('Extended achievement synchronization failed:', error);
+    }
+    if (!isCurrentRequest()) return;
+
+    const achievementsPanel = appContent.firstElementChild?.querySelector?.('[data-stats-achievements]');
+    if (achievementsPanel) {
+        achievementsPanel.innerHTML = renderAchievementsPanel(unlockedAchievements, supplementalAchievementProgress);
+    }
     focusAppScreenHeading();
 }
 
-function renderStatsSkeleton() {
-    const blocks = (count, className) => Array.from({ length: count },
-        () => `<span class="stats-skeleton-block ${className}"></span>`).join('');
-    return `
-        <div class="stats-skeleton" role="status" aria-live="polite">
-            <span class="visually-hidden">${t('stats.loading')}</span>
-            <div class="stats-skeleton-header" aria-hidden="true">
-                ${blocks(1, 'stats-skeleton-title')}${blocks(1, 'stats-skeleton-line')}
-            </div>
-            <div class="stats-skeleton-grid" aria-hidden="true">${blocks(4, 'stats-skeleton-card')}</div>
-            <div class="stats-skeleton-panels" aria-hidden="true">${blocks(2, 'stats-skeleton-panel')}</div>
-        </div>`;
+// Reads every Daily result in pages: one request returns at most 1,000 rows, which a
+// long-time player's history will eventually exceed.
+function fetchAllDailyResults(columns, ownerId) {
+    const pageSize = 1000;
+    const rows = [];
+    const fetchPage = from => sb.from('daily_results').select(columns).eq('user_id', ownerId)
+        .order('played_date', { ascending: true }).order('difficulty', { ascending: true })
+        .range(from, from + pageSize - 1)
+        .then(page => {
+            if (page.error) return { data: null, error: page.error };
+            const chunk = page.data || [];
+            rows.push(...chunk);
+            return chunk.length < pageSize ? { data: rows, error: null } : fetchPage(from + pageSize);
+        });
+    return fetchPage(0);
 }
 
 function generateStatsHighlights(difficultyHistory, wonResults) {
@@ -2072,7 +2076,7 @@ async function showMuseumEntry(name) {
             if (!isCurrentEntry()) return;
             replaceMuseumEntryContent(overlay, `
                 <button class="museum-entry-close" type="button" onclick="dismissMuseumEntry()" aria-label="${t('common.close')}">×</button>
-                <div class="museum-entry-loading" style="color:var(--color-danger);">
+                <div class="museum-entry-loading is-error">
                     ${t('museum.openNameError', { name: safeName })}<br>${escapeChallengeHtml(error.message)}
                 </div>
             `);

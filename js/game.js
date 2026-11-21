@@ -1010,7 +1010,7 @@ async function useServerHint() {
         if (isCladeHint) {
             await customAlert(
                 t('game.hint'),
-                `${t('game.nextClade')}<br><br><strong style="color:var(--color-primary); font-size:1.2em;">${escapeHtml(data.hint.cladeName)}</strong>`
+                `${t('game.nextClade')}<br><br><strong class="hint-highlight">${escapeHtml(data.hint.cladeName)}</strong>`
             );
             if (!isCurrentRequest()) return;
             await updateCladeInfo();
@@ -1025,7 +1025,7 @@ async function useServerHint() {
                 : t('game.nameHintFallback');
             await customAlert(
                 t('game.nameHintTitle'),
-                `<strong style="color:var(--color-primary); font-size:1.2em;">${escapeHtml(nameHint)}</strong>`
+                `<strong class="hint-highlight">${escapeHtml(nameHint)}</strong>`
             );
         }
     } catch (error) {

@@ -506,12 +506,6 @@ function getTodayString() {
     return new Date().toISOString().slice(0, 10);
 }
 
-function getUtcDateOffsetString(dayOffset) {
-    const date = new Date();
-    date.setUTCDate(date.getUTCDate() + dayOffset);
-    return date.toISOString().slice(0, 10);
-}
-
 function applyServerGamePayload(data) {
     gameSessionId = data.sessionId || gameSessionId;
     if (data.mode) {
