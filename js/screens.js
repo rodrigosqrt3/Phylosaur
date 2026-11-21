@@ -48,9 +48,13 @@ async function showDifficultySelection() {
             <a class="difficulty-home-about" href="#/about" onclick="showAbout(); return false;">
                 ${t('about.title')}
             </a>
+            <a class="difficulty-home-about" href="${currentLocale === 'pt-BR' ? 'pt/generos/' : 'genus/'}">
+                ${t('home.browseGenera')}
+            </a>
         </div>
     `;
     startCountdown();
+    void updateHomeStreak(appContent.firstElementChild);
     void refreshDifficultySelectionAccountState();
     // The home screen is what search engines index, so it keeps the full localized title.
     focusAppScreenHeading('.screen-title', { documentTitle: t('app.metaTitle') });
@@ -84,6 +88,35 @@ function updateDifficultyCompletionStatus(status) {
             mark?.remove();
         }
     });
+}
+
+// A quiet line under the countdown: the length of the player's Daily run, and a nudge
+// when today's win is still needed to keep it. Shown from two days on.
+async function updateHomeStreak(homeCard) {
+    const countdown = homeCard?.querySelector('.difficulty-home-countdown');
+    if (!countdown) return;
+    let streak;
+    try {
+        if (currentUserId) {
+            const ownerId = currentUserId;
+            const { data } = await sb.from('statistics').select('*').eq('user_id', ownerId).maybeSingle();
+            if (currentUserId !== ownerId || !homeCard.isConnected) return;
+            streak = getEffectiveAccountStreak(data);
+        } else {
+            streak = getCurrentGuestDailyStreak();
+        }
+    } catch (error) {
+        console.warn('Home streak unavailable:', error);
+        return;
+    }
+    homeCard.querySelector('.home-streak')?.remove();
+    if (streak.current < 2) return;
+    const line = document.createElement('p');
+    line.className = 'home-streak';
+    line.innerHTML = `<span class="home-streak-mark" aria-hidden="true">◆</span> `
+        + `<strong>${t('result.dayStreak', { count: streak.current })}</strong>`
+        + (streak.playedToday ? '' : ` <span class="home-streak-note">· ${t('home.streakKeep')}</span>`);
+    countdown.insertAdjacentElement('afterend', line);
 }
 
 function isGuestAccountNoteDismissed() {
@@ -2756,6 +2789,22 @@ async function showAnalyticsDashboard(days = 30) {
             )
         })
         : '';
+    // How well the period's new visitors come back, and how many become account holders.
+    const retention = summary.retention;
+    const percentOf = (part, whole) => whole > 0 ? `${Math.round((part / whole) * 100)}%` : '–';
+    const retentionSection = retention ? `
+        <section class="analytics-section analytics-retention">
+            <h3>${t('analytics.retentionTitle')}</h3>
+            <p class="analytics-section-note">${t('analytics.retentionCopy')}</p>
+            <div class="analytics-metrics">
+                ${analyticsMetricCard(t('analytics.retentionNextDay'), percentOf(retention.nextDay.returned, retention.nextDay.eligible), t('analytics.retentionSample', { count: retention.nextDay.eligible }))}
+                ${analyticsMetricCard(t('analytics.retentionWeek'), percentOf(retention.week.returned, retention.week.eligible), t('analytics.retentionSample', { count: retention.week.eligible }))}
+                ${analyticsMetricCard(t('analytics.retentionRegulars'), retention.regularPlayers, t('analytics.retentionRegularsDetail'))}
+                ${analyticsMetricCard(t('analytics.retentionRegularsAccount'), percentOf(retention.regularPlayersWithAccount, retention.regularPlayers), t('analytics.retentionOutOf', { count: retention.regularPlayersWithAccount, total: retention.regularPlayers }))}
+                ${analyticsMetricCard(t('analytics.retentionAccountVisitors'), percentOf(retention.visitorsWithAccount, retention.totalVisitors), t('analytics.retentionOutOf', { count: retention.visitorsWithAccount, total: retention.totalVisitors }))}
+            </div>
+        </section>` : '';
+
     const allTimeSection = `
         <section class="analytics-section analytics-all-time">
             <h3>${t('analytics.allTimeTitle')}</h3>
@@ -2803,6 +2852,8 @@ async function showAnalyticsDashboard(days = 30) {
             ${analyticsMetricCard(t('analytics.museumViews'), summary.museumViews)}
         </div>
         </section>
+
+        ${retentionSection}
 
         <section class="analytics-section">
             <h3>${t('analytics.registeredPlayers')}</h3>

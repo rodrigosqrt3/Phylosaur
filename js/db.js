@@ -109,6 +109,37 @@ function getLongestGuestDailyStreak(results) {
     return longest;
 }
 
+// Current run of consecutive UTC days with a won Daily on this device. The run may end
+// today or yesterday: until today's Daily is won, yesterday's run is still alive.
+function getCurrentGuestDailyStreak() {
+    const today = getTodayString();
+    const wonDates = new Set(Object.values(readGuestAchievementProgress().results || {})
+        .filter(result => result?.mode === 'daily' && result.won && /^\d{4}-\d{2}-\d{2}$/.test(result.playedDate))
+        .map(result => result.playedDate));
+    const dayKey = offset => new Date(Date.parse(`${today}T00:00:00Z`) - offset * 86400000)
+        .toISOString().slice(0, 10);
+    const playedToday = wonDates.has(dayKey(0));
+    let offset = playedToday ? 0 : 1;
+    let current = 0;
+    while (wonDates.has(dayKey(offset))) {
+        current++;
+        offset++;
+    }
+    return { current, playedToday };
+}
+
+// What an account's saved streak is worth today. It stays alive if the last win was today
+// or yesterday, or the day before that when a shield can cover the single missed day.
+function getEffectiveAccountStreak(stats, today = getTodayString()) {
+    const current = Number(stats?.current_streak || 0);
+    const shields = Number(stats?.streak_shields || 0);
+    const lastPlayed = /^\d{4}-\d{2}-\d{2}$/.test(String(stats?.last_played || '')) ? stats.last_played : null;
+    if (!current || !lastPlayed) return { current: 0, playedToday: false, shields };
+    const gap = Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${lastPlayed}T00:00:00Z`)) / 86400000);
+    const alive = gap <= 1 || (gap === 2 && shields > 0);
+    return { current: alive ? current : 0, playedToday: gap <= 0, shields };
+}
+
 function hasStrictlyImprovingGuesses(result) {
     const matches = Array.isArray(result?.matches)
         ? result.matches.map(Number).filter(Number.isFinite)

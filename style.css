@@ -9204,3 +9204,45 @@ html[data-theme="light"] body .stats-dashboard .stat {
   color: var(--color-text-warm);
   line-height: 1.7;
 }
+
+/* Daily streak: a quiet line under the countdown, and the account offer on the result. */
+.home-streak {
+  margin: 10px 0 0;
+  color: var(--color-text-dim);
+  font-size: 0.9em;
+  letter-spacing: 0.4px;
+  text-align: center;
+}
+
+.home-streak strong {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.home-streak-mark {
+  color: var(--color-accent);
+  font-size: 0.8em;
+}
+
+.home-streak-note {
+  font-style: italic;
+}
+
+.streak-account-prompt {
+  margin-top: 6px;
+  color: var(--color-text-dim);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.streak-account-action {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--border-subtle);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

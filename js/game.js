@@ -1333,6 +1333,23 @@ function buildVictoryStreakMarkup(streakData, milestone) {
     `;
 }
 
+// The Daily streak the player has just reached; the share text reads it.
+let lastVictoryStreak = 0;
+
+// Guests keep their run on this device only. From two days on, this is the moment a
+// player has something to lose, so it is where the account is offered.
+function buildGuestStreakMarkup(streak) {
+    if (streak < 2) return '';
+    return `
+        <div class="streak-celebration">
+        <div class="streak-title">◆ ${t('result.dayStreak', { count: streak })}</div>
+        <div class="streak-account-prompt">${t('result.streakGuestPrompt')}
+            <button type="button" class="streak-account-action" onclick="showLoginModal()">${t('home.guestNoteAction')}</button>
+        </div>
+        </div>
+    `;
+}
+
 function buildVictoryAchievementsMarkup(achievementIds) {
     if (!Array.isArray(achievementIds) || achievementIds.length === 0) return '';
 
@@ -1502,7 +1519,15 @@ async function hydrateVictoryMetadata(panel, persistencePromise) {
         const streakSlot = panel.querySelector('.victory-streak-slot');
         const placementSlot = panel.querySelector('.challenge-placement-slot');
         const achievementSlot = panel.querySelector('.victory-achievements-slot');
-        if (streakSlot) streakSlot.innerHTML = buildVictoryStreakMarkup(result.streakData, result.milestone);
+        const guestStreak = !currentUserId && currentGameMode === 'daily'
+            ? getCurrentGuestDailyStreak().current : 0;
+        lastVictoryStreak = currentGameMode === 'daily'
+            ? (currentUserId ? Number(result.streakData?.current || 0) : guestStreak) : 0;
+        if (streakSlot) {
+            streakSlot.innerHTML = currentUserId
+                ? buildVictoryStreakMarkup(result.streakData, result.milestone)
+                : buildGuestStreakMarkup(guestStreak);
+        }
         if (achievementSlot) {
             const markup = buildVictoryAchievementsMarkup(result.newlyUnlockedAchievements);
             if (markup) achievementSlot.innerHTML = markup;
@@ -1854,7 +1879,7 @@ async function showVictory() {
         <div class="challenge-placement-slot"></div>`;
     }
 
-    const streakHTML = currentUser && currentGameMode === 'daily'
+    const streakHTML = currentGameMode === 'daily'
         ? '<div class="victory-streak-slot"></div>'
         : '';
     const achievementHTML = '<div class="victory-achievements-slot"></div>';
@@ -1957,6 +1982,9 @@ function getShareResultData() {
         attemptLabel,
         hintLabel,
         placementLabel,
+        streakLabel: currentGameMode === 'daily' && !isGiveUpMode && lastVictoryStreak >= 2
+            ? t('result.dayStreak', { count: lastVictoryStreak })
+            : '',
         outcomeLabel: isGiveUpMode
             ? t('result.answerAfter', { attempts: attemptLabel })
             : t('result.solvedIn', { attempts: attemptLabel }),
@@ -1973,6 +2001,7 @@ function buildShareResultText(result = getShareResultData()) {
         result.rows.join('\n'),
         '',
         `${result.outcomeLabel} • ${result.hintLabel}${result.placementLabel}`,
+        ...(result.streakLabel ? [`◆ ${result.streakLabel}`] : []),
         '',
         result.url
     ].join('\n');
