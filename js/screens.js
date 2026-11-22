@@ -48,9 +48,6 @@ async function showDifficultySelection() {
             <a class="difficulty-home-about" href="#/about" onclick="showAbout(); return false;">
                 ${t('about.title')}
             </a>
-            <a class="difficulty-home-about" href="${currentLocale === 'pt-BR' ? 'pt/generos/' : 'genus/'}">
-                ${t('home.browseGenera')}
-            </a>
         </div>
     `;
     startCountdown();
@@ -119,39 +116,61 @@ async function updateHomeStreak(homeCard) {
     countdown.insertAdjacentElement('afterend', line);
 }
 
-function isGuestAccountNoteDismissed() {
+function readHomeFlag(key) {
     try {
-        return localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.guestAccountNoteDismissed) === '1';
+        return localStorage.getItem(key) === '1';
     } catch (_error) {
         return false;
     }
 }
 
-function dismissGuestAccountNote() {
+function dismissHomeNotice(kind) {
+    const key = kind === 'tutorial'
+        ? PHYLOSAUR_STORAGE_KEYS.tutorialOfferDismissed
+        : PHYLOSAUR_STORAGE_KEYS.guestAccountNoteDismissed;
     try {
-        localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.guestAccountNoteDismissed, '1');
+        localStorage.setItem(key, '1');
     } catch (_error) {}
     document.querySelector('.guest-account-note')?.remove();
 }
 
-// A quiet, dismissible hint under the home actions; only guests see it.
+// What a guest is told on the home screen, in order of need: someone who has never played
+// is offered the guided round; the account is offered only after a first win.
+function getHomeNoticeKind() {
+    if (currentUserId) return null;
+    const results = Object.values(readGuestAchievementProgress().results || {});
+    let tutorialDone = false;
+    try {
+        tutorialDone = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.tutorialComplete) === 'true';
+    } catch (_error) {}
+    if (results.length === 0 && !tutorialDone) {
+        return readHomeFlag(PHYLOSAUR_STORAGE_KEYS.tutorialOfferDismissed) ? null : 'tutorial';
+    }
+    if (results.some(result => result?.won)) {
+        return readHomeFlag(PHYLOSAUR_STORAGE_KEYS.guestAccountNoteDismissed) ? null : 'account';
+    }
+    return null;
+}
+
+// A quiet, dismissible line under the home actions; only guests see it.
 function updateGuestAccountNote(homeCard) {
     const wrap = homeCard?.querySelector('.difficulty-home-actions-wrap');
     if (!wrap) return;
+    const kind = getHomeNoticeKind();
     const existing = wrap.querySelector('.guest-account-note');
-    if (currentUserId || isGuestAccountNoteDismissed()) {
-        existing?.remove();
-        return;
-    }
-    if (existing) return;
+    if (existing && existing.dataset.kind === kind) return;
+    existing?.remove();
+    if (!kind) return;
+    const isTutorial = kind === 'tutorial';
     const note = document.createElement('div');
     note.className = 'guest-account-note';
+    note.dataset.kind = kind;
     note.setAttribute('role', 'note');
     note.innerHTML = `
-        <span class="guest-account-note-text">${t('home.guestNote')}
-            <button type="button" class="guest-account-note-action" onclick="showLoginModal()">${t('home.guestNoteAction')}</button>
+        <span class="guest-account-note-text">${t(isTutorial ? 'home.tutorialOffer' : 'home.guestNote')}
+            <button type="button" class="guest-account-note-action" onclick="${isTutorial ? 'startTutorialGame()' : 'showLoginModal()'}">${t(isTutorial ? 'home.tutorialOfferAction' : 'home.guestNoteAction')}</button>
         </span>
-        <button type="button" class="guest-account-note-dismiss" onclick="dismissGuestAccountNote()"
+        <button type="button" class="guest-account-note-dismiss" onclick="dismissHomeNotice('${kind}')"
                 aria-label="${t('home.guestNoteDismiss')}" title="${t('home.guestNoteDismiss')}">&times;</button>
     `;
     wrap.appendChild(note);
