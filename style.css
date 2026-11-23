@@ -9199,3 +9199,299 @@ html[data-theme="light"] body .stats-dashboard .stat {
 }
 
 .header-btn-label { display: none; }
+
+/* Search suggestions on the full tree page: the same glass panel and separated rows as the
+   guess suggestions (this used to be the browser's own list). */
+.cladogram-search-field {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cladogram-search-field input {
+  width: 100%;
+}
+
+.cladogram-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 300px;
+  margin-top: 6px;
+  overflow-y: auto;
+  background: var(--glass-sheet-solid);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 1px 0 var(--glass-sheen), var(--glass-depth);
+}
+
+.cladogram-suggestions[hidden] { display: none; }
+
+.cladogram-suggestions .suggestion-item {
+  border-bottom-color: var(--glass-edge);
+  background: transparent;
+}
+
+.cladogram-suggestions .suggestion-item.is-clade { font-style: normal; }
+.cladogram-suggestions .suggestion-item:last-child { border-bottom: 0; }
+
+.cladogram-suggestions .suggestion-item.highlighted {
+  color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+@media (hover: hover) {
+  .cladogram-suggestions .suggestion-item:hover {
+    color: var(--color-accent);
+    background: var(--color-accent-subtle);
+  }
+}
+/* The browser's own (blue) clear button inside search fields: drawn in the game's accent. */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  cursor: pointer;
+  background-color: var(--color-accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' stroke='black' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' stroke='black' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
+  opacity: 0.75;
+}
+input[type="search"]::-webkit-search-cancel-button:hover { opacity: 1; }
+/* Museum cards: a locked card is "recessed" (thinner border, no shadow) on purpose, but its
+   content must sit exactly where an unlocked neighbour's does. Border + padding add up to the
+   same on every side (14px sides/bottom, 17px top), and the locked card reserves the space of
+   the "first discovery" line, so every card in a row has the same height. */
+.museum-card.locked {
+  padding: 14px 13px 13px;
+}
+
+.museum-card.locked::after {
+  content: '\00a0';
+  display: block;
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid transparent;
+  font-size: 0.75em;
+  line-height: 1.3;
+}
+/* Desktop: the five levels share one row as equal columns. As 260px flex items they needed
+   1380px and wrapped (4 + 1) on any window narrower than that. */
+@media (min-width: 1000px) {
+  .difficulty-home-levels {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .difficulty-home .difficulty-btn {
+    width: auto;
+    min-width: 0;
+    padding: 28px 12px;
+  }
+}
+/* ═══ Statistics redesign ═══════════════════════════════════════════════════
+   Headline numbers in one compact strip, consistency and progress as charts, the
+   achievement collection collapsed to a summary. Existing section/stat styles are reused. */
+
+/* 1. Six headline numbers on one row (three per row on phones). */
+.stats-dashboard .stats-overview {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.stats-dashboard .stats-overview .stat {
+  min-height: 92px;
+  padding: 12px 8px;
+}
+
+.stats-dashboard .stats-overview .stat-value { font-size: clamp(1.35rem, 2vw, 1.8rem); }
+.stats-dashboard .stats-overview .stat-label { margin-top: 4px; font-size: 0.78rem; }
+
+/* 2. Streak and activity side by side, same height. */
+.stats-insights-grid { align-items: stretch; margin-bottom: 22px; }
+.stats-insights-grid .streak-card {
+  display: grid;
+  align-content: center;
+  padding: 22px 20px;
+}
+.stats-insights-grid .streak-value { margin-bottom: 8px; }
+.stats-insights-grid .streak-meta { margin-top: 12px; }
+
+.stats-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.stats-charts-grid .stats-section,
+.stats-insights-grid .stats-section { margin-bottom: 0; min-width: 0; }
+
+.stats-dashboard .stats-section { margin-bottom: 22px; padding: 20px 22px; }
+.stats-dashboard .stats-section-heading { margin-bottom: 14px; padding-bottom: 10px; }
+
+/* Activity calendar */
+.activity-months,
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(26, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.activity-months {
+  margin-bottom: 4px;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.activity-months span { white-space: nowrap; }
+
+.activity-grid {
+  grid-template-rows: repeat(7, auto);
+  grid-auto-flow: column;
+}
+
+.activity-cell {
+  display: block;
+  aspect-ratio: 1;
+  min-width: 0;
+  border-radius: 3px;
+  background: var(--bg-panel-darker);
+  border: 1px solid var(--border-inner);
+}
+
+.activity-cell.is-future { visibility: hidden; }
+.activity-cell.is-lost { background: rgba(190, 90, 70, 0.55); border-color: rgba(190, 90, 70, 0.7); }
+.activity-cell.is-won { background: var(--color-accent); border-color: var(--color-accent); opacity: 0.8; }
+.activity-cell.is-won-many { background: var(--color-primary); border-color: var(--color-primary); }
+
+.activity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 12px;
+  color: var(--color-secondary);
+  font-size: 0.78rem;
+}
+
+.activity-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.activity-legend .activity-cell { width: 12px; height: 12px; aspect-ratio: auto; }
+
+/* Progress chart */
+.trend-chart { display: block; width: 100%; height: auto; }
+.trend-grid { stroke: var(--border-inner); stroke-width: 1; stroke-dasharray: 3 4; }
+.trend-axis { fill: var(--color-muted); font-size: 11px; font-family: var(--font-control); }
+.trend-area { fill: var(--color-accent); opacity: 0.12; }
+.trend-line { fill: none; stroke: var(--color-accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.trend-dot { fill: var(--bg-panel); stroke: var(--color-accent); stroke-width: 2; }
+
+.trend-compare {
+  margin: 10px 0 0;
+  color: var(--color-secondary);
+  font-size: 0.88rem;
+}
+
+.trend-compare strong { color: var(--color-primary); }
+.trend-compare.is-better span { color: var(--color-success); }
+.trend-compare.is-worse span { color: var(--color-warning); }
+.trend-compare.is-flat span { color: var(--color-muted); }
+
+/* Level chips next to the section title */
+.stats-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px 10px; }
+.stats-chip {
+  padding: 4px 11px;
+  color: var(--color-secondary);
+  font-size: 0.78rem;
+  background: var(--bg-panel-darker);
+  border: 1px solid var(--border-inner);
+  border-radius: 999px;
+}
+.stats-chip strong { color: var(--color-primary); }
+
+/* 5. Achievements: overall bar, the closest few, the rest collapsed. */
+.achievements-overall { margin: 0 0 16px; }
+.achievements-overall .achievement-progress-track { height: 8px; }
+.achievements-closest-title { margin: 0 0 10px; }
+.achievements-all { margin-top: 16px; }
+
+.achievements-all > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  color: var(--color-accent);
+  font-weight: 700;
+  background: var(--bg-panel-darker);
+  border: 1px solid var(--border-inner);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  list-style: none;
+}
+
+.achievements-all > summary::-webkit-details-marker { display: none; }
+.achievements-all > summary::after { content: '▾'; margin-left: 10px; transition: transform var(--motion-fast); }
+.achievements-all[open] > summary::after { transform: rotate(180deg); }
+.achievements-all[open] > summary { margin-bottom: 14px; }
+
+/* 6. Recent games in two columns on a wide screen. */
+@media (min-width: 901px) {
+  .recent-games-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .stats-charts-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .stats-dashboard .stats-overview { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 8px; }
+  .stats-dashboard .stats-overview .stat { min-height: 82px; padding: 10px 6px; }
+  .stats-dashboard .stats-overview .stat-value { font-size: 1.3rem; }
+  .stats-dashboard .stats-overview .stat-label { font-size: 0.75rem; }
+  .activity-grid, .activity-months { gap: 2px; }
+  .activity-months { font-size: 0.7rem; }
+  .stats-chips { justify-content: flex-start; }
+}
+@media (max-width: 600px) {
+  /* An older rule makes the 5th tile of any ".stats" grid span two columns; here all six are equal. */
+  .stats-dashboard .stats-overview .stat { grid-column: auto !important; }
+}
+.activity-months,
+.activity-grid { grid-template-columns: repeat(var(--activity-weeks, 26), minmax(0, 1fr)); }
+
+/* No stacked margins between the cards of one row of the dashboard. */
+.stats-dashboard .stats-charts-grid .stats-section,
+.stats-dashboard .stats-insights-grid .stats-section { margin-bottom: 0; }
+
+@media (max-width: 600px) {
+  .stats-dashboard .stats-insights-grid,
+  .stats-dashboard .stats-charts-grid { gap: 14px; margin-bottom: 14px; }
+  .stats-dashboard .stats-section { margin-bottom: 14px; }
+
+  /* "Player: name" on a single slim line instead of a tall card. */
+  .stats-dashboard .stats-player-badge {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  /* Six most recent games are enough on a phone. */
+  .recent-games-list .recent-game-card:nth-child(n+7) { display: none; }
+}
+/* Lining figures across the whole dashboard: with the old-style figures of the body fonts a "0"
+   reads as the letter "o" ("o vitórias", "o/o vencidas"). Big tile numbers use the display font. */
+.stats-dashboard { font-variant-numeric: lining-nums; }
+.stats-dashboard .stat-value {
+  font-family: var(--font-display);
+  font-variant-numeric: lining-nums tabular-nums;
+}

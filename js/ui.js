@@ -15,9 +15,12 @@ function setHeaderControls(screen) {
     controls.dataset.screen = screen;
 
     const glyphs = {
-      museum: '<path d="M3 9.2 12 4l9 5.2"/><path d="M4.5 9.8h15"/><path d="M6.5 12v5.5M10.2 12v5.5M13.8 12v5.5M17.5 12v5.5"/><path d="M4 20h16"/>',
+      // Pediment, four columns and a base. Roof and base span the same width (the old one had an
+      // extra frieze line and a base narrower than the roof), and the strokes are a little
+      // heavier so it weighs about as much as the statistics bars next to it.
+      museum: '<path d="M3.5 9 12 4l8.5 5z" stroke-width="1.8"/><path d="M6.5 12.2v5M10.2 12.2v5M13.8 12.2v5M17.5 12.2v5" stroke-width="2"/><path d="M3.5 20h17" stroke-width="2"/>',
       stats: '<path d="M6.5 18v-2M12 18v-7M17.5 18V6" stroke-width="3.2"/>',
-      analytics: '<path d="M4 18l5-6 4 3 7-8"/><path d="M15 7h5v5"/>',
+      analytics: '<path d="M4 17.5l5-6 4 3 7-8"/><path d="M15 6.5h5v5"/>',
       account: '<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>',
       back: '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
     };

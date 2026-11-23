@@ -365,6 +365,91 @@ function setCladogramZoom(direction) {
     viewport.scrollTop = centerY * cladogramZoom - viewport.clientHeight / 2;
 }
 
+// Suggestions for the search field, drawn by the game (the browser's own list for a
+// <datalist> cannot be styled and looked like a generic control). Only names the search
+// itself can reveal are offered, so it never hints at an undiscovered genus.
+let cladogramSuggestionsBound = false;
+
+function initCladogramSuggestions(names, genusNames) {
+    const input = document.getElementById('cladogram-search-input');
+    const list = document.getElementById('cladogram-suggestions');
+    if (!input || !list) return;
+    let shown = [];
+    let active = -1;
+
+    const hide = () => {
+        list.hidden = true;
+        list.innerHTML = '';
+        shown = [];
+        active = -1;
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant');
+    };
+    const highlight = index => {
+        const items = list.querySelectorAll('.suggestion-item');
+        if (!items.length) return;
+        active = (index + items.length) % items.length;
+        items.forEach((item, i) => {
+            item.classList.toggle('highlighted', i === active);
+            item.setAttribute('aria-selected', String(i === active));
+        });
+        input.setAttribute('aria-activedescendant', items[active].id);
+        items[active].scrollIntoView({ block: 'nearest' });
+    };
+    const choose = name => {
+        input.value = name;
+        hide();
+        revealCladogramTarget(name);
+    };
+    const show = () => {
+        const query = foldTaxonText(input.value);
+        if (!query) { hide(); return; }
+        const starts = [];
+        const contains = [];
+        names.forEach(name => {
+            const folded = foldTaxonText(name);
+            if (folded.startsWith(query)) starts.push(name);
+            else if (folded.includes(query)) contains.push(name);
+        });
+        shown = [...starts, ...contains].slice(0, 8);
+        if (!shown.length) { hide(); return; }
+        list.innerHTML = shown.map((name, index) =>
+            `<div class="suggestion-item${genusNames.has(name) ? '' : ' is-clade'}" id="cladogram-suggestion-${index}" role="option" aria-selected="false" data-name="${escapeChallengeHtml(name)}">${escapeChallengeHtml(name)}</div>`
+        ).join('');
+        list.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+        active = -1;
+    };
+
+    input.addEventListener('input', show);
+    input.addEventListener('keydown', event => {
+        if (event.key === 'ArrowDown' && shown.length) { event.preventDefault(); highlight(active + 1); }
+        else if (event.key === 'ArrowUp' && shown.length) { event.preventDefault(); highlight(active < 0 ? -1 : active - 1); }
+        else if (event.key === 'Enter' && active >= 0 && shown[active]) { event.preventDefault(); choose(shown[active]); }
+        else if (event.key === 'Escape' && !list.hidden) { event.preventDefault(); hide(); }
+    });
+    // Keep focus in the field while a suggestion is pressed; choose on click.
+    list.addEventListener('pointerdown', event => event.preventDefault());
+    list.addEventListener('click', event => {
+        const item = event.target.closest('.suggestion-item');
+        if (item) choose(item.dataset.name);
+    });
+    input.form?.addEventListener('submit', hide);
+
+    if (!cladogramSuggestionsBound) {
+        cladogramSuggestionsBound = true;
+        document.addEventListener('pointerdown', event => {
+            const currentList = document.getElementById('cladogram-suggestions');
+            const currentInput = document.getElementById('cladogram-search-input');
+            if (!currentList || currentList.hidden) return;
+            if (currentList.contains(event.target) || currentInput?.contains(event.target)) return;
+            currentList.hidden = true;
+            currentList.innerHTML = '';
+            currentInput?.setAttribute('aria-expanded', 'false');
+        });
+    }
+}
+
 function revealCladogramTarget(query) {
     const status = document.getElementById('cladogram-status');
     const value = String(query || '').trim().toLowerCase();
@@ -553,13 +638,15 @@ async function showCladogram({ focus = null } = {}) {
                     <form class="museum-search cladogram-search" onsubmit="event.preventDefault(); revealCladogramTarget(this.elements.query.value)">
                         <label for="cladogram-search-input">${t('cladogram.search')}</label>
                         <div class="cladogram-search-row">
-                            <input id="cladogram-search-input" name="query" type="search" list="cladogram-names"
-                                   placeholder="${t('cladogram.searchPlaceholder')}" autocomplete="off">
+                            <div class="cladogram-search-field">
+                                <input id="cladogram-search-input" name="query" type="search"
+                                       role="combobox" aria-autocomplete="list" aria-expanded="false"
+                                       aria-controls="cladogram-suggestions"
+                                       placeholder="${t('cladogram.searchPlaceholder')}" autocomplete="off">
+                                <div id="cladogram-suggestions" class="cladogram-suggestions" role="listbox" hidden></div>
+                            </div>
                             <button type="submit" class="btn-hint">${t('cladogram.find')}</button>
                         </div>
-                        <datalist id="cladogram-names">
-                            ${searchNames.map(name => `<option value="${escapeChallengeHtml(name)}"></option>`).join('')}
-                        </datalist>
                     </form>
                     <div class="cladogram-toolbar-actions">
                         <button type="button" class="btn-hint" onclick="setAllCladogramClades(true)">${t('cladogram.expandAll')}</button>
@@ -591,6 +678,7 @@ async function showCladogram({ focus = null } = {}) {
                 </div>
             </div>`;
 
+        initCladogramSuggestions(searchNames, new Set(dinosaurs.map(dino => dino.nome)));
         appContent.querySelector('.cladogram-audit')?.addEventListener('click', event => activateCladogramItem(event.target));
         initCladogramPanning(document.getElementById('cladogram-viewport'));
         drawCladogram();

@@ -541,7 +541,7 @@ async function showStatsDashboard() {
     try {
         results = await Promise.all([
         sb.from('statistics').select('*').eq('user_id', statsOwnerId).single(),
-        fetchAllDailyResults('difficulty, guess_count, hint_history, won', statsOwnerId),
+        fetchAllDailyResults('played_date, difficulty, guess_count, hint_history, won', statsOwnerId),
         sb.from('daily_results').select('*').eq('user_id', statsOwnerId)
             .order('created_at', { ascending: false }).limit(10),
         sb.from('achievements').select('achievement_id').eq('user_id', statsOwnerId)
@@ -569,6 +569,7 @@ async function showStatsDashboard() {
     const gamesPlayed = stats?.games_played || 0;
     const gamesWon = stats?.games_won || 0;
     const winRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
+    const summary = computeStatsSummary(difficultyHistory, achievementHistory);
     // Same "is it still alive" rule as the home screen, so the two never disagree.
     const streakData = { current: typeof getEffectiveAccountStreak === 'function'
             ? getEffectiveAccountStreak(stats).current : (stats?.current_streak || 0), best: stats?.best_streak || 0, lastPlayed: stats?.last_played };
@@ -581,12 +582,28 @@ async function showStatsDashboard() {
     const renderAchievementsPanel = (unlockedSet, supplementalProgress) => {
         const unlockedAchievementCount = ACHIEVEMENT_DEFINITIONS
             .filter(achievement => unlockedSet.has(achievement.id)).length;
+        const progressById = buildAchievementProgress(stats, achievementHistory, supplementalProgress);
+        const completion = ACHIEVEMENT_DEFINITIONS.length
+            ? Math.round((unlockedAchievementCount / ACHIEVEMENT_DEFINITIONS.length) * 100) : 0;
+        // A summary first (overall progress and the few closest to unlocking); the whole
+        // collection stays one tap away instead of filling half of the page.
+        const closest = typeof pickClosestAchievements === 'function'
+            ? pickClosestAchievements(unlockedSet, progressById, 4) : [];
         return `
         <div class="achievements-heading">
             <h3>${t('stats.achievements')}</h3>
             <span>${t('stats.unlockedCount', { count: unlockedAchievementCount, total: ACHIEVEMENT_DEFINITIONS.length })}</span>
         </div>
-        ${generateAchievements(unlockedSet, buildAchievementProgress(stats, achievementHistory, supplementalProgress))}`;
+        <div class="achievements-overall" role="img" aria-label="${completion}%">
+            <div class="achievement-progress-track"><div class="achievement-progress-fill" style="width:${completion}%;"></div></div>
+        </div>
+        ${closest.length ? `
+        <p class="stats-section-kicker achievements-closest-title">${t('stats.closestTitle')}</p>
+        ${generateAchievements(unlockedSet, progressById, closest)}` : ''}
+        <details class="achievements-all">
+            <summary>${t('stats.showAllAchievements', { total: ACHIEVEMENT_DEFINITIONS.length })}</summary>
+            ${generateAchievements(unlockedSet, progressById)}
+        </details>`;
     };
 
     const safeCurrentUser = escapeChallengeHtml(currentUser);
@@ -611,10 +628,16 @@ async function showStatsDashboard() {
             <div class="stat"><div class="stat-value">${gamesWon}</div><div class="stat-label">${t('stats.gamesWon')}</div></div>
             <div class="stat"><div class="stat-value">${winRate}%</div><div class="stat-label">${t('stats.successRate')}</div></div>
             <div class="stat"><div class="stat-value">${stats?.best_score || '-'}</div><div class="stat-label">${t('stats.bestScore')}</div></div>
+            <div class="stat"><div class="stat-value">${summary.averagePerWin}</div><div class="stat-label">${t('stats.averagePerWin')}</div></div>
+            <div class="stat"><div class="stat-value">${summary.noHintWins}</div><div class="stat-label">${t('stats.noHintWins')}</div></div>
         </div>
 
         <div class="stats-insights-grid">
             ${generateStreakDisplay(streakData)}
+            ${typeof generateActivityHeatmap === 'function' ? generateActivityHeatmap(dailyRows) : ''}
+        </div>
+
+        <div class="stats-charts-grid">
             <section class="stats-section stats-histogram-section" aria-labelledby="guess-distribution-title">
                 <div class="stats-section-heading">
                     <div>
@@ -625,9 +648,8 @@ async function showStatsDashboard() {
                 </div>
                 ${generateGuessHistogram(achievementHistory)}
             </section>
+            ${typeof generateTrendChart === 'function' ? generateTrendChart(achievementHistory) : ''}
         </div>
-
-        ${generateStatsHighlights(difficultyHistory, achievementHistory)}
 
         <div class="stats-section">
             <div class="stats-section-heading">
@@ -635,6 +657,7 @@ async function showStatsDashboard() {
                     <p class="stats-section-kicker">${t('stats.difficultyProfile')}</p>
                     <h3 class="stats-section-title">${t('stats.performanceLevel')}</h3>
                 </div>
+                ${renderStatsLevelChips(summary)}
             </div>
             ${generateDifficultyStats(difficultyHistory)}
         </div>
@@ -677,7 +700,10 @@ async function showStatsDashboard() {
 
     const achievementsPanel = appContent.firstElementChild?.querySelector?.('[data-stats-achievements]');
     if (achievementsPanel) {
+        // Refreshing in place must not close the list the player may already have opened.
+        const listWasOpen = Boolean(achievementsPanel.querySelector?.('details.achievements-all')?.open);
         achievementsPanel.innerHTML = renderAchievementsPanel(unlockedAchievements, supplementalAchievementProgress);
+        if (listWasOpen) achievementsPanel.querySelector?.('details.achievements-all')?.setAttribute('open', '');
     }
     focusAppScreenHeading();
 }
@@ -699,9 +725,10 @@ function fetchAllDailyResults(columns, ownerId) {
     return fetchPage(0);
 }
 
-function generateStatsHighlights(difficultyHistory, wonResults) {
+// Numbers that sit next to the headline totals: average guesses per win, wins without
+// hints, and the most played / hardest won level.
+function computeStatsSummary(difficultyHistory, wonResults) {
     const levels = ['muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'];
-    const levelName = difficulty => t(`level.name${levels.indexOf(difficulty) + 1}`);
     const localeTag = typeof getPhylosaurLocaleTag === 'function' ? getPhylosaurLocaleTag() : undefined;
     const wins = (wonResults || []).filter(result => Number(result.guess_count) > 0);
     const averagePerWin = wins.length
@@ -722,23 +749,23 @@ function generateStatsHighlights(difficultyHistory, wonResults) {
     const favorite = [...playedByLevel].sort((first, second) => second[1] - first[1]
         || levels.indexOf(second[0]) - levels.indexOf(first[0]))[0]?.[0];
 
-    const tile = (value, label) => `
-        <div class="stat"><div class="stat-value">${escapeChallengeHtml(value)}</div><div class="stat-label">${label}</div></div>`;
+    return {
+        averagePerWin,
+        noHintWins,
+        favoriteLevel: favorite || null,
+        hardestWinLevel: hardestWon >= 0 ? levels[hardestWon] : null,
+    };
+}
 
+// "Most played" and "hardest won" level, as two small labelled chips.
+function renderStatsLevelChips(summary) {
+    const levels = ['muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'];
+    const levelName = difficulty => t(`level.name${levels.indexOf(difficulty) + 1}`);
+    if (!summary || (!summary.favoriteLevel && !summary.hardestWinLevel)) return '';
     return `
-        <div class="stats-section">
-            <div class="stats-section-heading">
-                <div>
-                    <p class="stats-section-kicker">${t('stats.highlightsKicker')}</p>
-                    <h3 class="stats-section-title">${t('stats.highlightsTitle')}</h3>
-                </div>
-            </div>
-            <div class="stats stats-highlights">
-                ${tile(averagePerWin, t('stats.averagePerWin'))}
-                ${tile(String(noHintWins), t('stats.noHintWins'))}
-                ${tile(favorite ? levelName(favorite) : '-', t('stats.favoriteLevel'))}
-                ${tile(hardestWon >= 0 ? levelName(levels[hardestWon]) : '-', t('stats.hardestWin'))}
-            </div>
+        <div class="stats-chips">
+            ${summary.favoriteLevel ? `<span class="stats-chip">${t('stats.favoriteLevel')} <strong>${escapeChallengeHtml(levelName(summary.favoriteLevel))}</strong></span>` : ''}
+            ${summary.hardestWinLevel ? `<span class="stats-chip">${t('stats.hardestWin')} <strong>${escapeChallengeHtml(levelName(summary.hardestWinLevel))}</strong></span>` : ''}
         </div>`;
 }
 
@@ -782,6 +809,172 @@ function generateStreakDisplay(streakData) {
         <div class="streak-meta">${t('stats.lastPlayed', { date: formatStatsDate(streakData.lastPlayed) })}</div>
     </div>
     `;
+}
+
+// ── Activity calendar ────────────────────────────────────────────────────────
+// One cell per day for the last 26 weeks, Monday-first columns: faint = no game,
+// red = games but no win, gold = a win, bright gold = two or more wins.
+function generateActivityHeatmap(dailyRows) {
+    // A phone shows fewer weeks so each day stays big enough to see (and tap).
+    const WEEKS = globalThis.matchMedia?.('(max-width: 600px)').matches ? 17 : 26;
+    const DAY = 86400000;
+    const todayText = getTodayString();
+    const today = Date.parse(`${todayText}T00:00:00Z`);
+    const mondayIndex = time => (new Date(time).getUTCDay() + 6) % 7;
+    const start = today - ((WEEKS - 1) * 7 + mondayIndex(today)) * DAY;
+
+    const byDay = new Map();
+    (dailyRows || []).forEach(row => {
+        const date = String(row.played_date || '');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+        const entry = byDay.get(date) || { played: 0, won: 0 };
+        entry.played += 1;
+        if (row.won === true) entry.won += 1;
+        byDay.set(date, entry);
+    });
+
+    const localeTag = typeof getPhylosaurLocaleTag === 'function' ? getPhylosaurLocaleTag() : undefined;
+    const dayLabel = time => new Date(time).toLocaleDateString(localeTag, { day: 'numeric', month: 'short', timeZone: 'UTC' });
+    const monthLabel = time => new Date(time).toLocaleDateString(localeTag, { month: 'short', timeZone: 'UTC' });
+
+    let cells = '';
+    let monthLabels = '';
+    let daysPlayed = 0;
+    let previousMonth = -1;
+    for (let week = 0; week < WEEKS; week++) {
+        const weekStart = start + week * 7 * DAY;
+        const month = new Date(weekStart).getUTCMonth();
+        if (month !== previousMonth && (week === 0 || new Date(weekStart).getUTCDate() <= 7)) {
+            monthLabels += `<span style="grid-column:${week + 1}">${escapeChallengeHtml(monthLabel(weekStart))}</span>`;
+            previousMonth = month;
+        }
+        for (let weekday = 0; weekday < 7; weekday++) {
+            const time = weekStart + weekday * DAY;
+            const date = new Date(time).toISOString().slice(0, 10);
+            if (time > today) { cells += '<i class="activity-cell is-future"></i>'; continue; }
+            const entry = byDay.get(date);
+            if (entry) daysPlayed += 1;
+            const state = !entry ? 'is-none' : entry.won === 0 ? 'is-lost' : entry.won > 1 ? 'is-won-many' : 'is-won';
+            const title = entry
+                ? `${dayLabel(time)} · ${t('stats.recordWon', { won: entry.won, played: entry.played })}`
+                : dayLabel(time);
+            cells += `<i class="activity-cell ${state}" title="${escapeChallengeHtml(title)}"></i>`;
+        }
+    }
+
+    return `
+        <section class="stats-section stats-activity-section" aria-labelledby="activity-title">
+            <div class="stats-section-heading">
+                <div>
+                    <p class="stats-section-kicker">${t('stats.activityKicker')}</p>
+                    <h3 class="stats-section-title" id="activity-title">${t('stats.activityTitle', { weeks: WEEKS })}</h3>
+                </div>
+                <span>${t('stats.activityDays', { count: daysPlayed })}</span>
+            </div>
+            <div class="activity-months" style="--activity-weeks:${WEEKS}" aria-hidden="true">${monthLabels}</div>
+            <div class="activity-grid" style="--activity-weeks:${WEEKS}" role="img" aria-label="${t('stats.activityDays', { count: daysPlayed })}">${cells}</div>
+            <div class="activity-legend" aria-hidden="true">
+                <span><i class="activity-cell is-none"></i>${t('stats.legendNone')}</span>
+                <span><i class="activity-cell is-lost"></i>${t('stats.legendLost')}</span>
+                <span><i class="activity-cell is-won"></i>${t('stats.legendWon')}</span>
+                <span><i class="activity-cell is-won-many"></i>${t('stats.legendWonMany')}</span>
+            </div>
+        </section>`;
+}
+
+// ── Progress over time ───────────────────────────────────────────────────────
+// Average guesses per winning game, one point per week (lower is better), plus a
+// comparison of the last four weeks with the weeks before them.
+function generateTrendChart(wonRows) {
+    const DAY = 86400000;
+    const weekStartOf = date => {
+        const time = Date.parse(`${date}T00:00:00Z`);
+        return time - ((new Date(time).getUTCDay() + 6) % 7) * DAY;
+    };
+    const weeks = new Map();
+    (wonRows || []).forEach(row => {
+        const date = String(row.played_date || '');
+        const guesses = Number(row.guess_count);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(guesses) || guesses < 1) return;
+        const key = weekStartOf(date);
+        const entry = weeks.get(key) || { sum: 0, count: 0 };
+        entry.sum += guesses;
+        entry.count += 1;
+        weeks.set(key, entry);
+    });
+    const points = [...weeks].sort((a, b) => a[0] - b[0]).slice(-12)
+        .map(([time, entry]) => ({ time, average: entry.sum / entry.count, count: entry.count }));
+
+    const heading = `
+            <div class="stats-section-heading">
+                <div>
+                    <p class="stats-section-kicker">${t('stats.trendKicker')}</p>
+                    <h3 class="stats-section-title">${t('stats.trendTitle')}</h3>
+                </div>
+                <span>${t('stats.trendLowerBetter')}</span>
+            </div>`;
+    if (points.length < 2) {
+        return `<section class="stats-section stats-trend-section">${heading}
+            <p class="empty-stats">${t('stats.trendEmpty')}</p></section>`;
+    }
+
+    const localeTag = typeof getPhylosaurLocaleTag === 'function' ? getPhylosaurLocaleTag() : undefined;
+    const format = value => value.toLocaleString(localeTag, { maximumFractionDigits: 1 });
+    const W = 400, H = 170, left = 34, right = 12, top = 14, bottom = 28;
+    const values = points.map(point => point.average);
+    const low = Math.max(1, Math.floor(Math.min(...values) - 0.5));
+    const high = Math.max(low + 2, Math.ceil(Math.max(...values) + 0.5));
+    const first = points[0].time;
+    const span = Math.max(1, points[points.length - 1].time - first);
+    const x = time => left + ((time - first) / span) * (W - left - right);
+    const y = value => top + (1 - (value - low) / (high - low)) * (H - top - bottom);
+    const line = points.map((point, index) => `${index ? 'L' : 'M'}${x(point.time).toFixed(1)} ${y(point.average).toFixed(1)}`).join(' ');
+    const area = `${line} L${x(points[points.length - 1].time).toFixed(1)} ${H - bottom} L${x(first).toFixed(1)} ${H - bottom} Z`;
+    const ticks = [low, (low + high) / 2, high];
+    const dayLabel = time => new Date(time).toLocaleDateString(localeTag, { day: 'numeric', month: 'short', timeZone: 'UTC' });
+
+    const recent = points.slice(-4);
+    const earlier = points.slice(0, -4);
+    const mean = list => list.reduce((sum, point) => sum + point.average * point.count, 0)
+        / list.reduce((sum, point) => sum + point.count, 0);
+    let comparison = '';
+    if (earlier.length) {
+        const nowValue = mean(recent);
+        const beforeValue = mean(earlier);
+        const trend = nowValue < beforeValue - 0.05 ? 'is-better' : nowValue > beforeValue + 0.05 ? 'is-worse' : 'is-flat';
+        const arrow = trend === 'is-better' ? '▼' : trend === 'is-worse' ? '▲' : '■';
+        comparison = `<p class="trend-compare ${trend}"><span aria-hidden="true">${arrow}</span> ${t('stats.trendRecent')} <strong>${format(nowValue)}</strong> · ${t('stats.trendBefore')} <strong>${format(beforeValue)}</strong></p>`;
+    }
+
+    return `
+        <section class="stats-section stats-trend-section">${heading}
+            <svg class="trend-chart" viewBox="0 0 ${W} ${H}" role="img"
+                 aria-label="${t('stats.trendTitle')}: ${points.map(point => format(point.average)).join(', ')}">
+                ${ticks.map(tick => `
+                <line class="trend-grid" x1="${left}" x2="${W - right}" y1="${y(tick).toFixed(1)}" y2="${y(tick).toFixed(1)}"/>
+                <text class="trend-axis" x="${left - 6}" y="${(y(tick) + 4).toFixed(1)}" text-anchor="end">${format(tick)}</text>`).join('')}
+                <path class="trend-area" d="${area}"/>
+                <path class="trend-line" d="${line}"/>
+                ${points.map(point => `<circle class="trend-dot" cx="${x(point.time).toFixed(1)}" cy="${y(point.average).toFixed(1)}" r="3.4"><title>${escapeChallengeHtml(`${dayLabel(point.time)} · ${format(point.average)}`)}</title></circle>`).join('')}
+                <text class="trend-axis" x="${left}" y="${H - 8}" text-anchor="start">${escapeChallengeHtml(dayLabel(first))}</text>
+                <text class="trend-axis" x="${W - right}" y="${H - 8}" text-anchor="end">${escapeChallengeHtml(dayLabel(points[points.length - 1].time))}</text>
+            </svg>
+            ${comparison}
+        </section>`;
+}
+
+// The few achievements that are closest to being unlocked (highest progress first).
+function pickClosestAchievements(unlockedSet, progressById, limit = 4) {
+    return ACHIEVEMENT_DEFINITIONS
+        .filter(achievement => !unlockedSet.has(achievement.id))
+        .map(achievement => {
+            const progress = progressById?.[achievement.id];
+            const ratio = progress && progress.target > 0 ? Math.min(1, progress.current / progress.target) : 0;
+            return { id: achievement.id, ratio };
+        })
+        .sort((first, second) => second.ratio - first.ratio)
+        .slice(0, limit)
+        .map(item => item.id);
 }
 
 let mathRendererPromise = null;
@@ -1056,8 +1249,10 @@ function generateDifficultyStats(difficultyHistory) {
     }).join('')}</div>`;
 }
 
-function generateAchievements(unlockedSet, progressById = {}) {
-    const allAchievements = ACHIEVEMENT_DEFINITIONS;
+function generateAchievements(unlockedSet, progressById = {}, onlyIds = null) {
+    const allAchievements = onlyIds
+        ? ACHIEVEMENT_DEFINITIONS.filter(achievement => onlyIds.includes(achievement.id))
+        : ACHIEVEMENT_DEFINITIONS;
 
     let html = '<div class="achievements-grid">';
     allAchievements.forEach(ach => {
