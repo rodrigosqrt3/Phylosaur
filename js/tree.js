@@ -29,6 +29,10 @@ if (typeof window.treeViewState === 'undefined') {
 }
 
 const TREE_ZOOM_LEVELS = Object.freeze([0.5, 0.67, 0.8, 1, 1.25, 1.5, 2]);
+// The +/- buttons step through the levels above; "see everything" and pinching can land
+// anywhere in between, down to a smaller overview scale.
+const TREE_ZOOM_MIN = 0.25;
+const TREE_ZOOM_MAX = 2;
 const TREE_ZOOM_STORAGE_KEY = 'phylosaur-tree-zoom';
 
 if (typeof window.treeZoom === 'undefined') {
@@ -161,6 +165,60 @@ function expandTreeAncestorsOf(key) {
     for (let clade = start; clade; clade = parentOf.get(clade)) window.collapsedClades.delete(clade);
 }
 
+// The key of the node a node or leaf hangs from, read from the current snapshot.
+function getTreeParentKey(key) {
+    const snapshot = window.currentTreeSnapshot;
+    if (!key || !snapshot) return null;
+    if (key.startsWith('node:')) {
+        const name = key.slice('node:'.length);
+        const parent = (snapshot.nodes || []).find(node => (node.children || []).includes(name));
+        return parent ? `node:${parent.name}` : null;
+    }
+    const leaf = (snapshot.leaves || []).find(item => `leaf:${item.name}` === key
+        || `display:${item.displayName}` === key);
+    return leaf?.parentNode ? `node:${leaf.parentNode}` : null;
+}
+
+// After a guess the camera frames the new branch together with the node it hangs from,
+// so the player sees where it joined the tree. When both do not fit in the panel it
+// falls back to centering the new branch alone.
+function frameTreeFocus(focusTarget, { zoomed = false } = {}) {
+    const container = document.getElementById('tree-container');
+    if (!container || !focusTarget) return false;
+    const parent = getTreeElementByKey(getTreeParentKey(focusTarget.dataset?.treeKey || ''));
+    if (!parent) return centerTreeElement(focusTarget);
+
+    const a = focusTarget.getBoundingClientRect();
+    const b = parent.getBoundingClientRect();
+    const left = Math.min(a.left, b.left);
+    const right = Math.max(a.right, b.right);
+    const top = Math.min(a.top, b.top);
+    const bottom = Math.max(a.bottom, b.bottom);
+    const spanW = right - left;
+    const spanH = bottom - top;
+    if (spanW > container.clientWidth - 24 || spanH > container.clientHeight - 24) {
+        // Too far apart: zoom out just enough to bring both in (labels stay at least ~10px),
+        // then frame them. Only once per guess, and never zooms in.
+        const factor = Math.min((container.clientWidth - 24) / spanW, (container.clientHeight - 24) / spanH);
+        const target = Math.max(0.67, window.treeZoom * factor);
+        if (!zoomed && target < window.treeZoom - 0.02) {
+            window.treeFitZoom = null;
+            setTreeZoom(target);
+            requestAnimationFrame(() => frameTreeFocus(focusTarget, { zoomed: true }));
+            return true;
+        }
+        return centerTreeElement(focusTarget);
+    }
+    const containerRect = container.getBoundingClientRect();
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    container.scrollBy({
+        left: (left + right) / 2 - (containerRect.left + containerRect.width / 2),
+        top: (top + bottom) / 2 - (containerRect.top + containerRect.height / 2),
+        behavior: reduceMotion ? 'auto' : 'smooth'
+    });
+    return true;
+}
+
 function focusTreeBestTrail() {
     focusTreeKey(window.treeViewState?.bestFocusKey, { expand: true });
 }
@@ -236,13 +294,17 @@ function ensureTreeZoomDock(container) {
                 <button type="button" class="tree-zoom-btn" data-tree-zoom="in" aria-label="${t('tree.zoomIn')}" title="${t('tree.zoomIn')}">+</button>
                 <button type="button" class="tree-zoom-btn tree-zoom-value" data-tree-zoom="reset" aria-label="${t('tree.zoomReset')}" title="${t('tree.zoomReset')}">100%</button>
                 <button type="button" class="tree-zoom-btn" data-tree-zoom="out" aria-label="${t('tree.zoomOut')}" title="${t('tree.zoomOut')}">&minus;</button>
+                <button type="button" class="tree-zoom-btn tree-zoom-fit" data-tree-zoom="fit" aria-label="${t('game.treeFit')}" title="${t('game.treeFit')}">
+                    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
             </div>
         `;
         dock.addEventListener('click', event => {
             const action = event.target.closest('[data-tree-zoom]')?.dataset.treeZoom;
-            if (action === 'out') stepTreeZoom(-1);
-            if (action === 'in') stepTreeZoom(1);
-            if (action === 'reset') setTreeZoom(1);
+            if (action === 'out') { window.treeFitZoom = null; stepTreeZoom(-1); }
+            if (action === 'in') { window.treeFitZoom = null; stepTreeZoom(1); }
+            if (action === 'reset') { window.treeFitZoom = null; setTreeZoom(1); }
+            if (action === 'fit') fitTreeToView();
         });
     }
     const frame = container.parentElement?.classList.contains('tree-frame') ? container.parentElement : null;
@@ -270,13 +332,19 @@ function updateTreeZoomControls() {
 }
 
 function stepTreeZoom(direction) {
-    const index = TREE_ZOOM_LEVELS.indexOf(window.treeZoom);
-    const next = TREE_ZOOM_LEVELS[Math.max(0, Math.min(TREE_ZOOM_LEVELS.length - 1, index + direction))];
+    // From an in-between zoom (after "see everything" or a pinch) the next level in the
+    // chosen direction, not a jump relative to a list position that does not exist.
+    const current = window.treeZoom;
+    const next = direction > 0
+        ? (TREE_ZOOM_LEVELS.find(level => level > current + 0.001) ?? TREE_ZOOM_LEVELS[TREE_ZOOM_LEVELS.length - 1])
+        : ([...TREE_ZOOM_LEVELS].reverse().find(level => level < current - 0.001) ?? TREE_ZOOM_LEVELS[0]);
     setTreeZoom(next);
 }
 
 function setTreeZoom(zoom) {
-    if (!TREE_ZOOM_LEVELS.includes(zoom) || zoom === window.treeZoom) return;
+    if (!Number.isFinite(zoom) || zoom < TREE_ZOOM_MIN || zoom > TREE_ZOOM_MAX) return;
+    zoom = Math.round(zoom * 100) / 100;
+    if (zoom === window.treeZoom) return;
 
     const container = document.getElementById('tree-container');
     const centerX = container && container.scrollWidth
@@ -285,13 +353,57 @@ function setTreeZoom(zoom) {
         ? (container.scrollTop + container.clientHeight / 2) / container.scrollHeight : 0;
 
     window.treeZoom = zoom;
-    try { localStorage.setItem(TREE_ZOOM_STORAGE_KEY, String(zoom)); } catch (_err) {}
+    // Only the named levels are remembered between visits; an overview or pinch is momentary.
+    if (TREE_ZOOM_LEVELS.includes(zoom)) {
+        try { localStorage.setItem(TREE_ZOOM_STORAGE_KEY, String(zoom)); } catch (_err) {}
+    }
     updateTreeZoomControls();
 
     if (layoutTreeSvg() && container) {
         container.scrollLeft = centerX * container.scrollWidth - container.clientWidth / 2;
         container.scrollTop = centerY * container.scrollHeight - container.clientHeight / 2;
     }
+}
+
+// The base scale before the player's zoom. Labels are drawn at 11-15px; the floor keeps
+// them at that size on large screens instead of shrinking a tall, narrow first-guess
+// tree to fit its height. The container scrolls and the zoom dock can still zoom out.
+function getTreeAutoScale(container, naturalW, naturalH) {
+  const isCompact = window.matchMedia?.('(max-width: 768px)').matches;
+  const availW = container.clientWidth - (isCompact ? 24 : 44);
+  const availH = Math.max(300, Math.min(window.innerHeight * (isCompact ? 0.58 : 0.62), 680)) - 40;
+  const fit = Math.min(availW / naturalW, availH / naturalH);
+  return Math.max(1, Math.min(isCompact ? 1.15 : 1.35, fit));
+}
+
+// "See everything": the zoom at which the whole tree fits the panel (never larger than
+// 100%). Pressing it again goes back to where the player was.
+function fitTreeToView() {
+  const container = document.getElementById('tree-container');
+  const wrapper = document.getElementById('tree-scroll-wrapper');
+  const naturalW = Number(wrapper?.dataset.naturalWidth);
+  const naturalH = Number(wrapper?.dataset.naturalHeight);
+  if (!container || !naturalW || !naturalH) return;
+
+  if (window.treeFitZoom && Math.abs(window.treeZoom - window.treeFitZoom) < 0.011) {
+    const back = window.treeZoomBeforeFit || 1;
+    window.treeFitZoom = null;
+    setTreeZoom(back);
+    focusTreeLatest();
+    return;
+  }
+  const auto = getTreeAutoScale(container, naturalW, naturalH);
+  const needed = Math.min((container.clientWidth - 24) / naturalW, (container.clientHeight - 24) / naturalH) / auto;
+  const target = Math.max(TREE_ZOOM_MIN, Math.min(1, Math.floor(needed * 100) / 100));
+  window.treeZoomBeforeFit = window.treeZoom;
+  window.treeFitZoom = Math.round(target * 100) / 100;
+  setTreeZoom(window.treeFitZoom);
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  container.scrollTo({
+    left: Math.max(0, (container.scrollWidth - container.clientWidth) / 2),
+    top: 0,
+    behavior: reduceMotion ? 'auto' : 'smooth'
+  });
 }
 
 function layoutTreeSvg() {
@@ -304,12 +416,7 @@ function layoutTreeSvg() {
 
   const isCompact = window.matchMedia?.('(max-width: 768px)').matches;
   const availW = container.clientWidth - (isCompact ? 24 : 44);
-  const availH = Math.max(300, Math.min(window.innerHeight * (isCompact ? 0.58 : 0.62), 680)) - 40;
-  const fit = Math.min(availW / naturalW, availH / naturalH);
-  // Labels are drawn at 11-15px; the floor keeps them at that size on large screens
-  // instead of shrinking a tall, narrow first-guess tree to fit its height. The
-  // container scrolls and the zoom dock can still zoom out.
-  const autoScale = Math.max(1, Math.min(isCompact ? 1.15 : 1.35, fit));
+  const autoScale = getTreeAutoScale(container, naturalW, naturalH);
   const scale = autoScale * window.treeZoom;
   const width = naturalW * scale;
   const height = naturalH * scale;
@@ -374,6 +481,22 @@ function initTreePanning() {
     container.scrollLeft = scrollLeft - (x - startX);
     container.scrollTop  = scrollTop  - (y - startY);
   });
+
+  // Two-finger pinch zooms continuously; one finger keeps scrolling natively.
+  let pinch = null;
+  const touchDistance = touches => Math.hypot(
+    touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+  container.addEventListener('touchstart', event => {
+    if (event.touches.length === 2) pinch = { distance: touchDistance(event.touches) || 1, zoom: window.treeZoom };
+  }, { passive: true });
+  container.addEventListener('touchmove', event => {
+    if (!pinch || event.touches.length !== 2) return;
+    window.treeFitZoom = null;
+    setTreeZoom(Math.max(TREE_ZOOM_MIN, Math.min(TREE_ZOOM_MAX, pinch.zoom * (touchDistance(event.touches) / pinch.distance))));
+  }, { passive: true });
+  const endPinch = event => { if (event.touches.length < 2) pinch = null; };
+  container.addEventListener('touchend', endPinch, { passive: true });
+  container.addEventListener('touchcancel', endPinch, { passive: true });
 
   let wheelDelta = 0;
   let wheelResetTimer = null;
@@ -494,7 +617,10 @@ function renderTreeModel(nodes, leaves, animation = {}) {
   const newNodeKeys = animation.newNodeKeys || new Set();
   const newEdgeKeys = animation.newEdgeKeys || new Set();
 
-  const nodeWidth = 200;
+  // On a phone the same tree is drawn about 20% narrower (labels stay between 11 and 15px),
+  // so more of it fits in the panel. Desktop keeps the original geometry.
+  const compactTree = Boolean(window.matchMedia?.('(max-width: 768px)').matches);
+  const nodeWidth = compactTree ? 160 : 200;
   const nodeHeight = 45;
 
   // ─────────────────────────────────────────────────────────────────────
@@ -618,7 +744,9 @@ function renderTreeModel(nodes, leaves, animation = {}) {
   }
   
   const totalSlots = countSlots('Dinosauria');
-  const dynH = Math.max(nodeWidth + 25, 250 - Math.max(0, (totalSlots - 3) * 8));
+  const dynH = compactTree
+    ? Math.max(nodeWidth + 20, 205 - Math.max(0, (totalSlots - 3) * 7))
+    : Math.max(nodeWidth + 25, 250 - Math.max(0, (totalSlots - 3) * 8));
   const dynV = Math.max(80, Math.floor(120 * Math.max(0.7, 1 - (totalSlots - 15) * 0.02)));
   
   function positionNode(clade, left, right, depth) {
@@ -776,7 +904,9 @@ nodes.forEach((data, clade) => {
     label.setAttribute('font-weight', '600');
     label.textContent = clade;
 
-    const maxTextWidth = clade === 'Dinosauria' ? 185 : 165; 
+    const maxTextWidth = compactTree
+      ? (clade === 'Dinosauria' ? 145 : 125)
+      : (clade === 'Dinosauria' ? 185 : 165);
     const fontSize = Math.max(11, Math.min(15, Math.floor(maxTextWidth / (clade.length * 0.52))));
     
     if (fontSize < 15) {
@@ -935,7 +1065,7 @@ leafPositions.forEach((leaf, name) => {
     label.setAttribute('font-style', 'italic'); 
     label.textContent = leaf.displayName;
 
-    const maxLeafWidth = 150;
+    const maxLeafWidth = compactTree ? 120 : 150;
     const defaultSize = leaf.isTarget ? 20 : 15;
     const leafFontSize = Math.max(11, Math.min(defaultSize, Math.floor(maxLeafWidth / (leaf.displayName.length * 0.52))));
 
@@ -970,7 +1100,7 @@ leafPositions.forEach((leaf, name) => {
       const focusTarget = svg.querySelector('.tree-primary-focus')
         || focusTargets[focusTargets.length - 1];
 
-      if (focusTarget) centerTreeElement(focusTarget);
+      if (focusTarget) frameTreeFocus(focusTarget);
     }
   });
 

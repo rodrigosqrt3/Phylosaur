@@ -22,8 +22,9 @@ function setHeaderControls(screen) {
       back: '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
     };
     const glyph = name => `<svg class="header-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${glyphs[name]}</svg>`;
+    // The Museum button also carries a visible name, shown on phones where it has room (CSS).
     const iconBtn = (name, label, action = '', extra = '') =>
-      `<button class="btn-hint btn-header btn-header-icon btn-header-${name}" type="button"${action ? ` onclick="${action}"` : ''} title="${escapeHtml(label)}"${extra}>${glyph(name)}<span class="visually-hidden">${escapeHtml(label)}</span></button>`;
+      `<button class="btn-hint btn-header btn-header-icon btn-header-${name}" type="button"${action ? ` onclick="${action}"` : ''} title="${escapeHtml(label)}"${extra}>${glyph(name)}<span class="visually-hidden">${escapeHtml(label)}</span>${name === 'museum' ? `<span class="header-btn-label" aria-hidden="true">${escapeHtml(label)}</span>` : ''}</button>`;
     const backBtn = (action, label) => iconBtn('back', label, action);
 
     const current = name => screen === name ? ' aria-current="page"' : '';
@@ -244,8 +245,28 @@ function positionGlassSelect() {
         closeGlassSelect();
         return;
     }
-    const rect = state.trigger.getBoundingClientRect();
-    const width = Math.min(Math.max(rect.width, 190), window.innerWidth - 16);
+    // Measure the button's own layout box, not its drawn rectangle: while the mouse button is
+    // held the trigger is scaled to 95% (":active"), and the click that opens the menu fires
+    // before it grows back. Measuring the scaled rectangle made the menu 5% narrower and 5px
+    // off to the side whenever the click lasted more than a few milliseconds.
+    const drawn = state.trigger.getBoundingClientRect();
+    const layoutWidth = state.trigger.offsetWidth || drawn.width;
+    const layoutHeight = state.trigger.offsetHeight || drawn.height;
+    const centerX = drawn.left + drawn.width / 2;
+    const centerY = drawn.top + drawn.height / 2;
+    const rect = {
+        left: centerX - layoutWidth / 2,
+        right: centerX + layoutWidth / 2,
+        top: centerY - layoutHeight / 2,
+        bottom: centerY + layoutHeight / 2,
+        width: layoutWidth,
+        height: layoutHeight,
+    };
+    // The menu is exactly as wide as the button that opened it. Only a small icon-like
+    // button (the language picker, ~40px) gets a wider menu, because 40px cannot hold names.
+    const width = rect.width >= 120
+        ? Math.min(rect.width, window.innerWidth - 16)
+        : Math.min(Math.max(rect.width, 190), window.innerWidth - 16);
     const left = Math.max(8, Math.min(rect.right - width, rect.left, window.innerWidth - width - 8));
     const below = window.innerHeight - rect.bottom - 14;
     const above = rect.top - 14;

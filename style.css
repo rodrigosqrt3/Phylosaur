@@ -8949,6 +8949,17 @@ html[data-theme="light"] body .stats-dashboard .stat {
   margin-top: 12px;
 }
 
+/* The encyclopedia link was a flat block (same colour as its own border). It now follows
+   the secondary button style used everywhere else. The light theme keeps its own override. */
+.clade-link {
+  color: var(--button-secondary-color);
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border);
+  font-family: var(--font-control);
+  font-weight: 600;
+  box-shadow: var(--button-shadow);
+}
+
 /* Playfair's default old-style figures make a "0" look like the letter "o" in counts
    such as "0 / 598 (0%)". Counters use lining figures; dates and titles keep the style. */
 .museum-progress-container,
@@ -8964,3 +8975,227 @@ html[data-theme="light"] body .stats-dashboard .stat {
   font-family: var(--font-display);
   font-variant-numeric: lining-nums tabular-nums;
 }
+
+/* ═══ Game screen on phones: tree first, answer bar pinned to the bottom ═══
+   The tree used to start below the fold, so playing meant scrolling away from the
+   answer field after every guess. Phones only; the desktop layout is unchanged. */
+@media (max-width: 768px) {
+  .game-session-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .game-session-layout .tree-frame { order: 1; }
+  .game-session-layout .input-section { order: 2; }
+  .game-session-layout #clade-info { order: 3; }
+  .game-session-layout #tree-toolbar-host { order: 4; }
+  .game-session-layout #guess-history { order: 5; }
+
+  /* A floating, fully rounded bar with the same glass surface as the tree's zoom control
+     and the dialogs, so it reads as part of the game and not as a strip cut by the screen. */
+  .game-session-layout .input-section {
+    position: sticky;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 30;
+    margin: 0;
+    padding: 10px;
+    background: radial-gradient(120% 70% at 50% -20%, var(--glass-glow) 0%, transparent 60%), var(--glass-sheet);
+    border: 1px solid var(--glass-edge);
+    border-radius: var(--radius-md);
+    box-shadow: inset 0 1px 0 var(--glass-sheen), var(--glass-depth);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+  }
+
+  /* The field is at the bottom now, so suggestions open upward. */
+  .game-session-layout .input-section #suggestions {
+    top: auto;
+    bottom: calc(100% + 10px);
+    margin: 0;
+    max-height: 38dvh;
+  }
+
+  .game-session-layout .guess-feedback {
+    top: auto;
+    bottom: calc(100% + 6px);
+  }
+
+  /* Ends where the answer bar starts, so nothing of the tree sits under it. */
+  #tree-container:not(.tree-result-active) {
+    height: clamp(220px, calc(100dvh - 496px), 600px);
+    min-height: 0;
+    max-height: none;
+  }
+
+  .game-session-layout .input-section { gap: 6px !important; }
+  .game-session-layout .guess-primary-row .btn-guess { padding: 11px 16px; }
+  .game-session-layout .guess-secondary-row .btn-game-hint { padding: 7px 14px; }
+  .game-session-layout .guess-secondary-row .btn-giveup { padding: 6px 4px; }
+
+  .game-session-card .game-mode-context { margin: -4px 0 8px; }
+
+  /* The tutorial has its own coach panel above the tree, so there the bar stays in the flow. */
+  .game-session-card:has(.tutorial-coach) .game-session-layout .input-section { position: static; }
+  .game-session-card:has(.tutorial-coach) #tree-container:not(.tree-result-active) {
+    height: clamp(260px, 46dvh, 420px);
+  }
+
+  /* Counters: two per row plus a full-width one, all the same height. */
+  .stats.game-session-stats { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .game-session-stats .game-session-stat-main,
+  .game-session-stats .game-session-stat-sidebar { display: contents !important; }
+  .stats.game-session-stats .stat { grid-column: auto !important; grid-row: auto !important; }
+  .stats.game-session-stats .game-session-stat-sidebar .stat { grid-column: 1 / -1 !important; order: 9; }
+
+  /* Once the game is over the (disabled) answer bar has nothing left to do on a phone. */
+  .game-session-layout:has(#tree-container.tree-result-active) .input-section { display: none; }
+  .game-session-stats { gap: 6px !important; margin-bottom: 10px; }
+  .game-session-stats .stat {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2px 6px;
+    padding: 5px 6px !important;
+  }
+  .game-session-stats .stat-value { font-size: 1.15rem !important; line-height: 1.15; }
+  .game-session-stats .stat-label {
+    margin-top: 0 !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2;
+    letter-spacing: 0.02em !important;
+  }
+}
+/* The "see everything" button closes the zoom pill: same glass divider as the value row. */
+.tree-zoom-fit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--glass-edge);
+}
+/* On a phone the zoom control lies along the top edge of the tree instead of standing in its
+   corner, where four stacked buttons covered a whole column of the tree. */
+@media (max-width: 768px) {
+  /* A strip of its own above the tree: the control never sits on top of a node, the "back
+     to result" button or the camera's framing. */
+  .tree-frame { display: flex; flex-direction: column; }
+  .tree-frame > .tree-zoom-dock {
+    position: static;
+    order: -1;
+    align-self: flex-end;
+    margin: 0 0 6px;
+  }
+  .tree-frame .tree-zoom { flex-direction: row; align-items: stretch; }
+  .tree-frame .tree-zoom-btn { min-width: 44px; min-height: 40px; }
+  .tree-frame .tree-zoom-btn.tree-zoom-value {
+    min-width: 54px;
+    border-block: 0;
+    border-inline: 1px solid var(--glass-edge);
+  }
+  .tree-frame .tree-zoom-fit { border-top: 0; border-left: 1px solid var(--glass-edge); }
+}
+/* Museum filters on a phone: one per row, so the select button is as wide as the field above
+   it and its menu opens aligned to it (side by side they were 147px wide, the label was cut
+   to "Todos os c..." and the 190px menu hung to the left of its button). */
+@media (max-width: 600px) {
+  .museum-toolbar { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .museum-toolbar .museum-search { grid-column: auto; }
+}
+
+/* The list opens over the tree, so its background must hide it (the glass let nodes and
+   branches show through the names). */
+#suggestions {
+  background: var(--glass-sheet-solid);
+}
+
+/* On a phone the list is as wide as the whole answer bar, not just the text field. */
+@media (max-width: 768px) {
+  .game-session-layout .input-section .guess-field { position: static; }
+}
+
+/* Desktop header: the right-hand group is one row, vertically centred with the title, with a
+   divider between the shortcuts (Museum, account) and the settings (language, theme). It used
+   to be two stacked rows at different heights, with Back alone at the other end. */
+@media (min-width: 1100px) {
+  .site-header-utility {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: flex-end;
+    justify-items: initial;
+    gap: 14px;
+  }
+
+  .site-header-utility .header-theme-row {
+    width: auto;
+    min-height: 0;
+    padding-left: 14px;
+    border-left: 1px solid var(--glass-edge);
+  }
+
+  .site-header-utility #header-controls.stable-header-controls {
+    width: auto;
+  }
+}
+@media (min-width: 1100px) {
+  /* One row, never wrapping, as wide as it needs to be: it extends into the free space next
+     to the (narrower) title text instead of folding into a second line. */
+  .site-header-utility {
+    flex-wrap: nowrap;
+    width: max-content;
+    max-width: none;
+    justify-self: end;
+  }
+  .site-header-utility .header-theme-row { flex-wrap: nowrap; }
+}
+@media (min-width: 1100px) {
+  /* Shortcuts (Museum, account) first, settings (language, theme) at the far right; the space
+     reserved for buttons that are not shown yet stays on the left, out of sight. */
+  .site-header-utility { flex-direction: row; }
+  .site-header-utility #header-controls { order: -1; }
+  .site-header-utility .header-theme-row {
+    padding-left: 14px;
+    border-left: 1px solid var(--glass-edge);
+  }
+}
+/* Phone header, second row: the shortcuts share the whole row instead of sitting at its left
+   edge with the right half empty. Museum gets its name written (it was an unlabelled icon),
+   and "Entrar" keeps its label. Stats and the account avatar stay compact icons. */
+@media (max-width: 600px) {
+  #header-controls,
+  #header-controls.stable-header-controls { width: 100%; }
+
+  #header-controls .header-controls-visible {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+
+  #header-controls .header-controls-visible .btn-header-museum,
+  #header-controls .header-controls-visible .btn-with-icon {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+  }
+
+  #header-controls .header-controls-visible .btn-header-museum .header-btn-label {
+    display: inline;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  #header-controls .header-controls-visible .btn-header-stats,
+  #header-controls .header-controls-visible .btn-header-analytics,
+  #header-controls .header-controls-visible .btn-header-avatar { flex: 0 0 auto; }
+}
+
+.header-btn-label { display: none; }
