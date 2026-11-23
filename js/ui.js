@@ -621,9 +621,26 @@ function formatTaxonName(name) {
     return isGenus ? `<em>${safeName}</em>` : safeName;
 }
 
+// During a game the client only holds genus names (no lineages) and the Museum catalog is
+// not loaded, so the ancestors of a clade are read from the published catalog file, once
+// and only when a clade has no entry of its own. Its lineages are the same ones the
+// Museum uses; a clade's ancestors never depend on what the player has discovered.
+let cladeLineageCatalogPromise = null;
+
+function loadCladeLineageCatalog() {
+    if (typeof fetch !== 'function') return Promise.resolve([]);
+    if (!cladeLineageCatalogPromise) {
+        cladeLineageCatalogPromise = fetch('phylosaur_db.json?v=atlas-3')
+            .then(response => (response.ok ? response.json() : []))
+            .then(list => (Array.isArray(list) ? list : []))
+            .catch(() => { cladeLineageCatalogPromise = null; return []; });
+    }
+    return cladeLineageCatalogPromise;
+}
+
 // Ancestors of a clade or genus, nearest first, read from the catalog's lineages.
-function getCladeAncestors(name) {
-    const catalog = [...(database || []), ...(fullDatabase || [])];
+function getCladeAncestors(name, extraCatalog = []) {
+    const catalog = [...(database || []), ...(fullDatabase || []), ...extraCatalog];
     const genus = catalog.find(dino => dino?.nome === name && Array.isArray(dino.linhagem));
     if (genus) return [...genus.linhagem].reverse();
     for (const dino of catalog) {
@@ -641,7 +658,9 @@ async function fetchCladeInfoWithFallback(cladeName) {
     if (own) return { info: own, usedClade: cladeName };
     // Ask for every ancestor at once instead of one after another (up to 8 round
     // trips for an obscure clade), then keep the nearest one that has an entry.
-    const ancestors = getCladeAncestors(cladeName).slice(0, 8);
+    let ancestors = getCladeAncestors(cladeName);
+    if (ancestors.length === 0) ancestors = getCladeAncestors(cladeName, await loadCladeLineageCatalog());
+    ancestors = ancestors.slice(0, 8);
     const results = await Promise.all(ancestors.map(ancestor =>
         Promise.resolve().then(() => fetchWikipediaInfo(ancestor)).catch(() => null)));
     const nearest = results.findIndex(Boolean);

@@ -8948,3 +8948,19 @@ html[data-theme="light"] body .stats-dashboard .stat {
 .museum-clear-filters {
   margin-top: 12px;
 }
+
+/* Playfair's default old-style figures make a "0" look like the letter "o" in counts
+   such as "0 / 598 (0%)". Counters use lining figures; dates and titles keep the style. */
+.museum-progress-container,
+.museum-filter-summary,
+.cladogram-progress,
+.difficulty-home-countdown {
+  font-variant-numeric: lining-nums;
+}
+
+/* The live-game counters use Georgia, which has no lining figures at all ("0" reads as "o"),
+   so their numbers use Playfair with lining figures. */
+.game-session-stats .stat-value {
+  font-family: var(--font-display);
+  font-variant-numeric: lining-nums tabular-nums;
+}
