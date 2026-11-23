@@ -68,8 +68,12 @@ function initializeAutocomplete() {
     input.value = item.textContent.trim();
   };
 
+  // What the player actually typed, so Escape can undo an arrow-key preview.
+  let typedText = null;
+
   input.addEventListener('input', function() {
     if (typeof clearGuessFeedback === 'function') clearGuessFeedback();
+    typedText = this.value;
     const text = this.value.toLowerCase().trim();
     
     if (text.length < 2) {
@@ -125,6 +129,8 @@ function initializeAutocomplete() {
     } else if (e.key === 'Tab') {
       hideSuggestions();
     } else if (e.key === 'Escape') {
+      // Arrow keys overwrite the field with the highlighted name; Escape gives back the typed text.
+      if (current && typedText !== null) input.value = typedText;
       hideSuggestions();
     }
   });

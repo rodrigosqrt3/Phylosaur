@@ -65,11 +65,13 @@ function readGuestAchievementProgress() {
         const stored = JSON.parse(localStorage.getItem(GUEST_ACHIEVEMENT_PROGRESS_KEY) || '{}');
         return {
             results: stored.results && typeof stored.results === 'object' ? stored.results : {},
-            unlocked: Array.isArray(stored.unlocked) ? stored.unlocked : []
+            unlocked: Array.isArray(stored.unlocked) ? stored.unlocked : [],
+            // Account that already took this device's guest achievements (they are linked once).
+            claimedByUser: typeof stored.claimedByUser === 'string' ? stored.claimedByUser : null
         };
     } catch (error) {
         console.warn('Could not read guest achievement progress:', error);
-        return { results: {}, unlocked: [] };
+        return { results: {}, unlocked: [], claimedByUser: null };
     }
 }
 
@@ -308,9 +310,10 @@ function recordGuestGameResult(won) {
     if (currentUserId) return [];
 
     const progress = readGuestAchievementProgress();
+    const playedDate = (typeof currentChallengeDate === 'string' && currentChallengeDate) || getTodayString();
     const resultKey = gameSessionId || [
         currentGameMode,
-        getTodayString(),
+        playedDate,
         selectedDifficulty,
         targetDino?.nome || 'unknown'
     ].join(':');
@@ -319,7 +322,7 @@ function recordGuestGameResult(won) {
         progress.results[resultKey] = {
             sessionId: gameSessionId || null,
             mode: currentGameMode,
-            playedDate: getTodayString(),
+            playedDate,
             difficulty: targetDino?.dificuldade || selectedDifficulty,
             won: won === true,
             guessCount: guesses.length,
@@ -539,6 +542,9 @@ function getTodayString() {
 
 function applyServerGamePayload(data) {
     gameSessionId = data.sessionId || gameSessionId;
+    if (typeof data.challengeDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(data.challengeDate)) {
+        currentChallengeDate = data.challengeDate;
+    }
     if (data.mode) {
         currentGameMode = data.mode;
         isPracticeMode = data.mode === 'practice';
@@ -724,6 +730,19 @@ async function showRestoredServerCompletion(data) {
     if (!container || container.querySelector('.victory')) return;
 
     const targetName = data.target?.nome || targetDino?.nome || '';
+
+    // A guest whose finishing response was lost (timeout) reaches this screen through a
+    // restore, never through the normal victory path. Record the result now; both calls
+    // are idempotent per session, so a plain reload does not count it twice.
+    if (!currentUserId && data.complete && currentGameMode !== 'tutorial') {
+        const guestWon = Boolean(data.won) && !data.gaveUp;
+        try {
+            if (guestWon && targetName) registerDiscovery(targetName, data.museumProof || currentMuseumProof);
+            if (currentGameMode === 'daily' || guestWon) recordGuestGameResult(guestWon);
+        } catch (error) {
+            console.warn('Could not record the restored result:', error);
+        }
+    }
     const completionSessionId = gameSessionId;
     const completionOwnerId = currentUserId;
     const resultMedia = targetName ? await loadResultMedia(targetName) : null;
@@ -731,6 +750,10 @@ async function showRestoredServerCompletion(data) {
         || gameSessionId !== completionSessionId || currentUserId !== completionOwnerId) return;
 
     const panel = document.createElement('div');
+    // A restored Daily win shows the run too, and the share text reads the same value.
+    const restoredDailyWin = currentGameMode === 'daily' && Boolean(data.won) && !data.gaveUp
+        && typeof buildVictoryStreakMarkup === 'function' && typeof buildGuestStreakMarkup === 'function';
+    if (typeof lastVictoryStreak !== 'undefined') lastVictoryStreak = 0;
     const wasRaceEliminated = currentGameMode === 'challenge' &&
         Boolean(data.challenge?.eliminated || currentChallengeEliminated);
     const resultWasRevealed = data.gaveUp || wasRaceEliminated;
@@ -754,6 +777,8 @@ async function showRestoredServerCompletion(data) {
 
         ${buildResultMediaMarkup(targetName, resultMedia)}
 
+        ${restoredDailyWin ? '<div class="victory-streak-slot"></div>' : ''}
+
         <div class="victory-actions">
             <button class="btn-hint victory-action-secondary" onclick="toggleResultTreeView(true)">${t('game.viewTree')}</button>
             <button class="btn-hint victory-action-secondary" onclick="shareResult()" id="share-btn">${t('result.share')}</button>
@@ -766,6 +791,15 @@ async function showRestoredServerCompletion(data) {
             </button>`}
         </div>
     `;
+    const restoredStreakSlot = restoredDailyWin ? panel.querySelector('.victory-streak-slot') : null;
+    if (restoredStreakSlot) {
+        const accountStreak = currentUserId ? currentAccountProgress?.streak : null;
+        const guestStreak = currentUserId ? 0 : getCurrentGuestDailyStreak().current;
+        lastVictoryStreak = currentUserId ? Number(accountStreak?.current || 0) : guestStreak;
+        restoredStreakSlot.innerHTML = currentUserId
+            ? buildVictoryStreakMarkup(accountStreak, null)
+            : buildGuestStreakMarkup(guestStreak);
+    }
     container.insertBefore(panel, container.firstChild);
     bindResultMedia(panel, targetName, resultMedia);
     revealResultPanel(container, panel);
@@ -794,6 +828,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
     currentChallengeEliminated = false;
     challengeRaceClosing = false;
     gameSessionId = null;
+    currentChallengeDate = null;
     targetDino = null;
     guesses = [];
     hintsRemaining = 3;
@@ -811,10 +846,14 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
     if (wrapper) wrapper.innerHTML = renderAppState(t('game.loadingChallenge'), { compact: true });
 
     const storageKey = getGameSessionStorageKey(mode, difficulty);
-    if (forceClean) localStorage.removeItem(storageKey);
+    // Blocked or full storage must not stop a game: saving the session is best effort.
+    const readSavedSession = key => { try { return localStorage.getItem(key); } catch (_error) { return null; } };
+    const writeSavedSession = (key, value) => { try { localStorage.setItem(key, value); } catch (_error) {} };
+    const clearSavedSession = key => { try { localStorage.removeItem(key); } catch (_error) {} };
+    if (forceClean) clearSavedSession(storageKey);
 
     let data = null;
-    const storedSessionId = forceClean ? null : localStorage.getItem(storageKey);
+    const storedSessionId = forceClean ? null : readSavedSession(storageKey);
 
     if (storedSessionId) {
         try {
@@ -831,9 +870,10 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
                         { label: t('game.hintsRemaining'), value: Number(data.hintsRemaining ?? 3) },
                         { label: t('game.cladesRevealed'), value: Array.isArray(data.revealedClades) ? data.revealedClades.length : 0 }
                     ],
+                    // The Daily is one per day: restarting would only bring the same session back.
                     buttons: [
                         { text: t('game.continue'), value: 'continue', primary: true },
-                        { text: t('game.startFresh'), value: 'fresh', primary: false }
+                        ...(mode === 'daily' ? [] : [{ text: t('game.startFresh'), value: 'fresh', primary: false }])
                     ],
                     closeOnOverlay: false
                 });
@@ -842,7 +882,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
                 if (savedGameChoice === null) return;
 
                 if (savedGameChoice === 'fresh') {
-                    localStorage.removeItem(storageKey);
+                    clearSavedSession(storageKey);
                     data = null;
                 }
             }
@@ -850,7 +890,7 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
             console.warn('Stored game session could not be restored:', error);
             if (!isCurrentRequest()) return;
             if (!(error?.status >= 400 && error.status < 500)) throw error;
-            localStorage.removeItem(storageKey);
+            clearSavedSession(storageKey);
         }
     }
 
@@ -859,10 +899,18 @@ async function loadServerDatabase(mode, difficulty, forceClean = false, resumeAu
             data = await callGameApi('start', { mode, difficulty });
         } catch (error) {
             if (!isCurrentRequest()) return;
-            throw error;
+            // Today's Daily already exists for this player (another device, cleared
+            // storage): pick that session up instead of starting a second one.
+            if (error?.status === 409 && error.data?.code === 'SESSION_EXISTS' && error.data.sessionId) {
+                rememberGameSessionToken(error.data);
+                data = await callGameApi('state', { sessionId: error.data.sessionId });
+                if (!isCurrentRequest()) return;
+            } else {
+                throw error;
+            }
         }
         if (!isCurrentRequest()) return;
-        localStorage.setItem(storageKey, data.sessionId);
+        writeSavedSession(storageKey, data.sessionId);
     }
 
     applyServerGamePayload(data);
@@ -877,7 +925,8 @@ async function loadChallengeDatabase(code, playerName, { isCurrentRequest = () =
     const normalizedCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     const storageKey = getChallengeSessionStorageKey(normalizedCode);
     let data = null;
-    const storedSessionId = localStorage.getItem(storageKey);
+    let storedSessionId = null;
+    try { storedSessionId = localStorage.getItem(storageKey); } catch (_error) {}
 
     if (storedSessionId) {
         try {
@@ -896,12 +945,23 @@ async function loadChallengeDatabase(code, playerName, { isCurrentRequest = () =
     }
 
     if (!data) {
-        data = await callGameApi('join_challenge', {
-            code: normalizedCode,
-            playerName
-        });
+        try {
+            data = await callGameApi('join_challenge', {
+                code: normalizedCode,
+                playerName
+            });
+        } catch (error) {
+            if (!isCurrentRequest()) return;
+            // Already seated in this race (another device, cleared storage): take the seat back.
+            if (error?.status === 409 && error.data?.code === 'ALREADY_JOINED' && error.data.sessionId) {
+                rememberGameSessionToken(error.data);
+                data = await callGameApi('state', { sessionId: error.data.sessionId });
+            } else {
+                throw error;
+            }
+        }
         if (!isCurrentRequest()) return;
-        localStorage.setItem(storageKey, data.sessionId);
+        try { localStorage.setItem(storageKey, data.sessionId); } catch (_error) {}
     }
 
     await startFriendChallengeFromPayload(data);
@@ -1036,6 +1096,14 @@ function readLocalDiscoveryEvents() {
     }
 }
 
+function saveDiscoveryEvents(events) {
+    try {
+        localStorage.setItem(DISCOVERY_EVENTS_KEY, JSON.stringify(events));
+    } catch (error) {
+        console.warn('Could not save discovery history:', error);
+    }
+}
+
 function registerDiscovery(dinoName, museumProof = null) {
     if (!dinoName) {
         return { isFirstDiscovery: false, discoveryCount: 0, eventRecorded: false };
@@ -1055,7 +1123,12 @@ function registerDiscovery(dinoName, museumProof = null) {
 
     if (!currentUserId && !wasAlreadyUnlocked) {
         localDiscoveries.push(dinoName);
-        localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.legacyDiscoveries, JSON.stringify(localDiscoveries));
+        // A full or blocked storage must never stop the victory screen.
+        try {
+            localStorage.setItem(PHYLOSAUR_STORAGE_KEYS.legacyDiscoveries, JSON.stringify(localDiscoveries));
+        } catch (error) {
+            console.warn('Could not save the discovery list:', error);
+        }
     }
 
     const discoveredAt = new Date().toISOString();
@@ -1086,12 +1159,14 @@ function registerDiscovery(dinoName, museumProof = null) {
             firstKnownUnlock: !wasAlreadyUnlocked,
             museumProof: museumProof || null
         });
-        localStorage.setItem(DISCOVERY_EVENTS_KEY, JSON.stringify(events));
+        // Keep the newest events only, so the list cannot grow until storage is full.
+        if (events.length > 500) events.splice(0, events.length - 500);
+        saveDiscoveryEvents(events);
         eventRecorded = true;
     } else if (museumProof) {
         if (!existingEvent.museumProof) {
             existingEvent.museumProof = museumProof;
-            localStorage.setItem(DISCOVERY_EVENTS_KEY, JSON.stringify(events));
+            saveDiscoveryEvents(events);
         }
     }
 
@@ -1250,8 +1325,12 @@ async function syncDiscoveriesOnLogin() {
 async function claimGuestProgressOnLogin({ showNotice = false } = {}) {
     if (!currentUserId) return { claimedSessions: 0 };
 
+    const claimOwnerId = currentUserId;
     const sessionIds = getStoredGameSessionIds(100);
-    const guestAchievementIds = getGuestAchievementIds();
+    // Guest achievements belong to the first account that takes them; another person
+    // signing in on the same browser later must not inherit them.
+    const guestProgress = readGuestAchievementProgress();
+    const guestAchievementIds = guestProgress.claimedByUser ? [] : getGuestAchievementIds();
     if (sessionIds.length === 0 && guestAchievementIds.length === 0) {
         await syncDiscoveriesOnLogin();
         return { claimedSessions: 0 };
@@ -1262,6 +1341,14 @@ async function claimGuestProgressOnLogin({ showNotice = false } = {}) {
             sessionIds,
             guestAchievementIds
         });
+        // Logged out or switched account while the request was in flight: this
+        // response belongs to someone else and must not touch the current state.
+        if (currentUserId !== claimOwnerId) return { claimedSessions: 0 };
+        if (guestAchievementIds.length > 0) {
+            const claimedProgress = readGuestAchievementProgress();
+            claimedProgress.claimedByUser = claimOwnerId;
+            writeGuestAchievementProgress(claimedProgress);
+        }
         forgetClaimedDailySessions(sessionIds);
         dailyCompletionCache = null;
 

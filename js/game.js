@@ -425,6 +425,11 @@ async function startPracticeChallenge(difficulty, { restoreExisting = false } = 
     appContent.innerHTML = renderGameSessionShell(t('game.loadingPractice'), {
         contextLabel: t('game.practiceContext')
     });
+    if (typeof waitForAccountReady === 'function') {
+        const shell = appContent.firstElementChild;
+        await waitForAccountReady();
+        if (appContent.firstElementChild !== shell) return;
+    }
     await loadPracticeDatabase(difficulty, !restoreExisting, restoreExisting);
 }
 
@@ -437,6 +442,11 @@ async function startDailyChallenge(difficulty, { restoreExisting = false } = {})
     const appContent = document.getElementById('app-content');
     
     appContent.innerHTML = renderGameSessionShell(t('game.loadingDaily'));
+    if (typeof waitForAccountReady === 'function') {
+        const shell = appContent.firstElementChild;
+        await waitForAccountReady();
+        if (appContent.firstElementChild !== shell) return;
+    }
 
     await loadDailyDatabase(difficulty, false, restoreExisting);
 }
@@ -556,7 +566,18 @@ async function handleChallengeRaceClosure(statusData) {
     currentChallengeEliminated = true;
 
     try {
-        const state = await callGameApi('state', { sessionId: gameSessionId });
+        // The race is over for this player, so the final state is worth a couple of retries.
+        let state = null;
+        for (let attempt = 0; attempt < 3 && !state; attempt++) {
+            try {
+                state = await callGameApi('state', { sessionId: gameSessionId });
+            } catch (stateError) {
+                if (!isCurrentRequest()) return;
+                if (attempt === 2) throw stateError;
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                if (!isCurrentRequest()) return;
+            }
+        }
         if (!isCurrentRequest()) return;
         applyServerGamePayload(state);
         currentChallengeEliminated = true;
@@ -567,6 +588,13 @@ async function handleChallengeRaceClosure(statusData) {
         await showRestoredServerCompletion(state);
     } catch (error) {
         if (!isCurrentRequest()) return;
+        // The player cannot keep guessing in a closed race: lock the controls so a
+        // tap never looks like it silently did nothing.
+        const lockedInput = document.getElementById('dino-input');
+        if (lockedInput) lockedInput.disabled = true;
+        for (const selector of ['.btn-guess', '.btn-game-hint', '.btn-giveup']) {
+            document.querySelector?.(selector)?.setAttribute('disabled', true);
+        }
         await customAlert(t('friends.raceComplete'), t('friends.raceCompleteCopy'));
     }
 }
@@ -715,6 +743,30 @@ function beginGameAction() {
     const generation = ++gameActionGeneration;
     setGuessRequestPending(true);
     return () => generation === gameActionGeneration && isCurrentSession();
+}
+
+// A request that timed out or never reached the server may still have been applied
+// (a hint spent, a give-up recorded). Show the server's real state instead of the
+// stale one, so the player does not repeat the action. A real server refusal has a
+// status and is reported normally.
+async function resyncAfterLostResponse(error, isCurrentRequest) {
+    if (error?.status || !gameSessionId) return false;
+    if (!isCurrentRequest()) return true;
+    try {
+        const state = await callGameApi("state", { sessionId: gameSessionId });
+        if (!isCurrentRequest()) return true;
+        applyServerGamePayload(state);
+        setTreeAnimationMode(state.complete ? "reveal" : "default");
+        updateServerGameDisplay(state);
+        if (state.complete) {
+            await showRestoredServerCompletion(state);
+            if (!isCurrentRequest()) return true;
+        }
+        await customAlert(t("game.sessionUpdatedTitle"), t("game.sessionResyncedCopy"));
+        return true;
+    } catch (_resyncError) {
+        return false;
+    }
 }
 
 async function refreshConflictedGameSession(error, isCurrentRequest) {
@@ -895,6 +947,12 @@ async function makeGuess() {
 }
 
 async function makeServerGuess() {
+    // A tap while the game is still loading used to do nothing at all.
+    if (!gameWon && !gameRequestPending && !gameSessionId && !challengeRaceClosing
+        && typeof showGuessFeedback === 'function') {
+        showGuessFeedback(t('game.loadingChallenge'));
+        return;
+    }
     if (gameWon || gameRequestPending || !gameSessionId || challengeRaceClosing
         || document.querySelector('[data-app-modal="true"]')) return;
 
@@ -1031,6 +1089,8 @@ async function useServerHint() {
     } catch (error) {
         if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
         if (await refreshConflictedGameSession(error, isCurrentRequest)) return;
+        if (!isCurrentRequest()) return;
+        if (await resyncAfterLostResponse(error, isCurrentRequest)) return;
         if (!isCurrentRequest()) return;
         const missing = Number(error.data?.guessesRequired || 0);
         const message = missing > 0
@@ -1221,6 +1281,8 @@ async function giveUp() {
         } catch (error) {
             if (!isCurrentRequest() || gameWon || challengeRaceClosing) return;
             if (await refreshConflictedGameSession(error, isCurrentRequest)) return;
+            if (!isCurrentRequest()) return;
+            if (await resyncAfterLostResponse(error, isCurrentRequest)) return;
             if (!isCurrentRequest()) return;
             await customAlert(t('game.giveUpError'), escapeHtml(error.message));
             return;
@@ -1746,7 +1808,7 @@ async function startRematch(button = null) {
         });
         // The seat is kept for a later visit, but a player who left the race
         // screen meanwhile is not pulled back into it.
-        localStorage.setItem(getChallengeSessionStorageKey(data.challenge.code), data.sessionId);
+        try { localStorage.setItem(getChallengeSessionStorageKey(data.challenge.code), data.sessionId); } catch (_error) {}
         if (!isCurrentRequest()) return;
         await startFriendChallengeFromPayload(data);
     } catch (error) {

@@ -448,7 +448,11 @@ function showModal(options) {
 
             const first = focusable[0];
             const last = focusable[focusable.length - 1];
-            if (event.shiftKey && document.activeElement === first) {
+            if (!box.contains(document.activeElement) || document.activeElement === box) {
+                // Focus is on the dialog itself (e.g. after clicking plain text) or outside it.
+                event.preventDefault();
+                (event.shiftKey ? last : first).focus();
+            } else if (event.shiftKey && document.activeElement === first) {
                 event.preventDefault();
                 last.focus();
             } else if (!event.shiftKey && document.activeElement === last) {
@@ -635,10 +639,13 @@ function getCladeAncestors(name) {
 async function fetchCladeInfoWithFallback(cladeName) {
     const own = await fetchWikipediaInfo(cladeName);
     if (own) return { info: own, usedClade: cladeName };
-    for (const ancestor of getCladeAncestors(cladeName).slice(0, 8)) {
-        const info = await fetchWikipediaInfo(ancestor);
-        if (info) return { info, usedClade: ancestor };
-    }
+    // Ask for every ancestor at once instead of one after another (up to 8 round
+    // trips for an obscure clade), then keep the nearest one that has an entry.
+    const ancestors = getCladeAncestors(cladeName).slice(0, 8);
+    const results = await Promise.all(ancestors.map(ancestor =>
+        Promise.resolve().then(() => fetchWikipediaInfo(ancestor)).catch(() => null)));
+    const nearest = results.findIndex(Boolean);
+    if (nearest >= 0) return { info: results[nearest], usedClade: ancestors[nearest] };
     return { info: null, usedClade: cladeName };
 }
 

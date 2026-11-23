@@ -183,6 +183,9 @@ async function refreshDifficultySelectionAccountState() {
     const generation = ++difficultyAccountRefreshGeneration;
     const appContent = document.getElementById('app-content');
     const homeCard = appContent?.firstElementChild;
+    // Capture the owner only once the startup account lookup has settled, so a
+    // signed-in player is never briefly treated as a guest.
+    if (typeof waitForAccountReady === 'function') await waitForAccountReady();
     const ownerId = currentUserId;
     const today = getTodayString();
     const isCurrentRequest = () => generation === difficultyAccountRefreshGeneration
@@ -197,6 +200,7 @@ async function refreshDifficultySelectionAccountState() {
         ]);
         if (!isCurrentRequest()) return;
         updateDifficultyCompletionStatus(completionStatus);
+        if (typeof updateHomeStreak === 'function') void updateHomeStreak(homeCard);
         if (typeof updateGuestAccountNote === 'function') updateGuestAccountNote(homeCard);
         setHeaderControls('difficulty');
     } catch (error) {
@@ -349,7 +353,7 @@ async function updateCustomChallengePool() {
         // Without the catalog the count is unknown; the server still validates the pool.
         if (generation !== customChallengePoolGeneration || !status.isConnected) return;
         console.warn('Challenge pool could not be counted:', error);
-        show('', false);
+        show(t('friends.poolUnknown'), false);
     }
 }
 
@@ -406,7 +410,9 @@ async function createFriendChallenge() {
             playerName
         });
         if (!request.isCurrent()) return;
-        localStorage.setItem(getChallengeSessionStorageKey(data.challenge.code), data.sessionId);
+        // The race exists on the server already: failing to remember the seat
+        // (blocked storage) must not report a failure or invite a duplicate.
+        try { localStorage.setItem(getChallengeSessionStorageKey(data.challenge.code), data.sessionId); } catch (_error) {}
         await startFriendChallengeFromPayload(data);
     } catch (error) {
         if (!request.isCurrent()) return;
@@ -563,7 +569,9 @@ async function showStatsDashboard() {
     const gamesPlayed = stats?.games_played || 0;
     const gamesWon = stats?.games_won || 0;
     const winRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
-    const streakData = { current: stats?.current_streak || 0, best: stats?.best_streak || 0, lastPlayed: stats?.last_played };
+    // Same "is it still alive" rule as the home screen, so the two never disagree.
+    const streakData = { current: typeof getEffectiveAccountStreak === 'function'
+            ? getEffectiveAccountStreak(stats).current : (stats?.current_streak || 0), best: stats?.best_streak || 0, lastPlayed: stats?.last_played };
     let unlockedAchievements = new Set(achievements ? achievements.map(a => a.achievement_id) : []);
     let supplementalAchievementProgress = {};
 
@@ -759,7 +767,7 @@ function generateStreakDisplay(streakData) {
     return `
         <div class="streak-card streak-card-empty">
         <div class="streak-empty-title">${t('stats.noStreak')}</div>
-        <div class="streak-copy">${t('stats.noStreakCopy')}</div>
+        <div class="streak-copy">${t(best > 0 && streakData?.lastPlayed ? 'stats.streakEnded' : 'stats.noStreakCopy')}</div>
         ${bestLine}
         ${lastPlayedLine}
         </div>
@@ -1286,7 +1294,7 @@ async function ensureMuseumCatalogLineages(catalog) {
     }
 
     if (!museumLineageCatalogPromise) {
-        museumLineageCatalogPromise = fetch('phylosaur_db.json?v=atlas-2')
+        museumLineageCatalogPromise = fetch('phylosaur_db.json?v=atlas-3')
             .then(response => {
                 if (!response.ok) throw new Error(`Lineage catalog HTTP ${response.status}`);
                 return response.json();
@@ -1317,7 +1325,7 @@ async function ensureMuseumCatalogLineages(catalog) {
 
 async function loadMuseumPaleodataCatalog() {
     if (!museumPaleodataCatalogPromise) {
-        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=10')
+        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=11')
             .then(response => {
                 if (!response.ok) throw new Error(`Paleodata catalog HTTP ${response.status}`);
                 return response.json();
@@ -1605,7 +1613,7 @@ async function loadMuseumOverrideCatalog() {
 
 async function loadMuseumFallbackCatalog() {
     if (!museumFallbackCatalogPromise) {
-        museumFallbackCatalogPromise = fetch('phylosaur_media_fallback.json')
+        museumFallbackCatalogPromise = fetch('phylosaur_media_fallback.json?v=2')
             .then(response => {
                 if (!response.ok) throw new Error(`Media catalog HTTP ${response.status}`);
                 return response.json();
@@ -2066,7 +2074,13 @@ async function showMuseumEntry(name) {
     closeMuseumEntry();
 
     const dino = fullDatabase.find(item => item.nome === name);
-    if (!dino) return;
+    if (!dino) {
+        // Unknown genus (stale link, inactive genus): do not leave a dead route behind.
+        if (getCurrentAppRoute() === `/museum/${encodeURIComponent(name)}`) {
+            setAppRoute('/museum', { replace: true });
+        }
+        return;
+    }
     const safeName = escapeChallengeHtml(name);
 
     const overlay = document.createElement('div');
@@ -2096,6 +2110,11 @@ async function showMuseumEntry(name) {
 
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
+    if (typeof waitForAccountReady === 'function') {
+        await waitForAccountReady();
+        // Closed or replaced while waiting: do not install listeners for a dead overlay.
+        if (!overlay.isConnected) return;
+    }
     const ownerId = currentUserId;
     const entryRoute = `/museum/${encodeURIComponent(name)}`;
     const isCurrentEntry = () => overlay.isConnected && !overlay.museumDismissRequested
@@ -2415,7 +2434,8 @@ function renderMuseumSpecimensNow() {
         .map(dino => renderMuseumSpecimenCard(dino, state.unlockedSet))
         .join('') + `
             <div class="museum-empty-state" id="museum-empty-state" hidden>
-                ${t('museum.noMatch')}
+                <span id="museum-empty-text">${t('museum.noMatch')}</span>
+                <button type="button" class="btn-hint museum-clear-filters" onclick="clearMuseumFilters()">${t('museum.clearFilters')}</button>
             </div>
         `;
     grid.dataset.renderState = 'rendered';
@@ -2497,14 +2517,24 @@ async function showMuseum() {
     
     appContent.innerHTML = `<div class="game-card">${renderAppState(t('museum.loading'))}</div>`;
     const loadingCard = appContent.firstElementChild;
+    if (typeof waitForAccountReady === 'function') {
+        await waitForAccountReady();
+        if (appContent.firstElementChild !== loadingCard) return;
+    }
     const museumOwnerId = currentUserId;
     const isCurrentRequest = () => appContent.firstElementChild === loadingCard
         && currentUserId === museumOwnerId;
-    
+    // Guest -> account while loading (the startup lookup finished after the wait
+    // cap): load again for the account instead of leaving the loading card up.
+    // A switch between two accounts still discards the old result.
+    const ownerChanged = () => appContent.firstElementChild === loadingCard
+        && museumOwnerId === null && Boolean(currentUserId);
+
     try {
         let museumDatabase = fullDatabase;
         if (!fullDatabase || fullDatabase.length === 0) {
             const catalog = await callGameApi('catalog');
+            if (ownerChanged()) return showMuseum();
             if (!isCurrentRequest()) return;
             museumDatabase = catalog.dinosaurs || [];
         }
@@ -2512,6 +2542,7 @@ async function showMuseum() {
             ensureMuseumCatalogLineages(museumDatabase),
             getDiscoveryRecords()
         ]);
+        if (ownerChanged()) return showMuseum();
         if (!isCurrentRequest()) return;
         fullDatabase = catalogDatabase;
         museumDiscoveryRecords = discoveryRecords;
@@ -2671,12 +2702,34 @@ function applyMuseumFilters() {
     const emptyState = document.getElementById('museum-empty-state');
     if (emptyState) {
         emptyState.hidden = visibleCount !== 0;
-        emptyState.textContent = selectedMuseumClade === 'all'
+        const emptyText = selectedMuseumClade === 'all'
             ? t('museum.noMatch')
             : selectedMuseumClade === 'other'
                 ? t('museum.noOtherCladeMatch')
                 : t('museum.noCladeMatch', { clade: selectedMuseumClade });
+        // The message lives in its own span so the "clear filters" button survives updates.
+        const emptyTextNode = document.getElementById('museum-empty-text');
+        if (emptyTextNode) emptyTextNode.textContent = emptyText;
+        else emptyState.textContent = emptyText;
     }
+}
+
+// Filters persist across visits, so a returning player can land on "no match":
+// one click returns to the whole Museum.
+function clearMuseumFilters() {
+    selectedMuseumClade = 'all';
+    selectedMuseumLevel = 'all';
+    museumSearchText = '';
+    museumSearchQuery = '';
+    museumUnlockedOnly = false;
+    const searchInput = document.getElementById('museum-search-input');
+    if (searchInput) searchInput.value = '';
+    const levelSelect = document.getElementById('museum-level-select');
+    if (levelSelect) levelSelect.value = 'all';
+    const unlockedToggle = document.getElementById('museum-unlocked-only');
+    if (unlockedToggle) unlockedToggle.checked = false;
+    updateMuseumCladeFilterDisplay();
+    applyMuseumFilters();
 }
 
 function analyticsLabel(value) {
@@ -2729,8 +2782,9 @@ async function showAnalyticsDashboard(days = 30) {
     if (!isCurrentRequest()) return;
 
     const summary = data.summary || {};
-    const maxStarted = Math.max(1, ...data.byDay.map(day => Number(day.started || 0)));
-    const chart = data.byDay.map(day => {
+    const byDay = Array.isArray(data.byDay) ? data.byDay : [];
+    const maxStarted = Math.max(1, ...byDay.map(day => Number(day.started || 0)));
+    const chart = byDay.map(day => {
         const height = Math.max(3, Math.round((Number(day.started || 0) / maxStarted) * 100));
         const date = new Date(`${day.date}T00:00:00Z`).toLocaleDateString(
             currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale,
@@ -2848,7 +2902,7 @@ async function showAnalyticsDashboard(days = 30) {
                 <p>${t('analytics.privacyCopy')}</p>
             </div>
             <div class="analytics-range" role="group" aria-label="${t('analytics.period')}">
-                ${[7, 30, 90].map(period => `<button class="btn-hint btn-header ${period === data.days ? 'active' : ''}" onclick="showAnalyticsDashboard(${period})">${t('analytics.days', { count: period })}</button>`).join('')}
+                ${[7, 30, 90].map(period => `<button class="btn-hint btn-header ${period === data.days ? 'active' : ''}" aria-pressed="${period === data.days}" onclick="showAnalyticsDashboard(${period})">${t('analytics.days', { count: period })}</button>`).join('')}
             </div>
         </div>
 

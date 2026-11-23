@@ -9,7 +9,7 @@
   <link rel="alternate" hreflang="en" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=en">
   <link rel="alternate" hreflang="pt-BR" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=pt-BR">
   <link rel="alternate" hreflang="es" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=es">
-  <link relnao ="alternate" hreflang="fr" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=fr">
+  <link rel="alternate" hreflang="fr" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=fr">
   <link rel="alternate" hreflang="de" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=de">
   <link rel="alternate" hreflang="ja" href="https://rodrigosqrt3.github.io/Phylosaur/?lang=ja">
 
@@ -80,6 +80,7 @@
     try {
       if (localStorage.getItem('phylosaur-theme') === 'light') {
         document.documentElement.dataset.theme = 'light';
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f5f0e8');
       }
     } catch (_error) {}
   </script>
@@ -87,21 +88,21 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
           integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
           crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="style.css?v=255">
+  <link rel="stylesheet" href="style.css?v=259">
   
-  <script defer src="js/config.js?v=255"></script>
-  <script defer src="js/state.js?v=255"></script>
-  <script defer src="js/i18n.js?v=255"></script>
-  <script defer src="js/api.js?v=255"></script>
-  <script defer src="js/autocomplete.js?v=255"></script>
-  <script defer src="js/db.js?v=255"></script>
-  <script defer src="js/auth.js?v=255"></script>
-  <script defer src="js/ui.js?v=255"></script>
-  <script defer src="js/screens.js?v=255"></script>
-  <script defer src="js/cladogram.js?v=255"></script>
-  <script defer src="js/tree.js?v=255"></script>
-  <script defer src="js/game.js?v=255"></script>
-  <script defer src="js/main.js?v=255"></script>
+  <script defer src="js/config.js?v=259"></script>
+  <script defer src="js/state.js?v=259"></script>
+  <script defer src="js/i18n.js?v=259"></script>
+  <script defer src="js/api.js?v=259"></script>
+  <script defer src="js/autocomplete.js?v=259"></script>
+  <script defer src="js/db.js?v=259"></script>
+  <script defer src="js/auth.js?v=259"></script>
+  <script defer src="js/ui.js?v=259"></script>
+  <script defer src="js/screens.js?v=259"></script>
+  <script defer src="js/cladogram.js?v=259"></script>
+  <script defer src="js/tree.js?v=259"></script>
+  <script defer src="js/game.js?v=259"></script>
+  <script defer src="js/main.js?v=259"></script>
 </head>
 <body>
   <script>
@@ -148,6 +149,9 @@
           <span class="app-state-icon" aria-hidden="true"></span>
           <div class="app-state-message" data-i18n="app.preparing">Preparing Phylosaur…</div>
         </div>
+        <noscript>
+          <p class="app-state-message">Phylosaur is a daily dinosaur genus guessing game and needs JavaScript to run. Please enable it, or read <a href="about.html">about the game</a>.</p>
+        </noscript>
       </div>
     </div>
   </div>

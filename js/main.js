@@ -135,7 +135,19 @@ async function restoreAppRoute() {
   } else if (parts[0] === 'museum' && parts[1]) {
     if (!museumVisible) await renderRoute(() => showMuseum());
     if (!isCurrentRequest()) return getCurrentAppRoute();
-    await renderRoute(() => showMuseumEntry(decodeURIComponent(parts.slice(1).join('/'))));
+    // A truncated link (e.g. "#/museum/%") must not throw and leave the app blank.
+    let entryName = null;
+    try { entryName = decodeURIComponent(parts.slice(1).join('/')); } catch (_error) {}
+    // Unknown or still-locked genera stay on the Museum (the entry shows the lineage).
+    const discoveredRecords = typeof museumDiscoveryRecords === 'object' ? museumDiscoveryRecords : null;
+    const entryUnlocked = entryName !== null && (
+      !discoveredRecords || Boolean(discoveredRecords[entryName.toLowerCase()])
+      || (typeof isAnalyticsAdmin !== 'undefined' && isAnalyticsAdmin === true));
+    if (!entryUnlocked) {
+      route = '/museum';
+    } else {
+      await renderRoute(() => showMuseumEntry(entryName));
+    }
   } else if (route === '/cladogram') {
     if (!document.querySelector('#app-content .cladogram-viewport')) await renderRoute(() => showCladogram());
   } else if (route === '/practice') {
@@ -260,6 +272,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   if (params.get('error')) {
       await initializeUserSystem();
+      appRoutingReady = true;
       showDifficultySelection();
       setTimeout(() => {
       showLoginModal();
@@ -277,12 +290,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   if (params.get('type') === 'recovery') {
       await initializeUserSystem();
+      appRoutingReady = true;
       showPasswordUpdateForm();
       window.history.replaceState({}, document.title, window.location.pathname);
       return;
   }
 
   const userInitialization = initializeUserSystem();
+  accountInitPromise = userInitialization.catch(() => null);
   appRoutingReady = true;
   const challengeCode = new URLSearchParams(window.location.search).get('challenge');
   if (challengeCode) {

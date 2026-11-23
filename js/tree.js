@@ -376,10 +376,14 @@ function initTreePanning() {
   });
 
   let wheelDelta = 0;
+  let wheelResetTimer = null;
   container.addEventListener('wheel', e => {
     if (!(e.ctrlKey || e.metaKey) || !document.getElementById('tree-svg')) return;
     e.preventDefault();
     wheelDelta += e.deltaY;
+    // Small trackpad pinches from separate gestures must not add up to a zoom step.
+    clearTimeout(wheelResetTimer);
+    wheelResetTimer = setTimeout(() => { wheelDelta = 0; }, 150);
     if (Math.abs(wheelDelta) < 60) return;
     stepTreeZoom(wheelDelta < 0 ? 1 : -1);
     wheelDelta = 0;
@@ -788,6 +792,7 @@ nodes.forEach((data, clade) => {
       const isCollapsed = window.collapsedClades.has(clade);
       toggleG.setAttribute('class', 'tree-collapse-toggle');
       toggleG.dataset.treeToggle = clade;
+      toggleG.setAttribute('aria-expanded', String(!isCollapsed));
       toggleG.style.cursor = 'pointer';
       makeTreeElementInteractive(
         toggleG,

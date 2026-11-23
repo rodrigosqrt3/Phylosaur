@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════
 // GLOBAL STATE
 // ═══════════════════════════════════════════════
-const PHYLOSAUR_RELEASE_VERSION = 255;
+const PHYLOSAUR_RELEASE_VERSION = 259;
 const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   theme: 'phylosaur-theme',
   language: 'phylosaur-language',
@@ -80,6 +80,9 @@ let guessesSinceLastHint = 0;
 let isPracticeMode = false;
 let currentGameMode = 'daily';
 let currentChallengeCode = null;
+// UTC day the server assigned to the running game (a Daily started at 23:55 UTC
+// and finished at 00:05 still belongs to the first day).
+let currentChallengeDate = null;
 let currentChallengePlayerName = null;
 let currentChallengeCreatorName = null;
 let currentChallengePlacement = null;
@@ -106,6 +109,8 @@ let analyticsAccessChecked = false;
 // ═══════════════════════════════════════════════
 let currentUser = null;
 let currentUserId = null;
+// Settles when the startup account lookup finishes (success, guest or failure).
+let accountInitPromise = Promise.resolve();
 let userStats = {
   gamesPlayed: 0,
   gamesWon: 0,

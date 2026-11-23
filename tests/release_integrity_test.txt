@@ -1252,8 +1252,8 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     "Language changes must explicitly reload while preserving the current hash route.");
   assert(!styleSource.includes('html[lang="ja"] body'),
     "Japanese typography must remain on the shared stylesheet defaults.");
-  assert(htmlSource.indexOf('src="js/state.js?v=255"') < htmlSource.indexOf('src="js/i18n.js?v=255"') &&
-    htmlSource.indexOf('src="js/i18n.js?v=255"') < htmlSource.indexOf('src="js/api.js?v=255"') &&
+  assert(htmlSource.indexOf('src="js/state.js?v=259"') < htmlSource.indexOf('src="js/i18n.js?v=259"') &&
+    htmlSource.indexOf('src="js/i18n.js?v=259"') < htmlSource.indexOf('src="js/api.js?v=259"') &&
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"')
     && htmlSource.includes('value="ja"') && htmlSource.includes('value="fr"')
@@ -1269,12 +1269,12 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
     htmlSource.includes("document.body.classList.add('light-mode')") &&
     htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
-      htmlSource.indexOf('rel="stylesheet" href="style.css?v=255"'),
+      htmlSource.indexOf('rel="stylesheet" href="style.css?v=259"'),
     "The saved light theme must be applied before the stylesheet can paint the page.");
   assert(htmlSource.includes('<select id="language-select" data-localization-ignore') &&
     !htmlSource.includes('translate="no"'),
     "The app localizer must leave language names in the selector unchanged.");
-  assert(workerSource.includes('"./js/i18n.js?v=255"'),
+  assert(workerSource.includes('"./js/i18n.js?v=259"'),
     "The localization module must be available offline.");
   assert(styleSource.includes(".header-theme-switch") &&
     styleSource.includes("order: 2") &&
@@ -1724,7 +1724,7 @@ Deno.test("Museum cards prioritize larger illustrations, names and first-discove
   assert(rule(".museum-grid").includes("minmax(220px, 1fr)")
     && rule(".museum-card-art-container").includes("height: 200px")
     && rule(".museum-card-art").includes("object-fit: contain")
-    && rule(".museum-card-discovery").includes("font-size: 0.65em"),
+    && rule(".museum-card-discovery").includes("font-size: 0.75em"),
     "Museum cards must enlarge intact drawings and compact secondary history.");
   const screens = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
   const cardStart = screens.indexOf("function renderMuseumSpecimenCard(");
@@ -2094,8 +2094,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
-  assert(aboutSource.includes('src="js/state.js?v=255"') &&
-    aboutSource.includes('src="js/i18n.js?v=255"') &&
+  assert(aboutSource.includes('src="js/state.js?v=259"') &&
+    aboutSource.includes('src="js/i18n.js?v=259"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
@@ -2556,7 +2556,7 @@ Deno.test("Museum gallery opens directly and filters by its three principal clad
 
   assert(screensSource.includes("const MUSEUM_ATLAS_COLLECTIONS") &&
     screensSource.includes("async function ensureMuseumCatalogLineages(") &&
-    screensSource.includes("fetch('phylosaur_db.json?v=atlas-2')") &&
+    screensSource.includes("fetch('phylosaur_db.json?v=atlas-3')") &&
     screensSource.includes("function renderMuseumCladeFilters(") &&
     screensSource.includes("function getMuseumAtlasCollection(") &&
     screensSource.includes("function openMuseumClade(") &&
@@ -2665,18 +2665,9 @@ Deno.test("Museum gallery opens directly and filters by its three principal clad
     && String(levelSelect.value) === "all",
     "Invalid difficulty values must safely fall back to all levels.");
 
-  const atlasStyle = styleSource.slice(
-    styleSource.indexOf(".museum-view-switch"),
-    styleSource.indexOf(".museum-toolbar"),
-  );
-  assert(atlasStyle.includes(".museum-atlas-theropoda") &&
-    atlasStyle.includes(".museum-atlas-sauropodomorpha") &&
-    atlasStyle.includes(".museum-atlas-ornithischia") &&
-    atlasStyle.includes("color: var(--atlas-accent)") &&
-    atlasStyle.includes("text-transform: none") &&
-    !atlasStyle.includes("text-transform: uppercase") &&
-    !screensSource.includes("UNLOCKED:"),
-    "The Atlas must preserve clade colors without forcing labels into uppercase.");
+  // The Atlas view was removed from the Museum; its stylesheet rules went with it.
+  assert(!screensSource.includes("UNLOCKED:"),
+    "Museum labels must not be forced into uppercase text.");
 
   if (database.length > 0) {
     const enrichmentSource = screensSource.slice(
@@ -2846,7 +2837,7 @@ Deno.test("live game metrics use independent glass tiles aligned to the tree and
     "Desktop metric groups must share the tree/sidebar proportions without an outer panel.");
   assert(cell.includes("background: linear-gradient(145deg, var(--glass-surface), var(--glass-surface-soft));")
     && cell.includes("border: 1px solid var(--glass-border);")
-    && cell.includes("border-radius: 6px;")
+    && cell.includes("border-radius: var(--radius-sm);")
     && cell.includes("padding: 15px 10px;")
     && cell.includes("-webkit-tap-highlight-color: transparent;")
     && cell.includes("cursor: default;")
@@ -4231,7 +4222,7 @@ Deno.test("guess, hint and give-up actions serialize and discard obsolete result
         assert(requests.length === 1, `${action}: another action overlapped the pending request.`);
         if (scenario !== "current") runtime.change(scenario);
         const previous = runtime.snapshot();
-        if (fails) requests[0].reject(new Error("Delayed failure"));
+        if (fails) requests[0].reject(Object.assign(new Error("Delayed failure"), { status: 500 }));
         else requests[0].resolve({ ...payload, complete: action === "giveUp" });
         await pending;
         if (scenario !== "current") {
@@ -4251,7 +4242,7 @@ Deno.test("guess, hint and give-up actions serialize and discard obsolete result
       const old = runtime[action](); await tick();
       runtime.change("session");
       const newer = runtime.useServerHint();
-      if (fails) requests[0].reject(new Error("Old failure")); else requests[0].resolve(payload);
+      if (fails) requests[0].reject(Object.assign(new Error("Old failure"), { status: 500 })); else requests[0].resolve(payload);
       await old;
       assert(runtime.pending(), `${action}: stale completion released the newer action lock.`);
       requests[1].resolve(payload); await newer;
@@ -4402,8 +4393,16 @@ Deno.test("race polling and closure discard obsolete sessions without releasing 
       const pending = runtime.handleChallengeRaceClosure({ race: { requesterPlacement: 2 } });
       runtime.change(scenario);
       const expected = runtime.snapshot();
-      if (fails) requests[0].reject(new Error("Delayed failure"));
-      else requests[0].resolve({ challenge: { placement: 2 } });
+      if (fails) {
+        requests[0].reject(new Error("Delayed failure"));
+        // The closing state is retried (3 attempts in total) before giving up.
+        if (scenario === "current") {
+          for (let attempt = 1; attempt < 3; attempt++) {
+            while (requests.length <= attempt) await new Promise((resolve) => setTimeout(resolve, 50));
+            requests[attempt].reject(new Error("Delayed failure"));
+          }
+        }
+      } else requests[0].resolve({ challenge: { placement: 2 } });
       await pending;
       assert(counters.applied === (scenario === "current" && !fails ? 1 : 0)
         && counters.alerts === (scenario === "current" && fails ? 1 : 0),
@@ -5580,7 +5579,7 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   for (const failure of ["network", "404", "500", "write", "open"]) {
     const runtime = buildServiceWorkerRuntime();
     if (["network", "404", "500"].includes(failure)) {
-      runtime.failures.fetchPath = "js/main.js?v=255";
+      runtime.failures.fetchPath = "js/main.js?v=259";
       runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
     }
     if (failure === "write") runtime.failures.putPath = "style.css";
@@ -5596,8 +5595,8 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   let resolve!: (value: Response) => void;
   let settled = false;
   const delayed = new Promise<Response>(yes => { resolve = yes; });
-  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=255") ? delayed
-    : new Response(request.url, { status: request.url.endsWith("style.css?v=255") ? 404 : 200 });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=259") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css?v=259") ? 404 : 200 });
   const install = runtime.event("install");
   const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
   for (let index = 0; index < 12; index++) await Promise.resolve();
@@ -5741,5 +5740,75 @@ Deno.test("service worker cache version and critical release sources exist", () 
     ];
   for (const path of requiredSources) {
     assert(Deno.statSync(path).isFile, `Required release source is missing: ${path}`);
+  }
+});
+
+Deno.test("account operations time out instead of blocking the queue forever", async () => {
+  const source = Deno.readTextFileSync(`${javascriptRoot}/auth.${javascriptExtension}`);
+  const slice = source.slice(
+    source.indexOf("const AUTH_OPERATION_TIMEOUT_MS"),
+    source.indexOf("async function runAccountFormRequest("),
+  ).replace("= 20000", "= 30");
+  const { queueAuthOperation } = new Function(
+    `let authOperationQueue = Promise.resolve(); ${slice}; return { queueAuthOperation };`,
+  )();
+  let rejected = false;
+  // Node (unlike a browser) ends the process when only unref'd timers are left.
+  const keepAlive = setTimeout(() => {}, 2000);
+  await queueAuthOperation(() => new Promise(() => {})).catch(() => { rejected = true; });
+  clearTimeout(keepAlive);
+  assert(rejected, "A sign-in request that never settles must be rejected after the deadline.");
+  const next = await queueAuthOperation(async () => "done");
+  assert(next === "done", "Later account operations must not wait behind a stalled one.");
+});
+
+Deno.test("Museum waits for the startup account lookup instead of loading forever", async () => {
+  const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
+  const authSource = Deno.readTextFileSync(`${javascriptRoot}/auth.${javascriptExtension}`);
+  const museumSource = screensSource.slice(
+    screensSource.indexOf("async function showMuseum()"),
+    screensSource.indexOf("function switchMuseumLevel("),
+  );
+  const waitSource = authSource.slice(
+    authSource.indexOf("function waitForAccountReady("),
+    authSource.indexOf("async function initializeUserSystem("),
+  );
+  // "wait": the account settles before the cap; "late": it settles after the cap.
+  for (const scenario of ["wait", "late"]) {
+    let markup = "";
+    let card: object;
+    const appContent = {
+      get firstElementChild() { return card; },
+      set innerHTML(value: string) { markup = value; card = {}; },
+    };
+    const runtime = new Function("environment", `
+      const { document, t, focusAppScreenHeading } = environment;
+      const setAppRoute = () => {}; const setHeaderControls = () => {};
+      const renderAppState = t; const escapeChallengeHtml = String;
+      const callGameApi = async () => ({ dinosaurs: [{ nome: "Triceratops" }] });
+      const ensureMuseumCatalogLineages = async database => database;
+      let currentUserId = null;
+      const getDiscoveryRecords = async () => {
+        await new Promise(resolve => setTimeout(resolve, 5));
+        return currentUserId ? { triceratops: { name: "Triceratops" } } : {};
+      };
+      const synchronizeGuestAchievements = () => {};
+      const renderMuseumCladeFilters = () => ""; const renderMuseumLevelFilter = () => "";
+      const updateMuseumCladeFilterDisplay = () => {}; const initializeMuseumGallery = () => {};
+      const console = { error() {} };
+      let fullDatabase = []; let museumDiscoveryRecords = {};
+      let museumSpecimenRenderState = null; let museumFilterCards = [];
+      let museumView = "specimens"; let selectedMuseumClade = "all";
+      let museumSearchQuery = ""; let selectedMuseumLevel = "all";
+      let accountInitPromise = new Promise(resolve => setTimeout(() => { currentUserId = "account"; resolve(); }, 60));
+      ${waitSource.replace("maxMs = 8000", scenario === "late" ? "maxMs = 10" : "maxMs = 8000")}
+      ${museumSource}; return { showMuseum };`)(
+      { document: { getElementById: () => appContent }, t: (key: string) => key,
+        focusAppScreenHeading: () => {} },
+    );
+    await runtime.showMuseum();
+    if (scenario === "late") await new Promise((resolve) => setTimeout(resolve, 200));
+    assert(markup.includes("museum-grid"),
+      `${scenario}: the Museum must render once the account settles, not stay on the loading card.`);
   }
 });

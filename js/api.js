@@ -44,10 +44,16 @@ window.getPhylosaurPerformanceSummary = function() {
   }));
 };
 
+// Kept in memory too: with storage blocked (some in-app browsers, strict privacy
+// modes) every request would otherwise fail before reaching the server.
+let memoryVisitorId = null;
+
 function getAnalyticsVisitorId() {
   const storageKey = PHYLOSAUR_STORAGE_KEYS.visitorId;
-  let visitorId = localStorage.getItem(storageKey);
+  let visitorId = memoryVisitorId;
+  try { visitorId = localStorage.getItem(storageKey) || memoryVisitorId; } catch (_error) {}
   if (visitorId && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(visitorId)) {
+    memoryVisitorId = visitorId;
     return visitorId;
   }
 
@@ -60,7 +66,8 @@ function getAnalyticsVisitorId() {
       return value.toString(16);
     });
   }
-  localStorage.setItem(storageKey, visitorId);
+  memoryVisitorId = visitorId;
+  try { localStorage.setItem(storageKey, visitorId); } catch (_error) {}
   return visitorId;
 }
 
@@ -215,14 +222,16 @@ async function initializeAnalyticsAccess() {
 // undated ones (current practice, friend races) first, then Daily by date.
 function getStoredGameSessionEntries() {
   const entries = [];
-  for (let index = 0; index < localStorage.length; index++) {
-    const key = localStorage.key(index);
-    if (!key?.startsWith('phylosaur-session:')) continue;
-    const sessionId = localStorage.getItem(key);
-    if (!sessionId) continue;
-    const date = /^phylosaur-session:daily:[^:]+:(\d{4}-\d{2}-\d{2})$/.exec(key)?.[1] || null;
-    entries.push({ key, sessionId, date });
-  }
+  try {
+    for (let index = 0; index < localStorage.length; index++) {
+      const key = localStorage.key(index);
+      if (!key?.startsWith('phylosaur-session:')) continue;
+      const sessionId = localStorage.getItem(key);
+      if (!sessionId) continue;
+      const date = /^phylosaur-session:daily:[^:]+:(\d{4}-\d{2}-\d{2})$/.exec(key)?.[1] || null;
+      entries.push({ key, sessionId, date });
+    }
+  } catch (_error) { /* Blocked storage: no saved sessions to offer. */ }
   return entries.sort((a, b) => String(b.date || '9999').localeCompare(String(a.date || '9999')));
 }
 

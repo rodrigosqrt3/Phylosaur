@@ -248,7 +248,7 @@ function renderCladogramSvgMarkup(layout, view, previousKeys) {
         const highlighted = cladogramHighlightKey === leaf.key ? ' is-highlighted' : '';
         if (leaf.hidden) {
             markup.push(`
-                <g class="cladogram-leaf is-hidden${isNew(leaf.key)}" aria-label="${t('cladogram.lockedOne')}">
+                <g class="cladogram-leaf is-hidden${isNew(leaf.key)}" role="img" aria-label="${t('cladogram.lockedOne')}">
                     <rect class="cladogram-leaf-box" x="${left}" y="${top}" width="${CLADOGRAM_LEAF_WIDTH}" height="${CLADOGRAM_LEAF_HEIGHT}" rx="11"/>
                     <circle class="cladogram-level-dot difficulty-${level}" cx="${left + 12}" cy="${leaf.y + pad}" r="4"/>
                     <text class="cladogram-leaf-label" x="${left + CLADOGRAM_LEAF_WIDTH / 2 + 6}" y="${leaf.y + pad}">???</text>
@@ -509,6 +509,10 @@ async function showCladogram({ focus = null } = {}) {
 
     appContent.innerHTML = `<div class="game-card">${renderAppState(t('cladogram.loading'))}</div>`;
     const loadingCard = appContent.firstElementChild;
+    if (typeof waitForAccountReady === 'function') {
+        await waitForAccountReady();
+        if (appContent.firstElementChild !== loadingCard) return;
+    }
     const ownerId = currentUserId;
     const isCurrentRequest = () => appContent.firstElementChild === loadingCard
         && currentUserId === ownerId;
@@ -573,10 +577,12 @@ async function showCladogram({ focus = null } = {}) {
                         <span><i class="cladogram-swatch is-hidden"></i>${t('cladogram.legendLocked')}</span>
                         ${cladogramView.isAdmin ? `<span><i class="cladogram-swatch is-flag"></i>${t('cladogram.legendFlag')}</span>` : ''}
                     </div>
-                    <div class="cladogram-zoom" role="group" aria-label="${t('tree.zoom')}">
-                        <button type="button" onclick="setCladogramZoom(1)" aria-label="${t('tree.zoomIn')}" title="${t('tree.zoomIn')}">+</button>
-                        <button type="button" id="cladogram-zoom-value" onclick="setCladogramZoom(0)" aria-label="${t('tree.zoomReset')}" title="${t('tree.zoomReset')}">100%</button>
-                        <button type="button" onclick="setCladogramZoom(-1)" aria-label="${t('tree.zoomOut')}" title="${t('tree.zoomOut')}">&minus;</button>
+                    <div class="tree-zoom-dock cladogram-zoom-dock">
+                        <div class="tree-zoom" role="group" aria-label="${t('tree.zoom')}">
+                            <button type="button" class="tree-zoom-btn" onclick="setCladogramZoom(1)" aria-label="${t('tree.zoomIn')}" title="${t('tree.zoomIn')}">+</button>
+                            <button type="button" class="tree-zoom-btn tree-zoom-value" id="cladogram-zoom-value" onclick="setCladogramZoom(0)" aria-label="${t('tree.zoomReset')}" title="${t('tree.zoomReset')}">100%</button>
+                            <button type="button" class="tree-zoom-btn" onclick="setCladogramZoom(-1)" aria-label="${t('tree.zoomOut')}" title="${t('tree.zoomOut')}">&minus;</button>
+                        </div>
                     </div>
                     <div class="cladogram-viewport" id="cladogram-viewport">
                         <svg id="cladogram-svg" class="cladogram-svg" xmlns="http://www.w3.org/2000/svg"></svg>

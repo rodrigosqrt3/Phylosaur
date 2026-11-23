@@ -2,10 +2,24 @@
 // USER ACCOUNT SYSTEM
 // ═══════════════════════════════════════════════
 let accountRequestGeneration = 0;
+// Bumped when the signed-in state really changes (logout, guest, external sign-out).
+let accountSessionEpoch = 0;
 let authOperationQueue = Promise.resolve();
 
+// Auth calls have no deadline of their own. Without one, a stalled connection keeps
+// the button spinning and every later account operation waits behind it in the queue.
+const AUTH_OPERATION_TIMEOUT_MS = 20000;
+
 function queueAuthOperation(operation) {
-  const pending = authOperationQueue.then(operation);
+  const pending = authOperationQueue.then(() => {
+    let timer;
+    const deadline = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('Account request timed out')), AUTH_OPERATION_TIMEOUT_MS);
+      if (typeof timer === 'object' && typeof timer?.unref === 'function') timer.unref();
+    });
+    return Promise.race([Promise.resolve().then(operation), deadline])
+      .finally(() => clearTimeout(timer));
+  });
   authOperationQueue = pending.catch(() => {});
   return pending;
 }
@@ -30,7 +44,8 @@ async function runAccountFormRequest(buttonId, panel, operation) {
     console.warn("Account operation could not be completed:", error?.name || "Error");
   } finally {
     // Release the original control only, never a replacement dialog with the same ID.
-    button.disabled = false;
+    // A finished one-way form (e.g. password changed) stays locked.
+    if (button.dataset?.keepDisabled !== "true") button.disabled = false;
     button.classList.remove("btn-loading");
   }
 }
@@ -54,10 +69,24 @@ function clearAccountProgressState() {
   if (typeof museumDiscoveryRecords !== "undefined") museumDiscoveryRecords = {};
 }
 
+// Screens that record who owns a request wait here first: opening one while the
+// account is still loading used to make the later owner change discard the
+// result, leaving the loading state on screen forever. The cap keeps a stalled
+// network from holding the screen.
+function waitForAccountReady(maxMs = 8000) {
+  let timer;
+  const cap = new Promise(resolve => { timer = setTimeout(resolve, maxMs); });
+  return Promise.race([accountInitPromise, cap]).finally(() => clearTimeout(timer));
+}
+
 async function initializeUserSystem() {
-  const generation = ++accountRequestGeneration;
+  ++accountRequestGeneration;
+  // The startup lookup is cancelled only by a real change of account state (logout,
+  // continue as guest, another account), not by opening or closing the sign-in
+  // dialog, which also moves accountRequestGeneration.
+  const generation = accountSessionEpoch;
   const previousOwnerId = currentUserId;
-  const isCurrent = () => generation === accountRequestGeneration && currentUserId === previousOwnerId;
+  const isCurrent = () => generation === accountSessionEpoch && currentUserId === previousOwnerId;
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session || !isCurrent()) return null;
@@ -86,7 +115,7 @@ async function initializeUserSystem() {
 
     void claimGuestProgressOnLogin({ showNotice: false })
       .then(() => {
-        if (generation === accountRequestGeneration && currentUserId === ownerId
+        if (generation === accountSessionEpoch && currentUserId === ownerId
             && typeof getCurrentAppRoute === 'function' && getCurrentAppRoute() === '/') {
           return refreshDifficultySelectionAccountState();
         }
@@ -262,7 +291,9 @@ function showLoginModal() {
   });
 
   queueMicrotask(() => {
-    if (isTopAppOverlay(overlay)) document.getElementById('signin-email')?.focus() || box.focus();
+    if (!isTopAppOverlay(overlay)) return;
+    const emailField = document.getElementById('signin-email');
+    if (emailField) emailField.focus(); else box.focus();
   });
 }
 
@@ -327,7 +358,12 @@ async function handleAccountSignIn(modal = false) {
         // Authentication already succeeded; optional progress sync can retry.
         console.warn("Account progress synchronization will need a retry:", syncError?.name || "Error");
       }
-      if (!request.isCurrent()) return;
+      if (!request.isCurrent()) {
+        // The modal was closed while progress was syncing. The sign-in itself
+        // succeeded, so the header and screen must still reflect the account.
+        if (adopted && currentUserId === ownerId && modal) refreshScreenAfterModalLogin();
+        return;
+      }
       if (modal) {
         closeLoginModal();
         refreshScreenAfterModalLogin();
@@ -535,6 +571,7 @@ async function continueAsGuest() {
     if (generation === accountRequestGeneration) await customAlert(t("auth.accountAccess"), t("auth.requestFailed"));
     return;
   }
+  accountSessionEpoch++;
   currentUser = null;
   currentUserId = null;
   clearAccountProgressState();
@@ -552,6 +589,7 @@ function watchExternalSignOut() {
       if (currentUserId !== ownerId) return;
       const { data } = await sb.auth.getSession();
       if (data?.session || currentUserId !== ownerId) return;
+      accountSessionEpoch++;
       currentUser = null;
       currentUserId = null;
       isAnalyticsAdmin = false;
@@ -586,6 +624,7 @@ async function logout() {
       }
       return;
     }
+    accountSessionEpoch++;
     currentUser = null;
     currentUserId = null;
     isAnalyticsAdmin = false;
@@ -649,6 +688,9 @@ async function handlePasswordUpdate() {
     }
     loginShowGlobalSuccess("update", t("auth.passwordUpdated"));
     window.history.replaceState({}, document.title, window.location.pathname);
+    // A second click would be rejected as "same password" and cancel the redirect.
+    const updateButton = document.getElementById("update-btn");
+    if (updateButton) updateButton.dataset.keepDisabled = "true";
     setTimeout(() => { if (request.isCurrent()) showDifficultySelection(); }, 1500);
   });
 }
