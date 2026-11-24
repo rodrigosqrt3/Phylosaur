@@ -638,6 +638,8 @@ function openImageLightbox(url, name, sourcePage = '', creditHtml = '') {
 }
 
 let cladeInfoRequestId = 0;
+// The last encyclopedia entry actually shown in the clade panel of the current game.
+let lastCladeInfoShown = null;
 
 function formatTaxonName(name) {
     const safeName = escapeChallengeHtml(name);
@@ -707,8 +709,17 @@ async function showCladeInfo(cladeName, options = {}) {
         infoDiv.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
     }
 
-    const { info: wikiInfo, usedClade } = await fetchCladeInfoWithFallback(cladeName);
+    let { info: wikiInfo, usedClade } = await fetchCladeInfoWithFallback(cladeName);
     if (requestId !== cladeInfoRequestId || !infoDiv.isConnected) return;
+
+    // Neither this clade nor any ancestor could be read (a missing page, or the encyclopedia
+    // being slow): keep what the player was already reading instead of replacing it with an
+    // empty notice, and say which clade it belongs to.
+    if (!wikiInfo && lastCladeInfoShown && lastCladeInfoShown.clade !== cladeName) {
+        wikiInfo = lastCladeInfoShown.info;
+        usedClade = lastCladeInfoShown.clade;
+    }
+    if (wikiInfo) lastCladeInfoShown = { clade: usedClade, info: wikiInfo };
 
     if (!wikiInfo) {
     infoDiv.innerHTML = `
@@ -770,6 +781,7 @@ async function updateCladeInfo() {
     const selectedClade = useHintClade ? deepestHint.cladeName : bestGuessClade;
 
     if (!selectedClade) {
+        lastCladeInfoShown = null;
         cladeInfoRequestId++;
         infoDiv.innerHTML = '';
         return;
