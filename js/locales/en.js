@@ -31,6 +31,7 @@ window.PHYLOSAUR_CATALOGS['en'] = {
   'nav.museum': 'Museum',
   'nav.stats': 'Stats',
   'nav.analytics': 'Analytics',
+  'nav.account': 'Account',
   'nav.signIn': 'Sign In',
   'common.close': 'Close',
   'common.cancel': 'Cancel',

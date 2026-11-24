@@ -10,6 +10,23 @@ const APP_ROUTE_DIFFICULTIES = new Set([
   'muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'
 ]);
 
+// Addresses name levels by number (#/game/daily/3). The internal level keys ('muito_facil', ...)
+// stay what the server, the saved progress and the sessions use; only the address changes.
+// Older links with the key in the address keep working and are rewritten to the numeric form.
+const PHYLOSAUR_LEVEL_ROUTE_SEGMENTS = Object.freeze({
+  muito_facil: '1', facil: '2', normal: '3', dificil: '4', muito_dificil: '5'
+});
+
+function levelToRouteSegment(difficulty) {
+  return PHYLOSAUR_LEVEL_ROUTE_SEGMENTS[difficulty] || difficulty;
+}
+
+function routeSegmentToLevel(segment) {
+  const level = Object.keys(PHYLOSAUR_LEVEL_ROUTE_SEGMENTS)
+    .find(key => PHYLOSAUR_LEVEL_ROUTE_SEGMENTS[key] === segment);
+  return level || segment;
+}
+
 function normalizeAppRoute(route) {
   const value = String(route || '/').trim();
   if (!value || value === '#' || value === '#/') return '/';
@@ -168,11 +185,14 @@ async function restoreAppRoute() {
     // Overlays above the game were closed above; the game itself stays as is.
   } else if (parts[0] === 'game' && parts.length === 3
       && ['daily', 'practice'].includes(parts[1])
-      && (APP_ROUTE_DIFFICULTIES.has(parts[2]) || (parts[1] === 'practice' && parseCustomPoolKey(parts[2])))) {
+      && (APP_ROUTE_DIFFICULTIES.has(routeSegmentToLevel(parts[2]))
+        || (parts[1] === 'practice' && parseCustomPoolKey(parts[2])))) {
+    const level = routeSegmentToLevel(parts[2]);
+    route = `/game/${parts[1]}/${levelToRouteSegment(level)}`;
     if (parts[1] === 'practice') {
-      await renderRoute(() => startPracticeChallenge(parts[2], { restoreExisting: true }));
+      await renderRoute(() => startPracticeChallenge(level, { restoreExisting: true }));
     } else {
-      await renderRoute(() => startDailyChallenge(parts[2], { restoreExisting: true }));
+      await renderRoute(() => startDailyChallenge(level, { restoreExisting: true }));
     }
   } else if (parts[0] === 'challenge' && parts[1]) {
     const restored = await restoreStoredChallenge(parts[1], {

@@ -415,7 +415,7 @@ function skipTutorialGame() {
 }
 
 async function startPracticeChallenge(difficulty, { restoreExisting = false } = {}) {
-    setAppRoute(`/game/practice/${difficulty}`);
+    setAppRoute(`/game/practice/${typeof levelToRouteSegment === 'function' ? levelToRouteSegment(difficulty) : difficulty}`);
     setHeaderControls('practice');
     currentGameMode = 'practice';
     selectedDifficulty = difficulty;
@@ -434,7 +434,7 @@ async function startPracticeChallenge(difficulty, { restoreExisting = false } = 
 }
 
 async function startDailyChallenge(difficulty, { restoreExisting = false } = {}) {
-    setAppRoute(`/game/daily/${difficulty}`);
+    setAppRoute(`/game/daily/${typeof levelToRouteSegment === 'function' ? levelToRouteSegment(difficulty) : difficulty}`);
     setHeaderControls('game');
     isPracticeMode = false;
     currentGameMode = 'daily';
@@ -521,7 +521,8 @@ function isGameRouteMounted(route) {
     if (parts[0] === 'challenge') {
         return currentGameMode === 'challenge' && currentChallengeCode === decodeURIComponent(parts[1] || '');
     }
-    return parts[0] === 'game' && currentGameMode === parts[1] && selectedDifficulty === parts[2];
+    const level = typeof routeSegmentToLevel === 'function' ? routeSegmentToLevel(parts[2]) : parts[2];
+    return parts[0] === 'game' && currentGameMode === parts[1] && selectedDifficulty === level;
 }
 
 function getChallengeSessionGuard() {

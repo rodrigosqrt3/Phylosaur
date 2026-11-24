@@ -58,7 +58,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <link rel="stylesheet" href="style.css?v=283">
+  <link rel="stylesheet" href="style.css?v=287">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,22 +66,60 @@
   <meta name="theme-color" content="#2d2318">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-  <script defer src="js/state.js?v=283"></script>
-  <script defer src="js/locales/en.js?v=283"></script>
-  <script defer src="js/locales/pt-BR.js?v=283"></script>
-  <script defer src="js/locales/es.js?v=283"></script>
-  <script defer src="js/locales/ja.js?v=283"></script>
-  <script defer src="js/locales/fr.js?v=283"></script>
-  <script defer src="js/locales/de.js?v=283"></script>
-  <script defer src="js/i18n.js?v=283"></script>
+  <script defer src="js/state.js?v=287"></script>
+  <script defer src="js/locales/en.js?v=287"></script>
+  <script defer src="js/locales/pt-BR.js?v=287"></script>
+  <script defer src="js/locales/es.js?v=287"></script>
+  <script defer src="js/locales/ja.js?v=287"></script>
+  <script defer src="js/locales/fr.js?v=287"></script>
+  <script defer src="js/locales/de.js?v=287"></script>
+  <script defer src="js/i18n.js?v=287"></script>
+  <script defer src="js/shell.js?v=287"></script>
 </head>
 <body>
-  <div class="info-shell">
-    <header class="info-header">
-      <h1>Phylosaur</h1>
-      <p data-i18n="brand.subtitle">A phylogenetic classification challenge</p>
+  <div class="container" id="main-container">
+    <header class="site-header">
+      <div class="site-header-layout">
+        <div class="site-header-spacer" aria-hidden="true"></div>
+        <div class="site-brand">
+          <h1><a class="site-brand-home" href="index.html">Phylosaur</a></h1>
+          <p class="subtitle" data-i18n="brand.subtitle">A phylogenetic classification challenge</p>
+        </div>
+        <div class="site-header-utility">
+          <div class="header-theme-row">
+            <label class="language-picker" for="language-select">
+              <span class="visually-hidden" data-i18n="language.label">Language</span>
+              <select id="language-select" data-localization-ignore onchange="changeLanguage(this.value)"
+                      aria-label="Language">
+                <option value="de">Deutsch</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="ja">日本語</option>
+                <option value="pt-BR">Português</option>
+              </select>
+            </label>
+            <button class="theme-switch header-theme-switch" onclick="toggleTheme()" id="theme-toggle"
+                    type="button" aria-label="Switch to light mode" aria-pressed="false">
+              <span class="theme-switch-track" aria-hidden="true">
+                <span class="theme-switch-thumb"></span>
+              </span>
+            </button>
+          </div>
+          <div id="header-controls" class="stable-header-controls" data-screen="about">
+            <div class="header-controls-visible">
+              <button class="btn-hint btn-header btn-with-icon" type="button" onclick="location.href='index.html'">
+                <svg class="header-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+                <span data-i18n="about.play">Play Phylosaur</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="info-shell">
       <nav class="info-nav" aria-label="Page navigation">
-        <a href="index.html" data-i18n="about.play">Play Phylosaur</a>
         <a href="#foundations" data-i18n="about.foundations">Foundations</a>
         <a href="#mechanics" data-i18n="about.mechanics">Game mechanics</a>
         <a href="#data" data-i18n="about.data">Data</a>
@@ -89,7 +127,6 @@
         <a href="#limitations" data-i18n="about.limitations">Limitations</a>
         <a href="#resources" data-i18n="about.resources">Resources</a>
       </nav>
-    </header>
 
     <main class="info-page" id="about-content">
       <article>
@@ -259,11 +296,16 @@
     <footer class="info-footer">
       <p><a href="index.html" data-i18n="about.returnSite">Return to Phylosaur</a></p>
     </footer>
+    </div>
   </div>
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       initializeI18n();
+      let savedTheme = 'dark';
+      try { savedTheme = localStorage.getItem(PHYLOSAUR_STORAGE_KEYS.theme) === 'light' ? 'light' : 'dark'; } catch (_error) {}
+      applyTheme(savedTheme, { persist: false });
+      watchGlassSelects();
       document.title = t('about.metaTitle');
       const description = document.querySelector('meta[name="description"]');
       if (description) description.setAttribute('content', t('about.metaDescription'));
