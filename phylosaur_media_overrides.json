@@ -1,7 +1,17 @@
 {
-  "version": 37,
+  "version": 38,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Lepidus": {
+      "file_title": "File:Lepidus praecisio (flipped).jpg",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Lepidus_praecisio_%28flipped%29.jpg/960px-Lepidus_praecisio_%28flipped%29.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Lepidus_praecisio_(flipped).jpg",
+      "artist": "Levi bernardo",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
     "Orodromeus": {
       "file_title": "File:Orodromeus (pencil 2013).png",
       "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Orodromeus_%28pencil_2013%29.png/960px-Orodromeus_%28pencil_2013%29.png",
