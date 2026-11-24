@@ -3007,6 +3007,19 @@ async function showAnalyticsDashboard(days = 30) {
         <div class="analytics-breakdown-row"><span>${escapeChallengeHtml(analyticsLabel(mode))}</span><strong>${count}</strong><span>${t('analytics.sessions')}</span></div>
     `).join('');
 
+    // Visitors per browser language; languages without a translation are flagged.
+    let languageNames = null;
+    try { languageNames = new Intl.DisplayNames([currentLocale], { type: 'language' }); } catch (_error) {}
+    const languageRows = (Array.isArray(data.byLanguage) ? data.byLanguage : []).map(entry => {
+        const name = entry.language === 'unknown'
+            ? t('analytics.languageUnknown')
+            : (languageNames?.of(entry.language) || entry.language);
+        const flag = entry.translated === false
+            ? `<span class="analytics-language-missing">${t('analytics.languageMissing')}</span>`
+            : '<span></span>';
+        return `<div class="analytics-breakdown-row"><span>${escapeChallengeHtml(name)}</span><strong>${Number(entry.visitors) || 0}</strong>${flag}</div>`;
+    }).join('');
+
     const activityRows = (data.recentActivity || []).map(event => {
         const when = new Date(event.createdAt).toLocaleString(
             currentLocale === 'pt-BR' ? 'pt-BR' : currentLocale
@@ -3146,6 +3159,12 @@ async function showAnalyticsDashboard(days = 30) {
                 <div class="analytics-breakdown">${modeRows || `<p class="empty-state">${t('analytics.noGames')}</p>`}</div>
             </section>
         </div>
+
+        <section class="analytics-section analytics-languages">
+            <h3>${t('analytics.byLanguage')}</h3>
+            <p class="analytics-section-note">${t('analytics.languageCopy')}</p>
+            <div class="analytics-breakdown">${languageRows || `<p class="empty-state">${t('analytics.noGames')}</p>`}</div>
+        </section>
 
         <section class="analytics-section">
             <h3>${t('analytics.recentActivity')}</h3>

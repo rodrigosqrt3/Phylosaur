@@ -135,7 +135,15 @@ async function callGameApi(action, payload = {}) {
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify({ action, visitorId: getAnalyticsVisitorId(), ...withGameSessionCredentials(payload) }),
+        // The browser's language and the interface language chosen: only a short code each,
+        // used to see which languages visitors need (see the analytics screen).
+        body: JSON.stringify({
+          action,
+          visitorId: getAnalyticsVisitorId(),
+          browserLanguage: String(navigator.language || '').slice(0, 12),
+          uiLocale: typeof currentLocale === 'string' ? currentLocale : undefined,
+          ...withGameSessionCredentials(payload)
+        }),
         signal: controller.signal
       });
       if (controller.signal.aborted) throw new Error(t("api.timeout"));

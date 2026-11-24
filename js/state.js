@@ -1,7 +1,7 @@
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // GLOBAL STATE
-// ═══════════════════════════════════════════════
-const PHYLOSAUR_RELEASE_VERSION = 277;
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+const PHYLOSAUR_RELEASE_VERSION = 278;
 const PHYLOSAUR_STORAGE_KEYS = Object.freeze({
   theme: 'phylosaur-theme',
   language: 'phylosaur-language',
@@ -52,12 +52,12 @@ function getPracticeReplayAction() {
     : 'showPracticeMode()';
 }
 
-// "Levels I, II · Theropoda" style label for a custom pool.
+// "Levels I, II Â· Theropoda" style label for a custom pool.
 function describeCustomPool(value) {
   const pool = parseCustomPoolKey(value);
   if (!pool) return '';
   const numerals = pool.levels.map(level => ['I', 'II', 'III', 'IV', 'V'][PHYLOSAUR_LEVELS.indexOf(level)]);
-  return [`${t('friends.level')} ${numerals.join(', ')}`, pool.clade].filter(Boolean).join(' · ');
+  return [`${t('friends.level')} ${numerals.join(', ')}`, pool.clade].filter(Boolean).join(' Â· ');
 }
 
 function escapeHtml(value) {
@@ -104,9 +104,9 @@ let currentAccountProgress = null;
 let isAnalyticsAdmin = false;
 let analyticsAccessChecked = false;
 
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // USER STATE
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 let currentUser = null;
 let currentUserId = null;
 // Settles when the startup account lookup finishes (success, guest or failure).

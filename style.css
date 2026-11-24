@@ -9495,3 +9495,5 @@ input[type="search"]::-webkit-search-cancel-button:hover { opacity: 1; }
   font-family: var(--font-display);
   font-variant-numeric: lining-nums tabular-nums;
 }
+/* Analytics: languages without a translation are flagged in the accent colour. */
+.analytics-language-missing { color: var(--color-warning); font-size: 0.85em; text-align: right; }

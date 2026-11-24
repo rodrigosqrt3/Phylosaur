@@ -15,9 +15,20 @@ const javascriptNames = [
   "config", "state", "i18n", "api", "autocomplete", "db", "auth",
   "ui", "screens", "cladogram", "tree", "game", "main",
 ];
-const javascriptSources = javascriptNames.map(
-  (name) => `${javascriptRoot}/${name}.${javascriptExtension}`,
+const localeNames = ["en", "pt-BR", "es", "ja", "fr", "de"];
+const localeSources = localeNames.map(
+  (name) => `${javascriptRoot}/locales/${name}.${javascriptExtension}`,
 );
+const javascriptSources = javascriptNames.flatMap(
+  (name) => name === "i18n"
+    ? [...localeSources, `${javascriptRoot}/i18n.${javascriptExtension}`]
+    : [`${javascriptRoot}/${name}.${javascriptExtension}`],
+);
+// Catalogs live in js/locales and register on window before i18n.js runs.
+function readI18nSource() {
+  return [...localeSources, `${javascriptRoot}/i18n.${javascriptExtension}`]
+    .map((path) => Deno.readTextFileSync(path)).join("\n");
+}
 const assetPath = (name: string) => gameRoot === "." ? name : `${gameRoot}/${name}`;
 const databasePath = assetPath("phylosaur_db.json");
 
@@ -718,8 +729,29 @@ Deno.test("all game JSON files are valid", () => {
   }
 });
 
+Deno.test("a missing or incomplete locale falls back to English instead of showing keys", () => {
+  const i18nOnly = Deno.readTextFileSync(`${javascriptRoot}/i18n.${javascriptExtension}`);
+  const english = Deno.readTextFileSync(`${javascriptRoot}/locales/en.${javascriptExtension}`);
+  const build = (language: string, extra: string) => new Function(
+    "window", "localStorage", "navigator", "PHYLOSAUR_STORAGE_KEYS",
+    `${english}\n${extra}\n${i18nOnly}; return t;`,
+  )(
+    { location: { search: "", href: "https://example.test/" } },
+    { getItem: () => null, setItem() {} },
+    { language, languages: [language] },
+    { language: "phylosaur-language" },
+  );
+  // Spanish file absent entirely.
+  assert(build("es", "").call(null, "home.daily") === "Daily Challenge",
+    "A locale with no catalog must show the English text.");
+  // Spanish present but missing one key.
+  const partial = build("es", `window.PHYLOSAUR_CATALOGS["es"] = { "nav.stats": "Estadísticas" };`);
+  assert(partial("nav.stats") === "Estadísticas" && partial("home.daily") === "Daily Challenge",
+    "Translated keys must win and missing keys must fall back to English.");
+});
+
 Deno.test("all locale catalogs stay complete and German preserves only intentional shared terms", () => {
-  const source = Deno.readTextFileSync(`${javascriptRoot}/i18n.${javascriptExtension}`);
+  const source = readI18nSource();
   const htmlSource = Deno.readTextFileSync(localSourceLayout ? "game/index_pwa_html.txt" : "index.html");
   const workerSource = Deno.readTextFileSync(localSourceLayout ? "game/sw_service_worker.txt" : "sw.js");
   const styleSource = Deno.readTextFileSync(localSourceLayout ? "game/style.txt" : "style.css");
@@ -1252,8 +1284,8 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     "Language changes must explicitly reload while preserving the current hash route.");
   assert(!styleSource.includes('html[lang="ja"] body'),
     "Japanese typography must remain on the shared stylesheet defaults.");
-  assert(htmlSource.indexOf('src="js/state.js?v=277"') < htmlSource.indexOf('src="js/i18n.js?v=277"') &&
-    htmlSource.indexOf('src="js/i18n.js?v=277"') < htmlSource.indexOf('src="js/api.js?v=277"') &&
+  assert(htmlSource.indexOf('src="js/state.js?v=278"') < htmlSource.indexOf('src="js/i18n.js?v=278"') &&
+    htmlSource.indexOf('src="js/i18n.js?v=278"') < htmlSource.indexOf('src="js/api.js?v=278"') &&
     htmlSource.includes('id="language-select"') &&
     htmlSource.includes('value="pt-BR"') && htmlSource.includes('value="es"')
     && htmlSource.includes('value="ja"') && htmlSource.includes('value="fr"')
@@ -1269,13 +1301,23 @@ const germanAnalyticsKeys = ["analytics.daily", "analytics.practice", "analytics
     htmlSource.includes("document.documentElement.dataset.theme = 'light'") &&
     htmlSource.includes("document.body.classList.add('light-mode')") &&
     htmlSource.indexOf("localStorage.getItem('phylosaur-theme')") <
-      htmlSource.indexOf('rel="stylesheet" href="style.css?v=277"'),
+      htmlSource.indexOf('rel="stylesheet" href="style.css?v=278"'),
     "The saved light theme must be applied before the stylesheet can paint the page.");
   assert(htmlSource.includes('<select id="language-select" data-localization-ignore') &&
     !htmlSource.includes('translate="no"'),
     "The app localizer must leave language names in the selector unchanged.");
-  assert(workerSource.includes('"./js/i18n.js?v=277"'),
+  assert(workerSource.includes('"./js/i18n.js?v=278"'),
     "The localization module must be available offline.");
+  const aboutShell = Deno.readTextFileSync(localSourceLayout ? "game/about_html.txt" : "about.html");
+  for (const code of localeNames) {
+    const tag = `src="js/locales/${code}.js?v=278"`;
+    assert(htmlSource.includes(tag) && aboutShell.includes(tag)
+        && htmlSource.indexOf(tag) < htmlSource.indexOf('src="js/i18n.js?v=278"')
+        && aboutShell.indexOf(tag) < aboutShell.indexOf('src="js/i18n.js?v=278"'),
+      `Locale ${code} must load before i18n.js on both pages.`);
+    assert(workerSource.includes(`"./js/locales/${code}.js?v=278"`),
+      `Locale ${code} must be precached for offline play.`);
+  }
   assert(styleSource.includes(".header-theme-switch") &&
     styleSource.includes("order: 2") &&
     styleSource.includes(".language-picker") &&
@@ -2007,7 +2049,7 @@ Deno.test("all screens reserve the same header size before account and Analytics
 
 Deno.test("header reservations stay identical across all routes in English, Portuguese and Spanish", () => {
   const ui = Deno.readTextFileSync(`${javascriptRoot}/ui.${javascriptExtension}`);
-  const i18n = Deno.readTextFileSync(`${javascriptRoot}/i18n.${javascriptExtension}`);
+  const i18n = readI18nSource();
   const state = Deno.readTextFileSync(`${javascriptRoot}/state.${javascriptExtension}`);
   const header = ui.slice(ui.indexOf("function setHeaderControls("), ui.indexOf("function applyTheme("));
   const escape = state.slice(state.indexOf("function escapeHtml("), state.indexOf("let fullDatabase"));
@@ -2094,8 +2136,8 @@ Deno.test("About navigation and primary screen titles share the application shel
     "Shared screen and standalone About typography is missing.");
   assert(aboutSource.includes("A phylogenetic classification challenge"),
     "The standalone About header must preserve the same identity line as the application.");
-  assert(aboutSource.includes('src="js/state.js?v=277"') &&
-    aboutSource.includes('src="js/i18n.js?v=277"') &&
+  assert(aboutSource.includes('src="js/state.js?v=278"') &&
+    aboutSource.includes('src="js/i18n.js?v=278"') &&
     aboutSource.includes("initializeI18n()") &&
     aboutSource.includes('data-i18n="about.foundationsTitle"') &&
     aboutSource.includes('data-i18n="about.foundationsBody1"') &&
@@ -2862,7 +2904,7 @@ Deno.test("live game metrics use independent glass tiles aligned to the tree and
 Deno.test("guided tutorial is a real local game isolated from progress and gameplay APIs", () => {
   const gameSource = Deno.readTextFileSync(`${javascriptRoot}/game.${javascriptExtension}`);
   const screensSource = Deno.readTextFileSync(`${javascriptRoot}/screens.${javascriptExtension}`);
-  const i18nSource = Deno.readTextFileSync(`${javascriptRoot}/i18n.${javascriptExtension}`);
+  const i18nSource = readI18nSource();
   const tutorialSource = gameSource.slice(
     gameSource.indexOf("const TUTORIAL_TARGET_NAME"),
     gameSource.indexOf("async function startPracticeChallenge"),
@@ -5579,7 +5621,7 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   for (const failure of ["network", "404", "500", "write", "open"]) {
     const runtime = buildServiceWorkerRuntime();
     if (["network", "404", "500"].includes(failure)) {
-      runtime.failures.fetchPath = "js/main.js?v=277";
+      runtime.failures.fetchPath = "js/main.js?v=278";
       runtime.failures.fetchStatus = failure === "network" ? 0 : Number(failure);
     }
     if (failure === "write") runtime.failures.putPath = "style.css";
@@ -5595,8 +5637,8 @@ Deno.test("service worker rejects incomplete essential installs and retains the 
   let resolve!: (value: Response) => void;
   let settled = false;
   const delayed = new Promise<Response>(yes => { resolve = yes; });
-  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=277") ? delayed
-    : new Response(request.url, { status: request.url.endsWith("style.css?v=277") ? 404 : 200 });
+  runtime.failures.network = async (request: any) => request.url.endsWith("js/main.js?v=278") ? delayed
+    : new Response(request.url, { status: request.url.endsWith("style.css?v=278") ? 404 : 200 });
   const install = runtime.event("install");
   const work = Promise.allSettled(install.work).then(result => { settled = true; return result; });
   for (let index = 0; index < 12; index++) await Promise.resolve();
