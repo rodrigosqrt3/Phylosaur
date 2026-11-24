@@ -2839,29 +2839,6 @@ body:not(.light-mode) .tree-best-destination rect {
   gap: 15px;
 }
 
-.difficulty-home-about {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  margin-top: 10px;
-  padding: 8px 12px;
-  color: var(--color-muted);
-  font-size: 0.85rem;
-  letter-spacing: 0.7px;
-  text-decoration: underline;
-  text-decoration-color: var(--border-subtle);
-  text-underline-offset: 4px;
-  transition: color var(--motion-fast) ease, text-decoration-color 0.18s ease;
-}
-
-@media (hover: hover) {
-  .difficulty-home-about:hover {
-    color: var(--color-primary);
-    text-decoration-color: currentColor;
-  }
-}
-
 .guest-account-note {
   display: flex;
   align-items: center;
@@ -4948,10 +4925,6 @@ body.light-mode .museum-time-range {
         grid-column: 1 / -1;
     }
 
-    .difficulty-home-about {
-        margin-top: 8px;
-    }
-
     #main-container:has(.difficulty-home) > .site-header {
         margin-bottom: 14px;
         padding: 64px 12px 15px;
@@ -5013,11 +4986,6 @@ body.light-mode .museum-time-range {
         padding: 10px 7px;
         font-size: clamp(0.75rem, 3vw, 0.8rem);
         letter-spacing: 0.5px;
-    }
-
-    .difficulty-home .difficulty-home-about {
-        min-height: 40px;
-        margin-top: 4px;
     }
 
     #header-controls {
@@ -9619,4 +9587,208 @@ input[type="search"]::-webkit-search-cancel-button:hover { opacity: 1; }
 #header-controls[data-gliding] .btn-header[aria-current="page"] {
   background: transparent;
   border-color: transparent;
+}
+
+/* Sign-in / create-account tabs: the underline glides between them (glideTabMarker in shell.js). */
+.tab-row {
+  position: relative;
+}
+
+.tab-glide {
+  position: absolute;
+  bottom: -2px;
+  z-index: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--color-accent);
+  pointer-events: none;
+}
+
+.tab-row[data-gliding] .tab-btn.active {
+  border-bottom-color: transparent;
+}
+
+/* Screen transitions: a screen slides in a short way from the side it belongs to (deeper from the
+   right, back from the left) while it fades in, instead of always rising from below. */
+/* One animation, with its direction in a variable: changing the animation's name would restart it on
+   a screen that is already open (closing a Museum entry went through "back" and replayed the slide). */
+html {
+  --nav-shift: 22px;
+}
+
+html[data-nav-dir="back"] {
+  --nav-shift: -22px;
+}
+
+@keyframes screenEnter {
+  from { opacity: 0; transform: translateX(var(--nav-shift)); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+#main-container {
+  overflow-x: clip;
+}
+
+#app-content > .game-card {
+  animation: screenEnter var(--motion-screen) cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+/* ── Museum: browsing from one genus to the next ─────────────────────────────── */
+.museum-entry-overlay.no-enter {
+  animation: none;
+}
+
+.museum-entry-nav {
+  position: fixed;
+  left: 50%;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  transform: translateX(-50%);
+  background: radial-gradient(120% 90% at 50% -30%, var(--glass-glow) 0%, transparent 60%), var(--glass-sheet-solid);
+  border: 1px solid var(--glass-edge);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 var(--glass-sheen), var(--glass-depth);
+}
+
+.museum-entry-nav-btn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+}
+
+.museum-entry-nav-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.museum-entry-nav-btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .museum-entry-nav-btn:hover:not(:disabled) {
+    background: var(--color-accent-subtle);
+    border-color: var(--color-accent);
+  }
+}
+
+.museum-entry-nav-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.museum-entry-position {
+  min-width: 84px;
+  padding: 0 4px;
+  color: var(--color-secondary);
+  font-size: 0.85rem;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* The pill floats over the bottom of the screen, so the entry stops above it. */
+.museum-entry-overlay.has-nav {
+  padding-bottom: 86px;
+}
+
+.museum-entry-overlay.has-nav .museum-entry-dialog {
+  max-height: calc(100vh - 24px - 86px);
+  max-height: calc(100dvh - 24px - 86px);
+}
+
+@media (max-width: 780px) {
+  .museum-entry-overlay.has-nav {
+    padding-bottom: 10px;
+  }
+
+  .museum-entry-overlay.has-nav .museum-entry-dialog {
+    max-height: calc(100vh - 20px - 70px);
+    max-height: calc(100dvh - 20px - 70px);
+  }
+}
+
+/* Page turn: the leaving page is copied and swings away on its left edge (forward), or the
+   arriving page swings back over the old one (backward). */
+.museum-entry-overlay.is-turning {
+  perspective: 2200px;
+}
+
+.museum-entry-page-ghost {
+  position: fixed;
+  z-index: 3;
+  margin: 0;
+  pointer-events: none;
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.museum-entry-page-ghost.is-underneath {
+  z-index: 1;
+}
+
+.museum-entry-page-ghost.turn-away {
+  animation: museumPageAway 480ms cubic-bezier(0.45, 0.05, 0.3, 1) forwards;
+}
+
+.museum-entry-dialog.turn-in {
+  z-index: 2;
+  transform-origin: left center;
+  animation: museumPageIn 480ms cubic-bezier(0.3, 0.7, 0.3, 1) both;
+}
+
+@keyframes museumPageAway {
+  0%   { transform: rotateY(0deg); filter: brightness(1); opacity: 1; }
+  65%  { opacity: 1; }
+  100% { transform: rotateY(-100deg); filter: brightness(0.55); opacity: 0; }
+}
+
+@keyframes museumPageIn {
+  0%   { transform: rotateY(-100deg); filter: brightness(0.55); opacity: 0; }
+  35%  { opacity: 1; }
+  100% { transform: rotateY(0deg); filter: brightness(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .museum-entry-page-ghost,
+  .museum-entry-dialog.turn-in {
+    animation: none;
+  }
+}
+
+/* Horizontal drags inside an open entry belong to the page turn, not to the browser's own
+   back/forward swipe; vertical drags still scroll the entry. */
+.museum-entry-overlay {
+  touch-action: pan-y pinch-zoom;
+  overscroll-behavior-x: none;
+}
+
+.museum-entry-dialog {
+  overscroll-behavior: contain;
+}
+
+/* The browser's own back/forward swipe is decided by the page's root scroller, so it is switched
+   off there while an entry is open (an edge swipe on a phone still belongs to the system). */
+html:has(.museum-entry-overlay),
+html:has(.museum-entry-overlay) body {
+  overscroll-behavior-x: none;
 }

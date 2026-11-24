@@ -460,11 +460,14 @@ async function handleAccountRegister() {
 
 function loginSwitchTab(tab) {
   accountRequestGeneration++;
+  const tabRow = document.querySelector('.login-tab-row');
+  const previousTab = tabRow?.querySelector('.tab-btn.active');
   document.querySelectorAll('.login-tab-row .tab-btn').forEach(button => {
     const active = button.id === 'tab-' + tab;
     button.classList.toggle('active', active);
     button.setAttribute('aria-selected', String(active));
   });
+  if (typeof glideTabMarker === 'function') glideTabMarker(tabRow, previousTab, tabRow?.querySelector('.tab-btn.active'));
   document.querySelectorAll('.login-form-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('login-panel-' + tab).classList.add('active');
   loginClearErrors();

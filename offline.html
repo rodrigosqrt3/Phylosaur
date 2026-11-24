@@ -5,7 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#2d2318">
   <title>Phylosaur - Offline</title>
+  <script>
+    // Same pre-paint theme choice as the game, so the offline page matches the mode in use.
+    try { if (localStorage.getItem('phylosaur-theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch (_error) {}
+  </script>
   <style>
+    :root {
+      --bg: #2d2318; --card-top: #2c2318; --card-bottom: #221a12; --border: #4a3829;
+      --title: #d4b87e; --copy: #a68a5a; --button-bg: linear-gradient(180deg, #dcc58f 0%, #bd9a60 100%);
+      --button-border: #a88752; --button-color: #1a1410; --glow: rgba(244, 228, 193, 0.08);
+      --shadow: 0 18px 50px rgba(0, 0, 0, .45);
+    }
+    :root[data-theme="light"] {
+      --bg: #e8dcc8; --card-top: #f5f0e8; --card-bottom: #e8dcc8; --border: #c9a96e;
+      --title: #4a3829; --copy: #5c4033; --button-bg: linear-gradient(180deg, #966744 0%, #754a2f 100%);
+      --button-border: #684128; --button-color: #ffffff; --glow: rgba(255, 255, 255, 0.5);
+      --shadow: 0 18px 40px rgba(62, 48, 31, .22);
+    }
     * { box-sizing: border-box; }
     body {
       min-height: 100vh;
@@ -13,38 +29,42 @@
       margin: 0;
       display: grid;
       place-items: center;
-      padding: 24px;
-      color: #f8f6f3;
-      background: #1f1812;
-      font-family: Georgia, serif;
+      padding: 20px;
+      color: var(--title);
+      background: var(--bg);
+      /* The game's display face; offline it falls back to Georgia if it was not cached. */
+      font-family: 'Playfair Display', Georgia, serif;
       text-align: center;
+      -webkit-font-smoothing: antialiased;
     }
     main {
       width: min(520px, 100%);
-      padding: 38px 28px;
-      background: #2c2318;
-      border: 2px solid #4a3829;
-      border-radius: 8px;
-      box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
+      padding: 40px 30px;
+      background: radial-gradient(120% 90% at 50% -30%, var(--glow) 0%, transparent 60%),
+        linear-gradient(180deg, var(--card-top), var(--card-bottom));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: inset 0 1px 0 var(--glow), var(--shadow);
     }
-    img { width: 112px; height: 112px; border-radius: 24px; }
-    h1 { margin: 22px 0 12px; color: #d4b87e; }
-    p { margin: 0 0 26px; color: #a68a5a; line-height: 1.7; }
+    img { width: 112px; height: 112px; border-radius: 26px; }
+    h1 { margin: 22px 0 12px; color: var(--title); font-size: clamp(1.5rem, 6vw, 1.9rem); font-weight: 900; }
+    p { margin: 0 0 26px; color: var(--copy); line-height: 1.7; }
     button {
-      min-height: 48px;
-      padding: 12px 24px;
-      color: #1a1410;
-      background: #c9a96e;
-      border: 2px solid #8b7355;
-      border-radius: 4px;
-      font: 600 14px Georgia, serif;
-      letter-spacing: 1.5px;
+      min-height: 46px;
+      padding: 12px 26px;
+      color: var(--button-color);
+      background: var(--button-bg);
+      border: 1px solid var(--button-border);
+      border-radius: 999px;
+      font: 700 13px 'Playfair Display', Georgia, serif;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
       cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 4px 12px rgba(0, 0, 0, .25);
     }
+    button:focus-visible { outline: 3px solid var(--title); outline-offset: 3px; }
   </style>
-</head>
-<body>
+</head><body>
   <main>
     <img src="pwa-icon-192.png" alt="Phylosaur footprint" id="offline-logo">
     <h1 id="offline-title">The trail went offline</h1>

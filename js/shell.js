@@ -255,3 +255,51 @@ function watchGlassSelects() {
     window.addEventListener('scroll', positionGlassSelect, true);
     window.addEventListener('hashchange', closeGlassSelect);
 }
+
+// Slides the underline of a tab row from the tab that was active to the one that now is: the
+// leading edge moves first and the trailing edge follows, so it stretches and settles (the same
+// motion as the header highlight). Skipped when the system asks for reduced motion.
+const tabGlideFrames = new WeakMap();
+
+function glideTabMarker(row, fromTab, toTab) {
+    if (!row || !fromTab || !toTab || fromTab === toTab || typeof requestAnimationFrame !== 'function') return;
+    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    cancelAnimationFrame(tabGlideFrames.get(row));
+    row.querySelector(':scope > .tab-glide')?.remove();
+    const marker = document.createElement('span');
+    marker.className = 'tab-glide';
+    marker.setAttribute('aria-hidden', 'true');
+    row.append(marker);
+    row.setAttribute('data-gliding', '');
+
+    const origin = row.getBoundingClientRect();
+    const edgeLeft = origin.left + (row.clientLeft || 0);
+    const boxOf = tab => {
+        const box = tab.getBoundingClientRect();
+        return { left: box.left - edgeLeft, right: box.right - edgeLeft };
+    };
+    const start = boxOf(fromTab);
+    const end = boxOf(toTab);
+    const rightward = end.left >= start.left;
+    const mix = (a, b, amount) => a + (b - a) * amount;
+    const lead = p => 1 - Math.pow(1 - p, 3);
+    const trail = p => p * p * (3 - 2 * p);
+    const started = performance.now();
+    const duration = 460;
+
+    const frame = now => {
+        if (!marker.isConnected) return;
+        const p = Math.min(1, (now - started) / duration);
+        const left = mix(start.left, end.left, rightward ? trail(p) : lead(p));
+        const right = mix(start.right, end.right, rightward ? lead(p) : trail(p));
+        marker.style.left = `${left}px`;
+        marker.style.width = `${Math.max(0, right - left)}px`;
+        if (p < 1) {
+            tabGlideFrames.set(row, requestAnimationFrame(frame));
+        } else {
+            marker.remove();
+            row.removeAttribute('data-gliding');
+        }
+    };
+    tabGlideFrames.set(row, requestAnimationFrame(frame));
+}

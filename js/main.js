@@ -10,6 +10,16 @@ const APP_ROUTE_DIFFICULTIES = new Set([
   'muito_facil', 'facil', 'normal', 'dificil', 'muito_dificil'
 ]);
 
+// Screens slide in from the right when you go deeper and from the left when you go back (CSS,
+// keyed on <html data-nav-dir>). Going to the home screen counts as going back.
+let lastRouteDepth = Number(window.history.state?.phylosaurDepth || 0);
+
+function trackNavigation(direction, depth = lastRouteDepth) {
+  lastRouteDepth = depth;
+  const root = typeof document !== 'undefined' ? document.documentElement : null;
+  if (root?.dataset) root.dataset.navDir = direction;
+}
+
 // Addresses name levels by number (#/game/daily/3). The internal level keys ('muito_facil', ...)
 // stay what the server, the saved progress and the sessions use; only the address changes.
 // Older links with the key in the address keep working and are rewritten to the numeric form.
@@ -75,6 +85,9 @@ function setAppRoute(route, { replace = false } = {}) {
     phylosaurRoute: normalized,
     phylosaurDepth: shouldReplace ? currentDepth : currentDepth + 1
   };
+  if (typeof trackNavigation === 'function') {
+    trackNavigation(normalized === '/' ? 'back' : 'forward', nextState.phylosaurDepth);
+  }
 
   window.history[shouldReplace ? 'replaceState' : 'pushState'](
     nextState,
@@ -116,6 +129,7 @@ function navigateBackOrHome(fallbackRoute = '/') {
 
 function navigateToAppRoute(route = '/') {
   const normalized = normalizeAppRoute(route);
+  if (typeof trackNavigation === 'function') trackNavigation(normalized === '/' ? 'back' : 'forward', 0);
   window.history.replaceState({
     ...(window.history.state || {}),
     phylosaurRoute: normalized,
@@ -228,6 +242,8 @@ async function restoreAppRoute() {
 }
 
 window.addEventListener('popstate', () => {
+  const depth = Number(window.history.state?.phylosaurDepth || 0);
+  trackNavigation(depth < lastRouteDepth ? 'back' : 'forward', depth);
   if (appRoutingReady) restoreAppRoute();
 });
 

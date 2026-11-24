@@ -45,9 +45,6 @@ async function showDifficultySelection() {
                 ${t('home.friends')}
             </button>
             </div>
-            <a class="difficulty-home-about" href="#/about" onclick="showAbout(); return false;">
-                ${t('about.title')}
-            </a>
         </div>
     `;
     startCountdown();
@@ -2264,8 +2261,139 @@ function buildMuseumReportMailto(name, lineage) {
     return `mailto:rodrigo03.villa@gmail.com?subject=${encodeURIComponent(`Phylosaur · ${name}`)}&body=${encodeURIComponent(body)}`;
 }
 
-async function showMuseumEntry(name) {
-    setAppRoute(`/museum/${encodeURIComponent(name)}`);
+// ── Browsing the Museum from one genus to the next ───────────────────────────
+// The order is the one on screen: the discovered cards the current search and filters leave
+// visible, in grid order. Opened from the result of a game there is no grid, so no browsing.
+function getMuseumEntryNeighbors(name) {
+    const grid = document.getElementById('museum-grid');
+    if (!grid) return { names: [], index: -1 };
+    const names = [...grid.querySelectorAll('.museum-card.unlocked[data-museum-entry]')]
+        .filter(card => !card.hidden)
+        .map(card => card.dataset.museumEntry);
+    return { names, index: names.indexOf(name) };
+}
+
+function renderMuseumEntryNav(overlay, name) {
+    const { names, index } = getMuseumEntryNeighbors(name);
+    if (names.length < 2 || index < 0) return;
+    const chevron = path => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${path}"/></svg>`;
+    const nav = document.createElement('div');
+    nav.className = 'museum-entry-nav';
+    nav.innerHTML = `
+        <button type="button" class="museum-entry-nav-btn" onclick="stepMuseumEntry(-1)"
+                aria-label="${escapeChallengeHtml(t('museum.prevEntry'))}" ${index === 0 ? 'disabled' : ''}>${chevron('M14.5 5.5 8 12l6.5 6.5')}</button>
+        <span class="museum-entry-position" aria-live="polite">${escapeChallengeHtml(t('museum.entryPosition', { position: index + 1, total: names.length }))}</span>
+        <button type="button" class="museum-entry-nav-btn" onclick="stepMuseumEntry(1)"
+                aria-label="${escapeChallengeHtml(t('museum.nextEntry'))}" ${index === names.length - 1 ? 'disabled' : ''}>${chevron('M9.5 5.5 16 12l-6.5 6.5')}</button>
+    `;
+    overlay.classList.add('has-nav');
+    overlay.append(nav);
+}
+
+// Opens the neighbouring genus. The page that is leaving is copied and turned like a page of a
+// book (forward) or the arriving page is turned back over it (backward); without motion the
+// content is simply replaced.
+function stepMuseumEntry(direction) {
+    const overlay = document.getElementById('museum-entry-overlay');
+    if (!overlay || overlay.museumDismissRequested || overlay.museumClosing || overlay.museumTurning) return;
+    const { names, index } = getMuseumEntryNeighbors(overlay.museumEntryName);
+    const target = index < 0 ? null : names[index + direction];
+    if (!target) return;
+
+    let ghost = null;
+    const dialog = overlay.querySelector('.museum-entry-dialog');
+    if (dialog && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const box = dialog.getBoundingClientRect();
+        ghost = dialog.cloneNode(true);
+        ghost.removeAttribute('id');
+        ghost.setAttribute('aria-hidden', 'true');
+        ghost.inert = true;
+        ghost.classList.add('museum-entry-page-ghost');
+        ghost.style.cssText = `left:${box.left}px;top:${box.top}px;width:${box.width}px;height:${box.height}px;`;
+        ghost.dataset.scrollTop = String(dialog.scrollTop);
+    }
+    return showMuseumEntry(target, { step: direction, ghost });
+}
+
+function playMuseumPageTurn(overlay, direction, ghost) {
+    const dialog = overlay.querySelector('.museum-entry-dialog');
+    if (!dialog || !ghost) return;
+    overlay.classList.add('is-turning');
+    overlay.museumTurning = true;
+    let finished = false;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        ghost.remove();
+        dialog.classList.remove('turn-in');
+        overlay.classList.remove('is-turning');
+        overlay.museumTurning = false;
+    };
+    // The copy always goes after the real page in the document, so that lookups inside the overlay
+    // (which fill in the new page) find the real one first; stacking is decided by z-index.
+    overlay.append(ghost);
+    if (direction > 0) {
+        ghost.classList.add('turn-away');
+        ghost.addEventListener('animationend', event => {
+            if (event.target === ghost) finish();
+        });
+    } else {
+        ghost.classList.add('is-underneath');
+        dialog.classList.add('turn-in');
+        dialog.addEventListener('animationend', event => {
+            if (event.target === dialog) finish();
+        });
+    }
+    ghost.scrollTop = Number(ghost.dataset.scrollTop || 0);
+    setTimeout(finish, 900);
+}
+
+// Horizontal swipes turn the page; vertical ones scroll the entry. Swipes that begin at the
+// screen edge are left to the system (the iPhone's back gesture), and so are scrollable strips.
+function attachMuseumEntrySwipe(overlay) {
+    let start = null;
+    overlay.addEventListener('touchstart', event => {
+        const touch = event.touches[0];
+        const insideScroller = (() => {
+            for (let node = event.target; node && node !== overlay; node = node.parentElement) {
+                if (node.scrollWidth > node.clientWidth + 2
+                    && /(auto|scroll)/.test(getComputedStyle(node).overflowX)) return true;
+            }
+            return false;
+        })();
+        const atEdge = touch.clientX < 24 || touch.clientX > window.innerWidth - 24;
+        start = event.touches.length === 1 && !insideScroller && !atEdge
+            ? { x: touch.clientX, y: touch.clientY, time: Date.now() } : null;
+    }, { passive: true });
+    overlay.addEventListener('touchend', event => {
+        if (!start) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - start.x;
+        const dy = touch.clientY - start.y;
+        const quick = Date.now() - start.time < 800;
+        start = null;
+        if (quick && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) stepMuseumEntry(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    overlay.addEventListener('touchcancel', () => { start = null; }, { passive: true });
+}
+
+// Warms the cache for the genera on either side, so the next page arrives with its picture.
+function prefetchMuseumEntryNeighbors(name) {
+    const { names, index } = getMuseumEntryNeighbors(name);
+    if (index < 0) return;
+    setTimeout(() => {
+        [names[index - 1], names[index + 1]].filter(Boolean).forEach(neighbor => {
+            void getCachedDinoMedia(neighbor).then(media => {
+                if (media?.url) new Image().src = media.url;
+            }).catch(() => {});
+            void Promise.resolve(fetchWikipediaInfo(neighbor)).catch(() => {});
+        });
+    }, 500);
+}
+
+async function showMuseumEntry(name, { step = 0, ghost = null } = {}) {
+    // Browsing replaces the history entry: Back must leave the entry, not walk through every genus seen.
+    setAppRoute(`/museum/${encodeURIComponent(name)}`, { replace: Boolean(step) });
     closeMuseumEntry();
 
     const dino = fullDatabase.find(item => item.nome === name);
@@ -2303,8 +2431,13 @@ async function showMuseumEntry(name) {
         if (event.target === overlay) dismissMuseumEntry();
     });
 
+    overlay.museumEntryName = name;
+    if (step) overlay.classList.add('no-enter');
+    renderMuseumEntryNav(overlay, name);
+    attachMuseumEntrySwipe(overlay);
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
+    if (step && ghost) playMuseumPageTurn(overlay, step, ghost);
     if (typeof waitForAccountReady === 'function') {
         await waitForAccountReady();
         // Closed or replaced while waiting: do not install listeners for a dead overlay.
@@ -2323,6 +2456,11 @@ async function showMuseumEntry(name) {
             event.preventDefault();
             event.stopImmediatePropagation();
             void dismissMuseumEntry();
+        } else if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+            && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey
+            && !event.target.closest?.('input, textarea, select')) {
+            event.preventDefault();
+            stepMuseumEntry(event.key === 'ArrowRight' ? 1 : -1);
         } else trapMuseumOverlayTab(overlay, event);
     };
     document.addEventListener('keydown', museumEntryEscapeHandler, true);
@@ -2472,6 +2610,8 @@ async function showMuseumEntry(name) {
         const description = overlay.querySelector('.museum-entry-description');
         if (description) description.textContent = t('museum.noSummary');
     });
+
+    prefetchMuseumEntryNeighbors(name);
 
     void paleodataPromise.then(paleodataCatalog => {
         if (!isCurrentEntry()) return;
