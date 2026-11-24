@@ -17,14 +17,22 @@ const PHYLOSAUR_LEVEL_ROUTE_SEGMENTS = Object.freeze({
   muito_facil: '1', facil: '2', normal: '3', dificil: '4', muito_dificil: '5'
 });
 
+// A custom practice pool ('custom:facil,normal:Theropoda') is written with level numbers too
+// ('custom:2,3:Theropoda'); its internal key is what the server receives.
 function levelToRouteSegment(difficulty) {
-  return PHYLOSAUR_LEVEL_ROUTE_SEGMENTS[difficulty] || difficulty;
+  if (PHYLOSAUR_LEVEL_ROUTE_SEGMENTS[difficulty]) return PHYLOSAUR_LEVEL_ROUTE_SEGMENTS[difficulty];
+  const pool = /^custom:([a-z_,]+):(.+)$/.exec(String(difficulty));
+  if (!pool) return difficulty;
+  const numbers = pool[1].split(',').map(level => PHYLOSAUR_LEVEL_ROUTE_SEGMENTS[level] || level);
+  return `custom:${numbers.join(',')}:${pool[2]}`;
 }
 
 function routeSegmentToLevel(segment) {
-  const level = Object.keys(PHYLOSAUR_LEVEL_ROUTE_SEGMENTS)
-    .find(key => PHYLOSAUR_LEVEL_ROUTE_SEGMENTS[key] === segment);
-  return level || segment;
+  const levelOf = piece => Object.keys(PHYLOSAUR_LEVEL_ROUTE_SEGMENTS)
+    .find(key => PHYLOSAUR_LEVEL_ROUTE_SEGMENTS[key] === piece) || piece;
+  const pool = /^custom:([a-z_0-9,]+):(.+)$/.exec(String(segment));
+  if (pool) return `custom:${pool[1].split(',').map(levelOf).join(',')}:${pool[2]}`;
+  return levelOf(segment);
 }
 
 function normalizeAppRoute(route) {
@@ -186,7 +194,7 @@ async function restoreAppRoute() {
   } else if (parts[0] === 'game' && parts.length === 3
       && ['daily', 'practice'].includes(parts[1])
       && (APP_ROUTE_DIFFICULTIES.has(routeSegmentToLevel(parts[2]))
-        || (parts[1] === 'practice' && parseCustomPoolKey(parts[2])))) {
+        || (parts[1] === 'practice' && parseCustomPoolKey(routeSegmentToLevel(parts[2]))))) {
     const level = routeSegmentToLevel(parts[2]);
     route = `/game/${parts[1]}/${levelToRouteSegment(level)}`;
     if (parts[1] === 'practice') {

@@ -23,6 +23,7 @@ function setHeaderControls(screen) {
       analytics: '<path d="M4 17.5l5-6 4 3 7-8"/><path d="M15 6.5h5v5"/>',
       account: '<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>',
       back: '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
+      about: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.2"/><path d="M12 7.6v.2" stroke-width="2.4"/>',
     };
     const glyph = name => `<svg class="header-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${glyphs[name]}</svg>`;
     // Every shortcut also carries a visible name. On phones only the button for the screen being
@@ -43,8 +44,9 @@ function setHeaderControls(screen) {
       : '';
     const signInBtn = `<button class="btn-hint btn-header btn-with-icon" onclick="showLoginModal()">${glyph('account')}<span>${t('nav.signIn')}</span></button>`;
 
+    const aboutBtn = iconBtn('about', t('nav.about'), 'showAbout()', current('about'));
     const navigation = iconBtn('museum', t('nav.museum'), 'showMuseum()', current('museum'))
-      + analyticsBtn + (currentUser ? statsBtn + accountBtn : signInBtn);
+      + analyticsBtn + (currentUser ? statsBtn + accountBtn : signInBtn) + aboutBtn;
 
     const map = {
       'login':        '',
@@ -72,8 +74,116 @@ function setHeaderControls(screen) {
           ${iconBtn('analytics', t('nav.analytics'), '', reserved)}
           ${iconBtn('stats', t('nav.stats'), '', reserved)}
           <button class="btn-hint btn-header btn-header-icon header-account-reserve" type="button" tabindex="-1" disabled>${glyph('account')}<span class="visually-hidden">${t('common.player')}</span></button>
+          ${iconBtn('about', t('nav.about'), '', reserved)}
         </div>`;
-    controls.innerHTML = sizingMenu + `<div class="header-controls-visible">${map[screen] || ''}</div>`;
+    const markup = sizingMenu + `<div class="header-controls-visible">${map[screen] || ''}</div>`;
+    // Moving between screens keeps the same buttons and only changes which one is current, so the
+    // existing buttons are kept and the highlight glides from one to the next.
+    if (!patchHeaderControls(controls, markup)) {
+        if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(headerGlideFrame);
+        controls.removeAttribute?.('data-gliding');
+        controls.innerHTML = markup;
+    }
+}
+
+// Describes the shortcut buttons (not Back) so two renders can be compared.
+function headerShortcutSignature(container) {
+    return [...container.querySelectorAll(':scope > .btn-header:not(.btn-header-back)')]
+        .map(button => `${button.className}|${button.getAttribute('onclick') || ''}|${button.title}`).join(';');
+}
+
+// Updates the visible header in place when only the current shortcut and Back differ.
+// Returns false when the header has to be rebuilt (first render, login or logout, new language).
+function patchHeaderControls(controls, markup) {
+    if (typeof controls.querySelector !== 'function' || typeof document.createElement !== 'function') return false;
+    const visible = controls.querySelector('.header-controls-visible');
+    const reserve = controls.querySelector('.header-controls-reserve');
+    if (!visible || !reserve) return false;
+    const next = document.createElement('div');
+    next.innerHTML = markup;
+    const nextVisible = next.querySelector('.header-controls-visible');
+    const nextReserve = next.querySelector('.header-controls-reserve');
+    if (!nextVisible || !nextReserve || nextReserve.innerHTML !== reserve.innerHTML
+        || headerShortcutSignature(nextVisible) !== headerShortcutSignature(visible)) return false;
+
+    const oldBox = headerCurrentBox(visible);
+    const shortcuts = [...visible.querySelectorAll(':scope > .btn-header:not(.btn-header-back)')];
+    const wanted = [...nextVisible.querySelectorAll(':scope > .btn-header:not(.btn-header-back)')];
+    shortcuts.forEach((button, index) => {
+        if (wanted[index].getAttribute('aria-current')) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+    });
+    visible.querySelector(':scope > .btn-header-back')?.remove();
+    const back = nextVisible.querySelector(':scope > .btn-header-back');
+    if (back) visible.prepend(back);
+    glideHeaderHighlight(controls, visible, oldBox);
+    return true;
+}
+
+// Position of the current shortcut inside the header row, or null when none is highlighted.
+function headerCurrentBox(visible) {
+    const button = visible.querySelector(':scope > .btn-header[aria-current="page"]');
+    return button ? headerBoxOf(visible, button) : null;
+}
+
+// Coordinates of a button in the space the highlight is drawn in: the padding box of the
+// header, which is the nearest positioned ancestor of the row.
+function headerBoxOf(visible, button) {
+    const frame = visible.closest('.site-header') || visible;
+    const origin = frame.getBoundingClientRect();
+    const offsetLeft = origin.left + (frame.clientLeft || 0);
+    const offsetTop = origin.top + (frame.clientTop || 0);
+    const box = button.getBoundingClientRect();
+    return { left: box.left - offsetLeft, right: box.right - offsetLeft, top: box.top - offsetTop, height: box.height };
+}
+
+let headerGlideFrame = 0;
+
+// The highlight is a translucent pill drawn over the row. It travels from the previous current
+// shortcut to the new one with its leading edge ahead of its trailing edge, so it stretches and
+// then settles, instead of the gold outline just swapping buttons. On phones the buttons also
+// change width, so the destination is read again on every frame.
+function glideHeaderHighlight(controls, visible, fromBox) {
+    cancelAnimationFrame(headerGlideFrame);
+    visible.querySelector(':scope > .header-glide')?.remove();
+    controls.removeAttribute('data-gliding');
+    const target = visible.querySelector(':scope > .btn-header[aria-current="page"]');
+    const reduced = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced || (!target && !fromBox) || typeof requestAnimationFrame !== 'function') return;
+
+    const glide = document.createElement('span');
+    glide.className = 'header-glide';
+    glide.setAttribute('aria-hidden', 'true');
+    visible.prepend(glide);
+    controls.setAttribute('data-gliding', '');
+
+    const targetBox = () => headerBoxOf(visible, target);
+    const mix = (a, b, amount) => a + (b - a) * amount;
+    const lead = p => 1 - Math.pow(1 - p, 3);
+    const trail = p => p * p * (3 - 2 * p);
+    const duration = 560;
+    const started = performance.now();
+    let last = fromBox;
+
+    const frame = now => {
+        if (!glide.isConnected) return;
+        const p = Math.min(1, (now - started) / duration);
+        const end = target ? targetBox() : last;
+        const start = fromBox || end;
+        const rightward = end.left >= start.left;
+        const left = mix(start.left, end.left, rightward ? trail(p) : lead(p));
+        const right = mix(start.right, end.right, rightward ? lead(p) : trail(p));
+        last = { left, right, top: mix(start.top, end.top, p), height: mix(start.height, end.height, p) };
+        glide.style.cssText = `left:${left}px;top:${last.top}px;width:${Math.max(0, right - left)}px;height:${last.height}px;`
+            + `opacity:${!fromBox ? p : (!target ? 1 - p : 1)};`;
+        if (p < 1) {
+            headerGlideFrame = requestAnimationFrame(frame);
+        } else {
+            glide.remove();
+            controls.removeAttribute('data-gliding');
+        }
+    };
+    headerGlideFrame = requestAnimationFrame(frame);
 }
 
 // Rebuilds the header of the screen already shown, after account or admin

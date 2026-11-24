@@ -32,6 +32,7 @@ window.PHYLOSAUR_CATALOGS['ja'] = {
   'nav.stats': '統計',
   'nav.analytics': '分析',
   'nav.account': 'アカウント',
+  'nav.about': '概要',
   'nav.signIn': 'ログイン',
   'common.close': '閉じる',
   'common.cancel': 'キャンセル',
