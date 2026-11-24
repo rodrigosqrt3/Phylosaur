@@ -58,7 +58,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <link rel="stylesheet" href="style.css?v=280">
+  <link rel="stylesheet" href="style.css?v=283">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,14 +66,14 @@
   <meta name="theme-color" content="#2d2318">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-  <script defer src="js/state.js?v=280"></script>
-  <script defer src="js/locales/en.js?v=280"></script>
-  <script defer src="js/locales/pt-BR.js?v=280"></script>
-  <script defer src="js/locales/es.js?v=280"></script>
-  <script defer src="js/locales/ja.js?v=280"></script>
-  <script defer src="js/locales/fr.js?v=280"></script>
-  <script defer src="js/locales/de.js?v=280"></script>
-  <script defer src="js/i18n.js?v=280"></script>
+  <script defer src="js/state.js?v=283"></script>
+  <script defer src="js/locales/en.js?v=283"></script>
+  <script defer src="js/locales/pt-BR.js?v=283"></script>
+  <script defer src="js/locales/es.js?v=283"></script>
+  <script defer src="js/locales/ja.js?v=283"></script>
+  <script defer src="js/locales/fr.js?v=283"></script>
+  <script defer src="js/locales/de.js?v=283"></script>
+  <script defer src="js/i18n.js?v=283"></script>
 </head>
 <body>
   <div class="info-shell">
@@ -110,6 +110,10 @@
         </p>
         <p data-i18n="about.foundationsBody2">
           Dinosauria is a well-supported clade. Features used to diagnose it include a perforate (open) hip socket, a long deltopectoral crest on the upper arm bone and a hinge-like ankle, which together relate to an upright stance with the legs held beneath the body. The group is traditionally divided into Saurischia, with a forward-pointing pubis, long neck vertebrae and a grasping hand with an enlarged thumb, and Ornithischia, with a backward-pointing pubis and a predentary bone at the tip of the lower jaw. Birds (Avialae) are theropods, and therefore saurischians. A group of “dinosaurs” that excludes birds is paraphyletic, which is why palaeontologists say non-avian dinosaurs when they mean the extinct forms.
+        </p>
+
+        <p data-i18n="about.foundationsBody3">
+          The split into Saurischia and Ornithischia has been standard since Seeley proposed it in 1887, and Phylosaur’s tree follows it. It has been challenged: Baron, Norman and Barrett (2017) analysed 74 taxa and 457 characters and recovered Theropoda as the sister group of Ornithischia, in a clade they called Ornithoscelida, with Sauropodomorpha and Herrerasauridae outside it. Phylosaur keeps the traditional arrangement, which textbooks such as Lucas (2022) still use. A change at this level would rearrange much of the tree.
         </p>
 
         <blockquote class="info-quote">
@@ -170,7 +174,7 @@
           Proximity is defined as follows. Let $L_A$ be the ordered lineage of a guessed genus $A$ and $L_B$ the lineage of the hidden target $B$. Both start at <em>Dinosauria</em> and run toward more specific clades. If the two lineages agree on their first $m(A,B)$ entries, then:
         </p>
         <div class="info-equation">
-          $$m(A,B)=\max\left\{k: L_A[i]=L_B[i]\;\text{for every}\;0\le i&lt;k\right\}$$
+          $$m(A,B)=\max\left\{k: L_A[i]=L_B[i]\ \ \forall\, 0\le i&lt;k\right\}$$
         </div>
         <p data-i18n="about.mathBody2">
           The last clade in this shared prefix is the deepest common clade represented in the game. The proximity score is the shared length divided by the depth of the target:
@@ -220,11 +224,17 @@
           For an introduction to dinosaurs: <em>Dinosaur Paleobiology</em> by Stephen Brusatte and <em>Dinosaurs: How They Lived and Evolved</em> by Darren Naish and Paul Barrett. For phylogenetic methods: <em>Phylogenetics: Theory and Practice of Phylogenetic Systematics</em> by E. O. Wiley and Bruce Lieberman, and <em>Inferring Phylogenies</em> by Joseph Felsenstein.
         </p>
 
+        <p data-i18n="about.paleoartInvite">
+          Illustrators and palaeoartists: if you would like your work to appear in Phylosaur, write to the address below. Images need a free licence (CC BY, CC BY-SA or CC0) and should preferably be uploaded to Wikimedia Commons under your name, so the licence is public and checkable. Every image is shown with its author’s credit. Sending an image does not guarantee that it will be used.
+        </p>
+
         <section class="info-references" aria-labelledby="landmarks-title">
           <h3 id="landmarks-title" data-i18n="about.landmarksTitle">Selected scientific landmarks</h3>
           <ul>
+            <li>Buckland, W. (1824). <em>Notice on the Megalosaurus or Great Fossil Lizard of Stonesfield.</em> Transactions of the Geological Society of London, series 2, 1: 390–396.</li>
+            <li>Mantell, G. (1825). <em>Notice on the Iguanodon, a Newly Discovered Fossil Reptile, from the Sandstone of Tilgate Forest, in Sussex.</em> Philosophical Transactions of the Royal Society of London, 115: 179–186.</li>
             <li>Owen, R. (1842). <em>Report on British Fossil Reptiles, Part II.</em></li>
-            <li>Seeley, H. G. (1888). <em>On the Classification of the Fossil Animals Commonly Named Dinosauria.</em> Proceedings of the Royal Society of London, 43: 165–171.</li>
+            <li>Seeley, H. G. (1887).<em>On the Classification of the Fossil Animals Commonly Named Dinosauria.</em> Proceedings of the Royal Society of London, 43: 165–171.</li>
             <li>Hennig, W. (1966). <em>Phylogenetic Systematics.</em></li>
             <li>Ostrom, J. H. (1976). <em>Archaeopteryx and the Origin of Birds.</em> Biological Journal of the Linnean Society, 8: 91–182.</li>
             <li>Gauthier, J. (1986). <em>Saurischian Monophyly and the Origin of Birds.</em> Memoirs of the California Academy of Sciences, 8: 1–55.</li>
@@ -232,6 +242,7 @@
             <li>Weishampel, D. B., Dodson, P. &amp; Osmólska, H., eds. (2004). <em>The Dinosauria</em>, 2nd ed.</li>
             <li>Nesbitt, S. J. (2011). <em>The Early Evolution of Archosaurs: Relationships and the Origin of Major Clades.</em> Bulletin of the American Museum of Natural History, 352: 1–292.</li>
             <li>Baron, M. G., Norman, D. B. &amp; Barrett, P. M. (2017). <em>A New Hypothesis of Dinosaur Relationships and Early Dinosaur Evolution.</em> Nature, 543: 501–506.</li>
+            <li>Lucas, S. G. (2022). <em>Dinosaurs: The Textbook</em>, 7th ed. Columbia University Press.</li>
           </ul>
         </section>
 

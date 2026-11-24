@@ -1,7 +1,37 @@
 {
-  "version": 38,
+  "version": 39,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
+    "Ajnabia": {
+      "file_title": "File:Life reconstruction of Ajnabia odysseus.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Life_reconstruction_of_Ajnabia_odysseus.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Life_reconstruction_of_Ajnabia_odysseus.png",
+      "artist": "Connor Ashbridge",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Afrovenator": {
+      "file_title": "File:Afrovenator reconstruction.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/Afrovenator_reconstruction.png/960px-Afrovenator_reconstruction.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Afrovenator_reconstruction.png",
+      "artist": "PaleoEquii",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
+    "Zephyrosaurus": {
+      "file_title": "File:Zephyrosaurus.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Zephyrosaurus.png/960px-Zephyrosaurus.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Zephyrosaurus.png",
+      "artist": "Klaora",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+      "source": "wikimedia"
+    },
     "Lepidus": {
       "file_title": "File:Lepidus praecisio (flipped).jpg",
       "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Lepidus_praecisio_%28flipped%29.jpg/960px-Lepidus_praecisio_%28flipped%29.jpg",
