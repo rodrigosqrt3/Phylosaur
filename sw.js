@@ -1,13 +1,13 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v291";
+const CACHE_VERSION = "phylosaur-shell-v292";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./about.html",
   "./offline.html",
   "./manifest.webmanifest",
-  "./phylosaur_media_overrides.json?v=42",
+  "./phylosaur_media_overrides.json?v=43",
   "./phylosaur_paleodata.json?v=11",
   "./style.css?v=291",
   "./js/config.js?v=291",
@@ -25,7 +25,7 @@ const CORE_ASSETS = [
   "./js/db.js?v=291",
   "./js/auth.js?v=291",
   "./js/ui.js?v=291",
-  "./js/screens.js?v=291",
+  "./js/screens.js?v=292",
   "./js/cladogram.js?v=291",
   "./js/tree.js?v=291",
   "./js/game.js?v=291",

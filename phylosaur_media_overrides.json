@@ -1,5 +1,5 @@
 {
-  "version": 39,
+  "version": 40,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Ajnabia": {
@@ -1569,6 +1569,16 @@
       "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/Amazonsaurus_LM.png/960px-Amazonsaurus_LM.png",
       "file_page": "https://commons.wikimedia.org/wiki/File:Amazonsaurus_LM.png",
       "artist": "Levi Martinez-Reza",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
+    "Tapuiasaurus": {
+      "file_title": "File:Tapuiasaurus NT.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Tapuiasaurus_NT.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Tapuiasaurus_NT.jpg",
+      "artist": "Nobu Tamura (http://spinops.blogspot.com)",
       "license": "CC BY-SA 3.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
