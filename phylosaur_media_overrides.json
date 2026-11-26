@@ -1,5 +1,5 @@
 {
-  "version": 40,
+  "version": 41,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Ajnabia": {
@@ -1582,6 +1582,16 @@
       "license": "CC BY-SA 3.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
       "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+      "source": "wikimedia"
+    },
+    "Bagaceratops": {
+      "file_title": "File:Bagaceratops Restoration.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Bagaceratops_Restoration.png/960px-Bagaceratops_Restoration.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Bagaceratops_Restoration.png",
+      "artist": "PaleoNeolitic",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "usage_terms": "Creative Commons Attribution 4.0",
       "source": "wikimedia"
     }
   }
