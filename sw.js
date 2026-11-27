@@ -1,35 +1,35 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "phylosaur-shell-v294";
+const CACHE_VERSION = "phylosaur-shell-v295";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./about.html",
   "./offline.html",
   "./manifest.webmanifest",
-  "./phylosaur_media_overrides.json?v=45",
+  "./phylosaur_media_overrides.json?v=46",
   "./phylosaur_paleodata.json?v=11",
-  "./style.css?v=294",
-  "./js/config.js?v=294",
-  "./js/state.js?v=294",
-  "./js/locales/en.js?v=294",
-  "./js/locales/pt-BR.js?v=294",
-  "./js/locales/es.js?v=294",
-  "./js/locales/ja.js?v=294",
-  "./js/locales/fr.js?v=294",
-  "./js/locales/de.js?v=294",
-  "./js/i18n.js?v=294",
-  "./js/shell.js?v=294",
-  "./js/api.js?v=294",
-  "./js/autocomplete.js?v=294",
-  "./js/db.js?v=294",
-  "./js/auth.js?v=294",
-  "./js/ui.js?v=294",
-  "./js/screens.js?v=294",
-  "./js/cladogram.js?v=294",
-  "./js/tree.js?v=294",
-  "./js/game.js?v=294",
-  "./js/main.js?v=294"
+  "./style.css?v=295",
+  "./js/config.js?v=295",
+  "./js/state.js?v=295",
+  "./js/locales/en.js?v=295",
+  "./js/locales/pt-BR.js?v=295",
+  "./js/locales/es.js?v=295",
+  "./js/locales/ja.js?v=295",
+  "./js/locales/fr.js?v=295",
+  "./js/locales/de.js?v=295",
+  "./js/i18n.js?v=295",
+  "./js/shell.js?v=295",
+  "./js/api.js?v=295",
+  "./js/autocomplete.js?v=295",
+  "./js/db.js?v=295",
+  "./js/auth.js?v=295",
+  "./js/ui.js?v=295",
+  "./js/screens.js?v=295",
+  "./js/cladogram.js?v=295",
+  "./js/tree.js?v=295",
+  "./js/game.js?v=295",
+  "./js/main.js?v=295"
 ];
 
 // Decorative/install icons must not invalidate an otherwise complete shell.
