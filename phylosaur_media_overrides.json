@@ -1,5 +1,5 @@
 {
-  "version": 41,
+  "version": 42,
   "description": "Manually reviewed media choices that take priority over automatic sources.",
   "taxa": {
     "Ajnabia": {
@@ -1592,6 +1592,16 @@
       "license": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0",
       "usage_terms": "Creative Commons Attribution 4.0",
+      "source": "wikimedia"
+    },
+    "Prosaurolophus": {
+      "file_title": "File:Prosaurolophus maximus.png",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Prosaurolophus_maximus.png/960px-Prosaurolophus_maximus.png",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Prosaurolophus_maximus.png",
+      "artist": "Connor Ashbridge",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
       "source": "wikimedia"
     }
   }
