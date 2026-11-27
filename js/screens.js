@@ -1517,7 +1517,7 @@ async function ensureMuseumCatalogLineages(catalog) {
 
 async function loadMuseumPaleodataCatalog() {
     if (!museumPaleodataCatalogPromise) {
-        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=11')
+        museumPaleodataCatalogPromise = fetch('phylosaur_paleodata.json?v=13')
             .then(response => {
                 if (!response.ok) throw new Error(`Paleodata catalog HTTP ${response.status}`);
                 return response.json();
@@ -1908,12 +1908,14 @@ async function getCachedDinoMedia(name) {
         return media;
     }
 
-    // Keep a usable cached fallback if Wikimedia is unavailable or has no exact title.
-    if (cached?.url) return cached;
-
     // Only taxa without the current image reach the licensed media fallback.
     const fallbackCatalog = await loadMuseumFallbackCatalog();
+    const fallbackCatalogLoaded = Object.keys(fallbackCatalog).length > 0;
     const fallback = fallbackCatalog[name];
+
+    // Keep a usable cached fallback if the catalog is unavailable or still lists the same image.
+    if (cached?.url && (!fallbackCatalogLoaded || cached.url === fallback?.url)) return cached;
+
     if (fallback?.url) {
         const media = {
             ...fallback,
@@ -1922,6 +1924,12 @@ async function getCachedDinoMedia(name) {
         cache[name] = media;
         scheduleMuseumImageCacheWrite();
         return media;
+    }
+
+    // The loaded catalog no longer lists an image for this genus: forget the stale one.
+    if (cached) {
+        delete cache[name];
+        scheduleMuseumImageCacheWrite();
     }
 
     return null;
